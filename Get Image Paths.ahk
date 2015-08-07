@@ -437,7 +437,7 @@ Exit
 ; ########## Functions ##########
 Spacer(TxtStr = "")
 {
-	Static SpaceFill := "                                                  "
+	Static SpaceFill := "                                                                 "
 	
 	;~ ps := strlen(TxtStr) + 1												;; allow empty string = 1 
 	;~ ss := TxtStr . SubStr(SpaceFill, ps) . "`t"
