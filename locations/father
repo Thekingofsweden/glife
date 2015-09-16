@@ -7,17 +7,114 @@ gs 'fathersex'
 $metkaM = $ARGS[0]
 $locM = $CURLOC
 
-'<center><b><font color="maroon">Stepfather Vladimir Mikhailovich Scriabin</font></b></center>'
+'<center><b><font color="maroon">Stepfather Vladimir Mikhailovich Skryabin</font></b></center>'
 '<center><img src="images/qwest/alter/father.jpg"></center>'
-'Your stepfather is a grey and slightly flabby man working as a truck driver. He is <<fatherAge>> years. Your mother divorced your father and married Vladimir Mikhailovich when you were one year. You do not remember your real father on account of never having seen him.'
+'Your stepfather is a greying, slightly flabby man working as a truck driver. He is <<fatherAge>> years old. Your mother divorced your father and married Vladimir Mikhailovich when you were only one year old. You''ve never seen your biological father since the divorce, and as such you have no mamory of him.'
 
 dynamic $fatherRep
 
 act 'Move away':gt $loc, $metka
 
+!--------------------------------father comments on appearance changes------------------------------------------------
+! hair color
+if hcolfronce = 0:
+	hcolfatherremember = hcol
+	hcolfronce = 1
+end
+if hcolfatherremember ! hcol:
+	if hcol = 0: $texthcol = 'Decided to become a brunette?'
+	if hcol = 1: $texthcol = 'Or, rather, un-dyed. Decided to go back to your natural color?'
+	if hcol = 2: $texthcol = 'Decided to become a brazen redhead?'
+	if hcol = 3: $texthcol = 'Decided to become a blonde?'
+	'Your stepfather''s eyes widen as he notices your hair. "Oh, I see you dyed your hair! <<$texthcol>>"'
+	hcolfatherremember = hcol
+end
+
+! tongue piercing
+if pirsA >= 1 and pirsAfather=0 and pirsadaytalk!daystart:
+	pirseerand=rand(1,100)
+	pirsadaytalk=daystart
+	if pirseerand>=75:
+		'Your stepfather glances at your mouth for a moment as you greet him. "<<$nickname>>, do you have something shiny in your mouth?"'
+		act'Nothing':
+			cla
+			'You shake your head: "Nothing!" - and then turn away before he can get a good look at your tongue piercing.'
+			act '<B>Move away</B>':gt $loc, $metka
+		end
+		
+		act'Show pierced tongue':
+			cls
+			pirsAfather=1
+			gs'stat'
+			'<center><img src="images/picb/pirsA.jpg" ></center>'
+			'You open your mouth and stick out your tongue, showing him your piercing.'
+			if TouchedByFather=0:'Stepfather shakes his head: "<<$nickname>>, tongue piercings are only for lewd women who use their mouth to please men."'
+			if TouchedByFather>0:'Stepfather grins: "Does it help you work your mouth better?"'
+			act '<B>Continue</B>':gt $locM, $metkaM
+		end
+		exit
+	end
+end
+
+! lip piercing
+if pirsB = 1 and pirsBfather=0 and pirsbdaytalk!daystart:
+	pirsadbytalk=daystart
+	'Your stepfather takes a long look at your mouth - specifically at your new piercing: "And you got that why?"'
+	act'I just like them':
+		cls
+		pirsBfather=1
+		gs'stat'
+		'<center><img src="images/picb/pirsB.jpg" ></center>'
+		'You shrug your shoulders and say you just like the way lip rings look, so you decided to get one yourself.'
+		if TouchedByFather=0:
+			'Your stepfather shakes his head: "You kids, always adding new holes to yourselves..."'
+		end
+		if TouchedByFather>0:
+			'Your stepfather grins: "Alright, I''l admit it does look sexy."'
+		end
+		act '<B>Continue</B>':gt $locM, $metkaM
+	end
+	exit
+end
+
+! earrings
+if pirsC = 1 and pirsCfather=0:
+pirsCfather=1
+'Your stepfather looks at your ears, noting your earrings: "I see you got your ears pierced? Your earrings are very cute."'
+end
+
+! nose ring
+if pirsD = 1 and pirsDfather=0:
+pirsDfather=1
+'Your stepfather looks a bit shocked at your nose ring: "Jesus, <<$nickname>>, what is- why?! I understand putting a ring in a bull''s nose to lead them by, but a person - you? No reason for that!"'
+end
+
+! eyebrow piercing
+if pirsE = 1 and pirsEfather=0:
+pirsEfather=1
+'Your stepfather looks surprised when he sees your eyebrow piercing: "<<$nickname>>, why would you need that stuff on your eyebrow?" He shakes his head in exasperation. "Youth these days..."'
+end
+
+! lip tattoo
+if tatlip>0 and fatherTatLip=0 and father>=60:
+	act 'Show tattoo on the lip':
+		cls
+		fatherTatLip=1
+		minut+=1
+		gs'stat'
+		'<center><img src="images/picBody/tatlip<<tatlip>>.jpg" ></center>'
+		if tatlip = 2: $textFatherTatLip = 'A tattoo in your lip?! That can''t have felt good... it is cute, though.'
+		if tatlip ! 2: $textFatherTatLip = 'That''s crazy! Why would you get something like that written on you, much less there?! No one would even think of doing that when I was your age.'
+		'You wrenched his lip and showing a tattoo on the inside of the lip. Stepfather looks surprised look: "<<$textFatherTatLip>>"'
+		act '<B>Further</B>':gt $locM, $metkaM
+	end
+end
+
+!!----------------------------------------end reaction block---------------------------------------------
+
 if week < 6:
 	if father_go = 0 and hour >= 21:
-		'"All, Light, enough for today".'
+		'"Alright <<$nickname>>, it''s getting late, I need to get to bed. I''ll see you tomorrow."'
 		cla
 		act '<B>Move away</B>':gt $loc, $metka
 		exit
@@ -25,12 +122,12 @@ if week < 6:
 end
 if week >= 6:
 	if father_go = 0 and hour >= 21:
-		'"All, Light, enough for today".'
+		'"Alright <<$nickname>>, it''s getting late, I need to get to bed. I''ll see you tomorrow."'
 		cla
 		act '<B>Move away</B>':gt $loc, $metka
 		exit
 	elseif father_go = 1 and hour >= 16:
-		'I have to go to the garage.'
+		'Sorry, <<$nickname>>, I have to go to the garage.'
 		cla
 		act '<B>Move away</B>':gt $loc, $metka
 		exit
@@ -44,7 +141,7 @@ act 'Chat':
 	gs 'stat'
 	'<center><B><font color=maroon>Stepfather Vladimir Skryabin</font></B></center>'
 	'<center><img src="images/qwest/alter/father.jpg"></center>'
-	'Stepfather sitting on the couch and watching TV. You sat next to him on the sofa'
+	'Your stepfather is sitting on the couch watching TV. You sit down next to him.'
 
 	dynamic $fatherRep
 	act '<B>Further</B>':gt $locM, $metkaM
@@ -73,13 +170,13 @@ act 'Ask for money':
 	gs 'stat'
 	'<center><b><font color="maroon">Stepfather Vladimir Mikhailovich Scriabin</font></b></center>'
 	'<center><img src="images/qwest/alter/father.jpg"></center>'
-	'Stepfather sitting on the couch and watching TV. You sat next to him on the sofa'
+	'Your stepfather is sitting on the couch watching TV. You sit down next to him.'
 	dynamic $fatherRep
 	act 'Move away':gt $loc, $metka
 
 	''
 	if fatherPayDay = daystart:
-		'Built up a face sweetly, you began to beg money from his stepfather, what he just shook his head wearily: - "No, Sveta. I`ve already given money. Let us call it a day."'
+		'Built up a face sweetly, you began to beg money from his stepfather, what he just shook his head wearily: - "No, <<$nickname>>. I`ve already given money. Let us call it a day."'
 	else
 		if father<=40 and TouchedByFather=0 or vnesh<=15 and TouchedByFather=0:
 			'You asked for money stepfather, But in response, he only shook his head: - "All my mother`s salary bear, Come here and ask her."'
@@ -129,7 +226,7 @@ act 'Ask for money':
 			end
 
 			if FatherMolest>1:
-				'- No, Sveta. I`ve already said,. - All appearances, the money from him now, you obviously did not get.'
+				'- No, <<$nickname>>. I`ve already said,. - All appearances, the money from him now, you obviously did not get.'
 			end
 		end
 	end
@@ -185,7 +282,7 @@ act 'Ask, as he outfit':
 
 	''
 	if father<=40 or vnesh<=15:
-		'You asked stepfather evaluate your outfit. It, that-the unhappy muttering under his breath, You waved a hand: - Do not bother, Sveta, I`m busy.'
+		'You asked stepfather evaluate your outfit. It, that-the unhappy muttering under his breath, You waved a hand: - Do not bother, <<$nickname>>, I`m busy.'
 	else
 		'You, coquettishly smiling stepfather, We were asked to rate your outfit.'
 		dynamic $din_father_hapri
@@ -331,10 +428,10 @@ end
 
 $fatherRep = {
 	if father<20:'You stepfather terrible scandal.'
-	if father>=20 and father<40:'You stepfather tensions.'
-	if father>=40 and father<60:'You have a normal relationship with his stepfather.'
-	if father>=60 and father<80:'You have a good relationship with his stepfather.'
-	if father>=80:'You have a great relationship with his stepfather.'
+	if father>=20 and father<40:'Your relationship with your stepfather is rather strained.'
+	if father>=40 and father<60:'You have a normal relationship with your stepfather.'
+	if father>=60 and father<80:'You have a good relationship with your stepfather.'
+	if father>=80:'You have a great relationship with your stepfather.'
 	''
 }
 
