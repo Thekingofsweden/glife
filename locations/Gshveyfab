@@ -1,13 +1,116 @@
 # Gshveyfab
 $metka = $ARGS[0]
 $loc = $CURLOC
-clr
-gs 'stat'
-'<center><h4>Garment factory named Paris commune</h4></center>'
-'<center><img src="images/pic/Gshveyfab.jpg"></center>'
-'near <a href="exec:minut += 15 & gt ''gorodok''">the front door</a> is communicating factory which sits protection.'
 
-act 'Get_Away':gt 'gorodok'
+if $ARGS[0] = 'start':
+	cla
+	*clr
+	minut += 10
+	gs'stat'
+	
+	'<center><B>Garment factory named."Paris Commune"</B></center>'
+	'<center><img src="images/pic/Gshveyfab.jpg"></center>'
+	'Local garment factory, one of the few company towns you Pavlovsky.'
+	if hour => 8 and hour =< 20 and week => 1 and week <= 5:
+		'Near <a href="exec:minut += 15 & GT ''Gshveyfab'', ''enter''">the front door</a> is communicating factory which sits protection.'
+	elseif hour < 8 or hour > 20 or week > 5:
+		'Checkpoint factory is now closed.' 
+		'Working days Mon-Fri:'
+		'First change - with 8 to 16 hours.'
+		'Second shift - with 16 to 20 hours.'
+	end
+	act '<B>Escape</B>':gt'gorodok'
+end
+
+if $ARGS[0] = 'enter':
+CLOSE ALL
+	cla
+	*clr
+	minut += 2
+	gs'stat'
+	'<center><B>Garment factory named."Paris Commune"</B></center>'
+	'<center><img src="images/qwest/alter/fabrika/pusto.jpg" ></center>'
+	'Local garment factory, one of the core enterprises of your Pavlovsky.'
+	'On the wall hangs a work schedule:'
+	'First change - with 8 to 16 hours.'
+	'Second shift - with 16 to 20 hours.'
+	''
+	if workFabrika = 0 and age => 16 and age < 18:'You can get a floor on rates <a href="exec:minut += 15 & GT ''Gshveyfab'', ''job_start''">work</a>.'
+	if work = 0 and workFabrika = 0 and age => 18:'You can get a <a href="exec:minut += 15 & GT ''Gshveyfab'', ''job_start''">work</a>.'
+	if workFabrika = 1 and week => 1 and week <= 5 and hour = 8 or workFabrika = 1 and week => 1 and week <= 5 and hour = 16 and age => 16 and age < 18:
+		'You can go to change.'
+		act 'Exit replaced': gt'Gshveyfab','job'
+	end
+	if workFabrika = 1 and week => 1 and week <= 5 and hour = 8 or workFabrika = 1 and week => 1 and week <= 5 and hour = 16 and age => 18: 
+		'You can go to change.'
+		act 'Exit replaced': gt'Gshveyfab','job'
+	end
+	if workFabrika = 1:
+		'You can retire from work without pay waste changes'
+		act 'Dismissed':workFabrika = 0 & work = 0 & gt 'Gshveyfab','enter'
+	end
+	act '<B>Escape</B>':gt'Gshveyfab','start'
+end
+
+if $ARGS[0] = 'job_start':
+	cla
+	*clr
+	minut += 2
+	gs'stat'
+	'<center><B>Cabinet chief of department</B></center>'
+	'<center><img src="images/qwest/alter/fabrika/nachalnik.jpg" ></center>'
+	''
+	'You go to Stepan Sergeevich, Chief shop and ask for a job.'
+	if age => 16 and age < 18 and workFabrika = 0:
+		'- Of course, sit down. The work is not easy and meticulously. No special knowledge is not necessary, in place will deal with all. Because you are not yet an adult, it can work only half of the day for half rate, this 200 rubles per shift. Pozvrosleesh - Translated to the full. Naturally, we only official trudoustrostvo, all documents. Usual we change on weekdays 8 to 16, but you will part with 16 to 20. If you rack up more than three absences in a month, then you get fired. Well, suits?'
+			act 'Apply for job':
+				cla
+				work = 1
+				workFabrika = 1
+				smenaFabrika = 0
+				FabrikaProgul = 0
+
+				'You gave Stepan Sergeyevich work book. He took it and remind you: - Come in on weekdays 16 hours.'
+
+				act 'Move away':gt'Gshveyfab', 'enter'
+			end	
+	elseif age => 18 and workFabrika = 0:
+		'- Of course, sit down. The work is not easy and meticulously. No special knowledge is not necessary, in place will deal with all. Naturally, we only official trudoustrostvo, all documents. Usual we change on weekdays 8 to 16, 400 rubles per shift. If you rack up more than three absences in a month, then you get fired. Well, suits?'
+			act 'Apply for job':
+				cla
+				work = 1
+				workFabrika = 1
+				smenaFabrika = 0
+				FabrikaProgul = 0
+
+				'You gave Stepan Sergeyevich work book. He took it and remind you: - Come in on weekdays 8 hours.'
+
+				act 'Move away':gt'Gshveyfab', 'enter'
+			end  
+	end
+	act 'Move away':gt'Gshveyfab', 'enter'
+end
+
+if $ARGS[0] = 'job':
+	cla
+	*clr
+	FabrikaProgul -= 1
+	if FabrikaProgul < 0: FabrikaProgul = 0
+	if age => 16 and age < 18:
+		smenaFabrika += 1
+		hour = 20
+	end 
+	if age => 18: 
+		smenaFabrika += 2
+		hour = 16
+	end 
+	gs'stat'
+	'<center><B>Garment factory named."Paris Commune"</B></center>'
+	'<center><img src="images/qwest/alter/fabrika/smena.jpg" ></center>'
+	''
+	'You practice his shift at the factory.'
+	act '<B>Escape</B>':gt'gorodok'
+end
 
 --- Gshveyfab ---------------------------------
 

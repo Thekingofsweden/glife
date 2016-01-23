@@ -30,52 +30,7 @@ gs 'stat'
 if workDolg <= 0:act 'Leave':gt 'sauna'
 if workDolg > 0:act 'Go to your room':gt 'saunaroom'
 
-if hour > 8 and hour < 12 and whorehour ! hour:
-	whorehour = hour
-	klientrand = rand(0, 100)
 
-	if klientrand >= 80:saunaWorkKlient = 1
-elseif hour >= 12 and hour < 16 and whorehour ! hour:
-	whorehour = hour
-	klientrand = rand(0, 100)
-
-	if klientrand >= 50:saunaWorkKlient = 1
-elseif hour >= 16 and hour < 21 and whorehour ! hour:
-	whorehour = hour
-	klientrand = rand(0, 100)
-
-	if klientrand >= 10:saunaWorkKlient = 1
-elseif hour >= 21 and whorehour ! hour:
-	whorehour = hour
-	saunaWorkKlient = 1
-end
-
-if saunaWorkKlient = 1:
-	cls
-	gs 'stat'
-	'<center><img src="images/etogame/saunawhore.jpg"></center>'
-	'A clients has arrived at the sauna, the girls line up so that the customer can choose his favorite.'
-
-	if mop > 1 and hapri = 1 and sweat <= 0 and leghair <= 0 and lobok <= 0:
-		whorerand = rand(0, 25)
-
-		if whorerand < vnesh:
-			'Client jabs a finger at you, "This one."'
-
-			act 'Go to the sauna with client':saunaWorkKlient = 0 & gt 'saunawhore'
-		else
-			'Client examines you closely but turns away to chose another girl.'
-
-			act 'Leave':saunaWorkKlient = 0 & gt $curloc
-		end
-	else
-		'Looking at you the client immediately turns away and choses another girl.'
-
-		act 'Leave':saunaWorkKlient = 0 & gt $curloc
-	end
-
-	exit
-end
 
 if workDolg > 0 and vnesh = -10 or workDolg > 0 and SLomka > 0:
 	cls
@@ -90,13 +45,52 @@ if workDolg > 0 and vnesh = -10 or workDolg > 0 and SLomka > 0:
 end
 
 act 'Sit on the couch (1:00)':
-	cls
-	minut += 60
-	gs 'stat'
-	'<center><img src="images/etogame/saunawork.jpg"></center>'
-	'You spend an hour sitting on the couch waiting for customers.'
+	if mop > 1 and hapri = 1 and sweat <= 0 and leghair <= 0 and lobok <= 0:
+		cls
+		minut += 60
+		gs 'stat'
+		'<center><img src="images/etogame/saunawork.jpg"></center>'
+		'You spend an hour sitting on the couch waiting for customers.'
 
-	act 'Leave':gt $curloc
+		saunaWorkKlient = 0
+
+		if hour >= 21:
+			saunaWorkKlient = 1
+		elseif hour >= 16:
+			if rand(0, 100) >= 10:saunaWorkKlient = 1
+		elseif hour >= 12:
+			if rand(0, 100) >= 50:saunaWorkKlient = 1
+		elseif hour > 8:
+			if rand(0, 100) >= 80:saunaWorkKlient = 1
+		end
+
+		if saunaWorkKlient = 1:
+			cls
+			gs 'stat'
+			'<center><img src="images/etogame/saunawhore.jpg"></center>'
+			'A clients has arrived at the sauna, the girls line up so that the customer can choose his favorite.'
+
+			if rand(0, 30) < vnesh:
+				'Client jabs a finger at you, "This one."'
+
+				act 'Go to the sauna with client':gt 'saunawhore'
+			else
+				'Client examines you closely but turns away to chose another girl.'
+
+				act 'Leave':gt $curloc
+			end
+		else
+			'Looking at you the client immediately turns away and choses another girl.'
+
+			act 'Leave':gt $curloc
+		end
+
+	else
+		'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and your hair looking nice. Go and sort yourself out, now!"'
+		act 'Leave':gt $curloc
+	end
+	
+	exit
 end
 
 if clenerSauna ! daystart:
@@ -131,6 +125,7 @@ if clenerSauna2 ! daystart:
 	end
 end
 
+
 act 'Take a shower (0:15)':
 	cla
 	*clr
@@ -146,7 +141,9 @@ act 'Take a shower (0:15)':
 	'<center><img src="images/pics/dush.jpg"></center>'
 	'You go into the bathroom and turn on the shower. Lather your body and wash it off in the shower.'
 
-	act 'Get razor':dynamic $saunabrit
+	if leghair > 0 or lobok > 0:
+		act 'Get razor':dynamic $saunabrit
+	end
 
 	if horny >= 90:
 		act 'Point shower at pussy':
@@ -183,7 +180,11 @@ end
 
 $saunabrit = {
 	cls
-	'You rinse the razor blade it will be good for another <<stanok>> uses.'
+	if workDolg > 0:
+		'There are a handful of cheap razors you can use. Atleast they don''t make you pay for them, but only because they don''t know who has used which blades.'
+	else
+		'You rinse the razor blade it will be good for another <<stanok>> uses.'
+	end
 
 	if leghair > 0:
 		act 'Shave your legs (0:15)':
@@ -192,6 +193,7 @@ $saunabrit = {
 			minut += 15
 			leghair = -5
 			horny += 5
+			if workDolg = 0:stanok -= 1
 			'<center><img src="images/pics/shave.jpg"></center>'
 			'You lathered up and shaved the hair off them.'
 
@@ -206,6 +208,7 @@ $saunabrit = {
 			minut += 15
 			lobok = -5
 			horny += 5
+			if workDolg = 0:stanok -= 1
 			'<center><img src="images/pics/shave3.jpg"></center>'
 			'You lathered your pubis, then shaved all the hair from it.'
 
@@ -215,6 +218,22 @@ $saunabrit = {
 
 	act 'Get out and get dressed':gt $curloc
 }
+
+if mesec > 0 and isprok = 0 and workdolg > 0:
+	act 'Use a tampon (0:05)':
+		cla
+		*clr
+		isprok = 1
+		minut += 5
+		manna -= 5
+		workDolg += 10
+
+		'<center><img src="images/pics/wash3.jpg"></center>'
+		'You use a tampon, it will add another 10rub to your debt, but the alternative is unpleasant.'
+
+		act 'Finish':gt $locM, $metkaM
+	end
+end
 
 --- saunawork ---------------------------------
 

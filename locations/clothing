@@ -25,6 +25,27 @@ if $ARGS[0] = 'view_clothing_list':
 	!! ARGS 2 - brothel flag (brothel)
 
 	act 'Leave':gt $loc, $metka
+	act 'Menu debug':
+	
+		delobj 'Character'
+		delobj 'See'
+		delobj 'Others'
+		delobj 'Menu'
+		
+		delobj '<img src="images/pic/icon/Pers.png">'
+		delobj '<img src="images/pic/icon/look.png">'
+		delobj '<img src="images/pic/icon/Proch.png">'
+		delobj '<img src="images/pic/icon/menu.png">'
+		delobj '<img src="images/pic/icon/Phone.png">'
+		
+		addobj '<img src="images/pic/icon/Pers.png">'
+		addobj '<img src="images/pic/icon/look.png">'
+		addobj '<img src="images/pic/icon/Proch.png">'
+		addobj '<img src="images/pic/icon/menu.png">'
+		addobj '<img src="images/pic/icon/Phone.png">'
+		
+		gt 'clothing', 'view_clothing_list'
+	end
 
 	if $ARGS[1] = 'wardrobe':
 		if $clothingworntype ! 'nude':act 'Strip':gs 'clothing', 'strip' & gt $loc, $metka
@@ -187,15 +208,62 @@ if $ARGS[0] = 'view_clothing_item':
 				dynamic 'RESULT = <<$ARGS[2]>>B[<<ARGS[3]>>]'
 				if RESULT < bedra - 8:
 					'This item is too small for you to wear.'
+					if poSkill >= 100:
+						cla
+						'You can resize this thanks to your sewing skill.'
+						minut += 15
+						act 'Resize':
+							dynamic '<<$ARGS[2]>>B[<<ARGS[3]>>] = bedra'
+							gt 'clothing', 'view_clothing_list', $ARGS[1]
+						end
+						act 'Leave in closet':
+							gt 'clothing', 'view_clothing_list', $ARGS[1]
+						end
+					end
 					exit
 				elseif RESULT > bedra + 8:
 					'This item is too large for you to wear.'
+					if poSkill >= 100:
+						cla
+						'You can resize this thanks to your sewing skill.'
+						minut += 15
+						act 'Resize':
+							dynamic '<<$ARGS[2]>>B[<<ARGS[3]>>] = bedra'
+							gt 'clothing', 'view_clothing_list', $ARGS[1]
+						end
+						act 'Leave in closet':
+							gt 'clothing', 'view_clothing_list', $ARGS[1]
+						end
+					end
 					exit
 				end
 			end
 		end
 
-		act 'Wear':gs 'clothing', 'wear', $ARGS[2], ARGS[3] & gt 'clothing', 'view_clothing_list', $ARGS[1]
+		! WD: Bimbo look
+		act 'Wear':
+			gs 'clothing', 'wear', $ARGS[2], ARGS[3]
+
+			! WD: Bimbo look
+			if hcol = 3 and (exhibi + lip + skin + mop + tits) >= 15 and (ski + glamur + sexual) >= 1:
+				cla
+				*clr
+				'<center><img src="images/etogame/cloth_bimbo.jpg"></center>'
+				'Do you want to be dressed looking like a bimbo? You will not be taken seriously.'
+
+				act 'Dress like a Bimbo':
+					cloth_vid = 1
+					odevnesh = odevnesh * 2
+					gt 'clothing', 'view_clothing_list', $ARGS[1]
+				end
+				act 'Dress Normally':
+					gt 'clothing', 'view_clothing_list', $ARGS[1]
+				end
+			else
+				gt 'clothing', 'view_clothing_list', $ARGS[1]
+			end
+		end
+		
 	elseif $ARGS[1] = 'sell':
 		act 'Keep item':gt 'clothing', 'view_clothing_list', $ARGS[1]
 
@@ -243,6 +311,11 @@ end
 
 if $ARGS[0] = 'strip':
 	if cumfrot > 0:cumfrot = 0
+	if cloth_vid = 1:
+		last_vid = 1
+	else
+		last_vid = 0
+	end
 	$lastwornclothingtype = $clothingworntype
 	lastwornclothingnumber = clothingwornnumber
 	$clothingworntype = 'nude'
@@ -253,6 +326,10 @@ if $ARGS[0] = 'strip':
 	ofclo = 0
 	sexual = 0
 	odevnesh = 0
+	! WD: Bimbo look
+	cloth_vid = 0
+	exhibiHideNewCloth = 0
+
 end
 
 if $ARGS[0] = 'wear':
@@ -310,6 +387,7 @@ end
 
 if $ARGS[0] = 'wear_last_worn':
 	gs 'clothing', 'wear', $lastwornclothingtype, lastwornclothingnumber
+	if last_vid = 1:cloth_vid = 1
 end
 
 --- clothing ---------------------------------

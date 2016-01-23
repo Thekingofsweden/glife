@@ -2,8 +2,17 @@
 if $ARGS[0] = 'start':
 	cla
 	*clr
-	gs 'parkivent'
-	gs 'parkdin'
+	CLOSE ALL
+	if sound = 0:
+		if month >=11 and month <= 12 or month >=1 and month <=3:
+			if hour >= 8 and hour <= 23: PLAY 'sound/street2.mp3',30 & PLAY 'sound/zima.mp3',30
+			if hour >= 0 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/Park.mp3',30 & PLAY 'sound/street_leto.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+		end
+	end
+	
 
 	$torchki = {
 		cls
@@ -16,6 +25,10 @@ if $ARGS[0] = 'start':
 	}
 
 	$sexloc = $CURLOC
+	
+	if WalkInsidePark = 0:
+		WalkInsidePark = 1
+	end
 	minut += 30
 	clr
 	gs 'stat'
@@ -68,27 +81,26 @@ if $ARGS[0] = 'start':
 	act 'Walk in the park (1:00)':
 		cla
 		minut += 60
+		gt 'parkdin'
+	end
 
-		if hour > 7 and hour < 21:
-			parkrand = rand(0, 20)
+	
+	act 'Sit on the bench':
+		cla
+		*clr
+		'<center><img src="images/lmps/сидит.jpg"></center>'
+		waiting = input ("How many minutes to sit down? (Not more 120 minutes)")
 
-			if parkrand < 10 and parkrand > 0:
-				dynamic $parkrandivdin
-				exit
-			end
-
-			if parkrand > 14:
-				dynamic $parkrandivdin
-				exit
-			end
+		if waiting <= 0 or waiting > 120:
+			minut = minut + 15
+		elseif waiting > 0 and waiting <= 120:
+			minut = minut + waiting
+			manna = manna + 10
+			willpower = willpower + 10
+			if son < 30:son += 2
 		end
-
-		manna += 10
-		willpower += 10
-		gs 'stat'
-		'You take a relaxing and refreshing walk through the park, trying to figure out the meaning of life.'
-
-		act 'Finish the walk':gt 'park', 'start'
+		
+		act 'Consult a watch':gt'park','start'
 	end
 
 	if pusher = 1 and hour >= 6 and hour <= 21:
@@ -248,6 +260,8 @@ if $ARGS[0] = 'luna':
 					fat += 2
 					'Finally you got something to drink, even if it''s just a bottle of lemonade.'
 					water += 20
+					cumlip = 0
+					fbreath = 0
 				end
 
 				act 'Move away':gt 'park', 'luna'
@@ -426,6 +440,7 @@ if $ARGS[0] = 'whore':
 			set minut = minut + 30
 			'<center><img src="images/etogame/parkex.jpg"></center>'
 			'You shoot the robe and walk into some pantyhose, as though-forgot to wear a skirt.'
+			act 'Go back to the park':gt 'park', 'start'
 		end
 	end
 	act 'Go back to the park':gt 'park', 'start'

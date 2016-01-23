@@ -1,4 +1,8 @@
 # korrPar
+CLOSE ALL
+if sound = 0:PLAY 'sound/korr.mp3',30
+music_on = 0
+
 $metkaM = $ARGS[0]
 $locM = $CURLOC
 $metka = $ARGS[0]
@@ -31,14 +35,25 @@ act 'Going to the living room':gt 'sitrPar'
 act 'Go to the bathroom':gt 'vanrPar'
 act 'Go to the kitchen':gt 'kuhrPar'
 
-act '<b>Go to the street</b>':
+act '<font color = maroon>The entrance</font>':
 	if $clothingworntype ! 'nude':
-		gt 'gorodok'
+		gt'pod_ezd','etaj_2'
 	else
-		msg 'You are not dressed.'
+		msg'<b><font color = red>You need to get dressed.</font></b>'
 		gt $curloc
 	end
 end
+
+
+act '<font color = maroon><b>Go to the street</b></font>':
+	if $clothingworntype ! 'nude':
+		gt'gorodok'
+	else
+		msg'<b><font color = red>You need to get dressed.</font></b>'
+		gt $curloc
+	end
+end
+
 '<center><b><font color="maroon">corridor</font></b></center>'
 '<center><img src="images/qwest/alter/korrPar.jpg"></center>'
 'On the wall near the front door hanging <a href="exec:gt ''mirror'', ''start''">mirror</a>.'
@@ -47,10 +62,14 @@ if palto > 0:'Hanging on the hook <<$palto>>'
 
 gs 'family'
 
+if indorf = 1:'With your parents away visiting your grandparents, the appartment seems quite and empty.'
+
 if hour >= 16 and hour <= 20 and indorf = 0:
-	if artemvbrosvid = 1 and artemhakday ! daystart and motherQW < 2 and mothervideotalk = 0:
+	if artemvbrosvid = 1 and artemhakday ! daystart and motherQW < 2 and mothervideotalk = 0 or BrotherNo = 1 and BrotherNoDay ! day:
 		cls
 		BJvideoPublic = 1
+		BrotherNo = 0
+		BrotherNoDay = day
 		manna = 0
 		gs 'stat'
 		'<center><b><font color="maroon">mom</font></b></center>'
@@ -135,7 +154,39 @@ if hour >= 16 and hour <= 20 and indorf = 0:
 		'<center><b><font color="maroon">mom</font></b></center>'
 		'<center><img src="images/qwest/alter/mother.jpg"></center>'
 
-		if schoolPredupr = 2:
+		if belgangQW=10000:
+			belgangQW=10001
+			schoolprogul = 0
+			GspravkaT = 2
+			motherKnowSpravka = 1
+			'"Oh, my darling <<$name>>, where have you been? We have been so worried."'
+			'You go into the kitchen with your mom and spend sometime explaining what happened to you, many of the details are too difficult to talk about and you cry and hug.'
+			'Your mom tells you she will sort out everything with the school and makes you a bowl of chicken soup.'
+			if energy >= 30:
+				'You are too full to eat it.'
+			elseif energy >= 20 and energy < 30:
+				if water < 20:
+					water += 20
+					cumlip = 0
+					fbreath = 0
+				end
+				fat += 3
+				energy += 10
+				'You have some of it, but can''t finish it.'
+			elseif energy < 20:
+				if water < 20:
+					water += 20
+					cumlip = 0
+					fbreath = 0
+				end
+				energy += 20
+				'You gladly eat it all.'
+			end
+
+			act 'Leave':gt 'kuhrPar'
+
+			exit
+		elseif schoolPredupr = 2:
 			schoolPredupr = 3
 			SchoolBlock = 1
 			ParHomeBlock = 1
@@ -185,7 +236,42 @@ end
 :markboyfrendcall2
 
 if Gcall > 0:'In the hallway rings <a href="exec:gt ''gtelefon''">phone</a>.'
-if motherWorry = 1:gt 'mother'
+if motherWorry = 1 and indorf = 0:
+	gt'mother'
+elseif motherWorry = 1 and indorf > 0:
+	motherWorry = 0
+end
+
+if notathomesleep > 7 and hour >= 16 and  hour < 21 and mother_go = 0:
+	notathomesleep = 0
+	cls
+	if mother < 40:
+		'<center><b><font color = maroon>Mom</font></b></center>'
+		'<center><img src="images/qwest/alter/mother.jpg"></center>'
+		'In the corridor you come across a mother: - Watch, who was. Permanently?'
+		act '<B>Move away</B>':gt 'korrPar'
+	end
+	if mother >= 40:
+		'<center><b><font color = maroon>Mom</font></b></center>'
+		'<center><img src="images/qwest/alter/mother.jpg"></center>'
+		'In the corridor you come across a mother: - What a surprise! My docha arrived, I missed.'
+		act '<B>Move away</B>':gt 'korrPar'
+	end
+end
+
+!------------------------------------------!
+!gg whore if she had given herself to boys in the stairwell, then customers hammering at the door: !
+gs'pod_whore'
+pod_client = RAND(0,100)
+if pod_whore_countQW <= 15:
+	if pod_client <= 5 and hour >= 10 and hour <= 23 and gorslut >=6 and podwhoreQW >=3: 'Who-It is ringing your door: <a href="exec: dynamic $pod_client_talk">open</a>'	
+elseif pod_whore_countQW > 15:
+	if pod_client <= 20 and hour >= 10 and hour <= 23 and gorslut >=6 and podwhoreQW >=3: 'Who-It is ringing your door: <a href="exec: dynamic $pod_client_talk">open</a>'
+end	
+!'<<$pod_client>>'
+!==========================================!
+
+if rand (0,2) ! 0:dynamic $mobile_check
 
 --- korrPar ---------------------------------
 

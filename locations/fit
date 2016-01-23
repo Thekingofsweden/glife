@@ -1,4 +1,5 @@
 # fit
+CLOSE ALL
 if $ARGS[0] = 'start':
 	cla
 	clr
@@ -32,7 +33,7 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if abonement > 0 and fitday ! daystart:
+	if abonement > 0 and fitday ! daystart or razdtumbler = 1:
 		act 'Goto dressing room':
 			cla
 			frost = 0
@@ -63,7 +64,7 @@ if $ARGS[0] = 'dressing room':
 	! if razdrand = 0 and tanznak = 0 and tanday ! daystart:
 	if tanznak = 0 and tanday ! daystart:
 		tanday = daystart
-		'In the locker room you notice <a href="exec:gt ''fitgirl''">cute girl</a>.'
+		'In the locker room you notice <a href="exec:gt ''fit'', ''fitgirl''">cute girl</a>.'
 	elseif tanznak = 2:
 		cls
 		tanznak = 3
@@ -125,18 +126,23 @@ if $ARGS[0] = 'dressing room':
 
 	if razdtumbler = 1 and sport > 0:
 		act 'Go to the gym':
-		cla
-		gt 'fit', 'gym'
+			cla
+			gt 'fit', 'gym'
+		end
+
+		act 'Go to the dance studio':
+			cla
+			gt 'danceclass'
+		end
 	end
 
-	act 'Go to the dance studio':
-		cla
-		gt 'danceclass'
-		end
-	elseif razdtumbler = 0 or sport = 0:
-		act 'Exit the locker room':
-			cla
+	act 'Exit the locker room':
+		if $clothingworntype ! 'nude':
 			gt 'fit', 'start'
+		else
+			cla
+			msg'<b><font color = red>You need to get dressed.</font></b>'
+			act 'Return': gt 'fit', 'dressing room'
 		end
 	end
 end
@@ -218,6 +224,7 @@ if $ARGS[0] = 'gym':
 	*clr
 	minut += 5
 	razdtumbler = 0
+	sportzalrand = RAND(0,20)
 	gs 'stat'
 	fcolor = rgb(0, 0, 0)
 	bcolor = rgb(255, 255, 255)
@@ -226,14 +233,20 @@ if $ARGS[0] = 'gym':
 	'<center><img src="images/etogame/fit.jpg"></center>'
 	'In the fitness center there are a lot of different classes and clubs, designed to improve physical development.'
 
+	if StoryLine = 1:
+		if hour >= 10 and hour < 12 and week=7 and centr=1: 'In the hall you saw  <a href="exec:GT ''VolleyTrenCentr''">Mikhail Nikolaevich</a> talking with a strange man.'
+		if hour >= 10 and hour < 12 and week=7 and centr=2: 'In the hall you saw  <a href="exec:GT ''VolleyTrenCentr''">Chinese Guanggu'
+	end
+
 	act 'Aerobics (Burn fat)':
 		cla
 		*clr
 		minut += 120
 		fat -= 10
-		reakt += rand(1, 3)
+		react += rand(1, 3)
 		manna -= 5
 		sweat += 3
+
 		'<center><img src="images/etogame/fit1.jpg"></center>'
 		'You do very vigorous exercises to the music, and burn some fat.'
 
@@ -248,6 +261,7 @@ if $ARGS[0] = 'gym':
 		fat -= 1
 		manna -= 5
 		sweat += 3
+
 		'<center><img src="images/etogame/fit2.jpg"></center>'
 		'You pump iron, building strength.'
 
@@ -477,8 +491,6 @@ if $ARGS[0] = 'kickboxing':
 	act 'Sparing (training bout in the ring)':
 		cla
 		*clr
-		round = 1
-		minround = 1
 		'You need to choose a partner for sparring'
 
 		act 'Pick a random partner':
@@ -486,6 +498,11 @@ if $ARGS[0] = 'kickboxing':
 			manna -= 5
 			fat -= 4
 			sweat += 3
+			pointKik = 0
+			pointKikV = 0
+			round = 1
+			minround = 0
+
 			strenV = rand(10, 20)
 			speedV = rand(10, 20)
 			agilV = rand(10, 20)
@@ -511,12 +528,15 @@ if $ARGS[0] = 'kickboxing':
 		'You can take part in an amateur fight.'
 
 		act 'Amateur fight':
-			round = 1
-			minround = 1
 			minut += 120
 			manna -= 5
 			fat -= 4
 			sweat += 3
+			pointKik = 0
+			pointKikV = 0
+			round = 1
+			minround = 0
+
 			razrand = rand(0, 1)
 
 			if razradKik + razrand = 0:

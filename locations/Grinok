@@ -1,6 +1,17 @@
 # Grinok
 $metka = $ARGS[0]
 $loc = $CURLOC
+CLOSE ALL
+if sound = 0:
+	if month >=11 and month <= 12 or month >=1 and month <=3:
+		if hour >= 8 and hour <= 23: PLAY 'sound/rynok.mp3',30 & PLAY 'sound/zima.mp3',30
+		if hour >= 0 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+	else
+		if hour >= 8 and hour <= 23: PLAY 'sound/rynok.mp3',30 & PLAY 'sound/street_leto.mp3',30
+		if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+	end
+end
+
 clr
 gs 'stat'
 gs 'time'
@@ -10,163 +21,240 @@ gs 'time'
 
 act 'Go back to the station':minut += 3 & gt 'vokzalG'
 
-if hour < 12 or hour > 18:
-	'There is no one in the market.'
-	if arturQW = 1 and (week = 6 or week = 7) and hour < 12:
-		act 'Wait for Arthur to arrive':hour = 12 & gt 'grinok'
-	end
-	exit
+
+if arturQW = 1 and (week = 6 or week = 7) and hour < 12:
+	act 'Wait for Arthur to arrive':hour = 12 & gt 'grinok'
 end
 
-'In the market the sellers of goods are beckoning shoppers.'
+if hour >= 8 and hour <= 18:
+	'In the market the sellers of goods are beckoning shoppers.'
 
-act 'Wander through the market':
-	cls
-	minut += 15
-	gs 'stat'
+	act 'Wander through the market':
+		cls
+		minut += 15
+		gs 'stat'
+		'You are strolling through the market looking for good deals.'
+		if intel >= 100:
+			rinmaxrand = 2
+		elseif intel >= 75 and intel < 100:
+			rinmaxrand = 4
+		elseif intel >= 50 and intel < 75:
+			rinmaxrand = 6
+		elseif intel >= 25 and intel < 50:
+			rinmaxrand = 8
+		else
+			rinmaxrand = 10
+		end
 
-	'You are strolling through the market looking for good deals.'
-	if arturKnow = 0:
-		temp = rand(0, 6)
-	else
-		temp = rand(0, 5)
+		rinevrand = RAND(0,rinmaxrand)
+		if rinevrand = 0:
+
+			if arturKnow = 0:
+				temp = rand(0, 6)
+			else
+				temp = rand(0, 5)
+			end
+
+			if temp = 0:
+				tovpay = rand(3, 8) * 100
+				'You see that cosmetics are for sale for <<tovpay>> rubles.'
+
+				if money >= tovpay:
+					act 'Buy':
+						cls
+						minut += 15
+						money -= tovpay
+						kosmetica += rand(10, 40)
+						gs 'stat'
+						gt $curloc
+					end
+				end
+			elseif temp = 1:
+				tovpay = rand(2, 5) * 100
+				'You see vitamins for sale for <<tovpay>> rubles.'
+
+				if money >= tovpay:
+					act 'Buy':
+						cls
+						minut += 15
+						vitamin += 20
+						money -= tovpay
+						gt $curloc
+					end
+				end
+			elseif temp = 2:
+				tovpay = rand(2, 8) * 10
+				'You see a booth selling condoms for <<tovpay>> rubles.'
+
+				if money >= tovpay:
+					act 'Buy':
+						cls
+						minut += 15
+						prezik += 5
+						money -= tovpay
+						gt $curloc
+					end
+				end
+			elseif temp = 3:
+				tovpay = rand(5, 10) * 100
+				'There is lip balm for sale for <<tovpay>> rubles.'
+
+				if money >= tovpay:
+					act 'Buy':
+						cls
+						minut += 15
+						lipbalm += 20
+						money -= tovpay
+						gt $curloc
+					end
+				end
+			elseif temp = 4:
+				tovpay = rand(1, 5) * 1000
+				'You see someone selling a handbag for <<tovpay>> rubles.'
+
+				if bag = 0:
+					if money >= tovpay:
+						act 'Buy':
+							cls
+							minut += 15
+							bag = 1
+							money -= tovpay
+							gt $curloc
+						end
+					end
+				else
+					'But you already have a bag, so you move on.'
+				end
+			elseif temp = 5:
+				if pornmarkonce = 0:pornmarkonce = 1
+				'Strolling through the market you accidentally wander into the far corner where they sell porn.'
+
+				act 'Go to the area with the porn':gt 'Gpornmark'
+
+			else
+				'Suddenly you hail "Hey devyushka, want tangerine skyushat?"'
+
+				act 'Look':gt 'arturRinok', 'start'
+			end
+
+		else
+			'Nothing unusual you do not come across, trash, buckets, granny gowns, sneakers, breeches and waistcoats with pockets.'
+		end
+		
+		act 'Move on':gt $curloc
 	end
 
-	if temp = 0:
-		tovpay = rand(3, 8) * 100
-		'You see that cosmetics are for sale for <<tovpay>> rubles.'
 
-		if money >= tovpay:
-			act 'Buy':
+	if pornmarkonce = 1:
+		act 'Go to the area with the porn':gt 'Gpornmark'
+	end
+
+	if arturKnow = 1 and arturQW = 0:
+		act 'Go to Arthur':gt 'arturRinok', 'start'
+	elseif arturQW = 1 and (week = 6 or week = 7):
+		if hour = 12 or hour = 13:
+			act 'Go to Arthur':gt 'arturRinok', 'work_1'
+		end
+	elseif arturQW = 2:
+		if hour = 16 and minut <= 30:
+			act 'Go to Arthur':gt 'arturRinok', 'work_2'
+		elseif hour < 16:
+			act 'Wait for Arthur to arrive':hour = 16 & minut = 0 & gt 'Grinok'
+		end
+	end
+
+	act 'Go to the book tray':
+		cls
+		minut += 15
+		gs 'stat'
+		'On the counter is a very entertaining fantasy book, which costs only 150 rubles and more are women''s novels in paperback standing 300 rubles.'
+
+		if money >= 150:
+			act 'Buy fantasy book (150 rubles)':
 				cls
 				minut += 15
-				money -= tovpay
-				kosmetica += rand(10, 40)
+				money -= 150
+				f_book += 1
 				gs 'stat'
-				gt $curloc
+				'You bought the fantasy book for 150 rubles.'
+
+				act 'Leave':gt $curloc
 			end
 		end
-	elseif temp = 1:
-		tovpay = rand(2, 5) * 100
-		'You see vitamins for sale for <<tovpay>> rubles.'
 
-		if money >= tovpay:
-			act 'Buy':
+		if money >= 300:
+			act 'Buy romance novel (300 rubles)':
 				cls
 				minut += 15
-				vitamin += 20
-				money -= tovpay
-				gt $curloc
+				money -= 300
+				w_book += 1
+				gs 'stat'
+				'You bought a romance novel for 300 rubles.'
+
+				act 'Leave':gt $curloc
 			end
 		end
-	elseif temp = 2:
-		tovpay = rand(2, 8) * 10
-		'You see a booth selling condoms for <<tovpay>> rubles.'
 
-		if money >= tovpay:
-			act 'Buy':
+		act 'Escape':gt $curloc
+	end
+
+	
+	if gobelen > 0 and gobQW = 0:
+		act'Sell ​​tapestry':
+			cls
+			gobQW = 1
+			minut += 15
+			gs'stat'
+			'You stand quietly by the entrance to the market, waiting for customers displaying your tapestry. Immediately buyers start to gather, but a fit man approaches you and says, "It is illegal to trade in the market without a traders licence, but I may be interesting in buying your tapestries, 500 rubles apiece. Come and see me at my stall."'
+			'Not wanting to get into trouble, you pack stuff away, the man has already gone, but you saw which direction so he should be easy to find.'
+			act 'Escape':gt $curloc
+		end
+	end
+
+	if gobelen > 0 and gobQW >= 1:
+		act'Sell ​​tapestry':
+			cls
+			minut += 15
+			gs'stat'
+			'You go to the man who offered to buy your tapestries for 500 rubles. You find him by his stall, smiling.'
+
+			if gobQW = 2:
+				'Roman welcomes you, all interested and businesslike, he asks what you have for sale.'
+	        end
+
+	        if gobQW = 1:
+				gobQW = 2
+				minute + 5
+				'The man greets you and introduces himself as Roman, you tell him that your name is <<$name>>. After a brief chat Roman says that he is interested in seeing what you have for sale.'
+	        end
+
+			act'Show tapestry':
 				cls
-				minut += 15
-				prezik += 5
-				money -= tovpay
-				gt $curloc
+				gobelen -= 1
+				money += 500
+				gs'stat'
+				'You show tapestry Roman and he gives you five hundred for it. You take the money and give him a tapestry.'
+				act 'Escape':gt $curloc
 			end
-		end
-	elseif temp = 3:
-		tovpay = rand(5, 10) * 100
-		'There is lip balm for sale for <<tovpay>> rubles.'
 
-		if money >= tovpay:
-			act 'Buy':
-				cls
-				minut += 15
-				lipbalm += 20
-				money -= tovpay
-				gt $curloc
-			end
-		end
-	elseif temp = 4:
-		tovpay = rand(1, 5) * 1000
-		'You see someone selling a handbag for <<tovpay>> rubles.'
-
-		if bag = 0:
-			if money >= tovpay:
-				act 'Buy':
+			if gobelen > 1:
+				act'Sell ​​all tapestries':
 					cls
-					minut += 15
-					bag = 1
-					money -= tovpay
-					gt $curloc
+					kolgob = gobelen
+					gobelen = 0
+					moneyGob = kolgob*500
+					money += moneyGob
+					gs'stat'
+					'You show tapestries novels and it gives you <<moneyGob>> rubles for them. You take the money and give him a tapestry.'
+					act 'Escape':gt $curloc
 				end
 			end
-		else
-			'But you already have a bag, so you move on.'
-		end
-	elseif temp = 5:
-		if pornmarkonce = 0:pornmarkonce = 1
-		'Strolling through the market you accidentally wander into the far corner where they sell porn.'
-
-		act 'Go to the area with the porn':gt 'Gpornmark'
-	else
-		'Suddenly you hail "Hey devyushka, want tangerine skyushat?"'
-
-		act 'Look':gt 'arturRinok', 'start'
-	end
-
-	act 'Move on':gt $curloc
-end
-
-if pornmarkonce = 1:
-	act 'Go to the area with the porn':gt 'Gpornmark'
-end
-
-if arturKnow = 1 and arturQW = 0:
-	act 'Go to Arthur':gt 'arturRinok', 'start'
-elseif arturQW = 1 and (week = 6 or week = 7):
-	if hour = 12 or hour = 13:
-		act 'Go to Arthur':gt 'arturRinok', 'work_1'
-	end
-elseif arturQW = 2:
-	if hour = 16 and minut <= 30:
-		act 'Go to Arthur':gt 'arturRinok', 'work_2'
-	elseif hour < 16:
-		act 'Wait for Arthur to arrive':hour = 16 & minut = 0 & gt 'Grinok'
-	end
-end
-
-act 'Go to the book tray':
-	cls
-	minut += 15
-	gs 'stat'
-	'On the counter is a very entertaining fantasy book, which costs only 150 rubles and more are women''s novels in paperback standing 300 rubles.'
-
-	if money >= 150:
-		act 'Buy fantasy book (150 rubles)':
-			cls
-			minut += 15
-			money -= 150
-			f_book += 1
-			gs 'stat'
-			'You bought the fantasy book for 150 rubles.'
 
 			act 'Leave':gt $curloc
 		end
 	end
-
-	if money >= 300:
-		act 'Buy romance novel (300 rubles)':
-			cls
-			minut += 15
-			money -= 300
-			w_book += 1
-			gs 'stat'
-			'You bought a romance novel for 300 rubles.'
-
-			act 'Leave':gt $curloc
-		end
-	end
-
-	act 'Leave':gt $curloc
+else
+	'There is no one in the market.'
 end
 
 --- Grinok ---------------------------------

@@ -3,6 +3,8 @@
 
 !! Main entrance
 if $ARGS[0] = 'start':
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/shop.mp3',30
 	$shoplocation = 'main'
 end
 
@@ -26,6 +28,7 @@ if $shoplocation = 'main':
 	end
 
 	'In the hall stands an <a href="exec:$shoplocation = ''ATM'' & gt ''shop'', ''move''">ATM</a>, from which you can withdraw money from your bank account.'
+	'There is a branch of communication giants <a href="exec:$shoplocation = ''megafon'' & gt ''shop'', ''move''">Bullhorn</a>.'
 	'<br>Most of the space in the supermarket is taken up by the <a href="exec:$shoplocation = ''grocery'' & gt ''shop'', ''move''">grocery department</a>, but the store has many smaller departments as well. <a href="exec:$shoplocation=''cosmetics'' & gt ''shop'', ''move''">Cosmetics</a>, <a href="exec:$shoplocation = ''hardware'' & gt ''shop'', ''move''">hardware</a>, <a href="exec:$shoplocation = ''clothing'' & gt ''shop'', ''move''">clothing</a> and the department of <a href="exec:$shoplocation = ''tech'' & gt ''shop'', ''move''">household appliances</a>. Not far from the entrance is a <a href="exec:$shoplocation = ''icecream'' & gt ''shop'', ''move''">counter selling ice cream</a>.'
 	clr
 	gs 'stat'
@@ -35,7 +38,7 @@ if $shoplocation = 'main':
 	!! The store in the town and in the altstart only
 	if $loc = 'gorodok' and StoryLine = 1:
 		if week < 6 and hour >= 8 and hour < 16:
-			'Your sister <a href="exec:gt ''sister'', ''work''">Anja</a> sits at the checkout.'
+			'Your sister <a href="exec:$shoplocation = ''Anya'' & gt ''shop'', ''move''">Anya</a> He is sitting at the cash register.'
 		end
 	end
 
@@ -218,6 +221,7 @@ if $shoplocation= 'cosmetics':
 	*pl FUNC ('$stock_item', 12, 'Hair pins', 100, 'hpingrip', $CURLOC) + _
 	iif(bag > 0, FUNC ('$stock_item', 10, 'Wipes', 100, 'salfetka', $CURLOC), '') + _
 	iif(bag > 0, FUNC ('$stock_item', 10, 'Portable makeup', 1000, 'kosmetitka', $CURLOC), '') + _
+	iif(bag > 0, FUNC ('$stock_item', 20, 'Mouthwash', 400, 'mouthwash', $CURLOC), '') + _
 	iif(bag > 0, FUNC ('$single_stock_item', 1, 'Comb', 150, 'greben', $CURLOC), '') + _
 	FUNC ('$single_stock_item', 1, 'Handbag', 5000, 'bag', $CURLOC) + _
 	'</table></center>'
@@ -262,6 +266,30 @@ if $shoplocation = 'hardware':
 	lcolor = rgb(106, 90, 205)
 
 	act 'Leave the hardware department':gt 'shop', 'start'
+	
+	 if poSkill >= 40:
+	 'On the counter you can see that the fabric is suitable for teaching sewing. Bolt which is enough for one lesson stands 300 rubles.'
+	 if tkan <= 0:'Now you do not have tissue'
+	 if tkan > 0:'Now you have enough tissue to <<tkan>> lessons'
+	     if money >= 300:
+	         act'Buy cloth':
+	         cls
+	         portion = input ("How much do you want to buy?")
+			 if portion <= 0:portion = 1
+			 if portion*300 > money:'You do not have enough money.'
+				 if portion*300 <= money:
+					tkan += portion
+					money = money - portion*300
+					'<center><img src="images/pic/kassa.jpg"></center>'
+					'You paid the cashier and bought cloth.'
+				 end
+			 	
+			 gs'stat'	
+			 act 'Move away from the counter':gt'shop','hos'	
+	         end
+	     end
+	 
+	 end	
 end
 
 !! Women''s clothing
@@ -297,18 +325,35 @@ if $shoplocation = 'clothing':
 
 	act 'Leave the women''s clothing department':gt 'shop', 'start'
 
+	if konki!1:
+		'A pair of ice-skates are available for 500 rubles.'
+		if money >= 500:
+			act 'Buy skates for 500 rubles':
+				cla
+				*clr
+				money = money - 500
+				konki = 1
+
+				'<center><img src="images/nigma/gor/lake/katok/konki_shop.jpg"></center>'
+				'You buy a pair of skates.'
+
+				act 'Move away from the counter':gt'shop'
+			end
+		end
+	end
+
 	!! This is not being done as a stock item because it needs to set the palto string value
 	if palto < 2:
 		'A winter coat is available for 10,000 rubles'
 		if money >= 10000:
-			act 'Purchase a winter coat for 10,000 rubles':
+			act 'Purchase a winter coat for 10,000 rubles.':
 				cla
 				money -= 10000
 				palto = 2
 				$palto = 'winter coat'
 				'You bought a coat.'
 
-				act 'Move away from the counter':gt 'shop'
+				act 'Move away from the counter':gt'shop'
 			end
 		end
 	end
@@ -322,7 +367,7 @@ if $shoplocation = 'clothing':
 				'Office clothes.'
 				'Costs 2,500 rubles.'
 
-				act 'Leave':gt 'shop'
+				act 'Leave':gt'shop'
 
 				act 'Buy':
 					cla
@@ -330,7 +375,7 @@ if $shoplocation = 'clothing':
 					profi[1] = 1
 					profiH[1] = 60
 					profiB[1] = bedra
-					gt 'shop', '<font color="green">You bought <b>Office clothes number 1</b>.</font>'
+					gt'shop', '<font color="green">You bought <b>Office clothes number 1</b>.</font>'
 				end
 			end
 		end
@@ -343,7 +388,7 @@ if $shoplocation = 'clothing':
 				'Office clothes.'
 				'Costs 2,500 rubles.'
 
-				act 'Leave':gt 'shop'
+				act 'Leave':gt'shop'
 
 				act 'Buy':
 					cla
@@ -351,7 +396,7 @@ if $shoplocation = 'clothing':
 					profi[2] = 1
 					profiH[2] = 60
 					profiB[2] = bedra
-					gt 'shop', '<font color="green">You bought <b>Office clothes number 2</b>.</font>'
+					gt'shop', '<font color="green">You bought <b>Office clothes number 2</b>.</font>'
 				end
 			end
 		end
@@ -739,6 +784,7 @@ if $shoplocation = 'tech':
 	FUNC ('$single_stock_item', 1, 'Washing machine', 50000, 'stiralka', $CURLOC) + _
 	FUNC ('$single_stock_item', 1, 'Camera', 10000, 'zenit', $CURLOC) + _
 	FUNC ('$single_stock_item', 1, 'Mini camera disguised as a cigarette pack', 40000, 'minifoto', $CURLOC) + _
+	iif(vasya_shulgin>=30 and webcamera = 0, FUNC ('$single_stock_item', 1, 'Webcam', 10000, 'webcamera', $CURLOC), '') + _
 	'</table></center>'
 
 	clr
@@ -764,8 +810,10 @@ if $shoplocation = 'icecream':
 			manna += 500
 			water = 20
 			energy = 20
+			cumlip = 0
+			fbreath = 0
 			!! perkice is currently only ever referenced in stat and only then to decrement itself if > 0, so it does not currently do anything
-			perkice += 1
+			!perkice += 1
 			gs 'stat'
 			'<center><img src="images/etogame/icecreem.jpg"></center>'
 			'You bought ice cream and ate it not going far.'
@@ -773,6 +821,52 @@ if $shoplocation = 'icecream':
 			act 'Move away from the counter':gt 'shop', 'start'
 		end
 	end
+end
+
+if $shoplocation = 'megafon':
+	cls
+	minut+=3
+	gs'stat'
+	'<center><b><font color = maroon>Salon connection Megaphone</font></B></center>'
+	'<center><img src="images/pic/phone/megafon2.jpg" ></center>'
+
+	act 'Exit Department':gt'shop','start'
+
+	if money > 0:
+		act 'Put the money on the phone':
+			cla
+			set minut = minut + 5
+			obmennik = input ("How many rubles do you want to deposit?")
+
+			if obmennik <= 0:
+				'<center><br><b>Do you want to think again?</b></center>'
+				act 'Exit Department':gt'shop','start'
+			else
+				if money < obmennik:
+					'<center><br>You do not have <b><<obmennik>></b> rubles.</center>'
+					act 'Exit Department':gt'shop','start'
+				end
+
+				if money >= obmennik:
+					set balans = balans + obmennik
+					set money = money - obmennik
+					clr
+					gs'stat'
+					'<center><br>You put <b><<obmennik>></b> rubles to the account.</center>'
+					act 'Exit Department':gt'shop','start'
+				end
+			end
+		end
+	end
+end
+
+if $shoplocation = 'Anya':
+	cla
+	'<center><img src="images/qwest/alter/sister/sister.jpg"></center>'
+	gs'dinsister'
+	dynamic $sischecks
+	'"<<$name>>, do not disturb me at work, can''t you see I have customers?'
+	act '<B>Move away</B>':gt'shop','start'
 end
 
 --- shop ---------------------------------

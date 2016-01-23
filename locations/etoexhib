@@ -1,4 +1,8 @@
 # etoexhib
+CLOSE ALL
+$metkaM = $ARGS[0]
+$locM = $CURLOC
+
 if $ARGS[0] = 'pos1':
 	cla
 	*clr
@@ -189,9 +193,11 @@ if $ARGS[0] = 'pos6':
 
 	act 'Have a drink':
 		if water >= 20:
-			'Water in you no longer climbs.'
+			'You are not thirsty.'
 		elseif water < 20:
 			water += 20
+			cumlip = 0
+			fbreath = 0
 			'You gladly drank spring water.'
 		end
 
@@ -566,7 +572,7 @@ if $ARGS[0] = 'pos17':
 	cla
 	*clr
 	gs 'stat'
-	'<center><b><font color="maroon">House of Culture</font></b></center>'
+	'<center><b><font color="maroon">community center</font></b></center>'
 
 	if hour >= 9 and hour < 20:
 		'<center><img src="images/etogame/dk.jpg"></center>'
@@ -790,7 +796,7 @@ if $ARGS[0] = 'pos20':
 	if teachlevel > 0 and teachlevel < 10:workPTU = 2
 
 	act 'Enter the Lyceum':gt 'etoexhib', 'pos19'
-	act 'Go to the train station':gt 'gorodok'
+	act 'Leave':gt 'gorodok'
 end
 
 if $ARGS[0] = 'pos21':
@@ -884,8 +890,96 @@ if $ARGS[0] = 'pos24':
 	if hour >= 9 and hour <= 13:act 'Go in class':gt 'etoexhib', 'pos25'
 	if hour >= 14 and hour < 15:act 'A lesson':gt 'etoexhib', 'pos26'
 	if hour >= 15 and hour <= 18:act 'Go in class':gt 'etoexhib', 'pos25'
+	if hour >= 7 and hour <= 20:act 'Teacher':gt'etoexhib','pos24tk'
 
 	act 'Go inside the hall':gt 'etoexhib', 'pos19'
+end
+
+if $ARGS[0] = 'pos24tk':
+	$metkaM = $ARGS[0]
+	$locM = $CURLOC
+	cla
+	*clr
+	gs'stat'
+	minut +=10
+	'<center><b><font color = maroon>Teacher</font></b></center>'
+	'<center><img src="images/etogame/ptu_tk.jpg"></center>'
+	'A place where all the teachers employed in the classroom.'
+	'On the wall near the front door hanging <a href="exec:GT ''mirror'',''start''">mirror</a>.'
+	'In one corner stands a small old sofa.'
+
+	$prositdirizv = {
+		cls
+		cla
+		gs'stat'
+		set izvad = 1
+		set pzptu = 1
+		'<center><img src="images/etogame/ptu_angdir.jpg" ></center>'
+		'You stand on kalani to the Director apologize for his actions.'
+		'The Director tells you, what you need will come to her study in free time.'
+		act 'Escape':gt'etoexhib','pos24'
+	}
+
+	act 'Lie down on the couch':
+		cla
+		minut += 30
+
+		if son < 30:
+		son += 5
+		else
+		son = 29
+		end
+		'I`m relaxing on the couch.'
+
+		act 'Pull':gt'etoexhib','pos24tk'
+	end
+
+   	if hour >= 14 and hour <= 15:
+		temp = RAND(1,100)
+		if temp >= 90:
+			cls
+			minut += 6
+			manna -= 10
+			willpower -= 10
+			gs'stat'
+			'<center><img src="images/etogame/ptu_angdir.jpg"></center>'
+			'- <<$name>> M., you go where? You know in General, what is happening now in your class, you are obliged now to be? And I can tell you, there confusion, walking and, pardon the expression, Orgy. Go immediately to class, reassure and teach the lesson though remaining time as expected.'
+			if DOM < SUB and izvad = 0:
+				cla
+				*clr
+				minut = minut + 5
+				gs'stat'
+				'<center><img src="images/etogame/ptu_angdir.jpg"></center>'
+				'You <a href="exec:dynamic $prositdirizv">ask</a> forgiveness of Directors  .'
+				exit
+			elseif DOM > SUB and izvad = 0:
+				cla
+				*clr
+				minut = minut + 5
+				gs'stat'
+				'<center><img src="images/etogame/ptu_angdir.jpg"></center>'
+				'You agree with my error, say, that in the future this will not happen again  .'
+				act 'Escape':gt'etoexhib','pos24' & teachlevel -= 3
+				exit
+			end		
+		end	
+	end
+
+	if hour >= 9 and hour <= 12:
+		temp = RAND(1,100)
+		if temp >= 90:
+			cla
+			*clr
+			minut += 60
+			teachlevel += 2
+			gs'stat'
+			'<center><img src="images/etogame/21ptu.jpg"></center>'
+			'You are approached by a student and asked you to work out with her.'
+			act 'Do':gt'etoexhib','pos24tk'
+		end
+	end
+
+	act 'In the corridor':gt'etoexhib','pos24'
 end
 
 if $ARGS[0] = 'pos25':
@@ -941,14 +1035,28 @@ if $ARGS[0] = 'pos26':
 	minut += 5
 	gs 'stat'
 	'<center><b><font color="maroon">Cabinet</font></b></center>'
-	'<center><img src="images/etogame/PTU_lesson0.jpg"></center>'
-	'You went to class and ready to begin class. Students divided into groups, chatting with each other, someone laughing, someone talking on the phone, someone buried in the tablet. Generally regular youth.'
+	if pzptu = 0:
+		'<center><img src="images/etogame/PTU_lesson0.jpg"></center>'
+		'You went to class and ready to start exercising. Pupils, divided into groups, They talk to each other, who-the laughs, who-chatting on the phone, who-then buried in the plate. Generally regular youth.'
 
-	act 'Start session':
-		cla
-		minut = 0
-		hour = 14
-		gt 'etoexhib', 'pos27'
+		act 'Post activity':
+			cla
+			minut = 0
+			hour = 14
+			gt'etoexhib','pos27'
+		end
+	end
+
+	if pzptu = 1:
+		'<center><img src="images/etogame/PTU_lesson1xl.jpg"></center>'
+		'You went to class and were stunned by what they saw, in class Tsaritsa the madness and mayhem. '
+
+		act 'Post activity':
+			cla
+			minut += 5
+			pzptu = 0
+			gt'etoexhib','pos27'
+		end	
 	end
 end
 
@@ -974,6 +1082,17 @@ if $ARGS[0] = 'pos27':
 				'<center><b><font color="maroon">Cabinet</font></b></center>'
 				'<center><img src="images/etogame/ptu_karandash.jpg"></center>'
 				'Pacing between rows, you go down on his haunches, pretending to pick up a fallen pencil. However, sitting in the back row overlooking your legs under her skirt. By the eyes widened as one of the guys, you know what it''s done.'
+				if tanga = 0:
+					temp = RAND(1,100)
+					if temp >= 90:
+						manna = manna - 5
+						teachlevel -= 2
+						'You heard a barely audible whisper  - "In the Glu! <<$name>>... goes without panties and shaved pussy!"'
+						'You feel, the face begins to burn with shame after what you heard.'
+						'All further part of the lesson is in the struggle with his conscience and trying to convey the material to students.'
+						act'Further':gt'etoexhib','pos27'
+					end
+				end
 
 				act 'Next':gt 'etoexhib', 'pos27'
 			end
@@ -1000,6 +1119,17 @@ if $ARGS[0] = 'pos27':
 				'<center><b><font color="maroon">Cabinet</font></b></center>'
 				'<center><img src="images/etogame/ptu_rak.jpg"></center>'
 				'Explaining stuff you accidentally, drop the chalk. At the same time, you pick it up so that any pornstar obzaviduetsya. First, you cant, but realizing that the chalk does not get it, get down on all fours, with his ass as if someone podmanivaya. Those who sat nearby, witnessed an unforgettable show.'
+				if tanga = 0:
+					temp = RAND(1,100)
+					if temp >= 90:
+						manna = manna - 5
+						teachlevel -= 2
+						'You heard a barely audible whisper  - "In the Glu! <<$name>>... goes without panties and shaved pussy!"'
+						'You feel, the face begins to burn with shame after what you heard.'
+						'All further part of the lesson is in the struggle with his conscience and trying to convey the material to students.'
+						act'Further':gt'etoexhib','pos27'
+					end
+				end
 
 				act 'Next':gt 'etoexhib', 'pos27'
 			end
@@ -1071,7 +1201,13 @@ if $ARGS[0] = 'pos28':
 	gs 'stat'
 	'<center><b><font color="maroon">Direction</font></b></center>'
 	'<center><img src="images/etogame/PTU_dir.jpg"></center>'
-	'- Welcome, <<$name>>! Hope you like to work for us. If you have any questions for me, I''m listening.'
+	if izvad = 0:
+		'- Welcome, <<$name>>! Hope you like to work for us. If you have any questions for me, I''m listening.'
+	end
+
+	if izvad = 1:
+		'- Hello again, <<$name>>.'
+	end
 
 	act 'Leave the office':gt 'etoexhib', 'pos23'
 end
@@ -1204,6 +1340,8 @@ if $ARGS[0] = 'pos37':
 			'You don''t need any more tea.'
 		elseif water < 20:
 			water += 20
+			cumlip = 0
+			fbreath = 0
 			'You gladly drank a cup of tea.'
 		end
 
@@ -1260,6 +1398,25 @@ if $ARGS[0] = 'pos39':
 	'<center><b><font color="maroon">Women''s WC</font></b></center>'
 	'<center><img src="images/etogame/ptu_toilet_w.jpg"></center>'
 	'WC, which in theory, only teachers can use.'
+
+	if tanga = 1:
+		act 'Remove underwear':tanga = 0 & gt $locM,$metkaM
+	end
+
+	if tampon > 0 and mesec > 0 and isprok = 0:
+		act 'Change swab':
+			cla
+			*clr
+			tampon = tampon - 1
+			isprok = 1
+			minut = minut + 5
+			manna = manna - 5
+			'<center><img src="images/pics/wash3.jpg"></center>'
+			'You have changed the swab.'
+			act 'Finish':gt $locM,$metkaM
+		end
+	end
+
 	temp = rand(1, 100)
 
 	if temp >= 90:
@@ -1296,6 +1453,10 @@ if $ARGS[0] = 'pos40':
 end
 
 if $ARGS[0] = 'pos41':
+	$metkaM = $ARGS[0]
+	$locM = $CURLOC
+	$metka = $ARGS[0]
+	$loc = $CURLOC
 	cla
 	*clr
 	minut += 10
@@ -1323,81 +1484,6 @@ if $ARGS[0] = 'pos41':
 		end
 	end
 
-	if tampon > 0 and mesec > 0 and isprok = 0:
-		act 'Use a tampon (0:05)':
-			cla
-			*clr
-			tampon -= 1
-			isprok = 1
-			minut += 5
-			manna -= 5
-			'<center><img src="images/pics/wash3.jpg"></center>'
-			'You use a tampon.'
-
-			act 'finish':gt 'etoexhib', 'pos41'
-		end
-	end
-
-	!!!
-	!!0.2.6 extension: reworked how quick wash and face wash was supposed to work, it is now uniform in all toilet/bathroom locations
-	!!Removed sweat =- 1 when cum is wiped off clothes
-	!!clrbelo: Amount of clean panties available
-	if cumpussy > 0 or cumbelly > 0 or cumass > 0 or cumanus > 0:
-		act 'Quick wash (0:15)':
-			cla
-			*clr
-
-			if clrbelo > 0 and tanga = 1:
-				clrbelo -= 1
-				dirtbelo += 1
-			elseif clrbelo = 0 and tanga = 1:
-				tanga = 0
-				dirtbelo += 1
-			end
-
-			dynamic $showerdin
-			sweat -= 1
-			minut += 15
-			'<center><img src="images/pics/wash5.jpg"></center>'
-			'You gave yourself a catlick, thus removing any traces of cum.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-
-	if cumlip > 0 or cumface > 0:
-		act 'Clean your face from sperm (0:05)':
-			cla
-			*clr
-			mop = 1
-			cumlip = 0
-			cumface = 0
-			sweat -= 1
-			minut += 5
-			'<center><img src="images/etogame/facesp.jpg"></center>'
-			'You clean your face and got rid of any trace of cum.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-	!!
-
-	!!0.2.6	extension: Washing off cosmetics also removes cum from face
-	if mop ! 1:
-		act 'Wash off cosmetics (0:15)':
-			cla
-			mop = 1
-			cumface = 0
-			minut += 15
-			gs 'stat'
-			'<center><img src="images/etogame/facesp.jpg"></center>'
-			'You washed off your makeup.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-	!!
-
 	if shampoo > 0:
 		act 'Take a shower (0:15)':
 			cla
@@ -1424,6 +1510,12 @@ if $ARGS[0] = 'pos41':
 		end
 	end
 
+	dynamic $bteeth
+	dynamic $tampon
+	dynamic $quickwash
+	dynamic $wearpan
+	dynamic $basin
+
 	if leghair > 0 and stanok > 0 or lobok > 0 and stanok > 0:
 		act 'Shave their legs and crotch (0:30)':
 			cla
@@ -1448,6 +1540,11 @@ if $ARGS[0] = 'pos41':
 			act 'Finish':gt 'etoexhib', 'pos41'
 		end
 	end
+	
+	if pirsA + pirsB + pirsC + pirsD + pirsE + pirsF + pirsN + pirsG + pirsGL > 0:'<a href="exec:dynamic $pirManage">Manage Piercings</a>'
+
+	if fillimplant = 1 and siliconeBag >= 1:'<a href="exec:cls & siliconeBag -= 1 & silicone += 10 & gt $curloc">Inject silicone into breast implants.</a>'
+	if fillimplant = 1 and silicone >= 20:'<a href="exec:cls & silicone -= 10 & gt $curloc">Drain silicone from breast implants.</a>'
 
 	if intel > 50 and gor_dorm = 1:act 'Inspect pipes':gt 'etoexhib', 'pos42'
 
@@ -1484,6 +1581,10 @@ if $ARGS[0] = 'pos43':
 end
 
 if $ARGS[0] = 'pos49':
+	$metkaM = $ARGS[0]
+	$locM = $CURLOC
+	$metka = $ARGS[0]
+	$loc = $CURLOC
 	cla
 	*clr
 	gs 'stat'
@@ -1492,6 +1593,8 @@ if $ARGS[0] = 'pos49':
 	'Bathroom in the dorm.'
 
 	if shampoo = 0:'The_Curse, how to wash if you do not shampoo?'
+
+	if pirsA + pirsB + pirsC + pirsD + pirsE + pirsF + pirsN + pirsG + pirsGL > 0:'<a href="exec:dynamic $pirManage">Manage Piercings</a>'
 
 	if dirtbelo > 0 and poroshok > 0:
 		act 'Wash clothes':
@@ -1509,80 +1612,11 @@ if $ARGS[0] = 'pos49':
 		end
 	end
 
-	if tampon > 0 and mesec > 0 and isprok = 0:
-		act 'Use a tampon (0:05)':
-			cla
-			*clr
-			tampon -= 1
-			isprok = 1
-			minut += 5
-			manna -= 5
-			'<center><img src="images/pics/wash3.jpg"></center>'
-			'You use a tampon.'
-
-			act 'finish':gt 'etoexhib', 'pos41'
-		end
-	end
-
-	!!!
-	!!0.2.6 extension: reworked how quick wash and face wash was supposed to work, it is now uniform in all toilet/bathroom locations
-	!!Removed sweat =- 1 when cum is wiped off clothes
-	!!clrbelo: Amount of clean panties available
-	if cumpussy > 0 or cumbelly > 0 or cumass > 0 or cumanus > 0:
-		act 'Quick wash (0:15)':
-			cla
-			*clr
-
-			if clrbelo > 0 and tanga = 1:
-				clrbelo -= 1
-				dirtbelo += 1
-			elseif clrbelo = 0 and tanga = 1:
-				tanga = 0
-				dirtbelo += 1
-			end
-
-			dynamic $showerdin
-			sweat -= 1
-			minut += 15
-			'<center><img src="images/pics/wash5.jpg"></center>'
-			'You gave yourself a catlick, thus removing any traces of cum.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-
-	if cumlip > 0 or cumface > 0:
-		act 'Clean your face from sperm (0:05)':
-			cla
-			*clr
-			mop = 1
-			cumlip = 0
-			cumface = 0
-			sweat -= 1
-			minut += 5
-			'<center><img src="images/etogame/facesp.jpg"></center>'
-			'You clean your face and got rid of any trace of cum.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-	!!
-
-	!!0.2.6	extension: Washing off cosmetics also removes cum from face
-	if mop ! 1:
-		act 'Wash off cosmetics (0:15)':
-			cla
-			mop = 1
-			cumface = 0
-			minut += 15
-			gs 'stat'
-			'<center><img src="images/etogame/facesp.jpg"></center>'
-			'You washed off your makeup.'
-
-			act 'Finish':gt 'etoexhib', 'pos41'
-		end
-	end
-	!!
+	dynamic $bteeth
+	dynamic $tampon
+	dynamic $quickwash
+	dynamic $wearpan
+	dynamic $basin
 
 	if shampoo > 0:
 		act 'Take a shower (0:15)':
@@ -1755,7 +1789,7 @@ if $ARGS[0] = 'pos53':
 	'The roof of your apartment building.'
 
 	if temper >= 20 and bikini > 0 and hour >= 6 and hour <= 20:
-		act 'Zagarat (1:00)':
+		act 'Sunbathe (1:00)':
 			cla
 			*clr
 			minut += 60

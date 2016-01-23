@@ -1,4 +1,5 @@
 # bedrPar
+CLOSE ALL
 $metkaM = $ARGS[0]
 $locM = $CURLOC
 $metka = $ARGS[0]
@@ -12,23 +13,84 @@ lcolor = rgb(106, 90, 205)
 '<center><b><font color="maroon">Your bedroom</font></b></center>'
 ! WD: Correct Image path ~ "images/qwest/alter/<<$loc>>.jpg"
 '<center><img src="images/qwest/alter/bedrPar.jpg"></center>'
-'Small room in which hardly squeezed <a href="exec:gt ''clothing'', ''view_clothing_list'', ''wardrobe''">cabinet</a>, your <a href="exec:gt ''bedPar''">bed</a>, <a href="exec:gt ''stolPar''">desk</a> bed and sisters.'
+'Small room in which hardly squeezed <a href="exec:gt ''clothing'', ''view_clothing_list'', ''wardrobe''">cabinet</a>, your <a href="exec:gt ''bed2''">bed</a>, <a href="exec:gt ''stol'' ,''stolPar''">desk</a> bed and sisters.'
 if komp = 1:'On the table is your <a href="exec:gorodokKomp = 1 & GT ''Komp'',''start''">laptop</a>.'
 gorodokKomp = 0
 
+gad = 0
+
 if sisboyQW > 10:sisboyQW = 10
 
-gs 'family'
+gs'dinsister'
 
-! if tanga = 0:tanga = 1
 
-act 'Leave the room':gt 'korrPar'
-
-if rexCarCount >= 9 and sisterHere = 1 and hour < 3 and rexSmsDay ! daystart and smsForRex < 13:
-	act 'Take your sisters phone':gt 'reks','sms'
+act 'Exit the room':
+	gt'korrPar'
 end
+if sisboyparty_day + 1 = daystart and sisboyparty = -1 and hour = 22:
+	gs'family'
+else
+	gs'family'
+
+	if rexCarCount >= 9 and sisterHere = 1 and hour < 3 and rexSmsDay ! daystart and smsForRex < 13:
+		act 'Take your sisters phone':gt 'reks','sms'
+	end
 
 ! WD: add Underwear change
+
+	if student > 0 and kursovik < 100:
+		act 'Write coursework (1:00)':
+			cla
+			*clr
+			minut += 60
+			kursovik += rand(intel / 20, intel / 10)
+
+			if kursovik > 100:kursovik = 100
+
+			manna -= 10
+			'<center><img src="images/etogame/study.jpg"></center>'
+			'You sat on the course work and prepared her for <<kursovik>> percent.'
+
+			act 'Leave':gt $curloc
+		end
+	end
+
+	if horny >= 50 and sisterHere = 0:
+		act 'Masturbate':gt 'selfplay'
+	end
+	if pornMagazine > 0:'Under the mattress you have hidden pornozhurnal.'
+	if sisterHere = 0 and pornMagazine > 0:dynamic $d_read_porn
+
+	dynamic $d_read_book
+
+	if tovarL > 0:'You have kept <<tovarL>> One unit of small goods. The maximum you can keep in your room 30 One unit of product.'
+
+	if card > 0:
+		act 'Take a deck of cards':gt 'card'
+	end
+
+	if dur > 0:'You have hidden <<dur>> doses pale lady'
+
+	if dur > 0 and narkday ! daystart:
+		act 'Nyuhnut pale lady 5 min':
+			cla
+			*clr
+			minut += 5
+			narkday = daystart
+			health = vital * 10 + stren * 5
+			willpower = intel * 5 + will * 5
+			manna = (intel * magik) + magik * 100 + vital * 10 + rikudo
+			horny = 100
+			nark += 10
+			dur -= 1
+			'<center><img src="images/pic/dur.jpg"></center>'
+			'You otsypali dose of powder and its nyuhnuli, then you feel just fine.'
+
+			act 'Leave':gt $curloc
+		end
+	end
+end
+
 if tanga = 0:
 	act 'Wear Underwear':
 		cla
@@ -43,57 +105,86 @@ elseif tanga = 1:
 	end
 end
 
-if student > 0 and kursovik < 100:
-	act 'Write coursework (1:00)':
-		cla
-		*clr
-		minut += 60
-		kursovik += rand(intel / 20, intel / 10)
+sports = 0
 
-		if kursovik > 100:kursovik = 100
+if obruch > 0 and obruchday ! daystart:
+	$sitrobr = '<a href="exec: dynamic $sitrobrd ">twist wrap</a>'
+	sports = 1
+else
+	$sitrobr = ''
+end
 
-		manna -= 10
-		'<center><img src="images/etogame/study.jpg"></center>'
-		'You sat on the course work and prepared her for <<kursovik>> percent.'
+if bookYog > 0 and bookYogday ! daystart:
+	$sitryog = '<a href="exec: dynamic $sitryogd ">Meditation</a>'
+	sports = 1
+else
+	$sitryog = ''
+end
 
-		act 'Leave':gt $curloc
+if skak > 0 and skakday ! daystart:
+	$sitrskak = '<a href="exec: dynamic $sitrskakd ">jumping rope</a>'
+	sports = 1
+else
+	$sitrskak = ''
+end
+
+if pressday ! daystart:
+	$sitrpress = '<a href="exec: dynamic $sitrpressd ">abdominal exercises</a>'
+	sports = 1
+else
+	$sitrpress = ''
+end
+
+if pushday ! daystart:
+	$sitrpush = '<a href="exec: dynamic $sitrpushd ">push-ups</a>'
+	sports = 1
+else
+	$sitrpush = ''
+end
+
+$sportsitr = '<<$sitrpush>> <<$sitrpress>> <<$sitrskak>> <<$sitryog>> <<$sitrobr>>'
+
+if sports = 1:
+	'There isn''t much space in the room, but enough for a variety of sport activities such as:'
+	'<center><<$sportsitr>></center>'
+end
+
+if gobelen>0:'Ready Tapestry <<gobelen>> Pieces'
+if poSkill>=50 and tkan>0:'Your cloth will suffice for <<tkan>> lessons'
+if poSkill>=50 and tkan<=0:'You do not have fabric'
+if poSkill>=200:
+	if newgobelen=0 and tkan>0:
+		act'Start a new tapestry':
+			cls
+			tkan-=1
+			newgobelen=1
+			minut+=15
+			gs'stat'
+			'You are within 15 minutes prepared tissue on which pattern will embroider and broadly marked out the outlines of a pattern.'
+			act'Set aside':gt $curloc
+		end
+	end
+	if newgobelen>=1:
+		'Tapestry is ready for <<newgobelen/10>> percent'
+		act'Embroidering a tapestry for an hour':
+			cls
+			minut+=60
+			poSkill+=rand(0,1000)
+			gobramax=poSkill/100
+			gobramin=poSkill/200
+			newgobelen+=rand(gobramin,gobramax)
+			gs'stat'
+			if newgobelen<1000:'You are within an hour embroidered tapestry and now he is ready to <<newgobelen/10>> percent'
+				if newgobelen>=1000:
+				newgobelen=0
+				gobelen+=1
+				'You managed to fully embroidered tapestry.'
+			end
+			act'Set aside':gt $curloc
+		end
 	end
 end
 
-if horny >= 50 and sisterHere = 0:
-	act 'Masturbate':gt 'selfplay'
-end
-if pornMagazine > 0:'Under the mattress you have hidden pornozhurnal.'
-if sisterHere = 0 and pornMagazine > 0:dynamic $d_read_porn
-
-dynamic $d_read_book
-
-if tovarL > 0:'You have kept <<tovarL>> One unit of small goods. The maximum you can keep in your room 30 One unit of product.'
-
-if card > 0:
-	 act 'Take a deck of cards':gt 'card'
-end
-
-if dur > 0:'You have hidden <<dur>> doses pale lady'
-
-if dur > 0 and narkday ! daystart:
-	act 'Nyuhnut pale lady 5 min':
-		cla
-		*clr
-		minut += 5
-		narkday = daystart
-		health = vital * 10 + stren * 5
-		willpower = intel * 5 + will * 5
-		manna = (intel * magik) + magik * 100 + vital * 10 + rikudo
-		horny = 100
-		nark += 10
-		dur -= 1
-		'<center><img src="images/pic/dur.jpg"></center>'
-		'You otsypali dose of powder and its nyuhnuli, then you feel just fine.'
-
-		act 'Leave':gt $curloc
-	end
-end
 
 --- bedrPar ---------------------------------
 

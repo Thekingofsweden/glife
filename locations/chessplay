@@ -1,0 +1,191 @@
+# chessplay
+if $chess_name='':$chess_name='girl'
+gs'stat'
+if chess_hod=0:
+chess_ini=50
+chess_pos=50
+end
+if chess_ini<0:chess_ini=0
+if chess_ini>100:chess_ini=100
+if chess_pos<0:chess_pos=0
+if chess_pos>100:chess_pos=100
+'Move <<chess_hod>>'
+'Instead you, the board is sitting <<$chess_name>> pondering moves'
+if chess_hod=0:'Chess pieces are on the starting positions'
+if chess_hod>0:
+if chess_ini=50:'The initiative is not who seized'
+if chess_pos=50:'Positions is equal'
+if chess_ini<50:'You managed to seize the initiative'
+if chess_ini>50:'You have lost the initiative'
+if chess_pos<50:'Your position is stronger'
+if chess_pos>50:'Your position is weaker'
+if chess_pos<10:'You are close to the, that would checkmate the enemy'
+if chess_pos>90:'You are close to defeat'
+end
+!'chess_ini <<chess_ini>>'
+!'chess_pos <<chess_pos>>'
+
+deV=rand(1,100)
+if chess_hod<10:
+	if deV>=chessH:
+		!Initiative opponent
+		derV=1
+	else
+		!the enemy defense
+		derV=0
+	end
+end
+
+if chess_hod>=10:
+	if chess_ini<90:
+		if deV>=chessH:
+			!Initiative opponent
+			derV=1
+		else
+			!the enemy defense
+			derV=0
+		end
+	end
+	if chess_ini>=90:
+		derV=2
+	end
+end
+
+$chess_hod_dy={
+	chessV_proc=chessV/100
+	chessVmin=chessV_proc*90
+	chessVmax=chessV_proc*110
+	chessV_hod=rand(chessVmin,chessVmax)
+	chess_proc=chess/100
+	chessmin=chess_proc*90
+	chessmax=chess_proc*110
+	chessY_hod=rand(chessmin,chessmax)
+	!'chessV_hod <<chessV_hod>>'
+	!'chessY_hod <<chessY_hod>>'
+	if chess_hod<10:
+		if chessV_hod>chessY_hod:
+			if derV=1:
+				chess_ini+=1
+				'The enemy manages to increase the lead'
+			end
+			if derV=0:
+				chess_pos+=1
+				'The enemy can improve their position'
+			end
+		end
+		if chessV_hod=chessY_hod:
+			'Your actions and those of the enemy no matter what is not particularly affected.'
+		end
+		if chessV_hod<chessY_hod:
+			if derY=1:
+				chess_ini-=1
+				'You manage to increase the lead'
+			end
+			if derY=0:
+				chess_pos-=1
+				'You can improve its position'
+			end
+		end
+	else
+		if derY=2:
+			chess_temp=100-chess_ini
+			chessY_hod+=100-chess_temp
+			chess_ini=50
+		end
+		if derV=2:
+			chess_temp=100+chess_ini
+			chessV_hod+=100+chess_temp
+			chess_ini=50
+		end
+		if chessV_hod=chessY_hod:
+			'Your actions and those of the enemy no matter what is not particularly affected.'
+		end
+		if chessV_hod<chessY_hod:
+			chessResult=chessY_hod-chessV_hod
+			if derY=2:
+				chess_pos-=chess_temp+chessResult
+				'Your attack failed'
+			end
+			if derV=2:
+				chess_pos-=chess_temp+chessResult
+				'Attack the enemy failed'
+			end
+			if derY=1:
+				chess_ini-=chessResult
+				'You manage to increase the lead'
+			end
+			if derY=0:
+				chess_pos-=chessResult
+				'You can improve its position'
+			end
+		end
+		if chessV_hod>chessY_hod:
+			chessResult=chessV_hod-chessY_hod
+			if derY=2:
+				chess_pos+=chess_temp+chessResult
+				'Your attack failed miserably'
+			end
+			if derV=2:
+				chess_pos+=chess_temp+chessResult
+				'Attack the enemy was successful'
+			end
+			if derV=1:
+				chess_ini+=chessResult
+				'You lose the initiative'
+			end
+			if derV=0:
+				chess_pos+=chessResult
+				'You lose position'
+			end
+		end
+	end
+	derY=0
+	derV=0
+	act'Further':gt $curloc
+}
+
+
+if chess_pos>0 and chess_pos<100:
+	act'To seize the initiative':
+		cls
+		chess_hod+=1
+		derY=1
+		gs'stat'
+		'You play aggressively, trying to seize the initiative in the game.'
+		dynamic $chess_hod_dy
+	end
+
+	act'Strengthens the position of':
+		cls
+		chess_hod+=1
+		derY=0
+		gs'stat'
+		'You build a defense in depth, though losing in the initiative.'
+		dynamic $chess_hod_dy
+	end
+
+	if chess_pos<50 and chess_hod>=10:
+		act'Attack':
+			cls
+			chess_hod+=1
+			derY=2
+			gs'stat'
+			'You attack using seized the initiative.'
+			dynamic $chess_hod_dy
+		end
+	end
+end
+if chess_pos<=0:
+	chess_win+=1
+	'You checkmate the enemy'
+end
+if chess_pos>=100:
+	chess_loss+=1
+	'You checkmate'
+end
+if chess_pos<=0 or chess_pos>=100:
+	if chess_exit=0:act'Escape':gt'gdkkru'
+end
+
+--- chessplay ---------------------------------
+
