@@ -36,7 +36,7 @@ if $ARGS[0] = 'start':
 				money -= 1000
 				minut += 60
 				health = vital * 10 + stren * 5 + 1000
-				if pillcon > 0:pillcon -= rand(0,2)
+
 				if hosprand = 0:gt 'poli', '0'
 				if hosprand = 1:gt 'poli', '1'
 				if hosprand = 2:gt 'poli', '2'
@@ -64,22 +64,6 @@ if $ARGS[0] = 'start':
 			end
 		end
 
-
-		if tabletkishot < 5 and money >= 1000:
-			act 'Get a birth control shot':
-				cls
-				minut += 15
-				tabletkishot = 40
-				tabletkicheck = 2
-				pillcon = 40
-				money -= 1000
-				gs 'stat'
-				'<center><img src="images/etogame/poli.jpg"></center>'
-				'You are escorted into an examination room, where you are told to sit. After almost fifteen minutes a nurse comes in, sticks a needle in your arm, and depresses the plunger. "All done. Have a nice day." she says to you. You gather your things to leave.'
-				act 'Leave':gt 'poli', 'start'
-			end
-		end
-				
 		act 'Go to the STD clinic':
 			cls
 			'In the waiting room is an advertisement.'
@@ -295,7 +279,7 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if money >= 20000 and preg = 1 and pregchem < 2016 and knowpreg = 1:
+	if money >= 20000 and preg = 1 and pregtime < 84 and knowpreg = 1:
 		act 'Get an abortion (20,000 rubles)':
 			cla
 			vidage += 1
@@ -306,11 +290,11 @@ if $ARGS[0] = 'start':
 			abortrand = rand(0, 10)
 
 			if age > 18:
-				if abortrand < 10:preg = 0 & sterilewb += 2
-				if abortrand = 10:sterilewb += 20
+				if abortrand < 10:preg = 0
+				if abortrand = 10:preg = 2
 			else
-				if abortrand < 4:preg = 0 & sterilewb += 2
-				if abortrand >= 5:preg = 0 & sterilewb += 20
+				if abortrand < 4:preg = 0
+				if abortrand >= 5:preg = 2
 			end
 
 			! WD: Correct Image path ~ "images/etogame/abort.jpg"
@@ -321,40 +305,43 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if preg = 2:
+	if preg = 1 and pregtime = 280:
 		act 'Give birth':
+			cls
 			cla
-			:multikidloop
-			'You lay on the bed and your feet are put in stirups.'
-			if BabyEmbryo > 1:
-				'Your contractions get closer and closer, and after some time (and a lot of swearing) you finally give birth. But as soon as it is out, you are hit with contractions. Another is coming!'
-			else
-				'Your contractions get closer and closer, and after some time (and a lot of swearing) you finally give birth.'
-			end
 			vidage += 1
 			preg = 0
+			pregtime = 0
 			pregtalk = 0
-			sterilewb += 1
-			nextbaby = ARRPOS('yearkid',0)
 			kid += 1
-			BabyEmbryo -= 1
-			daykid[nextbaby] = day
-			monthkid[nextbaby] = month
-			yearkid[nextbaby] = year
+			knowpreg = 0
+			daykid[kid] = day
+			monthkid[kid] = month
+			yearkid[kid] = year
+			$father[kid] = $father
+			haprikid[kid] = rand(0, 3)
+			glacol[kid] = rand(0, 3)
+
 			$ImageNeededPlacholder
 			! WD: IMAGE NEEDED ~ '<center><img src="images/etogame/abort.jpg"></center>'
-			if polkid[nextbaby] = 0:$polreb[nextbaby] = 'girl' & '"Congratulations it''s a girl."'
-			if polkid[nextbaby] = 1:$polreb[nextbaby] = 'boy' & '"Congratulations it''s a boy."'
-			
-			act 'Name your child':
-				$kidname[nextbaby] = input ("Enter your babys name")
+			'You are lain on the bed and you feet put in stirups. Your contractions get closer and closer, and sometime (and a lot of swearing) later you finally give birth.'
 
-				if $kidname[nextbaby] <= 0:
-					if polkid[nextbaby] = 0:$kidname[nextbaby] = 'Masha'
-					if polkid[nextbaby] = 1:$kidname[nextbaby] = 'Misha'
-				end
-				if BabyEmbryo > 0:
-					jump 'multikidloop'
+			if rand(0, 1) = 0:
+				$polreb[kid] = 'girl' & '"Congratulations it''s a girl."'
+			else
+				$polreb[kid] = 'boy' & '"Congratulations it''s a boy."'
+			end
+
+			act 'Name your child':
+				cla
+				$kidname[kid] = input ("Enter your babys name")
+
+				if $kidname[kid] <= 0:
+					if $polreb[kid] = 'girl':
+						$kidname = 'Masha'
+					else
+						$kidname = 'Misha'
+					end
 				end
 
 				act 'Leave':gt 'poli', 'start'
