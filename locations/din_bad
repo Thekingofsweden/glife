@@ -425,8 +425,8 @@ $d_salf = {
 	salfetka -= 1
 	pl '<a href="exec:gs ''stat''"><b>Throw out tissue</b></a>'
 
-	if cumface > 0:pl '<a href="exec:cumface -= 1 & gs ''stat''"><b>Wipe your face</b></a>'
-	if cumfrot > 0:pl '<a href="exec:cumfrot -= 1 & gs ''stat''"><b>Wipe clothing</b></a>'
+	if arrpos('sparrloc',11) > 0:pl '<a href="exec:cumspclnt = 11 & gs ''cum_cleanup'' & gs ''stat''"><b>Wipe your face</b></a>'
+	if spdirtyc > 0:pl '<a href="exec:cumspclnt = 6 & gs ''cum_cleanup'' & gs ''stat''"><b>Wipe clothing</b></a>'
 	if mop ! 1:pl '<a href="exec:mop = 1 & gs ''stat''"><b>Wipe cosmetics</b></a>'
 }
 
@@ -442,7 +442,8 @@ $d_kosmetitka = {
 $d_mouthwash = {
 	clr
 	fbreath = 1
-	cumlip = 0
+	cumspclnt = 2
+	gs 'cum_cleanup'
 	mouthwash -= 1
 	pl 'Your breath smells minty fresh'
 	pl ''
@@ -460,17 +461,24 @@ $d_bag = {
 	if mouthwash > 0 and fbreath = 1:pl 'You have mouthwash in your bag. Uses remaining: <<mouthwash>>.'
 	if greben > 0 and hapri = 0:pl 'You have a hairbrush. <a href="exec:hapri = 1 & gs ''stat''"><b>Brush your hair</b></a>'
 	if greben > 0 and hapri = 1:pl 'You have a hairbrush.'
-	if prezik > 0 or Sprezik > 0:
-		if CondomToggle = 0:pl 'You have <<prezik + Sprezik>> condoms and will use them when required.<a href="exec:CondomToggle = 1 & dynamic $d_bag"><b>Stop using condoms.</b></a>'
-		if CondomToggle = 1:pl 'You have <<prezik + Sprezik>> condoms, but you will not use them.<a href="exec:CondomToggle = 0 & dynamic $d_bag"><b>Start using condoms.</b></a>'
+	if prezik + prezikcount + preziksabo > 0:
+		if preziktype = 2 or preziksabo > 0:
+			P 'You have <<iif(preziktype = 2, prezikcount, prezikcount+prezik)>> normal, and <<iif(preziktype = 2, prezik+preziksabo, preziksabo)>> sabotaged <a href="exec:dynamic $din_Switch_Condom_Menu"><b>condoms.</b></a>'
+		elseif preziktype < 2 and preziksabo = 0:
+			P 'You have <<prezik+prezikcount>> <a href="exec:dynamic $din_Switch_Condom_Menu"><b>condoms.</b></a>'
+		END
+		NL
+	else
+		pl 'You are out of condoms.'
 	end
-	if tabletki > 0 or Stabletki > 0:
-		if PillToggle = 0:pl 'You have <<tabletki + Stabletki>> pills and will take them every day.<a href="exec:PillToggle = 1 & dynamic $d_bag"><b>Stop the pill.</b></a>'
-		if PillToggle = 1:pl 'You have <<tabletki + Stabletki>> pills, but you have stopped taking them.<a href="exec:PillToggle = 0 & dynamic $d_bag"><b>Go back on the pill.</b></a>'
-	end
+	if tabletki > 0:
+		pl 'You have <<tabletki>> <a href="exec:dynamic $d_tabletkied">birth control pills.</b></a>'
+	else
+		pl 'You are out of birth control pills.'
+	end	
 	if lubri > 0:pl'Do you have lubricant. Enough for  <<lubri>> time.'
-	if bottle > 0:pl 'You have a bottle of water. <a href="exec:bottle = 0 & water = 20 & cumlip = 0 & gs ''stat''"><b>Drink</b></a>'
-	if buterbrod > 0:pl 'You have a sandwich. <a href="exec:buterbrod = 0 & energy += 20 & cumlip = 0 & salo += 1 & gs ''stat''"><b>Eat</b></a>'
+	if bottle > 0:pl 'You have a bottle of water. <a href="exec:bottle = 0 & water = 20 & cumspclnt = 2 & gs ''cum_cleanup'' & gs ''stat''"><b>Drink</b></a>'
+	if buterbrod > 0:pl 'You have a sandwich. <a href="exec:buterbrod = 0 & energy += 20 & cumspclnt = 2 & gs ''cum_cleanup'' & salo += 1 & gs ''stat''"><b>Eat</b></a>'
 	if wine = 1 and alkowine = 0:pl'Your purse contains a bottle of <a href="exec:dynamic $dinalkowin1">wine</a>'
 	if wine = 1 and alkowine = 1:pl'Your purse contains a half-bottle of <a href="exec:dynamic $dinalkowin2">wine</a>'
 	if foto = 1:pl'Your purse contains a strange photo'
@@ -484,7 +492,8 @@ $dinalkowin1 = {
     alkowine = 1
     if intel  > 5 : intel -= 1
     alko += 5
-	cumlip = 0
+	cumspclnt = 2
+	gs 'cum_cleanup' 
 	fbreath = 0
     gs'stat'
     '<center><img src="images/pic/alkowin.jpg"></center>'
@@ -506,6 +515,165 @@ $dinalkowin2 = {
     '<center><img src="images/pic/alkowin.jpg"></center>'
     'You opened her purse and pulled out, the remaining half bottle of wine and drank slowly threw the empty bottle.'
         act '...':gt $CURLOC
+}
+
+$din_Switch_Condom_Menu = {
+	dynamic $din_Update_Condom_Counts
+	clr
+	pl 'You have <<iif(preziktype < 2, prezik+prezikcount, prezikcount)>> normal, <<iif(preziktype = 2, prezik+preziksabo, preziksabo)>> sabotaged condoms.'
+	nl
+	if preziktype > 0:
+		PL '<a href="exec:dynamic $din_Do_Condom_Counts, 1">Switch to Normal Condoms</a>.'
+	end
+	if preziktype ! 1:
+		PL '<a href="exec:dynamic $din_Do_Condom_Counts, 2">Stop using Condoms</a>.'
+	end
+	if preziktype ! 2:
+		PL '<a href="exec:dynamic $din_Do_Condom_Counts, 3">Switch to Sabotaged Condoms</a>.'
+	end
+	if prezikcount > 0 or preziktype = 0:
+		pl '<a href="exec:dynamic $din_Do_Condom_Counts, 4">Sabotage a condom</a>.'
+	end
+	NL
+	PL '<a href="exec:gs ''stat''">Close Bag</a>'
+}
+
+$din_Do_Condom_Counts = {
+	!{set condom count and type}
+	if ARGS[0] = 1:
+		clr
+		'You will offer a condom the next time you have sex.'
+		if preziktype = 2: preziksabo = prezik
+		prezik = prezikcount
+		prezikcount = 0
+		preziktype = 0
+	elseif ARGS[0] = 2:
+		'You will not offer a condom the next time you have sex.'
+		if preziktype = 0: prezikcount = prezik
+		if preziktype = 2: preziksabo = prezik
+		prezik = 0
+		preziktype = 1
+	elseif ARGS[0] = 3:
+		'You will offer your sabotaged condom the next time you have sex.'
+		if preziktype = 0: prezikcount = prezik
+		prezik = preziksabo
+		preziksabo = 0
+		preziktype = 2
+	elseif ARGS[0] = 4:
+		if preziktype ! 0 and prezikcount > 0:
+			preziksabo +=1
+			prezikcount -=1
+			'You use a needle to punch holes in one of your condoms.'
+		elseif preziktype = 0 and prezik > 0:
+			preziksabo +=1
+			prezik -=1
+			'You use a needle to punch holes in one of your condoms.'
+		else
+			'You do not have any condoms to sabotage.'
+		end
+	end
+	dynamic $din_Switch_Condom_Menu
+}
+   
+$din_Update_Condom_Counts = {
+	if preziktype = 0:
+		if prezikcount > 0:
+			prezik += prezikcount
+			prezikcount = 0
+		end
+		if prezik <= 0:
+			'You are out of condoms.'
+			prezik = 0
+			prezikcount = 0
+			preziktype = 1
+		end
+	elseif preziktype = 1:
+		if prezik > 0:
+			prezikcount += prezik
+			prezik = 0
+		end
+	elseif preziktype = 2:
+		if preziksabo > 0:
+			prezik += preziksabo
+			preziksabo = 0
+		end
+		if prezik <= 0 and prezikcount <= 0:
+			'You are out of condoms.'
+			prezik = 0
+			preziksabo = 0
+			prezikcount = 0
+			preziktype = 1
+		elseif prezik <= 0 and prezikcount > 0:
+			'You have run out of sabotaged condoms so will use normal condoms.'
+			prezik = prezikcount
+			prezikcount = 0
+			preziktype = 0
+		end
+	end
+}
+
+$d_tabletkied = {
+	clr
+	if tabletkiday < daystart: pl '<a href="exec:dynamic $d_tabletkieda, 1">Take a pill now.</b></a>'
+	if tabletkicheck = 0:
+		pl '<a href="exec:dynamic $d_tabletkieda, 2">Automatically take your pills.</b></a>'
+	elseif tabletkicheck = 1:
+		pl '<a href="exec:dynamic $d_tabletkieda, 3">Stop automatically taking your pills.</b></a>'
+	end
+	pl '<a href="exec:dynamic $d_tabletkieda, 4">Examine the birth control pills.</b></a>'
+	if tabletkioddk = 1: pl '<a href="exec:dynamic $d_tabletkieda, 5">Dump the strange pills.</b></a>'
+	PL '<a href="exec:gs ''stat''">Close Bag</a>'
+}
+
+$d_tabletkiedA = {
+	if ARGS[0] = 1:
+		tabletkipd += tabletkipt
+		tabletki -= 1
+		if tabletkiday ! daystart:
+			pillcon += 1+(pillcon+15)/40
+			if pillcon > 40: pillcon = 40
+			tabletkiday = daystart
+			tabletkipt = 0
+			tabletkipi = 0
+		else
+			health -= 1
+		end
+		'You take a birth control pill.'
+		gs 'stat'
+	elseif ARGS[0] = 2:
+		'You will do your best to remember to take your birth control pills every day.'
+		tabletkicheck = 1
+		gs 'stat'
+	elseif ARGS[0] = 3:
+		'You will take your birth control pills as desired.'
+		tabletkicheck = 0
+		gs 'stat'
+	elseif ARGS[0] = 4:
+		if tabletkioddp <= 0:
+			'These pills appear to be normal birth control pills.'
+			tabletkioddk = 0
+			gs 'stat'
+		else
+			if Tabletki <= 30:
+				'There is something unusual about the pills. They do not look normal.'
+			else
+				'There is something unusual about some of your pills. They do not look normal.'
+			end
+			tabletkioddk = 1
+			gs 'stat'
+			dynamic$d_tabletkied
+		end
+	elseif ARGS[0] = 5:
+		'You get rid of the strange pills.'
+		tabletkioddk = 0
+		tabletki -= 30
+		tabletkioddp = 0
+		if tabletki < 0:
+			tabletki = 0
+		end
+		gs 'stat'
+	end
+	dynamic $d_tabletkied
 }
 
 --- din_bad ---------------------------------
