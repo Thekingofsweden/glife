@@ -1,0 +1,231 @@
+# Cum_Manage
+!{Sets the cum array temp to the current size of the cum array, to add a new entry to the end of file. Then checks to see if you are on the pill. If you are and there is no contraception used, it flags this as a "done with pill" act, which means a pregnancy will be a pill failure.}
+cumarrtemp = arrsize('$cumarrnam')
+if sexcontra = 0 and pillcon > 0: sexcontra = 2
+!{It checks to see if this is flagged as a preejaculate emmission. All vaginal penetrations that flag this as cumprecheck contain preejaculate. Guidelines for calling it: If your boy is likely to have masterbated, had sex, or otherwise encouraged semen to leak out of their urethra in the last 48 hours, they probably have some fertile preejaculate. If in doubt, let it leak. The chances of pregnancy from it are low, and the MC should have been wearing protection.}
+if cumprecheck ! 1:
+!{Here it checks for vaginal deposit. If it is, it sees if theres a deposit made by someone named the same. If so, it checks if this new act is protected. If it isnt, it overwrites the old deposit.}
+	if spafinloc <= 0:
+		arrmodtmp = arrpos('$cumarrnam',$boy)
+		if arrmodtmp >= 0:
+			if cumarrdel[arrmodtmp] = 0 and sexcontra < 3: cumarrtemp = arrmodtmp
+		end
+!{Next it sets the variables in the array. The cumming boys name first, sets the cum age to 0, then the cum delivery location to vaginally, then sees if its a unknowing sex act. If it is, it makes it so the MC doesnt know who did it. Then if the boy has a custom specified potency, it flags the potency. Otherwise it sets it to the default.}
+		$cumarrnam[cumarrtemp] = $boy
+		cumarrage[cumarrtemp] = 0
+		cumarrdel[cumarrtemp] = 0
+		if sexunaware > 0 or sexpartkno = 0:
+			cumarrkno[cumarrtemp] = 0
+		else
+			cumarrkno[cumarrtemp] = 1
+		end
+		if sexspecpot ! 0:
+			cumarrppt[cumarrtemp] = sexspecpot
+		else
+			cumarrppt[cumarrtemp] = 10000
+		end
+!{Now it sets up the splatter and actual internal cum. First it sets the array to the spatter end of file. Then it checks for riding bareback. If theres a condom, it gives a chance for the condom to fail in general, slip off and remain in the vagina, or break. The cumarrcpt, or current internal potency of the sperm, is set dependent on what happened. the contraception type is also set. For bursting or slippage, a spatter is created.}
+		cumarrtemp2 = arrsize('sparrvol')
+		arrmodtmp = arrpos('$sparrnam',$boy)
+		if arrmodtmp >= 0:
+			if sparrloc[arrmodtmp] = spafinloc and sexcontra < 3: cumarrtemp2 = arrmodtmp
+			arrmodtmp = 0
+		end
+		if sexcontra > 2:
+			if sexcontra = 3:
+				temprand = rand(0,1000)
+				if temprand = 0:
+					cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/4
+					cumarrcon[cumarrtemp] = 3
+				elseif temprand < 4:
+					cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/200
+					cumarrcon[cumarrtemp] = 5
+					cumcondslip = 1
+					cumcondsanb = cumarrtemp
+					sexcontra = 5
+					sparrage[cumarrtemp2] = 0
+					sparrloc[cumarrtemp2] = 17
+					$sparrnam[cumarrtemp2] = $boy
+					if sexspecpot ! 0:
+						sparrppt[cumarrtemp2] = sexspecpot
+					else
+						sparrppt[cumarrtemp2] = 10000
+					end
+					if sexvolume > 0:
+						sparrvol[cumarrtemp2] = sexvolume
+					else
+						sparrvol[cumarrtemp2] = 40
+					end
+					sparridt[cumarrtemp2] = sexpartkno
+					sparrslc[cumarrtemp2] = 0
+				elseif temprand < 10:
+					cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/2
+					cumarrcon[cumarrtemp] = 4
+					sexcontra = 4
+					sparrage[cumarrtemp2] = 0
+					sparrloc[cumarrtemp2] = 0
+					$sparrnam[cumarrtemp2] = $boy
+					if sexspecpot ! 0:
+						sparrppt[cumarrtemp2] = sexspecpot
+					else
+						sparrppt[cumarrtemp2] = 10000
+					end
+					if sexvolume > 0:
+						sparrvol[cumarrtemp2] = sexvolume
+					else
+						sparrvol[cumarrtemp2] = 40
+					end
+					sparridt[cumarrtemp2] = sexpartkno
+					sparrslc[cumarrtemp2] = 0
+				else
+					cumarrcpt[cumarrtemp] = 5
+					cumarrcon[cumarrtemp] = 3
+				end
+!{Next it checks to see if the event is calling specifically for a burst or slipped off condom. It treats them the same as if the condom above had a failure.}
+			elseif sexcontra = 4:
+				cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/2
+				cumarrcon[cumarrtemp] = 4
+				sparrage[cumarrtemp2] = 0
+				sparrloc[cumarrtemp2] = 0
+				$sparrnam[cumarrtemp2] = $boy
+				if sexspecpot ! 0:
+					sparrppt[cumarrtemp2] = sexspecpot
+				else
+					sparrppt[cumarrtemp2] = 10000
+				end
+				if sexvolume > 0:
+					sparrvol[cumarrtemp2] = sexvolume
+				else
+					sparrvol[cumarrtemp2] = 40
+				end
+				sparridt[cumarrtemp2] = sexpartkno
+				sparrslc[cumarrtemp2] = 0
+			elseif sexcontra = 5:
+				cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/200
+				cumarrcon[cumarrtemp] = 5
+				cumcondslip = 1
+				cumcondsanb = cumarrtemp
+				sparrage[cumarrtemp2] = 0
+				sparrloc[cumarrtemp2] = 17
+				$sparrnam[cumarrtemp2] = $boy
+				if sexspecpot ! 0:
+					sparrppt[cumarrtemp2] = sexspecpot
+				else
+					sparrppt[cumarrtemp2] = 10000
+				end
+				if sexvolume > 0:
+					sparrvol[cumarrtemp2] = sexvolume
+				else
+					sparrvol[cumarrtemp2] = 40
+				end
+				sparridt[cumarrtemp2] = sexpartkno
+				sparrslc[cumarrtemp2] = 0
+!{!Next it checks for sabotaged condoms. First sabotaged by you, then sabotaged by the guy. If they were sabotaged, it acts similar to a condom failure, but worse.}
+			elseif sexcontra = 6:
+				cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/3
+				cumarrcon[cumarrtemp] = 6
+			elseif sexcontra = 7:
+				cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/3
+				cumarrcon[cumarrtemp] = 7
+			end
+!{If you have no protection, you get a nice full load of semen.}
+		else
+			sparrage[cumarrtemp2] = 0
+			sparrloc[cumarrtemp2] = 0
+			$sparrnam[cumarrtemp2] = $boy
+			if sexspecpot ! 0:
+				sparrppt[cumarrtemp2] = sexspecpot
+			else
+				sparrppt[cumarrtemp2] = 10000
+			end
+			if sexvolume ! 0:
+				sparrvol[cumarrtemp2] = sexvolume
+			else
+				sparrvol[cumarrtemp2] = 40
+			end
+			sparridt[cumarrtemp2] = sexpartkno
+			sparrslc[cumarrtemp2] = 0
+			cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/5*4
+			cumarrcon[cumarrtemp] = sexcontra
+		end
+!{If you arent getting it in the vagina, and the boy isnt pumping it into a condom, a spatter is made and applied. If you arent wearing any panties and it was called to hit your panties, it goes directly to your groin. If you are naked and it calls for a clothing strike, it will go to your body instead.}
+	elseif spafinloc > 0 and sexcontra < 3:
+		cumarrtemp2 = arrsize('sparrvol')
+		arrmodtmp = arrpos('$sparrnam',$boy)
+		if arrmodtmp >= 0:
+			if sparrloc[arrmodtmp] = spafinloc and sexcontra < 3: cumarrtemp2 = arrmodtmp
+			arrmodtmp = 0
+		end
+		sparrage[cumarrtemp2] = 0
+		if tanga = 0:
+			if spafinloc = 2:
+				spafinloc = 1
+			elseif spafinloc = 5: 
+				spafinloc = 4
+			end
+		end
+		if $clothingworntype = 'nude':
+			if spafinloc = 2:
+				spafinloc = 1
+			elseif spafinloc = 5:
+				spafinloc = 4
+			elseif spafinloc = 6:
+				if rand(0,1) = 0:
+					spafinloc = 1
+				else
+					spafinloc = 4
+				end
+			elseif spafinloc = 7:
+				if rand(0,1) = 0:
+					spafinloc = 14
+				else
+					spafinloc = 15
+				end
+			end
+		end
+		sparrloc[cumarrtemp2] = spafinloc
+		if spafinloc = 12 and swallow >= 10 and rand(0,3) = 0: energy += 1
+		$sparrnam[cumarrtemp2] = $boy
+		if sexspecpot ! 0:
+			sparrppt[cumarrtemp2] = sexspecpot
+		else
+			sparrppt[cumarrtemp2] = 10000
+		end
+		if sexvolume > 0:
+			sparrvol[cumarrtemp2] = sexvolume
+		else
+			sparrvol[cumarrtemp2] = 40
+		end
+		sparridt[cumarrtemp2] = sexpartkno
+		sparrslc[cumarrtemp2] = 0
+	end
+	sexpartkno = 0
+	sexunaware = 0
+	sexspecpot = 0
+!{And this is the pre ejaculate release talked about above.}
+elseif sexcontra < 3 and spafinloc = 0:
+	arrmodtmp = arrpos('$cumarrnam',$boy)
+	if arrmodtmp >= 0:
+		if cumarrdel[arrmodtmp] = 0 and cumarrcpt[arrmodtmp] <= ((cumarrppt[arrmodtmp]/12) + 1) and sexcontra < 3: cumarrtemp = arrmodtmp
+	end
+	$cumarrnam[cumarrtemp] = $boy
+	cumarrage[cumarrtemp] = 0
+	cumarrdel[cumarrtemp] = 0
+	cumarrkno[cumarrtemp] = 0
+	if sexspecpot ! 0:
+		cumarrppt[cumarrtemp] = sexspecpot
+	else
+		cumarrppt[cumarrtemp] = 10000
+	end
+	cumarrcon[cumarrtemp] = sexcontra
+	cumarrcpt[cumarrtemp] = cumarrppt[cumarrtemp]/12
+end
+
+sexspecpot = 0
+cumprecheck = 0
+spafinloc = 0
+sexvolume = 0
+arrmodtmp = 0
+dynamic $din_Update_Condom_Counts
+
+--- cum_manage ---------------------------------
