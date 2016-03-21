@@ -5,52 +5,91 @@ gs 'stat'
 '<center><b>bed</b></center>'
 '<center><img src="images/pics/son.jpg"></center>'
 
-if son < 10:
+if $args[0] = '':
+	if son < 10:
+		if budon = 1:
+			act 'Sleep to the alarm - <<timer>> hours <<timerM>> minutes':saunaalarm = 1 & gt 'saunabed', 'sleep'
+		act 'Screw the alarm and sleep well':saunaalarm = 1 & gt 'saunabed', 'sleep'
+	end
 	if budon = 1:
-		act 'Sleep to the alarm - <<timer>> hours <<timerM>> minutes':
-			cls
-			inSleep = 1
-			:markson
-			needminut = 60 - minut
-			sec += needminut * 60
-			son += 3
-			gs 'stat'
+		'Alarm set for <<timer>> hours <<timerM>> minutes'
 
-			if son >= 23 or timer = hour and timerM = minut:
-				inSleep = 2
-				gt $locBroom, $metkaBroom
-			else
-				jump 'markson'
-			end
+		act 'Turn the alarm off':budon = 0 & gt $curloc
+	else
+		act 'Turn the alarm on':budon = 1 & gt $curloc
+	end
+
+	act 'Set the alarm':gt'budilnik', 'start'
+end
+
+if $args[0] = 'sleep':
+	if disable_autosave = 0:
+		if StoryLine = 0:
+			SAVEGAME 'autosave.sav'
+		else
+			SAVEGAME 'autosave_alt.sav'
 		end
 	end
+	cls
+	hapri = 0
+	InSleep = 1
+	
+	gs 'clothing', 'strip'
+	
+	
+	'<center><img src="images/pics/son.jpg"></center>'
 
-	act 'Screw the alarm and sleep well':
-		cls
-		inSleep = 1
-		:markson
-		needminut = 60 - minut
-		sec += needminut * 60
-		son += 3
-		gs 'stat'
+	if analplugIN = 1 and bedanal = 0:analplugIN = 0 & 'Before going to bed you remove your butt plug.'
+	if vibratorIN = 1:vibratorIN = 0 & 'Before going to bed you remove your vibrator'
+	if mop > 1:mop = 0 & vidageday = vidageday - 1 & 'Makeup smears your face, you think that it looks bad sleeping in makeup, and your skin will age faster from this.'
+	if fat > 5 and stringimplant = 1:silicone += 1 & fat -= 5
 
-		if son < 23:jump 'markson'
 
-		inSleep = 2
-		gt $locBroom, $metkaBroom
+	:loopson
+	minut += 1
+	stime += 1
+	health += 5
+
+	if stime = 60:stime = 0 & son += 3
+
+	gs 'stat'
+	if budilnikOn = 1 and hour = timer and minut = timerM:
+		manna -= 10
+		'Your alarm goes off.'
+
+		act 'Get out of bed and get dressed (0:15)':
+			gs 'clothing', 'wear_last_worn'
+			InSleep = 0
+			minut += 15
+			gt $locBroom, $metkaBroom
+		end
+
+		act 'Get out of bed (0:10)':
+			InSleep = 0
+			minut += 10
+			gt $locBroom, $metkaBroom
+		end
+
+	elseif son > 24:
+		manna -= 10
+		'You wake up, no longer tired.'
+
+		act 'Get out of bed and get dressed (0:15)':
+			gs 'clothing', 'wear_last_worn'
+			InSleep = 0
+			minut += 15
+			gt $locBroom, $metkaBroom
+		end
+
+		act 'Get out of bed (0:10)':
+			InSleep = 0
+			minut += 10
+			gt $locBroom, $metkaBroom
+		end
+	else
+		jump 'loopson'
 	end
 end
-
-if budon = 1:
-	'Alarm set for <<timer>> hours <<timerM>> minutes'
-
-	act 'Turn the alarm off':budon = 0 & gt $curloc
-else
-	act 'Turn the alarm on':budon = 1 & gt $curloc
-end
-
-act 'Set the alarm':gt'budilnik', 'start'
-act 'Get out of bed':sec += 5 & gt $locBroom, $metkaBroom
 
 --- saunabed ---------------------------------
 

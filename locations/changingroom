@@ -1,0 +1,73 @@
+# changingroom
+$swim_list_line = {
+	!! a single line in a clothing list (wardrobe, etc)
+	!! ARGS 0 - action type (wardrobe, sell)
+	!! ARGS 1 - clothing type
+	!! ARGS 2 - clothing index
+
+	$RESULT = '<<$ARGS[1]>> no.<<ARGS[2]>> (strength ' + dyneval '$RESULT += <<$ARGS[1]>>H[<<ARGS[2]>>]'+')'
+
+	$RESULT += ' <a href="exec:gt ''changingroom'', ''view_swim_item'', ''<<$ARGS[0]>>'', ''<<$ARGS[1]>>'', <<ARGS[2]>>">View</a>'
+}
+
+if $ARGS[0] = 'view_swim_list':
+	if $clothingworntype ! 'swimwear':
+		$normalclothingworntype = $clothingworntype
+		normalclothingwornno = clothingwornnumber
+	end
+
+	i = 1
+	:loopswimwear
+		if swimwear[i] = 1 and ($clothingworntype ! 'swimwear' or clothingwornnumber ! i):dyneval($swim_list_line, $ARGS[1], 'swimwear', i)
+		i += 1
+	if i <= 30:jump 'loopswimwear'
+
+	if $clothingworntype = 'swimwear':
+		act 'Put your regular clothes back on':
+			gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
+			gt 'changingroom', 'view_swim_list', $ARGS[1]
+		end
+	end
+
+	act 'Leave':gt $loc, $metka
+
+end
+
+if $ARGS[0] = 'view_swim_item':
+	!! ARGS 0 - view_clothing_item
+	!! ARGS 1 = action type (wardrobe, shop, sell, resize)
+	!! ARGS 2 - clothing type
+	!! ARGS 3 - clothing index
+	!! ARGS 4 - price for shop
+
+	cla
+	'<center><img src="<<FUNC(''$clothing_image'',  $ARGS[2], ARGS[3])>>"></center>'
+	'<<$ARGS[2]>> no.<<ARGS[3]>>'
+	FUNC('$attributes_swimwear', $ARGS[2], ARGS[3])
+	FUNC('$clothing_name', $ARGS[2], ARGS[3])
+
+
+	$RESULT = '(strength '
+	dynamic '$RESULT += <<$ARGS[2]>>H[<<ARGS[3]>>]'
+	$RESULT += ')'
+	'<<$RESULT>>'
+
+
+	act 'Return':gt 'changingroom', 'view_swim_list', $ARGS[1]
+	!! if the clothing is worn out
+	if dyneval('RESULT = <<$ARGS[2]>>H[<<ARGS[3]>>]') <= 0:
+		'This item is worn and is not suitable for further wear.'
+		act 'Throw it away':
+			dynamic '<<$ARGS[2]>>[<<ARGS[3]>>] = 0'
+			gt 'changingroom', 'view_swim_list', $ARGS[1]
+		end
+	else
+		act 'Wear':
+			gs 'clothing', 'wear', $ARGS[2], ARGS[3]
+			gt 'changingroom', 'view_swim_list', $ARGS[1]
+		end
+	end
+end
+
+--- changingroom ---------------------------------
+

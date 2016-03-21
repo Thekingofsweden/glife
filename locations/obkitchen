@@ -1,200 +1,64 @@
 # obkitchen
-$metkaM = $ARGS[0]
-$locM = $CURLOC
-gs 'stat'
-'<center><b>in the dorm kitchen</b></center>'
-'<center><img src="images/img/centr/obkitchen.jpg"></center>'
+if $args[0] = '':
+	$metkaM = $ARGS[0]
+	$locM = $CURLOC
+	gs 'stat'
+	'<center><b>in the dorm kitchen</b></center>'
+	'<center><img src="images/img/centr/obkitchen.jpg"></center>'
 
-act 'In the corridor':gt 'dorm', 'korr'
+	act 'Return to the corridor':gt 'dorm', 'korr'
 
-if eda > 0:
-	act 'Cook food (1:00)':
-		cla
-		*clr
-		minut += 60
-		gs 'stat'
-		edahot += 1
-		eda -= 1
-		manna -= 5
-		'<center><img src="images/pics/cook.jpg"></center>'
-		'You prepare the meal.'
-
-		act 'Leave the meal':gt 'obkitchen'
+	if eda > 0:
+		'Your shelf in the refrigerator holds <b><<eda>></b> servings of food.'
+		if edahot = 0:
+			act 'Cook food (0:30)':
+				cla
+				*clr
+				minut += 30
+				edahot += 1
+				eda -= 1
+				manna -= 5
+				gs 'stat'
+				'<center><img src="images/pics/cook.jpg"></center>'
+				'You prepare a meal.'
+				gs 'obkitchen', 'food'
+				act 'Leave the meal':gt 'obkitchen'
+			end
+		end
 	end
+
+	if edaD = 0 and eda = 0:'<b><font color = red>Your shelf in the refrigerator is bare, there is nothing left for you to eat.</font></b>'
+
+
+	if edahot > 0:
+		'A cooked meal is on the table.'
+		gs 'obkitchen', 'food'
+	end
+
+	if pranik > 0:
+		if pranik = 1:
+			'You only have one more portion of cookies.'
+		else
+			'You have enough cookies for <b><<pranik>></b> more snacks.'
+		end
+		dynamic $pranik
+	end
+
+	dynamic $edaD
+	dynamic $fatdel
+	dynamic $driwater
+	dynamic $lekarstvo
+	dynamic $vitamin
 end
 
-if edahot > 0:
+if $args[0] = 'food':
 	act 'Eat cooked food (0:30)':
 		cla
 		*clr
-		gs 'stat'
-		frost = 0
-		minut += 30
-		edahot -= 1
-		health += 10
+		edahot = 0
 		manna += 20
-		'<center><img src="images/pics/food.jpg"></center>'
-
-		if energy >= 30:
-			fat += 5
-			'You can no longer eat.'
-		elseif energy >= 20 and energy < 30:
-			fat += 3
-			energy += 10
-			'You pushed through the power of a meal.'
-		elseif energy < 20:
-			energy += 20
-			!!fat += 1
-			'You gladly ate cooked food.'
-		end
-
-		if water >= 20:
-			'You don''t need any more tea.'
-		else
-			water += 20
-			cumlip = 0
-			fbreath = 0
-			'You gladly drank a mug of tea.'
-		end
-
-		act 'Get up from the table':gt 'obkitchen'
+		dynamic $food
 	end
-end
-
-if pranik > 0:
-	act 'Drink tea with cookies (0:05)':
-		cla
-		*clr
-		minut += 5
-		pranik -= 1
-		health += 30
-		manna += 100
-		energy += 20
-		water += 20
-		cumlip = 0
-		fbreath = 0
-		fat += 50
-		frost = 0
-		gs 'stat'
-		'<center><img src="images/pics/food.jpg"></center>'
-		'You drank tea with cookies, sweet and very bad for the figure, but so nice.'
-
-		act 'Get up from the table':gt 'obkitchen'
-	end
-end
-
-if edaD > 0:
-	act 'Eat diet meal (0:30)':
-		cla
-		*clr
-		frost = 0
-		minut += 30
-		health += 10
-		manna += 20
-		edaD -= 1
-		'<center><img src="images/pics/food.jpg"></center>'
-
-		if energy >= 30:
-			'You can no longer eat.'
-		elseif energy >= 20 and energy < 30:
-			energy += 10
-			'You pushed through the power of a meal.'
-		elseif energy < 20:
-			energy += 20
-			'You gladly ate cooked food.'
-		end
-
-		if water >= 20:
-			'You don''t need any more tea.'
-		else
-			water += 20
-			cumlip = 0
-			fbreath = 0
-			'You gladly drank a mug of tea.'
-
-		end
-
-		act 'Get up from the table':gt 'obkitchen'
-	end
-end
-
-if fatdel > 0:
-	act 'Consume fat burners':
-		cla
-		*clr
-		fatdel -= 1
-		fat -= 25
-
-		if fat < 0:fat = 0
-
-		'You drank fat burning capsule. These capsules are gradually and results will be seen immediately.'
-
-		act 'Get up from the table':gt 'obkitchen'
-	end
-end
-
-act 'Drink':
-	cla
-	minut += 5
-
-	if water >= 20:
-		'You don''t need any more water.'
-	else
-		water += 20
-		cumlip = 0
-		fbreath = 0
-		'You gladly drank a glass of water.'
-	end
-
-	act 'Get up from the table':gt 'obkitchen'
-end
-
-if lekarstvo > 0:
-	'You have <<lekarstvo>> tablets.'
-
-	if sick > 0 and lekarday ! daystart:
-		act 'Take a pill':
-			cla
-			*clr
-			minut += 5
-			lekarday = daystart
-			lekarstvo -= 1
-			sick -= sick * 20 / 100
-			lekrand = rand(1, 9)
-			'<center><img src="images/inBed/lekr<<picrand>>.jpg"></center>'
-			'You took a pill'
-
-			act 'Move away':gt 'obkitchen'
-		end
-	end
-end
-
-if vitamin > 0:
-	'You have <<vitamin>> vitaminok.'
-
-	if vitaminday ! daystart:
-		act 'Take vitamins (0:05)':
-			cla
-			*clr
-			minut += 5
-			vitaminday = daystart
-			vitamin -= 1
-			frost = 0
-			skinvan += 1
-
-			if skinvan = 20:skinvan = 0 & skin += 1
-
-			'You took some vitamins'
-
-			act 'Move away':gt 'obkitchen'
-		end
-	end
-end
-
-if eda > 0:
-	'Your shelf in the refrigerator holds <b><<eda>></b> servings of food. <<$edagot>>'
-elseif edaD = 0 and eda = 0:
-	'<b><font color = red>Your shelf in the refrigerator is bare, there is nothing left for you to eat.</font></b>'
 end
 
 --- obkitchen ---------------------------------

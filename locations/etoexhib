@@ -196,7 +196,8 @@ if $ARGS[0] = 'pos6':
 			'You are not thirsty.'
 		elseif water < 20:
 			water += 20
-			cumlip = 0
+			cumspclnt = 2
+			gs 'cum_cleanup'
 			fbreath = 0
 			'You gladly drank spring water.'
 		end
@@ -413,9 +414,9 @@ if $ARGS[0] = 'pos13':
 			horny += 50
 			gang += 1
 			spafinloc = 4
-gs 'cum_manage'
+			gs 'cum_manage'
 			spafinloc = 12
-gs 'cum_manage'
+			gs 'cum_manage'
 			vagina += 1
 			gs 'stat'
 			'<center><img src="images/etogame/dachagang4.jpg"></center>'
@@ -456,9 +457,9 @@ if $ARGS[0] = 'pos14':
 			horny += 50
 			gang += 1
 			spafinloc = 4
-gs 'cum_manage'
+			gs 'cum_manage'
 			spafinloc = 12
-gs 'cum_manage'
+			gs 'cum_manage'
 			vagina += 1
 			gs 'stat'
 			'<center><img src="images/etogame/dachagang4.jpg"></center>'
@@ -747,8 +748,9 @@ if $ARGS[0] = 'pos19':
 				'<center><img src="images/etogame/ptu_cadr.jpg"></center>'
 				'Good day! Welcomed the hiring manager you girl. And told me that they need a certified teacher for doing electives. Working days from Monday to Saturday from 14.00 to 16.00. Payment 300 rubles for one day of training. For nonresident available room in a hostel. Terms of piecework, because for full salary, at the moment, there is no free bets. Strict dress code, business. Also not recommended for bright makeup, strong perfume.'
 
-				if diplom = 0 and fakediplom = 0:
+				if diplom = 0 and fakediplom < 0:
 					'You are told that you can not take a job without a diploma of higher pedagogical education.'
+					fakediplom = 2
 				elseif diplom = 1 or fakediplom = 1:
 					act 'Pass an interview for a job':
 						cla
@@ -1336,7 +1338,8 @@ if $ARGS[0] = 'pos37':
 			'You don''t need any more tea.'
 		elseif water < 20:
 			water += 20
-			cumlip = 0
+			cumspclnt = 2
+			gs 'cum_cleanup'
 			fbreath = 0
 			'You gladly drank a cup of tea.'
 		end
@@ -1693,9 +1696,9 @@ if $ARGS[0] = 'pos50':
 			horny += 50
 			gang += 1
 			spafinloc = 4
-gs 'cum_manage'
+			gs 'cum_manage'
 			spafinloc = 12
-gs 'cum_manage'
+			gs 'cum_manage'
 			vagina += 1
 			gs 'stat'
 			'<center><img src="images/etogame/cherdak0.jpg"></center>'
@@ -1763,8 +1766,7 @@ if $ARGS[0] = 'pos51':
 end
 
 if $ARGS[0] = 'pos52':
-	cla
-	*clr
+	cls
 	minut += 5
 	gs 'stat'
 	'<center><img src="images/etogame/cherdak.jpg"></center>'
@@ -1781,15 +1783,19 @@ if $ARGS[0] = 'pos52':
 
 	act 'Go to the hallway':gt 'etoexhib', 'pos51'
 end
+
 if $ARGS[0] = 'pos53':
-	cla
-	*clr
+	$metkaM = $ARGS[0]
+	$locM = $CURLOC
+	cls
 	minut += 5
 	gs 'stat'
 	'<center><img src="images/etogame/roof.jpg"></center>'
 	'The roof of your apartment building.'
 
-	if temper >= 20 and bikini > 0 and hour >= 6 and hour <= 20:
+	act 'Change into a bikini':gt 'changingroom', 'view_swim_list'
+
+	if temper >= 20 and $clothingworntype = 'swimwear' and hour >= 6 and hour <= 20:
 		act 'Sunbathe (1:00)':
 			cla
 			*clr
@@ -1812,8 +1818,13 @@ if $ARGS[0] = 'pos53':
 	end
 
 	act 'Go to the attic':
-		cls
-		gt 'etoexhib', 'pos52'
+		if $clothingworntype = 'swimwear':
+			cla
+			'You need to get dressed in regular clothing first.'
+			act'Return':gt 'etoexhib', 'pos53'
+		else
+			gt 'etoexhib', 'pos52'
+		end
 	end
 end
 
@@ -1825,6 +1836,34 @@ if $ARGS[0] = 'pos54':
 
 	'<center><img src="images/etogame/spy.jpg"></center>'
 	'suspicious man. one_can_see, that he constantly looks. Occasionally, approach it any-some people and that-he has taken. after looking carefully, you understand, it sells gas station checks. everything is clear, trades forged documents. Possible and I find that he-something useful.'
+
+	if fakepassport < 0 or fakediplom = 2:
+		!only notify player 1 time after events triggered
+		if fakepassport < 0:
+			fakepassport = 0
+			'He tells you, that a passport with fake age will cost you 3,000 rubles'
+		end
+
+		if fakediplom = 2:
+			fakediplom = 0
+			'He told you, that a diploma of bachelor degree will cost you 100,000 rubles'
+		end
+	end
+
+	if age < 18 and fakepassport < 1 and money > 3000:
+		act 'Buy fake passport (3,000 rubles)':
+			cla
+			*clr
+			minut += 10
+			money -= 30000
+			fakepassport = 1
+
+			'<center><img src="images/etogame/spy.jpg"></center>'
+			'You bought a fake passport, which claims you are an adult.'
+
+			act 'Leave':gt 'vokzal'
+		end
+	end
 
 	if diplom = 0 and fakediplom = 0 and money > 100000:
 		act 'Buy fake diploma (100,000 rubles)':

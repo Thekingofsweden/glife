@@ -1,0 +1,220 @@
+# ParChurch
+if $ARGS[0] = 'start':
+	CLOSE ALL
+	if sound = 0:
+		if week = 7:
+			if hour >= 8 and hour <= 12: PLAY 'sound/street2.mp3',30 & PLAY 'sound/church/ivironKampan01.wav',30
+			if hour >= 13 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		elseif week = 6:
+			if hour >= 19 and hour <= 23: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/church/ivironKampan01.wav',30
+			if hour >= 13 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/street2.mp3',30 & PLAY 'sound/street_leto.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+		end
+	end
+	$loc = $CURLOC
+	$metka = $ARGS[0]
+	gs 'stat'
+	gs 'time'
+	'<center><b><font color="maroon">Church of Saint Nikolas</font></b></center>'
+	'<center><img src="images/qwest/alter/Church/St-Nikolas.jpg" width="1000" height="422"></center>'
+	'Pavlovsk''s only church. The church of Saint Nikolas is the tallest building in town. It''s old, but well maintained by the worshippers of the parish.'
+	''
+	'You can confess every weekday between 7h and 9h or 16h and 18h. On the weekend between 16h and 18h.'
+	'Vigil is held Saturdays at 19h.'
+	'The Divine Liturgy is on Sundays between 9h and 12h.'
+
+	if week = 6 and hour >=19 and hour <= 22 and churchday ! daystart:
+		act 'Attend vigil': gt 'ParChurch', 'vigil'
+	elseif week = 7 and hour >= 9 and hour < 12 and churchday ! daystart:
+		act 'Attend Divine Liturgy': gt 'ParChurch' , 'liturgy'
+	else
+		act 'Enter the church': gt 'ParChurch' , 'Narthex'
+	end
+	act 'Return to town':gt 'gorodok'
+end
+
+if $ARGS[0] = 'vigil':
+	cls
+	CLOSE ALL
+	churchday = daystart
+	manna += 10
+	temprand = rand(0,5)
+	if rand(0,1) = 1:
+		horny += temprand
+	else
+		horny -= temprand
+	end
+	moral += 1
+	hour = 22
+	gs 'stat'
+	PLAY 'sound/church/Blessing.mp3',30
+	'<center><img src="images/qwest/alter/Church/church'+ rand(1,5) +'.jpg" width="1000" height="422"></center>'
+	'You attend the vigil and reflect on the recent events in your life. The harmonies as the hymns and psalms are sung sweep aside some of the worries in your heart, although you know they will return once you leave this holy place. The sweet scent of incence tickles your nose and reminds you of the scent of' + iif(rex_love = 1, 'Rex', 'your step-father') + '''s cologne.'  
+	if gorslut > 4:
+		'Most of the parishioners seem upset that you are here. You notice that parents are making sure their children don''t go near you. Even a couple of the acoyltes glare at you angrily.'
+	elseif gorslut > 2:
+		'A number of poeple give you dirty looks and intentionally turn away from you whenever you make eye contact.'
+	elseif gorslut > 0:
+		'You notice some of the old women looking at you with disapproval and one or two of the old men looking at you with interest.'
+	end
+
+	act 'Return to Narthex': gt 'ParChurch', 'Narthex'
+	act 'Stay for the Rite of Mutual Forgiveness':
+		cls
+		manna += 10
+		horny -= 20
+		moral += 1
+		gs 'stat'
+		temprand = rand(1,100)
+		if gorslut > 0 and temprand >= 80: gorslut -= 1
+		if gorslut < 0: gorslut = 0
+		hour = 23
+		'<center><img src="images/qwest/alter/Church/church'+ rand(9,10) +'.jpg" width="1000" height="422"></center>'
+		'You decide to stay for the rite of mutual forgiveness and feel much better afterwards.'
+		act 'Return to Narthex': gt 'ParChurch', 'Narthex'
+	end
+end
+
+if $ARGS[0] = 'liturgy':
+	cls
+	CLOSE ALL
+	churchday = daystart
+	gs 'stat'
+	hour = 12
+	PLAY 'sound/church/t' + rand(1,19) + '.mp3',30
+	'<center><img src="images/qwest/alter/Church/church'+ rand(1,8) +'.jpg" width="1000" height="422"></center>'
+	if gorslut <=2 and Conf_Kirill <= 1: 
+		manna += 20
+		moral += 2
+		son += 5
+		'You join the congregation for the Divine Liturgy. You see mostly older people, but there are some youngsters. You participate in the singing but that is about all. Your presence seems to go largely unnoticed, but you have the chance to rest a bit. You feel a lot better.'
+	elseif gorslut <=2 and Conf_Kirill >= 2:
+		Kirill += 1
+		manna += 20
+		moral += 2
+		son += 5
+		'You participate fully in the Divine Liturgy. You listen to the preaching and sing along. When going to communion and receiving the ceremonial bread, you lock eyes with Father Kirill. He seems happy to see you participating in the service.'
+	elseif gorslut >2:
+		if rand(1,100) > 50: gorslut -= 1
+		Kirill += 1
+		manna +=20
+		moral += 2
+		'Your presence at the Divine Liturgy does not go unnoticed. People start mumbling and point fingers at you. Many wonder why you’re present at such an important and holy occasion. Father Kirill, who leads the service, seems to be confused about where the fuss comes from but then notices you. You see that even he heard about your little adventures in town, but at the same time his face doesn’t seem to condemn you. It looks a bit like pity.'
+		'“The church is place for everyone, my beloved children. Even if we sometimes forget, we must try to condemn no one. Think about John 8:10: Jesus once met a woman who had slept with a man who betrayed her trust. She was dragged away by his friends and thrown naked before Jesus. The people had ripped her clothes and humiliated her. He spoke to her: ''Woman'', he said. Not ''slut'', or ''whore'', but woman. He threw His coat over her near-naked body and gave her the sense of dignity she had been promised by the man who betrayed her trust. Jesus did not condemn her, so let us try to not condemn others.”'
+		'The people in the congregation seem a bit uncomfortable while hearing these words. Some look towards you and seem to have trouble looking you in the eyes. Those that do meet your eyes look away guiltily. You feel better and it seems the townsfolk might see you in a slightly better light.'
+	end
+
+	act 'Return to Narthex': gt 'ParChurch', 'Narthex'
+end
+	
+if $ARGS[0] = 'Narthex':
+	cls
+	CLOSE ALL
+	minut += rand(10,60)
+	gs 'stat'
+	PLAY 'sound/church/76139__dkustic__090227-01-people-church-concert.wav',30
+	'<center><img src="images/qwest/alter/Church/EnterChurch.jpg" width="1000" height="422"></center>'
+	'You enter the church and the scent of insense and beeswax fills your lungs. Your eyes are drawn past the Narthex into the Nave with its walls covered in lovingly painted icons while a thousand points of light dance in joy throughout God''s house from the magnificent chandelier that hangs from the ceiling.'
+	'To your left as you enter, there is a counter where a deacon sells candles, icons, and prayer books. He smiles and nods at you absently. acknowledging your presence without really seeing you.'
+	
+	act 'Light a candle (10 rubles, 0:30)': gt 'ParChurch' , 'candle'
+	act 'Pray': gt 'ParChurch' , 'pray'
+	act 'Leave the Church': gt 'ParChurch' , 'start'
+end
+
+if $ARGS[0] = 'candle':
+	cls
+	minut += 30
+	gs 'stat'
+	'<center><img src="images/qwest/alter/Church/ch_candle.jpg"></center>'
+	if money >= 10: 
+		money -= 10
+		'You approach the deacon selling candles and he hands you a candle in exchange for your money.'
+	elseif money >= 10 and money < 20 and owechurch = 1:
+		money -= 10
+		manna -= 10
+		'You approach the deacon selling candles and hope that he doesn''t recognize you since you couldn''t pay for your last candle. You give him 10 rubles and he hands you a candle. You hustle away from the counter while guilt gnaws at you.'
+	elseif money >= 20 and owechurch = 1:
+		money -= 20
+		manna += 5
+		'You approach the deacon selling candles. He seems confused when you hand him 20 rubles, then he smiles in understanding. You feel relieved that the debt is paid.'
+	elseif money < 10: 
+		owechurch = 1
+		'You approach the deacon selling candles and indicate you would like a candle. When you look in your purse to pay, you realize that you have no money. The deacon sighs and hands you the candle anyway. you promise yourself to pay double next time.'
+	end
+	if hour > 6 and hour < 20: 
+		manna += 10
+		moral += 1
+		'You approach the iconostasion and light your candle. It gives you a nice feeling and you say a little prayer while looking at the image of Christ the Savior.'
+	elseif hour > 20 and hour < 6: 
+		horny += 10
+		manna += 10
+		'You approach the iconostasion and light your candle in the dark church.  It gives you a nice feeling and decide to say a little prayer. The darkness, combined with the pleasant sight of fire makes you feel warm inside.'
+	end
+
+	act 'Return to Narthex': gt 'ParChurch', 'Narthex'
+end
+
+if $ARGS[0] = 'pray':
+	cls
+	randtime = rand(15,60)
+	minut += randtime
+	gs 'stat'
+	'<center><img src="images/qwest/alter/Church/ch_praying.jpg"></center>'
+	if hour >6 and hour < 20 and moral < 30:
+		horny -= 10
+		manna += 20
+		moral += 1
+		'You decide to pray for a while. You’re not overly religious but the moment of peace and quiet gives you the time to think through what you’re doing with your life.'
+	elseif hour >6 and hour < 20 and moral >= 30 and moral < 60:
+		horny -= 20
+		manna += 30
+		moral += 1
+		minut += 15
+		'You decide to pray for a while. While you don''t consider yourself to be deeply religious, you do feel a strong connection to God when you look at the icons around you. You allow yourself to look deeply into your soul as you comptemplate the direction your life is going.'
+	elseif hour >6 and hour < 20 and moral >= 60:
+		horny -= 30
+		manna += 40
+		moral += 1
+		minut += rand(30,60)
+		'You decide to pray. The beauty and glory of being in the body of God overwhelms you and you lose yourself in prayer. You are unsure of how much time has past when you finally become aware of your surroundings again, but it doesn''t matter as you are at peace with God and the world.'
+	elseif hour > 20 and hour < 6 and moral < 30:
+		horny -= 40
+		manna += 50
+		moral += 1 
+		minut += (60 - randtime)
+		'The Nave is lit only with candles and small presence lights and the darkness gives you some weird vibes. You get the urge to pray very intensely. Before you know it, an hour went by and you feel a bit reborn.'
+		'“That felt refreshing,” you mumble to yourself.'
+	elseif hour > 20 and hour < 6 and moral >= 30 and moral < 60:
+		horny = 0
+		manna += 50
+		moral += 1 
+		if randtime > 60: randtime = 60
+		minut += (60 - randtime)
+		if nark > 1: nark = nark/2
+		'The Nave is lit only with candles and small presence lights and the darkness feels very comforting. You get the urge to pray very intensely. Before you know it, an hour went by and you feel a bit reborn and cleansed.'
+		'“That felt refreshing,” you mumble to yourself.'
+	elseif hour > 20 and hour < 6 and moral >= 60 and rand(1,100) > 90:
+		horny = 50
+		orgasm += 1
+		manna = mannamax
+		moral += 1
+		Godslut = 1
+		'The Nave is lit only with candles and small presence lights and the darkness feels very comforting, like being in the womb of God. You get the urge to pray very intensely. You lose yourself in the presence of God and are overcome by religious ectasy. You fight back a sob as your body trembles with an uncontrollable orgasm. You wipe the tears from your eyes and gaze with adoration at the face of Christ, your newest lover.'
+	else
+		horny = 0
+		manna = mannamax
+		moral += 1 
+		minut += 60
+		if nark > 1: nark = ((nark/4)*3)
+		'The Nave is lit only with candles and small presence lights and the darkness feels very comforting, like being in the womb. You get the urge to pray very intensely. Before you know it, more than an hour went by and you feel a bit reborn and cleansed.'
+		'“That felt refreshing,” you mumble to yourself.'	
+	end
+
+	act 'Return to Narthex': gt 'ParChurch', 'Narthex'
+end
+
+---- ParChurch ---------------------------------
+

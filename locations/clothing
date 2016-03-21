@@ -6,11 +6,12 @@ $clothing_list_line = {
 	!! ARGS 1 - clothing type
 	!! ARGS 2 - clothing index
 
-	$RESULT = FUNC('$clothing_name', $ARGS[1], ARGS[2])
-	if $ARGS[1] ! 'vatnik' and $ARGS[1] ! 'ero' and $ARGS[1] ! 'sforma':
+	$RESULT = FUNC('$short_description', $ARGS[1])
+	$RESULT += '<<ARGS[2]>>'
+	if $ARGS[1] ! 'school' and $ARGS[1] ! 'ero' and $ARGS[1] ! 'sforma':
 		$RESULT += ' (strength ' + dyneval '$RESULT += <<$ARGS[1]>>H[<<ARGS[2]>>]'
 
-		if $ARGS[1] ! 'yoga' and $ARGS[1] ! 'sarafan':
+		if $ARGS[1] ! 'exercise' and $ARGS[1] ! 'coat' and CloStyle ! 5:
 			$RESULT += ', hip size ' + dyneval '$RESULT += <<$ARGS[1]>>B[<<ARGS[2]>>]'
 		end
 
@@ -25,123 +26,85 @@ if $ARGS[0] = 'view_clothing_list':
 	!! ARGS 2 - brothel flag (brothel)
 
 	act 'Leave':gt $loc, $metka
-	act 'Menu debug':
-	
-		delobj 'Character'
-		delobj 'See'
-		delobj 'Others'
-		delobj 'Menu'
-		
-		delobj '<img src="images/pic/icon/Pers.png">'
-		delobj '<img src="images/pic/icon/look.png">'
-		delobj '<img src="images/pic/icon/Proch.png">'
-		delobj '<img src="images/pic/icon/menu.png">'
-		delobj '<img src="images/pic/icon/Phone.png">'
-		
-		addobj '<img src="images/pic/icon/Pers.png">'
-		addobj '<img src="images/pic/icon/look.png">'
-		addobj '<img src="images/pic/icon/Proch.png">'
-		addobj '<img src="images/pic/icon/menu.png">'
-		addobj '<img src="images/pic/icon/Phone.png">'
-		
-		gt 'clothing', 'view_clothing_list'
-	end
 
 	if $ARGS[1] = 'wardrobe':
 		if $clothingworntype ! 'nude':act 'Strip':gs 'clothing', 'strip' & gt $loc, $metka
-		if bikini = 1:'On the top shelf is a swimsuit'
-		if $clothingworntype ! 'vatnik':dyneval($clothing_list_line, $ARGS[1], 'vatnik', 0)
-		if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $clothingworntype ! 'sforma':dyneval($clothing_list_line, $ARGS[1], 'sforma', 0)
+		if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and ($clothingworntype ! 'school' or clothingwornnumber ! 6):dyneval($clothing_list_line, $ARGS[1], 'school', 6)
 	end
 
 	i = 1
-	:loopjeans
-		if jeans[i] = 1 and ($clothingworntype ! 'jeans' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'jeans', i)
+	:loopcheap
+		if cheap[i] = 1 and ($clothingworntype ! 'cheap' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'cheap', i)
 		i += 1
-		if i = 6:i = 201
-	if i <= 297:jump 'loopjeans'
+	if i <= 85:jump 'loopcheap'
 
 	i = 1
-	:loopyoga
-		if yoga[i] = 1 and ($clothingworntype ! 'yoga' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'yoga', i)
+	:loopaverage
+		if average[i] = 1 and ($clothingworntype ! 'average' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'average', i)
 		i += 1
-	if i <= 18:jump 'loopyoga'
+	if i <= 125:jump 'loopaverage'
 
 	i = 1
-	:loopsarafan
-		if sarafan[i] = 1 and ($clothingworntype ! 'sarafan' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'sarafan', i)
+	:loopexpensive
+		if expensive[i] = 1 and ($clothingworntype ! 'expensive' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'expensive', i)
 		i += 1
-	if i <= 3:jump 'loopsarafan'
+	if i <= 147:jump 'loopexpensive'
 
 	i = 1
-	:loopshort
-		if short[i] = 1 and ($clothingworntype ! 'short' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'short', i)
+	:loopformal
+		if formal[i] = 1 and ($clothingworntype ! 'formal' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'formal', i)
 		i += 1
-		if i = 6:i = 201
-	if i <= 256:jump 'loopshort'
+	if i <= 14:jump 'loopformal'
 
 	i = 1
-	:loopskirt
-		if skirt[i] = 1 and ($clothingworntype ! 'skirt' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'skirt', i)
+	:loopoffice
+		if office[i] = 1 and ($clothingworntype ! 'office' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'office', i)
 		i += 1
-		if i = 6:i = 201
-	if i <= 273:jump 'loopskirt'
+	if i <= 30:jump 'loopoffice'
 
 	i = 1
-	:loopdress
-		if dress[i] = 1 and ($clothingworntype ! 'dress' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'dress', i)
+	:loopschool
+		if school[i] = 1 and ($clothingworntype ! 'school' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'school', i)
 		i += 1
-		if i = 25:i = 201
-	if i <= 225:jump 'loopdress'
+		if i = 6: i = 7
+	if i <= 14:jump 'loopschool'
 
 	i = 1
-	:loopprofi
-		if profi[i] = 1 and ($clothingworntype ! 'profi' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'profi', i)
+	:loopexercise
+		if exercise[i] = 1 and ($clothingworntype ! 'exercise' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'exercise', i)
 		i += 1
-		if i = 3:i = 201
-	if i <= 208:jump 'loopprofi'
+	if i <= 26:jump 'loopexercise'
 
 	i = 1
-	:looppants
-		if pants[i] = 1 and ($clothingworntype ! 'pants' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'pants', i)
+	:loopnaughty
+		if naughty[i] = 1 and ($clothingworntype ! 'naughty' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'naughty', i)
 		i += 1
-		if i = 6:i = 201
-	if i <= 346:jump 'looppants'
+	if i <= 67:jump 'loopnaughty'
 
 	i = 1
-	:looplatex
-		if latex[i] = 1 and ($clothingworntype ! 'latex' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'latex', i)
+	:loopexhibit
+		if exhibit[i] = 1 and ($clothingworntype ! 'exhibit' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'exhibit', i)
 		i += 1
-	if i <= 2:jump 'looplatex'
+	if i <= 30:jump 'loopexhibit'
 
 	i = 1
-	:loophooker
-		if hooker[i] = 1 and ($clothingworntype ! 'hooker' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'hooker', i)
+	:loopuniform
+		if uniform[i] = 1 and ($clothingworntype ! 'uniform' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'uniform', i)
 		i += 1
-	if i <= 205:jump 'loophooker'
+	if i <= 24:jump 'loopuniform'
 
 	i = 1
-	:loopodekis
-		if odekis[i] = 1 and ($clothingworntype ! 'odekis' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'odekis', i)
+	:loopcoat
+		if coat[i] = 1:dyneval($coat_list_line, $ARGS[1], 'coat', i)
 		i += 1
-	if i <= 10:jump 'loopodekis'
+	if i <= 12:jump 'loopcoat'
 
 	i = 1
-	:loopnewclo
-		if newclo[i] = 1 and ($clothingworntype ! 'newclo' or clothingwornnumber ! i):dyneval($clothing_list_line, $ARGS[1], 'newclo', i)
+	:loopswimwear
+		if swimwear[i] = 1:dyneval($clothing_list_line, $ARGS[1], 'swimwear', i)
 		i += 1
-	!! NOTE: 131 is the school uniform and is handled separately
-	if i <= 130:jump 'loopnewclo'
+	if i <= 30:jump 'loopswimwear'
 
-	if $ARGS[2] = 'brothel':
-		''
-		'<b>Brothel clothing</b>'
-		i = 1
-		:loopero
-			if $clothingworntype ! 'ero' or clothingwornnumber ! i:dyneval($clothing_list_line, $ARGS[1], 'ero', i)
-			i += 1
-		if i <= 18:jump 'loopero'
-	end
 end
 
 if $ARGS[0] = 'view_clothing_item':
@@ -153,12 +116,22 @@ if $ARGS[0] = 'view_clothing_item':
 
 	cla
 	'<center><img src="<<FUNC(''$clothing_image'',  $ARGS[2], ARGS[3])>>"></center>'
-	FUNC('$clothing_name', $ARGS[2], ARGS[3])
+	$RESULT = FUNC('$short_description', $ARGS[2])
+	$RESULT += '<<ARGS[3]>>'
+	'<<$RESULT>>'
+	gs 'clothing_attributes', $ARGS[2], ARGS[3]
+	if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear':
+		gs 'clothing_descriptions'
+	else
+		FUNC('$clothing_name', $ARGS[2], ARGS[3])
+	end
+	
+	if $ARGS[2] = 'naughty' and CloQuality < 4:'This outfit can be used for prostitution.'
 
-	if $ARGS[1] ! 'shop' and $ARGS[2] ! 'vatnik' and $ARGS[2] ! 'sforma' and $ARGS[2] ! 'ero':
+	if $ARGS[1] ! 'shop' and $ARGS[2] ! 'vatnik' and ($ARGS[2] ! 'school' and $ARGS[3] ! 6):
 		$RESULT = '(strength '
 		dynamic '$RESULT += <<$ARGS[2]>>H[<<ARGS[3]>>]'
-		if $ARGS[2] ! 'yoga' and $ARGS[2] ! 'sarafan':
+		if $ARGS[2] ! 'exercise' and $ARGS[2] ! 'coat' and CloStyle ! 5:
 			$RESULT += ', hip size '
 			dynamic '$RESULT += <<$ARGS[2]>>B[<<ARGS[3]>>]'
 		end
@@ -174,18 +147,27 @@ if $ARGS[0] = 'view_clothing_item':
 			act 'Leave': gt $loc, $metka
 			if money >= ARGS[4]:
 				act 'Buy':
-					money -= ARGS[5]
+					h = 0
+					if CloStyle = 2:h = 25
+					if CloStyle = 5:h = 100
+					money -= ARGS[4]
 					dynamic $ARGS[2] + '[<<ARGS[3]>>] = 1'
-					if $ARGS[2] = 'yoga':
-						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 80'
-					elseif $ARGS[2] = 'odekis':
-						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 100'
-					elseif $ARGS[2] = 'dress':
-						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 160'
-					elseif $ARGS[2] = 'hooker':
-						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 200'
+					if $ARGS[2] = 'cheap' or $ARGS[2] = 'office':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 75 + <<h>>'
+					elseif $ARGS[2] = 'average':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 100 + <<h>>'
+					elseif $ARGS[2] = 'formal':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 25 + <<h>>'
+					elseif $ARGS[2] = 'naughty' or $ARGS[2] = 'exhibit':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 40 + <<h>>'
+					elseif $ARGS[2] = 'school' or $ARGS[2] = 'uniform':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 150 + <<h>>'
+					elseif $ARGS[2] = 'exercise':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 125 + <<h>>'
+					elseif $ARGS[2] = 'coat':
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 250 + <<h>>'
 					else
-						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 60'
+						dynamic $ARGS[2] + 'H[<<ARGS[3]>>] = 50 + <<h>>'
 					end
 					dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = bedra'
 					gt $loc, $metka
@@ -195,7 +177,7 @@ if $ARGS[0] = 'view_clothing_item':
 	elseif $ARGS[1] = 'wardrobe':
 		act 'Leave in closet':gt 'clothing', 'view_clothing_list', $ARGS[1]
 
-		if $ARGS[2] ! 'vatnik' and $ARGS[2] ! 'sforma' and $ARGS[2] ! 'ero':
+		if $ARGS[2] ! 'vatnik' and ($ARGS[2] ! 'school' and $ARGS[3] ! 6):
 			!! if the clothing is worn out
 			if dyneval('RESULT = <<$ARGS[2]>>H[<<ARGS[3]>>]') <= 0:
 				'This item is worn and is not suitable for further wear.'
@@ -203,7 +185,7 @@ if $ARGS[0] = 'view_clothing_item':
 			end
 
 			!! if the clothing is a type that checks for hip size
-			if $ARGS[2] ! 'yoga' and $ARGS[2] ! 'sarafan':
+			if $ARGS[2] ! 'exercise' and $ARGS[2] ! 'coat' and CloStyle ! 5:
 				!! if the hipsize is too far from your hipsize
 				dynamic 'RESULT = <<$ARGS[2]>>B[<<ARGS[3]>>]'
 				if RESULT < bedra - 8:
@@ -241,27 +223,50 @@ if $ARGS[0] = 'view_clothing_item':
 		end
 
 		! WD: Bimbo look
-		act 'Wear':
-			gs 'clothing', 'wear', $ARGS[2], ARGS[3]
+		if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear':
+			act 'Wear':
+				gs 'clothing', 'wear', $ARGS[2], ARGS[3]
+				dynamic $ARGS[2] + 'W[<<ARGS[3]>>] = 1'
 
-			! WD: Bimbo look
-			if hcol = 3 and (exhibi + lip + skin + mop + tits) >= 15 and (ski + glamur + sexual) >= 1:
-				cla
-				*clr
-				'<center><img src="images/etogame/cloth_bimbo.jpg"></center>'
-				'Do you want to be dressed looking like a bimbo? You will not be taken seriously.'
+				! WD: Bimbo look
+				if hcol = 3 and (exhibi + lip + skin + mop + tits) >= 15 and CloBimbo = 1:
+					cla
+					*clr
+					'<center><img src="images/etogame/cloth_bimbo.jpg"></center>'
+					'Do you want to be dressed looking like a bimbo? You will not be taken seriously.'
 
-				act 'Dress like a Bimbo':
-					cloth_vid = 1
-					odevnesh += 5
-					bimbocl = 1
+					act 'Dress like a Bimbo':
+						cloth_vid = 1
+						odevnesh += 5
+						bimbocl = 1
+						gt 'clothing', 'view_clothing_list', $ARGS[1]
+					end
+					act 'Dress Normally':
+						gt 'clothing', 'view_clothing_list', $ARGS[1]
+					end
+				else
 					gt 'clothing', 'view_clothing_list', $ARGS[1]
 				end
-				act 'Dress Normally':
-					gt 'clothing', 'view_clothing_list', $ARGS[1]
+			end
+		end
+
+		if dyneval('RESULT = <<$ARGS[2]>>H[<<ARGS[3]>>]') < 5 and poSkill >= 200 and tkan > 0:
+			act 'Repair item':
+				if rand (1, 100) < 30:
+					cla
+					tkan -= 1
+					minut += 30
+					dynamic $ARGS[2] + 'H[<<ARGS[3]>>] += 30'
+					'You spend 30 minutes fixing the outfit.'
+					act 'Return':gt 'clothing', 'view_clothing_list', $ARGS[1]
+				else
+					cla
+					tkan += 3
+					minut += 30
+					dynamic $ARGS[2] + '[<<ARGS[3]>>] = 0'
+					'Despite your skill with a needle, this outfit has proved beyond repair. All that is left of it is only good for your cloth pile.'
+					act 'Return':gt 'clothing', 'view_clothing_list', $ARGS[1]
 				end
-			else
-				gt 'clothing', 'view_clothing_list', $ARGS[1]
 			end
 		end
 		
@@ -297,7 +302,7 @@ if $ARGS[0] = 'view_clothing_item':
 	elseif $ARGS[1] = 'resize':
 		act 'Leave item alone':gt 'clothing', 'view_clothing_list', $ARGS[1]
 
-		if $ARGS[2] ! 'vatnik' and $ARGS[2] ! 'sforma' and $ARGS[2] ! 'yoga' and $ARGS[2] ! 'sarafan':
+		if $ARGS[2] ! 'exercise' and $ARGS[2] ! 'coat' and CloStyle ! 5:
 			if dyneval('RESULT = <<$ARGS[2]>>B[<<ARGS[3]>>]') ! bedra and money >= 500:
 				'You can have this resized for 500 rubles.'
 				act 'Resize':
@@ -311,10 +316,8 @@ if $ARGS[0] = 'view_clothing_item':
 end
 
 if $ARGS[0] = 'strip':
-	if spdirtyc > 0:
-		cumspclnt = 6
-		gs 'cum_cleanup'
-	end
+	cumspclnt = 6
+	gs 'cum_cleanup'
 	if cloth_vid = 1:
 		last_vid = 1
 	else
@@ -324,6 +327,19 @@ if $ARGS[0] = 'strip':
 	lastwornclothingnumber = clothingwornnumber
 	$clothingworntype = 'nude'
 	clothingwornnumber = 0
+	CloQuality = 0
+	CloThinness = 0
+	CloTopCut = 0
+	CloPantsShortness = 0
+	CloSkirtShortness = 0
+	CloStyle = 0
+	PCloQuality = 0
+	PCloThinness = 0
+	PCloTopCut = 0
+	PCloPants = 0
+	PCloSkirt = 0
+	PCloStyle = 0
+	CloBimbo = 0
 	glamur = 0
 	sport = 0
 	ski = 0
@@ -345,47 +361,127 @@ if $ARGS[0] = 'wear':
 
 	$clothingworntype = $ARGS[1]
 	clothingwornnumber = ARGS[2]
+	
+	if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear':
+		gs 'clothing_descriptions'
+	else
+		FUNC('$clothing_name', $ARGS[2], ARGS[3])
+	end
 
-	if $clothingworntype = 'vatnik':
-		odevnesh = -10
-	elseif $clothingworntype = 'sforma':
-		sexual = 1
-		odevnesh = 5
-	elseif $clothingworntype = 'jeans':
-		odevnesh = 1
-	elseif $clothingworntype = 'yoga':
+	PCloQuality = CloQuality
+	PCloThinness = CloThinness
+	PCloTopCut = CloTopCut
+	PCloPants = CloPantsShortness
+	PCloSkirt = CloSkirtShortness
+	PCloStyle = CloStyle
+	PCloBimbo = CloBimbo
+
+	if PCloTopCut > 1:
+		if tits = 2 or tits = 3:PCloTopCut += 1
+		if tits = 4 or tits = 5:PCloTopCut += 2
+		if tits >= 6:PCloTopCut += 3
+	end
+
+	!{	sexual = 1
 		sport = 1
-		odevnesh = 1
-	elseif $clothingworntype = 'sarafan':
 		ski = 1
-		odevnesh = 1
-	elseif $clothingworntype = 'short':
-		odevnesh = 2
-	elseif $clothingworntype = 'skirt':
-		ski = 1
-		odevnesh = 5
-	elseif $clothingworntype = 'dress':
 		glamur = 1
-		odevnesh = 10
-	elseif $clothingworntype = 'profi':
 		ofclo = 1
-		odevnesh = 5
-	elseif $clothingworntype = 'pants':
-		odevnesh = 3
-	elseif $clothingworntype = 'latex':
+	if $clothingworntype = 'cheap':
+		odevnesh = -3
+	elseif $clothingworntype = 'average':
+		odevnesh = 0
+	elseif $clothingworntype = 'expensive':
+		odevnesh = 2
+	elseif $clothingworntype = 'formal':
+		odevnesh = 0
+	elseif $clothingworntype = 'office':
+		odevnesh = 0
+	elseif $clothingworntype = 'school':
+		odevnesh = 0
+	elseif $clothingworntype = 'exercise':
+		odevnesh = 0
+	elseif $clothingworntype = 'naughty':
+		odevnesh = 2
+	elseif $clothingworntype = 'exhibit':
+		odevnesh = 0
+	elseif $clothingworntype = 'uniform':
+		odevnesh = 0
+	elseif $clothingworntype = 'swimwear':
 		odevnesh = 1
-	elseif $clothingworntype = 'hooker':
-		odevnesh = 1
-	elseif $clothingworntype = 'odekis':
-		glamur = 1
-		sexual = 1
-		odevnesh = 5
-	elseif $clothingworntype = 'newclo':
-		sexual = 1
-		odevnesh = 5
-		if clothingwornnumber < 90:ski = 1
-	elseif $clothingworntype = 'ero':
-		odevnesh = 10
+	end}
+
+!Calculations for clothing beauty, multiplied by natural beauty
+	if PCloThinness > 0:
+		if PCloThinness = 1:
+			PXCloThinness = 25
+		elseif PCloThinness = 2:
+			PXCloThinness = 50
+		elseif PCloThinness = 3:
+			PXCloThinness = 100
+		elseif PCloThinness = 4:
+			PXCloThinness = 150
+		elseif PCloThinness = 5:
+			PXCloThinness = 200
+		elseif PCloThinness = 6:
+			PXCloThinness = 300
+		elseif PCloThinness >= 7:
+			PXCloThinness = 400
+		end
+	end
+
+	if PCloTopCut > 0:
+		if PCloTopCut = 1:
+			PXCloTopCut = 25
+		elseif PCloTopCut = 2:
+			PXCloTopCut = 50
+		elseif PCloTopCut = 3:
+			PXCloTopCut = 100
+		elseif PCloTopCut = 4:
+			PXCloTopCut = 150
+		elseif PCloTopCut = 5:
+			PXCloTopCut = 200
+		elseif PCloTopCut = 6:
+			PXCloTopCut = 300
+		elseif PCloTopCut >= 7:
+			PXCloTopCut = 400
+		end
+	end
+
+	if PCloSkirtShortness > 0:
+		if PCloSkirtShortness = 1:
+			PXCloSkirtShortness = 25
+		elseif PCloSkirtShortness = 2:
+			PXCloSkirtShortness = 50
+		elseif PCloSkirtShortness = 3:
+			PXCloSkirtShortness = 100
+		elseif PCloSkirtShortness = 4:
+			PXCloSkirtShortness = 150
+		elseif PCloSkirtShortness = 5:
+			PXCloSkirtShortness = 200
+		elseif PCloSkirtShortness = 6:
+			PXCloSkirtShortness = 300
+		elseif PCloSkirtShortness >= 7:
+			PXCloSkirtShortness = 400
+		end
+	end
+
+	if PCloPantsShortness > 0:
+		if PCloPantsShortness = 1:
+			PXCloPantsShortness = 25
+		elseif PCloPantsShortness = 2:
+			PXCloPantsShortness = 50
+		elseif PCloPantsShortness = 3:
+			PXCloPantsShortness = 100
+		elseif PCloPantsShortness = 4:
+			PXCloPantsShortness = 150
+		elseif PCloPantsShortness = 5:
+			PXCloPantsShortness = 200
+		elseif PCloPantsShortness = 6:
+			PXCloPantsShortness = 300
+		elseif PCloPantsShortness >= 7:
+			PXCloPantsShortness = 400
+		end
 	end
 end
 

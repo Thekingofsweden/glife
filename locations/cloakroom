@@ -1,0 +1,67 @@
+# cloakroom
+$coat_list_line = {
+	!! a single line in a clothing list (wardrobe, etc)
+	!! ARGS 0 - action type (wardrobe, sell)
+	!! ARGS 1 - clothing type
+	!! ARGS 2 - clothing index
+
+	$RESULT = '<<$ARGS[1]>> no.<<ARGS[2]>> (strength ' + dyneval '$RESULT += <<$ARGS[1]>>H[<<ARGS[2]>>]'+')'
+
+	$RESULT += ' <a href="exec:gt ''cloakroom'', ''view_coat_item'', ''<<$ARGS[0]>>'', ''<<$ARGS[1]>>'', <<ARGS[2]>>">View</a>'
+	if i = defaultcoat:
+		$RESULT += '<font color="navy"> Default</font>'
+	end
+
+}
+
+if $ARGS[0] = 'view_coat_list':
+	i = 1
+	:loopcoat
+		if coat[i] = 1:dyneval($coat_list_line, $ARGS[1], 'coat', i)
+		i += 1
+	if i <= 12:jump 'loopcoat'
+	
+	act 'Don''t wear a coat':defaultcoat = 0
+
+	act 'Leave':gt $loc, $metka
+
+end
+
+if $ARGS[0] = 'view_coat_item':
+	!! ARGS 0 - view_clothing_item
+	!! ARGS 1 = action type (wardrobe, shop, sell, resize)
+	!! ARGS 2 - clothing type
+	!! ARGS 3 - clothing index
+	!! ARGS 4 - price for shop
+
+	cla
+	'<center><img src="<<FUNC(''$clothing_image'',  $ARGS[2], ARGS[3])>>"></center>'
+	'<<$ARGS[2]>> no.<<ARGS[3]>>'
+	FUNC('$attributes_coat', $ARGS[2], ARGS[3])
+	FUNC('$clothing_name', $ARGS[2], ARGS[3])
+
+
+	$RESULT = '(strength '
+	dynamic '$RESULT += <<$ARGS[2]>>H[<<ARGS[3]>>]'
+	$RESULT += ')'
+	'<<$RESULT>>'
+
+
+	act 'Return':gt 'cloakroom', 'view_coat_list', $ARGS[1]
+	!! if the clothing is worn out
+	if dyneval('RESULT = <<$ARGS[2]>>H[<<ARGS[3]>>]') <= 0:
+		'This item is worn and is not suitable for further wear.'
+		act 'Throw it away':
+			dynamic '<<$ARGS[2]>>[<<ARGS[3]>>] = 0'
+			gt 'cloakroom', 'view_coat_list', $ARGS[1]
+		end
+	end
+	if defaultcoat ! '<<ARGS[3]>>':
+		act 'Set as default':
+			defaultcoat = '<<ARGS[3]>>'
+		end
+	end
+end
+
+--- cloakroom ---------------------------------
+
