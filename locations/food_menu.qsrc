@@ -1,20 +1,32 @@
 # food_menu
-!pcs_drank and pcs_ate variables track how much Sveta consumes each day. Vars are reset each day.
-!food_loc returns food and beverage menus back to the food_menu.
+!!pcs_drank and pcs_ate variables track how much Sveta consumes each day. Vars are reset each day.
+!!food_loc returns food and beverage menus back to the food_menu.
+
+!!How to use the food_menu location in a mod
+!!Step 1: set up $_eat and $_drink in the mod
+!!Step 2: add the following three lines to the mod:
+!!*clr & cla
+!!killvar '$_drink'
+!!killvar '$_eat'
+!!Step 3: call your own $_eat and $_drink afterwards
+!!Step 4: call this location with gs 'food_menu', 'mod'
 
 menu_off = 1
-food_loc = 1
 gs 'themes', 'food_menu'
 
-*clr & cla
+if $ARGS[0] ! 'mod':
+	*clr & cla
+	food_loc = 1
+	killvar '$_drink'
+	killvar '$_eat'
+end	
+
 act 'Return':
 	killvar 'food_loc'
 	minut += 5
-	gs 'stat'
 	gt $loc, $metka
 end
-killvar '$_drink'
-killvar '$_eat'
+
 if $loc = 'burger':
 	'<center><b><font color="maroon">Diner Bystroeshka</font></b></center>'
 	*nl
@@ -59,7 +71,7 @@ elseif $loc = 'gkafe':
 	*nl
 	'<center><img <<$set_imgh>> src="images/shared/menus/borislav.jpg"</center><br>'
 	!'<center><img <<$set_imgh>> src="images/shared/drinks/cafedrinks.jpg"</center><br>'
-	if storyline = 1 and (home_owned[2] = 1 or SchoolBlock = 0):
+	if storyline = 1 and home_owned[2] = 1:
 		$_eat['0,name'] = 'Vegetarian Piroshki'
 		$_eat['0,type'] = 'pirosh'
 		$_eat['0,price'] = 'Free'
@@ -426,14 +438,14 @@ elseif $loc = 'restoran':
 	$_drink['5,price'] = 900
 end
 
-$_str = '<table border="0" width="800" cellpadding="0" cellspacing="1">'
+$_str = '<center><table border="0" width="800" cellpadding="0" cellspacing="1">'
 food_loop = 0
 :loop_diner_drinks
 $_str += '<tr><td bgcolor='+iif(food_loop mod 2 = 0,'<<$bcolor1>>','<<$bcolor2>>')+' height="30" width="40%" align="center"><font color="<<$fcolor1>>">'+$_eat['<<food_loop>>,name']+'</td><td bgcolor='+iif(food_loop mod 2 = 0,'<<$bcolor1>>','<<$bcolor2>>')+' height="30" width="10%" align="right">'+iif(money >= val($_eat['<<food_loop>>,price']),'<a href="exec:pcs_ate += 1 & gt''food'',$_eat[''<<food_loop>>,type''],<<food_loop>>">'+$_eat['<<food_loop>>,price']+'</a>',$_eat['<<food_loop>>,price'])+''+iif($_eat['<<food_loop>>,price'] ! '','<font color="<<$fcolor1>>"><b> ₽. </b>', '')+'</td><td bgcolor=<<$bcolor3>> border="0" width="50" cellpadding="0" cellspacing="0" ></td><td bgcolor='+iif(food_loop mod 2 = 0,'<<$bcolor1>>','<<$bcolor2>>')+' height="30" width="40%" align="center"><font color="<<$fcolor1>>">'+$_drink['<<food_loop>>,name']+'</td><td bgcolor='+iif(food_loop mod 2 = 0,'<<$bcolor1>>','<<$bcolor2>>')+' height="30" width="10%" align="right">'+iif(money >= val($_drink['<<food_loop>>,price']),'<a href="exec:pcs_drank += 1 & gt''beverage'',$_drink[''<<food_loop>>,type''],<<food_loop>>">'+$_drink['<<food_loop>>,price']+'</a>',$_drink['<<food_loop>>,price'])+''+iif($_drink['<<food_loop>>,price'] ! '','<font color="<<$fcolor1>>"><b> ₽. </b>', '')+'</td></tr>'
 food_loop += 1
 if food_loop < arrsize('$_drink')/3:jump 'loop_diner_drinks'
 $_str += '</table></center></font>'
-'Please place your order:<br><br>'+$_str
+'<center>Please place your order</center>:<br><br>'+$_str
 
 
 killvar '$_str'

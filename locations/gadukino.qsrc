@@ -108,10 +108,10 @@ if $ARGS[0] = '':
 		*nl
 
 		if month >= 6 and month <= 9:
-			if hour >= 9 and hour <= 11:
-				'An old farm truck is parked halfway off one of the roads nearby. The farmer who drives it will buy <a href="exec: gt ''gadukino'',''collection_point''">mushrooms and berries</a> from the locals to sell back in the city. He usually hangs around town until from nine until noon.'
+			if hour >= 6 and hour <= 16:
+				'An old farm truck is parked halfway off one of the roads nearby. The farmer who owns it will buy <a href="exec: gt ''gadukino'',''collection_point''">mushrooms and berries</a> from the locals to sell back in the city. He makes multiple trips from Gadukino to the city each day to ensure the freshest produce so he can be found from 6 am to 4 pm.'
 			else
-				'This time of year, a truck usually comes by in the mornings between 9AM and noon to purchase mushrooms and berries from the locals.'
+				'This time of year, a truck usually comes by multiple times per day between 6 am and 4 pm to purchase mushrooms and berries from the locals.'
 			end
 		else
 			'During the summer, a truck usually comes into town from the city to buy fresh mushrooms and berries from the locals. It''s not the right season for it right now though.'
@@ -127,8 +127,11 @@ if $ARGS[0] = '':
 			'In the center of the village is a small grass covered square where villagers gather to meet and discuss or argue politics or village life.'
 			'One of the building facing the square has a sign saying General Store. A sign in the door proclaims it "CLOSED". It looks like the only place in the village to buy goods.'
 		end
+
+		act 'Walk to the forest road (0:10)':minut += 10 & gt 'gadroad'
+		act 'Walk to the highway (0:15)':minut += 15 & nroad = 10 & gt 'road'
 		if hour >= 6 and hour < 20:
-			act 'Walk through the village':
+			act 'Walk around the village (0:15)':
 				*clr & cla
 				minut += 15
 				menu_off = 1
@@ -144,14 +147,64 @@ if $ARGS[0] = '':
 				end
 			end
 		end
-
-		act 'Walk to the forest road':minut += 10 & gt 'gadroad'
+		if month >= 6 and month <= 9 and hour >= 6 and hour <= 16: act 'Sell mushrooms and berries': gt 'gadukino','collection_point'
 		!!Succubus active hunting, can only hunt successfully once a day, but can try until success
-		if (hour <= 7 or hour >= 21) and succubusQW = 5 and suchuntday ! daystart:
+		if (hour <= 5 or hour >= 21) and succubusQW = 5 and suchuntday ! daystart:
 			act 'Go Hunting (this can take a lot of time)': suchunt = 1 & gt 'gadukino', 'succubus_hunt'
 		end
+	end
+end
 
-		act 'Walk to the highway':minut += 15 & nroad = 10 & gt 'road'
+if $ARGS[0] = 'collection_point':
+	*clr & cla
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+	*nl
+	'Parked halfway off the road is an old, unmarked truck. The back doors are open and inside is a farmer looking to buy any mushrooms or berries the locals find while out in the nearby woods.'
+	'Some find it odd that they''re operating out of a truck, but you imagine it''s cheaper to maintain than a shop and it lets them get around to other villages like this one to buy their mushrooms and berries, too.'
+	'There is a small sign hanging off of one of the back doors, which says:'
+	'"Buying: mushrooms 25<b>₽</b>/kg, berries 25<b>₽</b>/kg"'
+
+	act 'Go back to the village center':minut += 1 & gt 'gadukino'
+	if boletus > 0 and bilberry > 0:
+		act 'Sell all your mushrooms and berries':
+			*clr & cla
+			minut += 10
+			money += boletus*25+bilberry*25
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your mushrooms and berries for <<boletus*25+bilberry*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':boletus = 0 &  bilberry = 0 & gt 'gadukino','collection_point'
+		end
+	end
+	if boletus > 0:
+		act 'Sell all your mushrooms':
+			*clr & cla
+			minut += 10
+			money += boletus*25
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your mushrooms for <<boletus*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':boletus = 0 & gt 'gadukino','collection_point'
+		end
+	end
+	if bilberry > 0:
+		act 'Sell all your berries':
+			*clr & cla
+			minut += 10
+			money += bilberry*25
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your berries for <<bilberry*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':bilberry = 0 & gt 'gadukino','collection_point'
+		end
 	end
 end
 
@@ -635,59 +688,6 @@ if $ARGS[0] = 'other_events':
 		'You kill some time walking through the village.'
 
 		act 'Finish your walk': gt 'gadukino'
-	end
-end
-
-if $ARGS[0] = 'collection_point':
-	*clr & cla
-	menu_off = 1
-	minut += 1
-	gs 'stat'
-
-	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
-	*nl
-	'Parked halfway off the road is an old, unmarked truck. The back doors are open and inside is a farmer looking to buy any mushrooms or berries the locals find while out in the nearby woods.'
-	'Some find it odd that they''re operating out of a truck, but you imagine it''s cheaper to maintain than a shop and it lets them get around to other villages like this one to buy their mushrooms and berries, too.'
-	'There is a small sign hanging off of one of the back doors, which says:'
-	'"Buying: mushrooms 25<b>₽</b>/kg, berries 25<b>₽</b>/kg"'
-
-	act 'Go back to the village center':minut += 1 & gt 'gadukino'
-	if boletus > 0 and bilberry > 0:
-		act 'Sell all your mushrooms and berries':
-			*clr & cla
-			minut += 10
-			money += boletus*25+bilberry*25
-
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
-			'You decide to sell your mushrooms and berries for <<boletus*25+bilberry*25>> <b>₽</b>.'
-			gs 'stat'
-
-			act'Continue':boletus = 0 &  bilberry = 0 & gt 'gadukino','collection_point'
-		end
-	end
-	if boletus > 0:
-		act 'Sell all your mushrooms':
-			*clr & cla
-			minut += 10
-			money += boletus*25
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
-			'You decide to sell your mushrooms for <<boletus*25>> <b>₽</b>.'
-			gs 'stat'
-
-			act'Continue':boletus = 0 & gt 'gadukino','collection_point'
-		end
-	end
-	if bilberry > 0:
-		act 'Sell all your berries':
-			*clr & cla
-			minut += 10
-			money += bilberry*25
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
-			'You decide to sell your berries for <<bilberry*25>> <b>₽</b>.'
-			gs 'stat'
-
-			act'Continue':bilberry = 0 & gt 'gadukino','collection_point'
-		end
 	end
 end
 

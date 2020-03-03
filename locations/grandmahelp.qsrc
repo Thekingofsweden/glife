@@ -26,9 +26,9 @@ if $ARGS[0] = 'start':
 		gt 'grandmahelp', 'milkcows'
 	elseif grandmaQW['chore_type'] = 3:
 		gt 'grandmahelp', 'groceries'
-	elseif grandmaQW['chore_type'] = 4 and grandmaQW['chore_mushrooms_given'] >= 6:
+	elseif grandmaQW['chore_type'] = 4 and boletus_stored >= 5:
 		gt 'grandmahelp', 'can_mushrooms'
-	elseif grandmaQW['chore_type'] = 5 and grandmaQW['chore_berries_given'] >= 5:
+	elseif grandmaQW['chore_type'] = 5 and bilberry_stored >= 5:
 		gt 'grandmahelp', 'can_berries'
 	elseif grandmaQW['chore_type'] = 6 and grandmaQW['chore_harvest_done'] = 1:
 		gt 'grandmahelp', 'can_veggies'
@@ -40,11 +40,11 @@ if $ARGS[0] = 'start':
 		gt 'grandmahelp', 'waterplants'
 	elseif grandmaQW['chore_type'] = 10 and sunWeather = 1:
 		gt 'grandmahelp', 'harvest'
-	elseif grandmaQW['chore_type'] = 11:
+	elseif grandmaQW['chore_type'] = 11 and boletus_stored <= 18:
 		gt 'grandmahelp', 'pickforest_mushrooms'
-	elseif grandmaQW['chore_type'] = 12:
+	elseif grandmaQW['chore_type'] = 12 and bilberry_stored <= 18:
 		gt 'grandmahelp', 'pickforest_berries'
-	elseif grandmaQW['chore_type'] = 13:
+	elseif grandmaQW['chore_type'] = 13 and ((boletus_stored + bilberry_stored) <= 16):
 		gt 'grandmahelp', 'pickforest_both'
 	else
 		'"There is nothing to do today <<$pcs_nickname>>, take the day off.'
@@ -68,6 +68,7 @@ if $ARGS[0] = 'cleanfloor':
 		'You grab a bucket and a rag, and get down on your knees and begin scrubbing the floor. Within the hour the floor shines and you are satisfied with the work you''ve done. You put the cleaning supplies into a corner and continue on with your day.'
 
 		act 'Continue':gt 'gadhouse', 'start'
+		act 'Return back to your grandmother': minut += 1 & gt 'gadhouse', 'grandma'
 	end
 end
 
@@ -80,7 +81,6 @@ if $ARGS[0] = 'washclothes':
 		*clr & cla
 		minut += 60
 		grandmaQW['chore_wash_clothes'] = 2
-		grandmaQW['help_amount'] += 1
 		gs'stat'
 
 		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/washclothes1.jpg"></center>'
@@ -94,6 +94,7 @@ if $ARGS[0] = 'washclothes':
 		    'Once you are done with the washing, you walk over to the clothesline where you carefully hang the clothes to dry.'
 
 		    act 'Continue':gt'gaddvor'
+			act 'Return back to your grandmother': minut += 1 & gt 'gadhouse', 'grandma'
 		end
 	end
 end
@@ -141,7 +142,7 @@ if $ARGS[0] = 'can_mushrooms':
 		minut += 45
 		gs'stat'
 
-		grandmaQW['chore_mushrooms_given'] -= 6
+		boletus_stored -= 5
 		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cleaning_mushrooms.jpg"></center>'
 		'Grandma gives you a basket of mushrooms and you spend a while cleaning them, washing them, and cutting them up, in preparation for canning.'
 		act 'Continue':
@@ -157,6 +158,7 @@ if $ARGS[0] = 'can_mushrooms':
 				gs'stat'
 
 				grandmaQW['chore_can_mushrooms'] = 0
+				grandmaQW['help_amount'] += 2
 				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/canned_mushrooms.jpg"></center>'
 				'Finally, you help Grandma take them out of the canner and set them aside to cool.'
 				'"Thank you, <<$pcs_nickname>>," she says. "It is important to save food up for the hard winter months. Sure, now you can just walk to the store and get whatever you want, but it wasn''t always that way!"'
@@ -176,7 +178,7 @@ if $ARGS[0] = 'can_berries':
 		minut += 45
 		gs'stat'
 
-		grandmaQW['chore_berries_given'] -= 5
+		bilberry_stored -= 5
 		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cleaning_berries.jpg"></center>'
 		'Grandma gives you a basket of berries and you spend a while cleaning them, removing stems, and picking out any shriveled or bad ones.'
 		act 'Continue':
@@ -253,6 +255,7 @@ if $ARGS[0] = 'feedchickens':
 		'You take the grain mix for the chickens with you and walk over to the yard.'
 
 		act 'Continue':gt'gaddvor','chickens'
+		
 	end
 end
 

@@ -31,11 +31,8 @@ if $ARGS[0]='':
 			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/dvor_winter_night.jpg"></center>'
 		end
 	end
-	if StoryLine = 1:
-		'A fenced yard behind your grandparents'' house. The yard is surrounded by a small barn packed with junk and a separate building that is used as a banya where you can take a bath. On the back porch are a few chairs to sit in.'
-	else
-		'A fenced yard behind the house. The yard is surrounded by a small barn packed with junk and a separate building that is used as a banya where people take a bath. On the back porch are a few chairs to sit in.'
-	end
+	*nl
+	'A fenced yard behind your grandparents'' house. The yard contains a small barn, garden, root cellar, and banya where you can bathe.'
 
 	if $clothingworntype = 'nude':
 		*nl
@@ -72,16 +69,16 @@ if $ARGS[0]='':
 				end
 				gs'stat'
 
-				act 'Continue':gt'gaddvor'
+				act 'Finish':gt'gaddvor'
+				act 'Return back to your grandfather': minut += 1 & gt 'gadhouse', 'grandpa'
 			end
 		end
-		if StoryLine = 1:
-			act 'Enter your grandparents'' house':minut += 1 & gt 'gadhouse', 'start'
-			act 'Enter the banya':minut += 1 & gt 'gadbana'
-		end
+		act 'Enter your grandparents'' house':minut += 1 & gt 'gadhouse', 'start'
+		act 'Enter the banya':minut += 1 & gt 'gadbana'
 		act 'Go to the barn':minut += 1 & gt 'gadsarai'
+		act 'Go to the root cellar': minut += 1 & gt 'gaddvor', 'root_cellar'
 		act 'Go to the garden':minut += 1 & gt'gadgarden','garden'
-
+		if grandmaQW['chore_feed_chickens'] = 1 or (hour >= 6 and hour < 20 and month >= 4 and month <= 10):act 'Look at your grandparents'' chickens':gt 'gaddvor','chickens'
 		mira_temp = rand(1,5)
 		if mira_temp = 3 and hour >= 9 and hour <= 19 and npc_rel['A60'] >= 15 and Mira_no = 0 and sunWeather = 1 and mira_guestday ! daystart and (npc_QW['A63'] < 13 or npc_QW['A60'] >= 10 or mirasex > 1):
 			*clr & cla
@@ -117,6 +114,96 @@ if $ARGS[0]='':
 
 end
 
+if $ARGS[0] = 'root_cellar':
+	*clr & cla
+	'<center><h4>Root Cellar</h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/root_cellar.jpg"></center>'
+	*nl
+	if boletus_stored + bilberry_stored >= 20:
+		'Your grandparents'' root cellar is full.'
+	elseif boletus_stored + bilberry_stored > 0:
+		'Your grandparents'' root cellar is partially full.'
+	else
+		'Your grandparents'' root cellar is empty.'
+	end
+	'Even though your grandparents allow you to store extra mushrooms and berries you pick in here, they reserve the right to use them too, so you aren''t surprised if any go missing day to day.'
+	if boletus_stored > 0: 'You currently are storing <b><<boletus_stored>></b> kg of raw mushrooms.'
+	if bilberry_stored > 0: 'You currently are storing <b><<bilberry_stored>></b> kg of raw berries.'
+	*nl
+	if boletus + boletus_cooked + bilberry >= 5:
+		'Your basket is full and you cannot carry more.'
+	elseif boletus + boletus_cooked + bilberry > 0:
+		'Your basket is partially full.'
+	else
+		'Your basket is empty.'
+	end
+	if boletus > 0: 'You currently are carrying <b><<boletus>></b> kg of raw mushrooms.'
+	if boletus_cooked > 0: 'You currently are carrying <b><<boletus_cooked>></b> kg of cooked mushrooms.'
+	if bilberry > 0: 'You currently are carrying <b><<bilberry>></b> kg of raw berries.'
+
+	act 'Go back to the yard': minut += 1 & gt 'gaddvor'
+	if (boletus_stored + bilberry_stored < 20) and (boletus > 0 or bilberry > 0):
+		act 'Store as many raw mushrooms and berries that will fit (Max 20 kgs):':
+			:store_bb_loop
+			if boletus > 0:
+				boletus_stored += 1
+				boletus -= 1
+				if boletus_stored + bilberry_stored < 20: jump 'store_bb_loop'
+			end
+			if bilberry > 0:
+				bilberry_stored += 1
+				bilberry -= 1
+				if boletus_stored + bilberry_stored < 20: jump 'store_bb_loop'
+			end
+			gt 'gaddvor', 'root_cellar'
+		end
+		if boletus > 0:
+			act 'Store 1 kg of raw mushrooms':
+				boletus_stored += 1
+				boletus -= 1
+				gt 'gaddvor', 'root_cellar'
+			end
+		end
+		if bilberry > 0:
+			act 'Store 1 kg of raw berries':
+				bilberry_stored += 1
+				bilberry -= 1
+				gt 'gaddvor', 'root_cellar'
+			end
+		end
+	end
+	if (boletus_stored > 0 or bilberry_stored > 0) and (boletus + boletus_cooked + bilberry < 5):
+		act 'Retrieve as many raw mushrooms and berries as you can carry (Max 5 kgs)':
+			:retrieve_bb_loop
+			if boletus_stored > 0:
+				boletus += 1
+				boletus_stored -= 1
+				if boletus + boletus_cooked + bilberry < 5: jump 'retrieve_bb_loop'
+			end
+			if bilberry_stored > 0:
+				bilberry += 1
+				bilberry_stored -= 1
+				if boletus + boletus_cooked + bilberry < 5: jump 'retrieve_bb_loop'
+			end
+			gt 'gaddvor', 'root_cellar'
+		end
+		if (boletus_stored > 0 and grandmaQW['chore_can_mushrooms'] ! 1) or (boletus_stored > 5 and grandmaQW['chore_can_mushrooms'] = 1):
+			act 'Retrieve 1 kg of raw mushrooms':
+				boletus += 1
+				boletus_stored -= 1
+				gt 'gaddvor', 'root_cellar'
+			end
+		end
+		if (bilberry_stored > 0 and grandmaQW['chore_can_berries'] ! 1) or (bilberry_stored > 5 and grandmaQW['chore_can_berries'] = 1):
+			act 'Retrieve 1 kg of raw berries':
+				bilberry += 1
+				bilberry_stored -= 1
+				gt 'gaddvor', 'root_cellar'
+			end
+		end
+	end
+end
+
 if $ARGS[0] = 'chickens':
 	*clr & cla
 	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/chickens1.jpg"></center>'
@@ -136,6 +223,7 @@ if $ARGS[0] = 'chickens':
 			gs 'stat'
 
 			act 'Finish':gt'gaddvor'
+			act 'Return back to your grandmother': minut += 1 & gt 'gadhouse', 'grandma'
 		end
 	end
 	act 'Leave': gt'gaddvor'
