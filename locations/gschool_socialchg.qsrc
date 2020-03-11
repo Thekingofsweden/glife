@@ -27,12 +27,6 @@ if $ARGS[0] = 'test':
 	elseif pav_slut < 125 and grupvalue[4] > 50 and grupTipe ! 4:
 		gt 'gschool_socialchg', 'gopnik'	
 	end
-	if nerd_night_game = 1 and nerd_night_game_day ! daystart:
-		killvar 'nerd_night_game'
-		killvar 'nerd_night_game_day'
-		gs 'gschool_socialchg', 'group_rel_change','nerds', -5
-		!! next week ?
-	end
 	if gopnik_initiation = 1 and gopnik_initiation_day ! daystart:
 		killvar 'gopnik_initiation'
 		killvar 'gopnik_initiation_day'
@@ -115,6 +109,7 @@ if $ARGS[0] = 'coolkid':
 		if grupTipe = 4 or grupvalue[4] < 0: grupvalue[4] = 0
 		
 		grupTipe = 1
+		grupTipe['joined_cool'] = 1
 		
 !!		gs 'gschool_socialchg', 'group_rel_change','cool kids', 5
 		gs 'stat'
@@ -156,6 +151,7 @@ if $ARGS[0] = 'jock':
 		if grupTipe = 4 or grupvalue[4] < 0: grupvalue[4] = 0
 		
 		grupTipe = 2
+		grupTipe['joined_jock'] = 1
 		
 !!		gs 'gschool_socialchg', 'group_rel_change','jocks', 5
 		gs 'stat'
@@ -185,7 +181,7 @@ if $ARGS[0] = 'nerd':
 		cla & *clr
 		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/events/joinnerd.jpg"></center>'
 		'You nod your head, "Yes I would love it, I love hanging out with you guys. A game night sounds like a lot of fun."'
-		'Most of them start talking at once, they seem as excited as you are about you joining them. You understand this means you are part of their group now. Finally Feofan talks loud enough the rest let him talk. "That''s great <<$pcs_nickname>> meet us at the community center library tonight after school. See you then." With that they all start leaving and going to class, most saying they look forward to seeing you tonight.'
+		'Most of them start talking at once, they seem as excited as you are about you joining them. You understand this means you are part of their group now. Finally Feofan talks loud enough the rest let him talk. "That''s great <<$pcs_nickname>> meet us at the community center library tonight at 20:00. See you then." With that they all start leaving and going to class, most saying they look forward to seeing you tonight.'
 		
 		grupvalue[1] -= 50
 		grupvalue[2] -= 40
@@ -196,9 +192,10 @@ if $ARGS[0] = 'nerd':
 		if grupTipe = 4 or grupvalue[4] < 0: grupvalue[4] = 0
 				
 		grupTipe = 3
+		grupTipe['joined_nerd'] = 1
 		
-		nerd_night_game = 1
-		nerd_night_game_day = daystart
+		nerd_game['invite_day'] = daystart
+		nerd_game['game_day'] = daystart
 		
 !!		gs 'gschool_socialchg', 'group_rel_change','nerds', -5
 		gs 'stat'
@@ -256,6 +253,7 @@ if $ARGS[0] = 'coolkid outcast':
 	if grupvalue[4] < 0: grupvalue[4] = 0
 	
 	grupTipe = 5
+	grupTipe['before_outcast'] = 1
 	
 !!	gs 'gschool_socialchg', 'group_rel_change','cool kids', -20
 	gs 'stat'
@@ -280,6 +278,7 @@ if $ARGS[0] = 'jock outcast':
 	if grupvalue[4] < 0: grupvalue[4] = 0
 	
 	grupTipe = 5
+	grupTipe['before_outcast'] = 2
 	
 !!	gs 'gschool_socialchg', 'group_rel_change','jocks', -20
 	gs 'stat'
@@ -304,6 +303,7 @@ if $ARGS[0] = 'nerd outcast':
 	if grupvalue[4] < 0: grupvalue[4] = 0
 	
 	grupTipe = 5
+	grupTipe['before_outcast'] = 3
 	
 !!	gs 'gschool_socialchg', 'group_rel_change','nerds', -20
 	gs 'stat'
@@ -328,133 +328,12 @@ if $ARGS[0] = 'gopnik outcast':
 	if grupvalue[3] < 0: grupvalue[3] = 0
 	
 	grupTipe = 5
+	grupTipe['before_outcast'] = 4
 	
 !!	gs 'gschool_socialchg', 'group_rel_change','gopniks', -20
 	gs 'stat'
 
 	act 'Go to class': school_period = 0 & gt 'gschool_lessons', 'schedule'
-end
-
-if $ARGS[0] = 'nerd game night':
-	cla & *clr
-	menu_off = 1
-	killvar 'nerd_night_game'
-	killvar 'nerd_night_game_day'
-	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/gamenight.jpg"></center>'
-	'Upon entering the room everyone freezes and looks your way. You can feel the anxious gazes as you greet the group sitting around the table having a large map spread across it, small little figures, varies papers, books, and lots and lots of dice..'
-	'As you''re about to ask what they''re doing Feofan speaks up, "Welcome to our little game night <<$pcs_nickname>>! Please take a seat and I will explain the rules to you."'
-	'The empty seat is next to Julia. She smiles warmly to you and scoots a little closer to you to help explain things.'
-	'As you take your seat Feofan tells you this incredible background story as he builds up the game world so you can be fully immersed. You''re handed a handbook and a pencil as he continues on explaining what the game is all about.'
-	'You hear a couple of sighs as Feofan passionately continues on. "Why does it always end up like this? Let''s get on with the game already!" Petka exclaims.'
-
-	grupvalue[3] += 2
-	gs 'gschool_socialchg', 'group_rel_change','nerds', 1
-	gs 'stat'
-
-	act 'Pick a character':
-		cla & *clr
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/character.jpg"></center>'
-		'It seems that Feofan has created two different characters for you to pick. One is a rogue which uses her beautiful looks, charm, and agility to get what she wants, while the other one is a wizard character that uses her intelligence and mystical abilities to rain down death and destruction with magic.'
-		'"Before we begin you need to pick out a character you want to use <<$pcs_nickname>>." Feofan tells you.'
-		'It doesn''t take long before the boys begin to argue for you to pick the rogue, "We''re currently missing a character that has lots of social skills so please pick her."'
-		'The girls sigh loudly, "Don''t listen to them, they just want a sexy character in their party. Pick the wizard instead and you''ll be of more help to the group."'
-		gs 'stat'
-
-		act 'Pick the rogue':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/rogue.jpg"></center>'
-			'You fall under the guys pressure and decide on the rogue. "Great choice, <<$pcs_nickname>>!" Petka says. "If we''re ever short on gold we can use your character to earn us some money while in the town." Petka continues on while the other boys start to laugh.'
-			gs 'stat'
-			npc_rel['A2'] += 1
-			npc_rel['A6'] += 1
-			npc_rel['A153'] += 1
-
-			gs 'gschool_socialchg', 'game_on'
-		end
-		act 'Pick the wizard':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/wizard.jpg"></center>'
-			'You decide to follow the girls advice and pick the wizard. "I''m glad you decided to listen to us." Julia happily says. "We can build your character to be a wreck stuff." she continues on while Zinaida nods approvingly.'
-			minut += 30
-			gs 'stat'
-			npc_rel['A142'] += 1
-			npc_rel['A12'] += 1
-
-			gs 'gschool_socialchg', 'game_on'
-		end
-	end
-end
-
-if $ARGS[0] = 'game_on':
-	menu_off = 1
-	act 'Game on':
-		cla & *clr
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/playing.jpg"></center>'
-		'Feofan clears his throat, "Now then, the last time we stopped at the event where Zinaida was supposed to make her move."'
-		'Artem sighs deeply, "Do we need to have this discussion again? It''s obvious that we should attack the dragon. After all she is the mighty warrior and our tank."'
-		'Gerasim looks a bit irritated, "We should buff the warrior first before taking on the dragon. It''s a more sound strategy."'
-		'The whole room erupts in a frenzy, everyone is talking over each other to get their point across... Feofan tries to calm everyone down but it''s futile, the situation is out of control. After a while they decide that they should vote on what to do next.'
-		'"How about we let <<$pcs_nickname>> decide? She''s new and should be objective." Artem says while the others nod approvingly.'
-		minut += 30
-		gs 'stat'
-
-		act 'Side with Artem':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big2.jpg"></center>'
-			'You think about it for a short while and tell the others that you''re siding with Artem and that you should go on the offense.'
-			'"See I told you I was making sense." Artem proudly proclaims.'
-			gs 'stat'
-			npc_rel['A2'] += 1
-			npc_rel['A153'] -= 1
-
-			gs 'gschool_socialchg', 'keep_playing_on'
-		end
-		act 'Side with Gerasim':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big153.jpg"></center>'
-			'You think about it for a short while and tell the others that you''re siding with Gerasim and that you should firstly buff your characters before making a move on the dragon.'
-			'"See I told you I was making sense." Gerasim proudly proclaims.'
-			gs 'stat'
-			npc_rel['A2'] -= 1
-			npc_rel['A153'] += 1
-
-			gs 'gschool_socialchg', 'keep_playing_on'
-		end
-		act 'Side with no one':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/gamenight.jpg"></center>'
-			'You excuse yourself as you explain that it wouldn''t be fair for you to take this kind of decision as you''re new at this and don''t even know how tough a dragon is, though it sounds dangerous.'
-			'The rest of the group seem to accept that as they go back to bickering about what to do next.'
-			minut += 30
-			gs 'stat'
-			gs 'gschool_socialchg', 'keep_playing_on'
-		end
-	end
-end
-
-if $ARGS[0] = 'keep_playing_on':
-	menu_off = 1
-	act 'Keep playing on':
-		cla & *clr
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/playing.jpg"></center>'
-		'After a while you get into the game as some of the rules gets clearer and you''re able to enjoy yourself playing with the rest of the group. They continue on with the special banter and the discussions are quite intensive and you''re forced to take small breaks.'
-		'Feofan tries his best to be a good game leader but sometimes even he can''t keep his head cool and gets carried away as he passionately discusses the game world.'
-		'Everyone is having a great time and time seems to fly by quickly.'
-		minut += 30
-		gs 'stat'
-
-		act 'Finish the game':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/library/events/gamenight.jpg"></center>'
-			'The time quickly flies by as you''re really enjoying yourself and all of a sudden you hear Feofan explain that you need to stop, he has to get home.'
-			'You hear a unilateral disappointing sigh go through the room as everybody stop and close their handbooks. The group is still buzzing after the amazing round you''ve just played and you keep on chatting for some while about the twists and turns during one of the encounters.'
-			'As you''re about to leave you can hear Feofan, "Don''t worry we''ll continue this story event the next time." he says, "It was fun having you around <<$pcs_nickname>>, I hope you had fun and will join us again next time." With that you say goodbye to the rest of the group as they happily send you off.'
-			minut += 30
-			gs 'stat'
-
-			act 'Leave':gt 'gdk', 'lobby'
-		end
-	end
 end
 
 if $ARGS[0] = 'gopnik initiation':
@@ -662,6 +541,7 @@ if $ARGS[0] = 'gopnik party':
 	if grupTipe = 3 or grupvalue[3] < 0: grupvalue[3] = 0
 				
 	grupTipe = 4
+	grupTipe['joined_gopnik'] = 1
 
 !!	gs 'gschool_socialchg', 'group_rel_change','gopniks', 5
 
@@ -897,7 +777,7 @@ if $ARGS[0] = 'tVasily':
 end
 
 if $ARGS[0] = 'tLavrenti':
-	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big40.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big155.jpg"></center>'
 	'You approach Lavrenti who''s discussing something with Vitek, "This is some good Vodka, the girls grabbed the good stuff!"'
 	'"Thank you." you answer, "We tried to do our best. It was stressful for a while there but we managed to handle it."'
 	'Lavrenti begins to laugh, "I can understand that. It must''ve been a stressful situation. Either way it was nice to have someone else provide the booze this time."'
@@ -906,7 +786,7 @@ if $ARGS[0] = 'tLavrenti':
 
 	act 'Oh?':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big40.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big155.jpg"></center>'
 		'"Really? Why''s that?" you tilt your head.'
 		'Lavrenti smiles, "Well, I''m the richest here so they usually use me as their personal bank... But that''s okay, beats being alone anyway."'
 		'"Sounds a bit sad." you reply, "If they were your real friends they wouldn''t do that to you."'
@@ -916,7 +796,7 @@ if $ARGS[0] = 'tLavrenti':
 
 		act 'I still feel...':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big40.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big155.jpg"></center>'
 			'You continue to push on the topic and just as you''re about to say something more Lavrenti cuts you off, "I told you it''s okay! So just drop it!" he says annoyed.'
 			'"I-I''m sorry I didn''t want to make you upset." you apologize.'
 			'"Don''t worry. These people are my friends now. After the falling out they were the only one that took me in."'
@@ -925,7 +805,7 @@ if $ARGS[0] = 'tLavrenti':
 
 			act 'What happened?':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big40.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big155.jpg"></center>'
 				'"Why''s that?" you curiously ask.'
 				'"You know that Dimka and I had a falling out. And that it was pretty ugly. Dimka ruined my with most of the school and for awhile got me outcast, but I proved myself, to these guys and they took me in."'
 				'Lavrenti continues, "And I know they mostly tolerate me because my family is rich, but I don''t care. They at least always have my back when push comes to shove."'
@@ -1224,7 +1104,7 @@ if $ARGS[0] = 'office':
 
 			act 'See who it is':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big42.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big157.jpg"></center>'
 				'You squint your eyes as the shadowy figure approaches you. Finally you''re able to make sense of who it is, it''s Roman.'
 				'He stands there with this stupid grin pleased with himself that he was able to frighten you, "Can''t wait to tell the others about this or do you want to run and get your big bad friends that will teach me a lesson?" he winks.'
 				'You begin to blush as you stand there, "By the way what were you doing all alone in the room?"'
@@ -1236,7 +1116,7 @@ if $ARGS[0] = 'office':
 
 				act 'Oh':
 					*clr & cla
-					'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big42.jpg"></center>'
+					'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big157.jpg"></center>'
 					'"I didn''t know that. Sorry to bother you." you answer.'
 					'"It''s ok, you distracted me a bit but then I thought I would play a little prank on you to see if you could take it." he answers while smiling.'
 					'"At first I didn''t know how to react, what if you would''ve been someone else. I would''ve freaked out." you seriously answer.'
@@ -1270,7 +1150,7 @@ if $ARGS[0] = 'lounge':
 end
 
 if $ARGS[0] = 'tRadomir':
-	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 	'As you walk past Radomir you hear him tell a story to the guys, "You should''ve seen this hottie I hooked up with this last weekend after our gig. I had her sucking on my cock within minutes."'
 	'The guys feed his ego by giving him encouraging nod and chuckles. As he sees you, he points and says, "And there we have my next ''conquest''. She''s probably good in bed what do you think guys."'
 	minut += 2
@@ -1278,7 +1158,7 @@ if $ARGS[0] = 'tRadomir':
 
 	act 'Maybe':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 		'You look him up and down. "Yeah maybe or maybe not." You tell him.'
 		'He steps over and wraps his arm around your waist and pulls you close. "Maybe always means yes."'
 		'You turn towards him and put your hand on his chest bitting your lip as you look up at him, then you shove him away. "Like I said maybe, but not tonight." Then you turn and walk off, behind you, you can hear Valentin and Arkadi laughing.'
@@ -1292,7 +1172,7 @@ if $ARGS[0] = 'tRadomir':
 		!! it is not perfect at the moment because the variable is not set yet and on the other hand it can be set in other part.
 		act 'We already did':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 			'You roll your eyes at him. "We already did, remember, cutting class in the bathroom?"'
 			'He looks at you long and hard like he is trying hard to remember. "Oh yeah... yeah, you were a fine piece of ass. I remember now, well damn and here I thought I was going to get a new piece of pussy." He sighs and turns back to the guys looking disappointed and doesn''t even glance back at you, as he continues his graphic story to the guys.'
 			'Mildly annoyed you move off, what a jack ass.'
@@ -1304,7 +1184,7 @@ if $ARGS[0] = 'tRadomir':
 	end
 	act 'Not that kind of girl':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 		'You look at him with a confused look, "I''m sorry but I''m not that kind of girl."'
 		'Radomir burst out in laughter, "They all say that at first but we all know that you''ll be on your back screaming my name."'
 		'He continues on, "Look at the people you''re hanging out with here. They all have one thing in mind and that''s fucking the new girl."'
@@ -1313,7 +1193,7 @@ if $ARGS[0] = 'tRadomir':
 
 		act 'Is that so?':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 			'You look around as you''re a bit disgusted and answer, "Hmm interesting. Too bad you would be the last one here I would have sex with."'
 			'Radomir scoffs, "This little kitty got some spunk in her. I''m not too worried though, you''ll come around and beg me to give you a real good fuck."'
 			'You cross your arms a bit irritated by now, "Hell would need to freeze over before I would have sex with you."'
@@ -1323,7 +1203,7 @@ if $ARGS[0] = 'tRadomir':
 
 			act 'Answer him':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big39.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big154.jpg"></center>'
 				'"You''ll excuse me but I need to go and throw up." you answer.'
 				'"Don''t play hard to get <<$pcs_nickname>>. Go and ask the other girls here about how good of a fuck I am." Radomir confidently tells you.'
 				'"Yeah, I''m not going to do that, you creep. As a matter of fact I don''t want to partake in this conversation anymore." you angrily say.'
@@ -1340,7 +1220,7 @@ end
 
 if $ARGS[0] = 'tValentin':
 	*clr & cla
-	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big43.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big158.jpg"></center>'
 	'You approach Valentin. He smiles and greets you, "Hi <<$pcs_nickname>>. Are you enjoying yourself?"'
 	'You smile back and greet him back, "Hi Valentin. Yeah, it''s been pretty fun so far."'
 	minut += 2
@@ -1349,7 +1229,7 @@ if $ARGS[0] = 'tValentin':
 	if anushkaFirstvisit = 1:
 		act 'How''s the work on the motorcycle going':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big43.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big158.jpg"></center>'
 			'You''re pretty curious on how the work on the bike is progressing so you ask him, "Last time I saw you, you were working hard on your motorcycle."'
 			'He lets out a nervous laugh, "Well, I''ve hit a snag and Eduard''s been busy as of late so I''m waiting on him to help me out."'
 			'"I hope you manage to get past the issue." you say as Valentin begins to ramble on about his motorcycle, "Hopefully I''ll be done soon so I can finally go for a ride, can''t take not having my baby around."'
@@ -1358,7 +1238,7 @@ if $ARGS[0] = 'tValentin':
 
 			act 'Maybe you''ll invite me for a ride':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big43.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big158.jpg"></center>'
 				'"Maybe I can come along for a ride after you''ve finished." you say teasingly.'
 				'Valentin excitingly answers, "Sure thing, I would love to take you on a ride someday."'
 				'"She means your bike not you dick." Radomir says.'
@@ -1374,7 +1254,7 @@ if $ARGS[0] = 'tValentin':
 	else
 		act 'Boast':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big43.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big158.jpg"></center>'
 			'You continue on, "I''m pretty happy that we were able to pull it off. I wasn''t too sure we would at first, but in the end it felt pretty good hearing the roars from the people when I pulled out the bottles."'
 			'He chuckles, "Yeah, it was a nice change of pace. Usually they make me go and get the booze as I look older than everyone else."'
 			'"Must be annoying." you say.'
@@ -1384,7 +1264,7 @@ if $ARGS[0] = 'tValentin':
 
 			act 'I would mind':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big43.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big158.jpg"></center>'
 				'"I would mind." you say, "I''m not trying to stir up anything here but the others are just using you."'
 				'"Maybe, but with my rugged manly looks and fake id, helps me get into places I usually wouldn''t be able to enter so it has its advantages too." he replies. "Besides, you will learn everyone uses everyone sometimes. We all use each other and help each other, because at the end of the day all we have is each other and we stand up for each other."'
 				'"I guess so." you continue to prod on.'
@@ -1402,7 +1282,7 @@ end
 
 if $ARGS[0] = 'tArkadi':
 	*clr & cla
-	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big41.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big156.jpg"></center>'
 	'You notice Arkadi doesn''t seem to be all that happy, as he listens to Radomir. You approach him, wanting to cheer him up, "What''s up?" you ask.'
 	'Arkadi looks at you, spits on the side and says, "Nothing much. Just another boring day here in Pavlovsk. Man this place sucks monkey balls."'
 	minut += 2
@@ -1410,7 +1290,7 @@ if $ARGS[0] = 'tArkadi':
 
 	act 'Don''t say that':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big41.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big156.jpg"></center>'
 		'Trying to cheer him up you say, "Look I know you just moved here and it''s not like in the city but I''m sure..."'
 		'Arkadi cuts you off, "I see what you''re trying to do but it''s not going to work. This place sucks and nothing here can compare to the city."'
 		'"What''s missing?" you ask as you''re genuinely curious as to what he can be missing here in Pavlovsk.'
@@ -1420,7 +1300,7 @@ if $ARGS[0] = 'tArkadi':
 
 		act 'All this talk about the city':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big41.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big156.jpg"></center>'
 			'"Isn''t there anything you like here?" You ask him.'
 			'He shrugs a bit. "It is nice playing with the band, but I wish we were doing it in the city, hell I can''t wait till school is over and we can all move to the city."'
 			'You sigh, "All this talk about the city. You know if you focused on what is here, maybe you could make things better here."'
@@ -1499,7 +1379,7 @@ if $ARGS[0] = 'tAlyona':
 
 	act 'That''s a bit too violent for me':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big44.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big143.jpg"></center>'
 		'You''re taken a back a little by Alyona''s statement, "Yeah if I tried that, he would have likely beat my ass."'
 		'She laughs, "I guess so... Your way works as well." She goes silent for a moment as she''s thinking to come up with something then she looks up and says, "I need to tell Lena that we need to do a bigger score next time."'
 		minut += 2
@@ -1507,7 +1387,7 @@ if $ARGS[0] = 'tAlyona':
 
 		act 'You should ask Lena':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big44.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big143.jpg"></center>'
 			'You try to encourage Alyona, "You should tell her, I''m sure she would be up for a bigger score."'
 			'Alyona shines up, "Yeah maybe I should, be more exciting than waiting around for it."'
 			'"Yeah, I don''t think there''s a reason why she should say no... I mean as long as you don''t go and knock down anyone." you wink.'
@@ -1524,7 +1404,7 @@ end
 
 if $ARGS[0] = 'tEkaterina':
 	*clr & cla
-	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big46.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big145.jpg"></center>'
 	'Seeing Ekaterina standing by herself you walk over to her thinking about to check up if everything is alright with her.'
 	'"Is everything okay?" you ask as you come close.'
 	'Ekaterina looks your way and nods, "Yeah I was just thinking about this poor quality vodka you brought back with you."'
@@ -1533,7 +1413,7 @@ if $ARGS[0] = 'tEkaterina':
 
 	act 'Is that so':
 		*clr & cla
-		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big46.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big145.jpg"></center>'
 		'You''re a bit surprised by her brashness, "W-We did our best to grab the best they had, this was the best stuff the shop carried." you answer.'
 		'Ekaterina looks coldly at you, "Don''t get me wrong. It''s enough to get drunk on, but to be honest it tastes like horse piss."'
 		'"Do you know what trouble we went through to get hold of it for the party?" you unsettlingly answer.'
@@ -1544,7 +1424,7 @@ if $ARGS[0] = 'tEkaterina':
 		act 'Leave her alone': gt 'gschool_socialchg', 'lounge'
 		act 'Why don''t you bring it the next time':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big46.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big145.jpg"></center>'
 			'Against your better judgment you decide to press on, "Well the next time you can bring the liquor and the rest of us can decide if it''s good enough."'
 			'Ekaterina shrughs her shoulder, "Sure, my father got lots of it at home and I''m sure he doesn''t even notice when I take some."'
 			'"I look forward to it." you sourly answer.'
@@ -1554,7 +1434,7 @@ if $ARGS[0] = 'tEkaterina':
 
 			act 'Thanks, I guess':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big46.jpg"></center>'
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big145.jpg"></center>'
 				'"Hmmph, it still sounds like you''re really condescending." you tell her.'
 				'Ekaterina begins to smile, "Oh, you must''ve misunderstood me. I''m quite pleased, there''s booze here and the guys here are fine even though they aren''t the lookers but they''ll do."'
 				'As she says that you relax a bit and the two of you chat for a while.'
@@ -1766,6 +1646,7 @@ if $ARGS[0] = 'gopnik miss':
 	act 'Go to class': school_period = 0 & gt 'gschool_lessons', 'schedule'
 end
 
+!! gs 'gschool_socialchg', 'group_rel_change', '<social group>', <amount> [, '<gender (optional)>']
 if $ARGS[0] = 'group_rel_change':
 	if $ARGS[1] = 'cool kids': ntemp = 1
 	if $ARGS[1] = 'jocks': ntemp = 2
@@ -1773,16 +1654,19 @@ if $ARGS[0] = 'group_rel_change':
 	if $ARGS[1] = 'gopniks': ntemp = 4
 	if $ARGS[1] = 'outcasts': ntemp = 5
 	if $ARGS[1] = 'teachers': ntemp = 6
+	if $ARGS[3] = 'male' or $ARGS[3] = 'boy': gtemp = 1
+	if $ARGS[3] = 'female' or $ARGS[3] = 'girl': gtemp = 2
 	temp = arrsize('npc_dna')
 	
 	:gs_socloop
-	if npc_grupTipe['A<<temp>>'] = ntemp:
+	if npc_grupTipe['A<<temp>>'] = ntemp and (gtemp = 0 or npc_gender['A<<temp>>'] = gtemp - 1):
 		npc_rel['A<<temp>>'] += ARGS[2]
 		npc_rel['A<<temp>>'] = min(npc_rel['A<<temp>>'],100)
 		npc_rel['A<<temp>>'] = max(npc_rel['A<<temp>>'],0)
 	end
 	temp -= 1
 	if temp > 1: jump 'gs_socloop'
+	killvar 'gtemp' & killvar 'ntemp'
 end
 
 --- gschool_socialchg ---------------------------------

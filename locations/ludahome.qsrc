@@ -41,7 +41,7 @@ if $ARGS[0] = 'home':
 	bonusZ = 0
 	gs 'stat'
 	gs 'themes', 'indoors'
-	!! Resetting location flags since there''s only one location for now
+	!! Temporary loc measure - Resetting location flags since there''s only one location for now
 	LudaLoc = 0 & OluLoc = 0
 	
 	*clr & cla
@@ -56,9 +56,48 @@ if $ARGS[0] = 'home':
 		menu_off = 1
 		gs 'stat'
 		'You go to Aunt Luda''s apartment and ring the door bell.'
-		!! Luda is home and answers the door Monday-Thursday from 18:00 to 23:00 or 08:00 to 23:00 on the weekends 50% of the time
-		!! Olu is home and answers the door at the same times but only 33% of the time. Otherwise no one is home
-		if rand(0,1) = 1 and (week < 5 and hour >= 18 and hour <= 22) or (week > 5 and hour >= 8 and hour <= 22):
+		!! Luda and Olu are home Monday-Thursday from 18:00 to 23:00 or 08:00 to 23:00 on the weekends. Always at home between 19-22 on Mon when Sveta''s mom visits
+		!! 30% of the time they''re both home, 30% it''s only Luda, 30% it''s only Olu. Otherwise no one is home
+		gs 'family_schedule'
+		if momloc = 20:
+			*clr & cla
+			'<center><img src="images/pc/npc_headshots/big55.jpg"></center>'
+			'You stand outside your aunts apartment, knocking on the door. The door is answered by Olu, who has a big friendly smile on his face. "Hello again," he says in heavily accented Russian. When he sees it is you, his smile turns into a hungry grin as his eyes roam all over you body.'
+			'You return his smile "Is my Aunt Luda home?"'
+			'He nods his head yes "Yes she is in the kitchen with your mother, would you like to come in?"'
+			act 'No':
+				*clr & cla
+				'<center><img src="images/pc/npc_headshots/big55.jpg"></center>'
+				'You shake your head no. "No thanks, actually I should get going, but thanks anyways."'
+				'He nods and smiles "Ok see you nother time." He closes the door after you walk away.'
+				act '<b>Leave Luda''s apartment</b>': gt 'pod_ezd', 'etaj_4'
+			end
+			act 'Yes':
+				*clr & cla
+				minut += 2
+				!! Temporary loc measure
+				LudaLoc = 5 & OluLoc = 5
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_olu_tv.jpg"></center>'
+				'He opens the door wide enough you can walk in. His arm holding the door is high enough you can walk under it, he is a tall and big man. You are reminded of that every time you meet him. Once you are inside he closes the door "They are in kitchen, I watching sports." With that he walks into the living room, presumably to go watch sports.'
+				act 'Enter': gt 'ludahome', 'hallway'
+			end
+		elseif rand(1,10) <= 3 and (week < 5 and hour >= 18 and hour <= 22) or (week > 5 and hour >= 8 and hour <= 22):
+			*clr & cla
+			'<center><img src="images/pc/npc_headshots/big30.jpg"></center>'
+			'You stand outside your aunts apartment, knocking on the door. The door is answered by Luda, as soon as she sees you she smiles "<<$pcs_nickname>> come in, come in." With that she invites you in and closes the door behind you.'
+			act 'Enter': 
+				*clr & cla
+				minut += 2
+				!! Temporary loc measure
+				LudaLoc = 5 & OluLoc = 5
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_olu_tv.jpg"></center>'
+				'She leads you to her living room, where you see Olu sitting watching TV already, who gives you a big friendly smile. Then Luda sits down on the couch, next to Olu, and pats the seat next to her and says "We was just watching some TV, you are welcome to join us, or you can go help yourself to something in the kitchen."'
+				act '<b>Leave Luda''s apartment</b>': gt 'pod_ezd', 'etaj_4'
+				act 'Go explore': gt 'ludahome', 'hallway'
+				act 'Watch TV': gt 'ludahome', 'watchtv'
+			end
+		end
+		if rand(4,10) <= 6 and (week < 5 and hour >= 18 and hour <= 22) or (week > 5 and hour >= 8 and hour <= 22):
 			*clr & cla
 			'<center><img src="images/pc/npc_headshots/big30.jpg"></center>'
 			'You stand outside your aunts apartment, knocking on the door. The door is answered by Luda, as soon as she sees you she smiles "<<$pcs_nickname>> come in, come in." With that she invites you in and closes the door behind you.'
@@ -66,9 +105,10 @@ if $ARGS[0] = 'home':
 				*clr & cla
 				'<center><img src="images/pc/npc_headshots/big30.jpg"></center>'
 				'She leads you to her living room and then sits down on the couch and pats the seat next to her. Once you sit down she says "What have you been up to?"'
+				!! Temporary loc measure
 				act 'Sit down and chat': LudaLoc = 5 & gt 'ludahome', 'chat_luda'
 			end
-		elseif rand(0,2) <= 1 and (week < 5 and hour >= 18 and hour <= 22) or (week > 5 and hour >= 8 and hour <= 22):
+		elseif rand(7,10) <= 9 and (week < 5 and hour >= 18 and hour <= 22) or (week > 5 and hour >= 8 and hour <= 22):
 			*clr & cla
 			'<center><img src="images/pc/npc_headshots/big55.jpg"></center>'
 			if OluQW['met'] = 0:
@@ -83,6 +123,7 @@ if $ARGS[0] = 'home':
 					*clr & cla
 					'<center><img src="images/pc/npc_headshots/big55.jpg"></center>'
 					'He pauses a moment and then nods opening the door wide for you to walk through. Once you step inside he closes the door behind you, he then leads you to the couch in the living room and takes a seat. He indicates for you to take as seat as well, once you do he says "What do you need?"'
+					!! Temporary loc measure
 					act 'I just wanted to talk': OluLoc = 5 & gt 'ludahome', 'chat_olu'
 					act 'Sorry I should go': gt 'pod_ezd', 'etaj_4'
 				end
@@ -95,6 +136,7 @@ if $ARGS[0] = 'home':
 					*clr & cla
 					'<center><img src="images/pc/npc_headshots/big55.jpg"></center>'
 					'He opens the door wide for you to walk through. Once you step inside he closes the door behind you, he then leads you to the couch in the living room and takes a seat. He indicates for you to take as seat as well, once you do he says "What shall we talk about?"'
+					!! Temporary loc measure
 					act 'Sit down and chat': OluLoc = 5 & gt 'ludahome', 'chat_olu'
 					act 'Sorry I should go': gt 'pod_ezd', 'etaj_4'
 				end
@@ -126,12 +168,14 @@ if $ARGS[0] = 'home':
 					end
 					act 'Sorry I should go': gt 'pod_ezd', 'etaj_4'
 				end
+				!! Temporary loc measure
 				act 'Agree to have fun': OluLoc = 5 & gt 'olu', 'olusex1'
 			else
 				'You stand outside your aunts apartment, knocking on the door. The door is answered by a Olu, who has a big friendly smile on his face "Hello again." He asks in heavily accented Russian.'
 				'You return his smile "Is my Aunt Luda home?"'
 				'He shakes his head no "No she not home right now. I will tell her you stopped by, it was nice seeing you again."'
 				act 'Leave': gt 'pod_ezd', 'etaj_4'
+				!! Temporary loc measure
 				act 'Ask if you can come in': OluLoc = 5 & gt 'ludahome', 'chat_olu'
 			end
 		else
@@ -367,17 +411,73 @@ if $ARGS[0] = 'livingroom':
 	gs 'stat'
 	'<center><b><font color = maroon>Living room</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/living.jpg"></center>'
-	'The living room is clean and neat. A couch rests against one wall, with a entertainment center on the opposite wall that holds a fairly decent sized flat screen tv along with a dvd player. Inside one of the glass doors of the entertainment center you see several dozen dvd''s.'
-	if LudaLoc = 5:
-		'Luda is still sitting on the coach where you left her, when you got up to explore her apartment. She smiles at you as you walk back in.'
+	'The living room is clean and neat. A couch rests against one wall, with a entertainment center on the opposite wall that holds a fairly decent sized flat screen TV along with a dvd player. Inside one of the glass doors of the entertainment center you see several dozen dvd''s.'
+	gs 'family_schedule'
+	if momloc = 20 and OluLoc = 5:
+		'Olu is sitting on the couch watching some sports and he seems pretty intent on it. When he notices you, he briefly looks up and smiles at you as you walk back in.'
+		act 'Watch TV with him (0:30)': gt 'ludahome', 'watchtv'
+	elseif LudaLoc = 5 and OluLoc = 5:
+		'Luda and Olu are still sitting on the couch where you left them. Still watching TV, right where they was, when you got up to explore their apartment. Luda glances up and smiles at you as you walk back in.'
+		act 'Watch TV with them (0:30)': gt 'ludahome', 'watchtv'
+	elseif LudaLoc = 5 and momloc ! 20:
+		'Luda is still sitting on the couch where you left her, when you got up to explore her apartment. She smiles at you as you walk back in.'
 		act 'Sit down and chat': gt 'ludahome', 'chat_luda'
 	elseif OluLoc = 5:
-		'Olu is still sitting on the coach where you left him, when you got up to explore the apartment. He smiles at you as you walk back in.'
+		'Olu is still sitting on the couch where you left him, when you got up to explore the apartment. He smiles at you as you walk back in.'
 		act 'Sit down and chat': gt 'ludahome', 'chat_olu'
 	else
 		'Nobody''s here right now.'
 	end
 	act 'Leave the living room': gt 'ludahome','hallway'
+end
+
+if $ARGS[0] = 'watchtv':
+	if $ARGS[1] = '':
+		*clr & cla
+		minut += 30
+		if momloc = 20:
+			gs 'npc_relationship', 'modify', 'A55', 'like'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/olutv.jpg"></center>'
+			'You take a seat on the couch next to Olu, he offers you a brief smile, but his attention seems to be focused on a football game. You are not sure if this is a recording or a live game, but he is really into it. You watch it with him for about half a hour, he occasional shouts at the TV either in joy or anger as one team or the other scores. After a bit you realize he doesn''t seem interested in talking.'
+		else
+			gs 'npc_relationship', 'modify', 'A30', 'like'
+			gs 'npc_relationship', 'modify', 'A55', 'like'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_olu_tv.jpg"></center>'
+			'You take a seat on the couch next to your aunt and watch TV with them for half a hour. Olu seems very intent on the show and mostly just watches it and doesn''t speak. Luda on the other hand periodically makes small talk with you about a variety of things, seemingly only half paying attention to the show.'
+		end
+		gs 'stat'
+		act 'Stop watching TV': gt 'ludahome', 'livingroom'
+		act 'Keep watching TV (0:30)': gt 'ludahome', 'watchtv', iif(momloc = 20, 'Olu','OluLuda')
+	elseif $ARGS[1] = 'Olu':
+		*clr & cla
+		minut += 30
+		gs 'npc_relationship', 'modify', 'A55', 'like'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/olutv.jpg"></center>'
+		if hour > 22:
+			'As it starts to get late, your <<$npc_nickname[''A29'']>> comes into the living room. "Come on <<$pcs_nickname>> they are about to go to bed, we should leave, so they can." Knowing better than to argue you get up and head for the door. Olu gives both of you a brief smile and wave but quickly focuses back on the game. You don''t think he is going to be going to bed until after the game. Regardless you follow your <<$npc_nickname[''A29'']>> out. As she starts walking down the stairs says "You should come home soon before it gets late," then she walks down the stairs out of sight.'
+			act 'Stairwell': gt 'pod_ezd', 'etaj_4'
+		else
+			'You remain seated next to Olu, he keeps intently watching the game, you often wonder if he still remembers you are here at all. Still yelling at the TV when the team he likes does well or badly.'
+			act 'Stop watching TV': gt 'ludahome', 'livingroom'
+			act 'Keep watching TV (0:30)': gt 'ludahome', 'watchtv', 'Olu'
+		end
+	elseif $ARGS[1] = 'OluLuda':
+		*clr & cla
+		minut += 30
+		gs 'npc_relationship', 'modify', 'A30', 'like'
+		gs 'npc_relationship', 'modify', 'A55', 'like'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_olu_tv.jpg"></center>'
+		if hour > 22:
+			'As it starts to get late, Luda pats Olu on the leg. "Ok that''s enough for the night, we both need to get ready for bed." Olu glances at her and then picks up the remote and turns off the TV. As they both get up, Luda says to you. "I was wonderful you coming to visit but it is time for us to go to bed. Come back any time though." She says as she escorts you to the apartment door. Olu gives you a smile. "Good night." With that you say your good nights and leave.'
+			act 'Leave Luda''s apartment': gt 'pod_ezd', 'etaj_4'
+		else
+			'You remain seated next to your aunt and watch TV with them for another half a hour. Olu seems very intent on the show and mostly just watches it and doesn''t speak. Luda on the other hand periodically makes small talk with you about a variety of things, seemingly only half paying attention to the show.'
+			act 'Stop watching TV': gt 'ludahome', 'livingroom'
+			act 'Keep watching TV (0:30)': gt 'ludahome', 'watchtv', 'OluLuda'
+		end
+	end
 end
 
 if $ARGS[0] = 'kitchen':
@@ -399,11 +499,69 @@ if $ARGS[0] = 'kitchen':
 	'<center><b><font color = maroon>Kitchen</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/kitchen.jpg"></center>'
 	'Along one wall is the kitchen counters, with a stove, fridge, and sink. On the counter is a microwave, opposite the counters is a small table with chairs. The room is fairly clean but looks lived in and used, there is a couple of small racks with what looks to be spices, some of them seem to be foreign and you don''t really know what they are.'
+	gs 'family_schedule'
+	if momloc = 20:
+		'Luda and your <<$npc_nickname[''A29'']>> are sitting at the kitchen table chatting away and drink tea.'+iif(LudaQW['tea_day'] ! daystart,' When she hears you, Luda turns your way and asks "Would you like to join us, dear?"','')
+		act 'Join them for tea (0:30)': gt 'ludahome', 'luda_mom_talk'
+		if LudaQW['tea_day'] ! daystart:
+			LudaQW['tea_day'] = daystart
+			act 'No thanks':
+				*clr & cla
+				minut += 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_nat.jpg"></center>'
+				'You shake your head. "No thanks Aunt, I was just looking around."'
+				'You see your mother slightly shake her head, while Luda smiles. "Of course dear, help yourself to anything in the fridge."'
+				act 'Leave the kitchen': gt 'ludahome', 'hallway'
+				act 'Look in the fridge': gt 'ludahome', 'fridge'
+			end
+			exit
+		end
+	else
+		'Nobody''s here right now.'
+	end
 	act 'Leave': gt 'ludahome','hallway'
 	act 'Look in the fridge': gt 'ludahome', 'fridge'
 	dynamic $fill_bottle
 	dynamic $driwater
 end
+
+!!this args can go where ever you feel it fits best for finding stuff	
+if $ARGS[0] = 'luda_mom_talk':
+	if ARGS[1] = 0:
+		*clr & cla
+		LudaLoc = 4
+		minut += 30
+		pcs_energy += 10
+		if pcs_hydra >= 100: pcs_hydra += 25 else pcs_hydra += 50
+		cumspclnt = 2
+		gs 'cum_cleanup'
+		gs 'npc_relationship', 'modify', 'A29', 'like'
+		gs 'npc_relationship', 'modify', 'A30', 'like'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_nat.jpg"></center>'
+		'You take a seat next to them. "Sure sounds great." You tell her.'
+		'You see your <<$pcs_nickname>> give you a friendly smile, while Luda fills a cup with tea and offers it to you asking "What have you been up to dear?" Before you can even answer, your <<$npc_nickname[''A29'']>> does and she embellishes things. She makes it sound like things at home and what''s going on are better than they really are. You get the feeling she is trying to impress her sister on how great her family is, so you simply sit back and sip your tea. After a while they start talking about other of things, so you can finally join in. Your <<$pcs_nickname>> still cuts you off sometimes and answers for you, perhaps afraid you will shatter this illusion she is building up of your family.'
+		act 'Get up from the table': gt 'ludahome', 'kitchen'
+		act 'Keep chatting': gt 'ludahome', 'luda_mom_talk', 1
+	elseif ARGS[1] = 1:
+		*clr & cla
+		minut += 30
+		gs 'npc_relationship', 'modify', 'A29', 'like'
+		gs 'npc_relationship', 'modify', 'A30', 'like'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/ludahome/luda_nat.jpg"></center>'
+		if hour > 22:
+			'As it starts to get late, your <<$npc_nickname[''A29'']>> gets up. "Come on <<$pcs_nickname>> it is getting late, we should leave, so they can go to bed." Knowing better than to argue you get up and head for the door. Luda says her good buys to both of you and hugs you both goodbye, your <<$npc_nickname[''A29'']>> walks out first, while Luda holds your hug a little longer, giving your <<$npc_nickname[''A29'']>> time to walk down the stairs. "Don''t worry about your <<$npc_nickname[''A29'']>>, she just wants what is best for you and for you to have a happy family, even if it isn''t always so," she says with a wink, letting you know she knows the truth or at least suspects it, but plays along with your <<$npc_nickname[''A29'']>> to make her feel good. Then once you are outside the apartment she closes the door.'
+			act 'Stairwell': gt 'pod_ezd', 'etaj_4'
+		else
+			'You remain seated at the table with your <<$npc_nickname[''A29'']>> and Aunt, mostly listening to them talk but occasionally taking part, at least when your mother doesn''t interrupt you trying to impress your aunt. They seem to get along pretty well, better than you thought actually given how rarely Luda comes down to your apartment. You briefly wonder why that is, does your <<$npc_nickname[''A29'']>> always make excuses so Luda can''t see or overhear something less perfect than the picture she paints?'
+			act 'Get up from the table': gt 'ludahome', 'kitchen'
+			act 'Keep chatting': gt 'ludahome', 'luda_mom_talk', 1
+		end
+	end
+end
+
 
 if $ARGS[0] = 'fridge':
 	menu_off = 1
@@ -587,6 +745,7 @@ if $ARGS[0] = 'chat_luda':
 		end
 	!!this one triggers the first time after Sveta has agreed to have sex with Olu and has done so. Only triggers once, it should trigger as soon as Sveta sits down to chat with Luda
 	elseif LudaQW['olu_offer'] = 2 and OluQW['sex'] = 1:
+		*clr & cla
 		minut += 10
 		LudaQW['olu_offer'] = 3
 		gs 'stat'

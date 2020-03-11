@@ -233,61 +233,12 @@ if $ARGS[1] = 'main':
 		streetev_day = daystart
 		'<<$streetev_title>>'
 		'<center><img src="images/locations/shared/street/rapist.jpg"></center>'
-		'As you walk down the street, a man jumps out of the shadows and suddenly grabs you, as you''re caught off-guard he manages to drag you into a nearby alleyway. You try to scream but his strong hand covers your mouth. You attempt to get free but his other arm wraps around your waist and lifts you off the grounds, as he drags you further down the alleyway. Once in the alley he throws you violently to the ground, knocking the wind out of you, stunning you for a moment. "You better not scream bitch or I will make this a lot worse."'
+		'As you walk down the street, a man jumps out of the shadows and suddenly grabs you, as you''re caught off-guard he manages to drag you into a nearby alleyway. You try to scream but his strong hand covers your mouth. You attempt to get free but his other arm wraps around your waist and lifts you off the grounds, as he drags you further down the alleyway.'
 		gs 'npcgeneratec', 0, 'Rapist', rand(18,45)
 		gs 'boyStat', $npclastgenerated
 		gs 'stat'
-		act 'Submit to the rape':
-			gs 'dinsexFX'
-			*clr & cla
-			pose = 3
-			guy += 1
-			'<center><img <<$set_imgh>> src="images/shared/sex/vag/doggy/dogging.jpg"></center>'
-			'<center><img src="images/locations/shared/street/alleynight.jpg"></center>'
-			if $clothingworntype ! 'nude':
-				'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "That''s right be a good little bitch and I''ll take it easy on you." He says as he unbuttons his pants and pulls out his rock hard cock. Without another word he grabs you and drags you to your feet, he turns you around, so your face is against the wall and he starts pulling your clothes aside to give him access.'
-			else
-				'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "Yeah I knew you wanted this, walking around naked, you were hoping some man would take you. Well you''re going to get your wish bitch." He says as he unbuttons his pants and pulls out his rock hard dick. Without another word he grabs you and drags you to your feet, he turns you around, so your face is against the wall.'
-			end
-
-			act 'Stay silent':
-				cla
-				*nl
-				dynamic $vagstart2
-
-				'"Get ready, bitch." He says pushing you onto your knees. He moves behind you and takes you doggy-style. You can feel his hard cock entering your vagina.'
-
-				gs 'arousal', 'vaginal', 10, 'sub'
-				gs 'cum_call','',$boy,1
-
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Leave':gt $loc
-			end
-
-			act 'Please don''t get me pregnant':
-				cla
-				*nl
-				if prezik > 0:
-					protect = 2
-					dynamic $prezik
-					'You give him a condom. "At least wear protection asshole. I don''t want a bastards child.", you tell him. He nods in silence, then puts it on.'
-				else
-					'You don''t have a condom and he just laughs at you'
-				end
-				dynamic $vagstart2
-
-				'"Get ready, bitch." He says pushing you onto your knees. He moves behind you and takes you doggy-style. You can feel his hard cock entering your vagina.'
-
-				gs 'arousal', 'vaginal', 10, 'sub'
-				gs 'cum_call','',$boy,1
-
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Leave':gt $loc
-			end
-		end
 		act 'Attempt to escape':
+!!should likely add willpower here to increase the odds of escaping but I never did understand how to add willpower to increase a skill check, but it would make sense here.
 			if pcs_run < 10:
 				peshimraperand = rand(0, 11)
 			elseif pcs_run < 30:
@@ -311,18 +262,11 @@ if $ARGS[1] = 'main':
 			end
 
 			if peshimraperand <= 10:
-				cla
-				'You try to run away, but you''re not quick enough and he catches you. He drags you back into an alley.'
-				dynamic $vagstart2
-
-				'"Get ready, bitch." He says pushing you onto your knees. He moves behind you and takes you doggy-style. You can feel his hard cock entering your vagina.'
-
-				gs 'arousal', 'vaginal', 10, 'sub'
-				gs 'cum_call','',$boy,1
-
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Leave':gt $loc
+				*clr & cla
+				'<center><img src="images/locations/shared/street/rapist.jpg"></center>'
+				'You try to run away, but you''re not quick enough and he catches you, before you even get close to the end of the alleyway. He places a hand over your mouth so you can''t scream and drags you back into an alley.'
+				act 'Submit to the rape': gt 'street_event', 'rape'
+				act 'Fight': gt 'street_event', 'fight_rape'
 			else
 				*clr & cla
 				'<center><img src="images/locations/shared/street/alleynight.jpg"></center>'
@@ -330,17 +274,6 @@ if $ARGS[1] = 'main':
 				act 'Continue':gt $loc
 			end
 		end
-
-		act 'Fight':
-			cla
-
-			gs 'fight','initFight'
-
-			gs 'fight_npcdata', 'rapist'
-
-			gt 'fight', 'start'
-		end
-
 		if succubusQW = 5:
 			!!Used if this was a random encounter instead of active hunting
 			act 'Lure him in and feed (this can take a lot of time)':
@@ -349,6 +282,8 @@ if $ARGS[1] = 'main':
 				act 'Continue': gt 'succubus', 'RapistFight'
 			end
 		end
+		act 'Submit to the rape': gt 'street_event', 'rape'
+		act 'Fight': gt 'street_event', 'fight_rape'
 		exit
 	end
 
@@ -1637,17 +1572,15 @@ if $ARGS[0] = 'divorce_party':
 	menu_off = 1
 	gs 'stat'
 	'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/limo.jpg"></center>'
-	*nl
 	'You''re walking down the street when a car speeds past you. It''s nothing to be particularly interested in until it suddenly comes to a squealing stop ahead. You slow your pace and watch it idle for a few moments, only just now noticing the muffled music coming from inside it as you near it. The window rolls down and the sound of an obnoxious pop song spills out, followed by a woman. Her whole top half is leaning out the car window which almost leads to her falling out, but a pair of hands from inside the car steady her. "Ah fucking shit tits...<i>fuck</i>," she curses as she spills the drink in her hand onto the sidewalk. "Hey...hey you! Come here for a s-sec," she calls to you with a beckoning wave of her free hand.'
-
 	act '"Uhm..."':
 		*clr & cla
 		minut += 5
 		gs 'stat'
 		'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/limo.jpg"></center>'
+		'Understandably you hesitate but she picks up on that and shakes her head wildly, "Don''t worry, I''m not gonna, like, shnatch you up or a-anything, I just gotta queshtion!" If it wasn''t obvious before, it''s clear now that the woman is drunk. But that doesn''t mean she''s a bad person, and judging from the limo chauffeuring her and her friends around, you could think of worse people to kidnap you. You walk over to her and she welcomes you with an excited giggle. "I''m Marta," she introduces herself. "And you see my friend here?" She moves to give you a peek into the limo filled with two other women and points out the one in red before continuing.'
 		*nl
-		'Understandably you hesitate but she picks up on that and shakes her head wildly, "Don''t worry, I''m not gonna, like, shnatch you up or a-anything, I just gotta queshtion!" If it wasn''t obvious before, it''s clear now that the woman is drunk. But that doesn''t mean she''s a bad person, and judging from the limo chauffeuring her and her friends around, you could think of worse people to kidnap you. You walk over to her and she welcomes you with an excited giggle. "I''m Marta," she introduces herself. "And you see my friend here?" She moves to give you a peek into the limo filled with two other women and points out the one in red before continuing. "That''s Eva and her lying, whore of a husband had been cheating on her with some...some cheap, loose pussy, dog faced CUNT!" she shouts angrily before taking a deep breath. "So she divorced his sorry ass and now she''s a free who deserves ONLY the best things in life! And you know what one of those things is?" she asks and you awkwardly shake your head.'
-		*nl
+		'"That''s Eva and her lying, whore of a husband had been cheating on her with some...some cheap, loose pussy, dog faced CUNT!" she shouts angrily before taking a deep breath. "So she divorced his sorry ass and now she''s a free who deserves ONLY the best things in life! And you know what one of those things is?" she asks and you awkwardly shake your head.'
 		'"It''s to make out with a pretty little thing like you," Marta grins and gives you (a very poor attempt at) a wink. "So? What do you say? Wanna give her a little kiss?"'
 		gs 'willpower', 'kiss', 'resist', 'easy'
 		if will_cost <= pcs_willpwr:
@@ -1661,18 +1594,17 @@ if $ARGS[0] = 'divorce_party':
 		else
 			act 'Keep walking (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
 		end	
-
 		act 'Agree':
 			*clr & cla
 			divorce_party = 2
 			gs 'arousal', 'kiss', 5
 			gs 'stat'
 			'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/makeout.jpg"></center>'
-			*nl
 			'You look behind her and see Eva blushing, trying to hide behind the rim of her cup as she takes a drink. She''s actually really pretty and younger than you thought. You''re not sure why her husband would cheat on her, but you''re not going to pass up the opportunity to have some fun with her. "You''re right, she does deserve the <i>best</i> and I can give her just that," you purr with a knowing smile.'
 			*nl
 			'In an instant, the other women are cheering and giggling as they lead Eva to the window. She tries to reluctantly argue against this, but she makes no real effort to stop them. "Uhm...hi?" she says sheepishly, her eyes avoiding yours as she bites her lip nervously. "My name is Eva..."'
 			'"Oh, I know..." Your hand cups her cheek gently and you guide her head back, her gaze now meeting yours. "I''m <<$pcs_nickname>>," you say before leaning in to kiss her. As soon as your lips meet, any resistance she had before melts away. Her lips part and your tongues intertwine. You can taste the sweet alcohol she had been drinking as she eagerly presses against you with a soft moan. When you finally pull away, Eva is breathless with a dazed yet satisfied look.'
+			*nl
 			'"Holy shit that was <i>amazing</i>!" Marta laughs as Eva collapses back into the car seat. Marta is back at the window with a wide grin, "Look, I even caught it on camera!" She holds up her phone and you see a shaky but still rather clear video of the two of you making out. "Hey, you know what, why don''t you come out with us? I know Eva would love to have you come!" Marta winks again, obviously hinting at the double meaning there.'
 			gs 'willpower', 'drink', 'resist', 'medium'
 			if will_cost <= pcs_willpwr:
@@ -1686,7 +1618,6 @@ if $ARGS[0] = 'divorce_party':
 			else
 				act 'Refuse and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
 			end	
-
 			act 'Join them':
 				*clr & cla
 				gs 'drugs', 'alcohol', 'vodka'
@@ -1694,27 +1625,24 @@ if $ARGS[0] = 'divorce_party':
 				minut += 15
 				gs 'stat'
 				'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/drinks.jpg"></center>'
+				'As soon as you enter the limo, Marta is shoving a red cup filled with a strong, yet sweet mixed drink into your hands. "C''mon, have a drink!" You have a feeling she won''t take no for an answer, so you start drinking with everyone else. You spend your time getting to know everyone, learning that the other woman is called Alla. Marta often leads the conversation so you just sit back and enjoy her antics, and while you do, you sometimes catch Eva eying you hungrily. It isn''t long before you arrive at the club.'
 				*nl
-				'As soon as you enter the limo, Marta is shoving a red cup filled with a strong, yet sweet mixed drink into your hands. "C''mon, have a drink!" You have a feeling she won''t take no for an answer, so you start drinking with everyone else. You spend your time getting to know everyone, learning that the other woman is called Alla. Marta often leads the conversation so you just sit back and enjoy her antics, and while you do, you sometimes catch Eva eying you hungrily. It isn''t long before you arrive at the club. You don''t recognize the area and you start to wonder where you are exactly, but you''re given no time to dwell on it as you''re ushered past the long line of people waiting and led through the club to a private room upstairs.'
-				*nl
+				'You don''t recognize the area and you start to wonder where you are exactly, but you''re given no time to dwell on it as you''re ushered past the long line of people waiting and led through the club to a private room upstairs.'
 				'Just outside the door, Marta stops everyone. "And now, what you''ve all been waiting for..."'
 				'"You''re the only one that knows what''s going on, you didn''t tell us anything!" Alla points out.'
 				'"Okay, what <i>I''ve</i> been waiting for," Marta teases before slowly opening the door.'
-
 				act 'Go inside':
 					*clr & cla
 					minut += 5
 					pcs_horny += 10
 					gs 'stat'
 					'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d3.jpg"></center>'
-					*nl
 					'"Oh my God, Marta!" Eva exclaims as her and Alla squeal with delight at the sight of a tall, dark and handsome man standing in the middle of the room, proudly displaying his bulging erection as it presses against his briefs. "A male stripper? Really?!"'
 					'"That''s right! This is Yefim and he''s gonna make sure you forget you were ever married," Marta tells Eva before sitting her down in front of the man who begins to straddle her. The three of you surround the two of them, clapping and cheering as he dances and grinds against Eva, his erection just a few inches from her face. While Eva is being coy about it, you can''t help but think about just what he''s packing in those briefs.'
 					*nl
 					'"Look at him, he''s hard just for you!"'
 					'"Why not give him a <i>hand</i>, Eva!"'
 					'"Don''t just leave him like that!"'
-					*nl
 					'You end up so distracted by your thoughts that you almost don''t feel Marta nudging you. "We gotta get her in the mood, <<$pcs_nickname>>."'
 						act 'Help Eva relax':
 						*clr & cla
@@ -1722,19 +1650,16 @@ if $ARGS[0] = 'divorce_party':
 						pcs_horny += 10
 						gs 'stat'
 						'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d4.jpg"></center>'
-						*nl
 						'You place your hands on Eva''s shoulders, "Don''t worry, just relax..." you whisper against her ear as your hands slide down to her chest. You massage her tits gently through her top, smiling when you hear her let out a breathy moan. Feeling her nipples start to poke through the thin fabric, you lightly trace your finger around each one until they''re stiff and hard. "See, isn''t this fun?" Slowly, you pull open Eva''s dress to expose her bare chest. A quick hard pinch to her nipples causes her to whimper and squirm as you continue to play with her tits.'
 						*nl
 						'Marta and Alla are quick to catch on. Following your lead, they start to pull and tug not just on her clothes, but also on Yefim''s red briefs until his cock is freed and twitching eagerly in Eva''s face.'
 						*nl
 						'"Don''t you want to have a little taste?" Yefim asks while stroking his dick teasingly. Eva doesn''t need any more convincing. She leans forward and runs her tongue along the underside of his shaft before her lips wrap around the tip. Bobbing her head, she swallows every inch of this stranger''s cock with ease as you and the others watch. "Hey babe, don''t get too carried away, we just started," Marta giggles as she gently pushes Yefim away from her friend, his cock coming free from Eva''s mouth with a wet pop. Marta leads him to the couch where she has him lay down before kneeling beside him and calling Eva over.'
-
 						act 'Watch':
 							*clr & cla
 							gs 'arousal', 'masturbate', 10
 							gs 'stat'
 							'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d5.jpg"></center>'
-							*nl
 							'The two of them wrap their lips around each side of Yefim''s throbbing cock, sliding up and down, nibbling and sucking on every veiny inch. You feel the heat between your legs growing as you watch one focus on the reddened tip while the other kisses a trail down to his balls. He throws his head back and lets out a grunt, one of his hands gripping the back of Eva''s head as she laps up the leaking precum.'
 							*nl
 							'Overwhelmed by your lust, you rub your legs together, itching to touch yourself. You look around the room and are relieved to see Alla had the same idea as you as she''s sitting down with her legs spread, playing with herself while watching her friends. Without hesitation, you slide your own hand between your legs and shiver as your fingers glide along your slick folds, spreading them to find your clit. You follow the same pace as Eva and Marta, when they slowly kiss along his length, flicking the tips of their tongue along his glans, you take your time with long, hard against your clit. As soon as you see he''s had enough of their teasing and forces Marta to deep throat him fast and hard, fucking her mouth while Eva watches, you begin fingering yourself frantically. You''re edging closer and closer but you get an amazing idea when you see him throw his head back and groan loudly.'
@@ -1742,7 +1667,6 @@ if $ARGS[0] = 'divorce_party':
 								*clr & cla
 								minut += 15
 								'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d6.jpg"></center>'
-								*nl
 								'"Want to put that mouth to better use?" You tease with a smile as you present your dripping wet pussy to Yefim. Licking his lips, he pulls you over and helps you straddle his face. He grips your thighs and holds you in place as his tongue delves between your swollen pussy lips. You tremble and gasp, his tongue expertly flicking and massaging your clit when he isn''t playing with your labia. You grind your hips down as the pleasure builds, crying out as you cum on his tongue. Your pussy clenches and your body tenses as you ride out the bliss.'
 								*nl
 								'"Alright, that''s enough," You hear Marta say. She watches you slide off his face with a smirk, taking a moment to admire how wet his lips are with your juices before turning her attention to Eva. "I don''t think he can hold out much longer, so why don''t we end this with a <i>bang</i>!" You don''t know when Alla finished, but she''s here pulling Eva aside to undress her. When they''re done, Yefim switches spots with Eva, with her now on her back. "Now keep those legs spread, babe," Marta says as Yefim positions himself between her legs.'
@@ -1754,10 +1678,10 @@ if $ARGS[0] = 'divorce_party':
 									minut += 15
 									gs 'stat'
 									'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d7.jpg"></center>'
-									*nl
 									'"Fuck, you''re tight..." Yefim growls as he slides the first few inches of his cock inside her.'
 									'Eva inhales sharply as he slowly fills her. "Oh <i>fuck</i>!" she pants heavily as he sets a rhythm of steady, shallow thrusts.'
 									'Marta can''t keep from smiling as she watches her dear friend enjoying herself. "I know, it''s been awhile since you''ve been properly fucked..." she coos. "But like I said earlier...he''s going to fuck you until you can''t remember that bastard''s name."'
+									*nl
 									'Hearing this, Yefim pulls Eva''s hips down hard to slam into his, burying balls deep inside her in one stroke. She lets out a strangled moan as he pulls out to slam back into her again and again. Eva can barely manage a word out as she gasps and moans beneath him. You and the girls watch excitedly as he continues to pound into her with renewed vigor, having angled his hips to hit her sweet spot until her walls clench around him and she cums hard with a strained cry. Yefim thrusts a few more times before pulling out and shooting his load all over her flushed and sweaty body.'
 									*nl
 									'"Wow, you even managed to reach her tits," Marta amazes while pointing out the cum splattered across Eva''s chest. Yefim just chuckles and collapses back against the couch in exhaustion much like how Eva lay breathless and limp next to him, basking in the aftermath. "Well I think we need something to remember this night forever," Marta suggests before pulling out her phone. Carefully, you all help Eva to sit up and gather around her. "Say ''Jizz''!"'
@@ -1773,6 +1697,120 @@ if $ARGS[0] = 'divorce_party':
 								end
 							end
 						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'fight_rape':
+	*clr & cla
+	menu_off = 1
+	guy += 1
+	gs 'stat'
+	gs 'fight','initFight'
+
+	gs 'fight_npcdata', 'rapist'
+
+	gt 'fight', 'start'
+end
+		
+if $ARGS[0] = 'rape':
+	*clr & cla
+	menu_off = 1
+	guy += 1
+	gs 'stat'
+	'<center><img src="images/locations/shared/street/sex/rape1.jpg"></center>'
+	if $clothingworntype ! 'nude':
+		'Once he drags your far enough down into the alley he throws you violently against the wall, knocking the wind out of you, stunning you for a moment. He grabs you by the hair and pushes your face against the stone wall pinning it in place. He leans in and you can feel his hot breath on your cheek as he whispers to you. "You better not scream bitch or I will make this a lot worse."'
+	else
+		'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "Yeah I knew you wanted this, walking around naked, you were hoping some man would take you. Well you''re going to get your wish bitch." He says as he unbuttons his pants and pulls out his rock hard dick. Without another word he grabs you and drags you to your feet, he turns you around, so your face is against the wall.'
+	end
+	act 'Stay silent':
+		*clr & cla
+		gs 'stat'
+		'<center><img src="images/locations/shared/street/sex/rape2.jpg"></center>'
+		'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "That''s right be a good little bitch and I''ll take it easy on you. As long as you do what I say." He says as pulls your clothes away until your butt and pussy is exposed. Then he unbuttons his pants and pulls out his rock hard cock. Without another word he shoves his dick painfully into your pussy, not caring that you are not remotely wet.'
+		gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+		gs 'stat'
+		act 'Submit':
+			*clr & cla
+			gs 'stat'
+			'<center><img src="images/locations/shared/street/sex/rape4.jpg"></center>'
+			'He pins you between himself and the wall, with you facing the wall. He roughly fucks your twat, grunting with each one of his balls deep thrust into you. "Yeah you like this don''t you slut, all you sluts love getting fucked." You do your best to endure the pain as he roughly fucks your pussy.'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+			gs 'stat'
+			act 'Do nothing':
+				*clr & cla
+				gs 'stat'
+				'<center><img src="images/locations/shared/street/sex/rape5.jpg"></center>'
+				'As he roughly fucks your twat, grunting with each one of his balls deep thrust into you, he says. "Don''t worry slut, I don''t any bastards either, lucky for us both you have another hole." Just as he says that he pulls out of your pussy and then shoves it up your asshole, causing you to hiss in pain again.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+				gs 'stat'
+				act 'To much pain':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/shared/street/sex/rape6.jpg"></center>'
+					'He forces his prick balls deep into your ass and starts hammering away, just as roughly as he was fucking your pussy. He starts grunting a bit louder and faster, at least it sounds like he is nearly finished and this nightmare can finally be over. You think to yourself as tears stream down your face, from the pain and violation happening to you.'
+					gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+					gs 'stat'
+					act 'To much pain':
+						*clr & cla
+						minut +=3
+						gs 'stat'
+						'<center><img src="images/locations/shared/street/sex/rape7.jpg"></center>'
+						'He thrusts once, twice more balls deep into your butt before he groans loudly. You can feel his cum squirting inside of your ass, finally he finishes and pulls away. He presses your face against the wall with one hand. "Don''t move bitch!" With the other hand he puts his dick away, once he is fully dressed he lets go of you and jogs out of the alleyway, leaving you standing there half dressed and cum leaking out of your ass, with tears streaming down your face.'
+						gs 'arousal', 'anal', 2, 'sub', 'rough', 'rape'
+						gs 'cum_call','anus',$boy,1
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Leave':gt $loc
+					end
+				end
+			end
+		end
+	end
+	act 'Please don''t get me pregnant':
+		*clr & cla
+		gs 'stat'
+		'<center><img src="images/locations/shared/street/sex/rape3.jpg"></center>'
+		'You can''t help it, you don''t want to get pregnant or some disease from her. "Please don''t get my pregnant, at least use a condom." You beg him.'
+		'He laughs. "Oh is that all your worried about? Don''t worry I won''t get you pregnant." He says as pulls your clothes away until your butt is exposed. Then he unbuttons his pants and pulls out his rock hard cock. With one hand on your neck he holds your head in place against the wall. Suddenly he pulls you away from the wall and shoves you face first down onto the dirty alleyway ground.'
+		gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+		gs 'stat'
+		act 'Flung to the ground':
+			*clr & cla
+			gs 'stat'
+			'<center><img src="images/locations/shared/street/sex/rape8.jpg"></center>'
+			'He pins you between himself and the wall the ground. You hear him spit and then his other fingers slightly wet from his spit work there way into your ass, just getting it a little wet. Without another word he shoves his dick painfully into your asshole, you hiss in pain, as his cock rips it''s way into your mostly unlubricated ass. He roughly fucks your asshole, grunting with each one of his balls deep thrust into you. "Yeah you like this don''t you slut, all you sluts love getting fucked." You do your best to endure the pain as he roughly fucks your butt.'
+			gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+			gs 'stat'
+			act 'Submit':
+				*clr & cla
+				gs 'stat'
+				'<center><img src="images/locations/shared/street/sex/rape9.jpg"></center>'
+				'As he roughly fucks your asshole, grunting with each one of his balls deep thrust into you, he says. "yeah you was right slut, this is better than that nasty pussy of yours." He keeps hammers himself into your ass.'
+				gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+				gs 'stat'
+				act 'Do nothing':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/shared/street/sex/rape10.jpg"></center>'
+					'He starts grunting a bit louder and faster, at least it sounds like he is nearly finished and this nightmare can finally be over. You think to yourself as tears stream down your face, from the pain and violation happening to you.'
+					gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+					gs 'stat'
+					act 'To much pain':
+						*clr & cla
+						minut +=3
+						gs 'stat'
+						'<center><img src="images/locations/shared/street/sex/rape11.jpg"></center>'
+						'He thrusts once, twice more balls deep into your butt before he groans loudly. You can feel his cum squirting inside of your ass, finally he finishes and pulls away. He presses your face against the ground with one hand. "Don''t move bitch!" With the other hand he puts his dick away, once he is fully dressed he lets go of you, getting up off of you, next you can hear him jogging away. You turn and look up just in time to see him jog out of the alleyway. You slowly stand up, still half dressed, with cum leaking out of your ass, with tears streaming down your face.'
+						gs 'arousal', 'anal', 2, 'sub', 'rough', 'rape'
+						gs 'cum_call','anus',$boy,1
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Leave':gt $loc
 					end
 				end
 			end
