@@ -1,0 +1,274 @@
+# MagEncounterFairy
+
+menu_off = 1
+
+if $ARGS[0] = '':
+	if knowsfairy = 1:
+		if fairyshoo = 0:
+			act 'Look for the fairy to chat': gt 'MagEncounterFairy', 'fairy_chat'
+			act 'Just be on your way': gt $loc, $metka
+		else
+			if pcs_mana >= ((pcs_intel * pcs_magik + pcs_magik * 100 + pcs_vital * 10 + rikudo) / 2): act 'Be nice and chat with the fairy': gt 'MagEncounterFairy', 'fairy_chat'
+			if pcs_mana >= ((pcs_intel * pcs_magik + pcs_magik * 100 + pcs_vital * 10 + rikudo) / 4): act 'Just ignore the fairy': gt $loc, $metka
+			act 'Shoo the pesky fairy away': gt 'MagEncounterFairy', 'fairy_shoo'
+		end
+	elseif pcs_magik + rand (1,10) >= 8:
+		act 'Investigate the strange glow': gt 'MagEncounterFairy', 'fairy_chat_no1'
+		act 'Shoo the pesky firefly away': gt 'MagEncounterFairy', 'fairy_shoo'
+		act 'Ignore the firefly': fairyskip = 1 & gt $loc, $metka
+	else
+		gs 'stat'
+		'You have the strange feeling of being watched, but looking around you don''t see anybody.'
+		act 'Shake off the feeling and move on': fairyskip = 1 & gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'fairy_chat_no1':
+	cla
+	gs 'stat'
+	knowsfairy = 1
+	'You take a closer look at the floating glowing orb. What you mistook for a large firefly is actually a small woman with translucent wings on her back: A fairy!'
+	'"Hello, biggie!", she says in a high pitched voice. "You can see me, right?'
+	'"It''s so nice to meet you! Finally someone who can see me!", she goes on before you have a chance to answer. "Finally someone to chat with!!! You have no idea how annoying it is to be here and nobody recognizes you. It''s sooo BORING!!!"'
+	act 'Chat with the fairy':
+		cla
+		minut += 30
+		fairychat = 1
+		pcs_mana += 25 * pcs_magik
+		pcs_mood += 15
+		gs 'stat'
+		'You chat with the fairy. At first it feels strange to talk with a creature, you thought was a myth from children''s books. More so, since the small beautiful woman flutters in front of your face the whole time. But the fairy is so amicable that half hour has passed before you even notice.'
+		if pcs_skin < 80:
+			pcs_skin += 10
+			pcs_horny += 10
+			gs 'stat'
+			'The fairy bids you farewell. Just as she flies off, she returns fluttering in front of your face.'
+			''
+			wait 725
+			'"You know, someone as nice as you should look just as lovely.", she says. "Hold still and don''t breath!"'
+			'Before you can do anything, the fairy blows some sparkling dust into your face. Surprised you hold your breath, albeit barely. You feel the powdery substance soak into your skin and your face starts tingling. It is not uncomfortable, rather like the brush of a feather.'
+			' ''That must have been MAGICAL FAIRY DUST!'', it hits you as the fairy flies off.'
+		else
+			'The fairy waves goodbye to you and flies away.'
+		end
+		act 'Wave goodbye':gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'fairy_shoo':
+	cla
+	minut += 1
+	if knowsfairy < 1:
+		knowsfairy = 1
+		fairyshoo = 1
+		pcs_horny = 90
+		gs 'stat'
+		'Not paying much attention you wave your hands to chase away the (very large!?) firefly. She easily dodges your halfhearted moves.'
+		'"You are a big meanie!", suddenly squeals a high pitched voice.'
+		'Stunned by surprise you take a closer look at what you thought was a firefly. In the glow you can see a small woman with fluttering wings on her back. It''s a fairy! Taking advantage of your bewilderment she blows something sparkling in your face. Flabbergasted as you are you inhale the substance.'
+		'Instantly you become completely horny and your face flushes with arousal.'
+		'"Maybe this will teach you." she says with a pout and flies off.'
+		act 'Move along':gt $loc, $metka
+	else
+		fairyshoo += 1
+		pcs_horny = 90
+		fairycurse = daystart + (fairyshoo - 1) * 2
+		gs 'stat'
+		'"Still a meanie, I see!", squeals the fairy "Well, have it your way."'
+		act 'Get away from the fairy': gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'fairy_chat':
+	cla
+	gs 'stat'
+	'You take the few steps over to the glowing orb that apparently only you can recognize as what it truly is: a fairy.'
+	act 'Chat with the fairy':
+		cla
+		minut += 30
+		if fairyshoo = 1 and rand (1, 3) = 2:
+			fairyshoo = 0
+		elseif fairyshoo > 1 and (fairyshoo * 3 - fairychat) <= 0:
+			fairyshoo -= 1
+		end
+		fairychat += 1
+		pcs_mana += 25 * pcs_magik
+		pcs_mood += 15
+		gs 'MagEncounterFairy', 'fairychattopic'
+		if pcs_skin < 80 and fairyday ! daystart and fairyshoo = 0:
+			pcs_skin += 10
+			fairyday = daystart
+			gs 'stat'
+			'The fairy bids you farewell.'
+			*nl
+			wait 725
+			'Just as she flies off, she returns fluttering in front of your face.'
+			'"You know, you could still look lovelier.", she says. "Don''t move."'
+			'Remembering the last time you hold your breath and close your eyes. Just a moment later you feel your skin start tingling, again, as if brushed by a feather.'
+		elseif pcs_skin >= 80 and fairyday < daystart and fairyshoo = 0 and pcs_magik >= 8 and fairychat > 9 and succubusQW < 1:
+			!Sets the Succubus setup dream
+			succubusQW = 1
+			pcs_horny = 100
+			fairyday = daystart
+			gs 'stat'
+			'The fairy bids you farewell.'
+			*nl
+			wait 725
+			'Just as she flies off, she returns fluttering in front of your face.'
+			'"You know, you''re almost a magical creature now.", she says. "Don''t move."'
+			'Remembering the last time you hold your breath and close your eyes. Just a moment later you feel a much more intense tingling, this time seeming to go all the way through you.'
+		elseif fairyday ! daystart and (pcs_nips < 80 or clit_size < 80):
+			fairyday = daystart
+			gs 'stat'
+			'The fairy takes another quick look at you, rubs her chin, and says "Hmm, since you''ve been a little nice to me, maybe I could be a little nice to you."'
+			act 'Huh?':
+				cla
+				*nl
+				'You look at her, puzzled, wondering if you heard her right.  She just shrugs her shoulders and says "Okay, if you''re not interested"'
+				act 'Go on your way': gt $loc, $metka
+			end
+			act 'Sure':
+				cla
+				fday_surprise += 1
+				fairy_surprise = RAND(1,9)
+				if fairy_surprise =< 2:
+					pcs_nips += 5
+					pcs_horny += 10
+					gs 'stat'
+					if pcs_nips < 20:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples1.jpg"></center>'
+					if pcs_nips >= 20 and pcs_nips < 40:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples2.jpg"></center>'
+					if pcs_nips >= 40 and pcs_nips < 60:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples3.jpg"></center>'
+					if pcs_nips >= 60 and pcs_nips < 80:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples4.jpg"></center>'
+					if pcs_nips >= 80:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples5.jpg"></center>'
+					'You hear a giggle.  Suddenly, your nipples get really firm and pointed, and seem to be a bit larger now.'
+					'You can''t help but rub both breasts, feeling the warm tingling in them, and in your pussy.'
+				elseif fairy_surprise = 3:
+					pcs_nips -= 5
+					gs 'stat'
+					if pcs_nips < 20:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples1.jpg"></center>'
+					if pcs_nips >= 20 and pcs_nips < 40:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples2.jpg"></center>'
+					if pcs_nips >= 40 and pcs_nips < 60:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples3.jpg"></center>'
+					if pcs_nips >= 60 and pcs_nips < 80:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples4.jpg"></center>'
+					if pcs_nips >= 80:'<center><img <<$set_imgh>> src="images/pc/body/nipples/nipples5.jpg"></center>'
+					'You hear a giggle.  Suddenly, your nipples get really firm and pointed, yet seem to be smaller then before.'
+					'You can''t help but rub both breasts, feeling the warm tingling in them, and in your pussy.'
+				elseif fairy_surprise <= 4:
+					clit_size += 5
+					pcs_horny += 10
+					gs 'stat'
+					if clit_size < 20:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit1.jpg"></center>'
+					if clit_size >= 20 and clit_size < 40:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit2.jpg"></center>'
+					if clit_size >= 40 and clit_size < 60:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit3.jpg"></center>'
+					if clit_size >= 60 and clit_size < 80:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit4.jpg"></center>'
+					if clit_size >= 80:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit5.jpg"></center>'
+					'You hear a giggle and you feel a warm tingle at the top of your slit, you reach down and part your pussy lips with your fingers.'
+					'Your clitoris has swollen, and seems to stand out even more than before! You can''t help but rub all around it, feeling the warm tingling and the moisture build at the entrance.'
+					'The fairy admires the changes she''s made, and smiles at you, looking again at your puffy pussy and licking her lips.'
+					'You two say your goodbyes and the fairy flies off.'
+				elseif fairy_surprise = 5:
+					clit_size -= 5
+					gs 'stat'
+					if clit_size < 20:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit1.jpg"></center>'
+					if clit_size >= 20 and clit_size < 40:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit2.jpg"></center>'
+					if clit_size >= 40 and clit_size < 60:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit3.jpg"></center>'
+					if clit_size >= 60 and clit_size < 80:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit4.jpg"></center>'
+					if clit_size >= 80:'<center><img <<$set_imgh>> src="images/pc/body/clit/clit5.jpg"></center>'
+					'You hear a giggle and you feel a warm tingle at the top of your slit, you reach down and part your pussy lips with your fingers.'
+					'Your clitoris has shunk, and seems to more demure than before! You can''t help but rub all around it, feeling the warm tingling and the moisture build at the entrance.'
+				elseif fairy_surprise <= 6:
+					min_arousal += rand(1,5)
+					'You hear a giggle, then sparkles surround your body and you get all tingly.'
+					'You suddenly feel flustered and more aroused then before.'
+				else
+					min_arousal -= rand(1,5)
+					'You hear a giggle, then sparkles surround your body and you get all tingly.'
+					'You suddenly feel colder and less aroused then before.'
+				end
+				act 'Go on your way': gt $loc, $metka
+			end
+		end
+	end
+end
+
+killvar '$din_fairy_chat_no1' & killvar '$din_fairy_shoo' & killvar '$din_fairy_chat'
+
+if $ARGS[0] = 'fairychattopic':
+!!	These are the random chat texts for the Fairy from UsagiTripleSix
+	frandchat = rand(0,16)
+
+	if frandchat = 1:
+		'You spend a while chatting with the fairy. She openly wonders why human children need to go to school, and brags about how fairies already know everything there is to know.'
+	elseif frandchat = 2:
+		'No one else you know can say they kill time chatting with a fairy. It''s not the most riveting conversation, however, but, by the end of it, you know which parts of the park have the prettiest flowers.'
+	elseif frandchat = 3:
+		'A full thirty minutes goes by pretty quickly, and all you talked about was the fairy''s favorite kinds of trees. It seems fairies are surprisingly opinionated about the subject.'
+	elseif frandchat = 4:
+		'During your conversation with the fairy, she asks if you know why so many people are handing out flyers at the park, when they all just end up tossed on the ground a few minutes later.'
+	elseif frandchat = 5:
+		'Most of your conversation with the fairy is fairly light hearted, but, at one point, she mentions being glad that you''re the only human who can see her; some of the men who roam the park at night are a little scary.'
+	elseif frandchat = 6:
+		'The fairy makes you laugh pretty hard today when she asks you if her wings make her butt look big. You regret it immediately, however, when you realize that she might actually be serious.'
+	elseif frandchat = 7:
+		'The fairy is nice enough, but she has some unflattering things to say about human skin. You guess, to a tiny fairy, your pores must look gigantic.'
+	elseif frandchat = 8:
+		'As you talk, the fairy mentions how you must be a very special person, as you''re the only one who can see her. It''s either that, or the other humans are just being mean by ignoring her. She occasionally plays little pranks on them, just in case. She assures you they''re nothing overly mean.'
+	elseif frandchat = 9:
+		'You talk with the fairy doesn''t go too well. She seems overly distracted, like she''s trying to hide the fact that she''s turned off by something. You try asking her about it, but she just responds by commenting about what a nice personality you have.'
+	elseif frandchat = 10:
+		'The only thing the fairy seems to want to talk about today is hair. She''s critical of the fact that human girls use far too few flowers in their hair.'
+	elseif frandchat = 11:
+		'You have an amiable chat with the fairy. She even compliments you at one point, telling you that you''re fairly pretty, as far as humans go. She seemed to imply that she felt you had room for improvement, though.'
+	elseif frandchat = 12:
+		'Talking with an actual fairy is a pretty surreal experience, even when you''re just chatting about your favorite colors. She mentions a few colors that you''re pretty sure don''t even exist. She retorts by pointing out that most humans can''t even see fairies, so she''s hardly surprised that they''d be missing out on all of the good colors, too.'
+	elseif frandchat = 13:
+		'You have a scary thought while talking to the fairy. Since she''s real, you ask her how many other mythical creatures are real as well. She tells you that she''s sure that there are others out there, but she usually doesn''t stray far from the park.'
+	elseif frandchat = 14:
+		'You get into a pretty heated discussion with the fairy over whether dogs or cats are better. Well, it''s mostly the fairy that gets heated. It would be a mundane discussion for anyone else, but she takes it very seriously.'
+	elseif frandchat = 15:
+		'Today the fairy introduces you to fairy knock-knock jokes. She spends almost half an hour telling joke after joke, but you failed to understand a single one. By the time you''re ready to leave, she''s complaining about how humans have no sense of humor.'
+	else
+		! Teleport event
+		if spellKnown['teleport'] = 0:
+			!show and teach Teleport spell
+			'The Fairy wraps her arms around your thumb and lightly tugs you over to a mysterious circle of trees.'
+			''
+			'She says, "You may have seen these circles of trees around the lands.  Fairies planted them long ago and used their magic to tether them together.  Since you also have Fae magic, I can show you how to use them."'
+			''
+			'She continues,"Most of the work was already done in the binding.  In a way, the trees of each circle are the same trees.  You just have to stand inside the circle, then hold in your mind a picture of another circle that you have been to before.  Then you say the word <i>inla</i>.  If your will is strong enough and you have enough magical energy, your energy can be used to enact your will."'
+			''
+			'She giggles.  "This lets you dance through any field you like!  "Let''s go!"'
+			''
+			'She grunts and give you a nudge into the circle.'
+			act 'Stumble into Circle':
+				''
+				'The view outside the circle seems blurry and a little indistinct.  The Fairy''s face scrunches up in concentration as she incants "inla", and the world outside seems to shimmer a little. You feel like you understand how she did that.  Though you can''t tell exactly where you are now in the blurriness, it does look different.'
+				''
+				'The Fairy says, "It''s important to take the time to feel each Fairy Ring, that''s how you can find your way back."  She flies off.'
+				''
+				'You decide it would be wise to memorize your surroundings.'
+				spellKnown['teleport'] = 1
+				tpKnown['GadForest'] = 1
+				cla
+				act 'You step out of the circle...':gt 'gadforest', 'forest_edge'
+			end
+		else
+			!take the user to random location
+
+			'The Fairy nudges you into the nearby tree circle, and giggles as you hear her incant "inla", then flies out of the ring.'
+
+			$tpRand[0]='GadForest'
+			$tpRand[1]='PushkinPark'
+			$tpRand[2]='Village'
+
+			gt 'treeCircle', $tpRand[rand(0,2)]
+
+			killvar $tpRand
+		end
+	end
+
+	act 'Go on your way': killvar 'frandchat' & gt $loc, $metka
+
+end
+
+--- MagEncounterFairy ---------------------------------
+

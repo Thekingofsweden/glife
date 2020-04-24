@@ -1,0 +1,245 @@
+# drugs
+
+!! How to use:
+!! Smoking: gs 'drugs', 'smoke' (if it isn''t svetas cigarette, you have to add siga += 1)
+!! Joint/Weed: gs 'drugs', 'joint' (if it isn''t svetas joint, you have to add joint += 1)
+!! Heroin: gs 'drugs', 'heroin'
+!! Cocaine: gs 'drugs', 'cocaine' (if it isn''t svetas cocaine, you have to add dur += 1)
+!! Amphetamine: gs 'drugs', 'amphetamine' (if it isn''t svetas amphetamine, you have to add amphetamine += 1)
+!! Neurobooster: gs 'drugs', 'mentats' (if it isn''t svetas mentats, you have to add mentats_have += 1)
+!! Aphrodisiac: gs 'drugs', 'aphrodisiac' (if it isn''t svetas aphrodisiac, you have to add aphrodisiac_have += 1)
+
+!! Alcohol: gs 'drugs', 'alcohol', 'type', count
+!! Types: beer, champagne, moonshine, rum, scotch, vodka, wine, whiskey
+!! Count: Number of drinks of the chosen type sveta drinks (if the number is 1, you don''t have add the count, but it isn''t a problem if you do)
+!! Example 1: sveta drinks vodka gs 'drugs', 'alcohol', 'vodka' (or gs 'drugs', 'alcohol', 'vodka', 1)
+!! Example 2: sveta drinks 2 beer gs 'drugs', 'alcohol', 'beer', 2
+
+if $ARGS[0] = 'smoke':
+	if NarkImmune = 0: 
+		smoker += 1
+		if smoker > 20 and smoke_exp = 0: smoke_exp = 1
+	end
+	siga -= 1
+	smokeDay = daystart
+	smokeHour = hour
+	smokeminut = minut + 3
+	smokerNeed = 0
+	cumspclnt = 2
+	gs 'cum_cleanup'
+	pcs_breath = 0
+	pcs_mood += 100
+	wipo += 100
+	if pcs_hydra >= 100:
+		pcs_hydra -= 5
+	else
+		pcs_hydra -= 10
+	end
+	if pcs_energy < 80: pcs_energy += 4
+	gs 'stat'
+elseif $ARGS[0] = 'joint':
+	minut += 10
+	if NarkImmune = 0: 
+		joint_smoked += 1
+		if joint_smoked > 5 and joint_exp = 0: joint_exp = 1
+	end
+	joint -= 1
+	jointday = daystart
+	jointhour = hour
+	jointminut = minut + 2
+	if minut > 30:
+		jointhigh = 2
+	else
+		jointhigh = 1
+	end	
+	cumspclnt = 2
+	gs 'cum_cleanup'
+	pcs_breath = 0
+	pcs_mood += 100
+	if pcs_hydra >= 100:
+		pcs_hydra -= 5
+	else
+		pcs_hydra -= 10
+	end
+	if pcs_energy > 20: 
+		pcs_energy -= 20
+	else
+		pcs_energy = 0
+	end
+	gs 'stat'
+elseif $ARGS[0] = 'heroin':
+	if NarkImmune = 0: 
+		SNarkTimes += 1
+		if SNarkTimes > 1 and heroin_exp = 0: heroin_exp = 1
+	end
+	StrongNarkota += 25
+	narkozakday = day
+	pcs_mood = 100
+	pcs_health -= 10
+	gs 'stat'
+elseif $ARGS[0] = 'cocaine':
+	if NarkImmune = 0: 
+		cocaine_count += 1
+		if cocaine_count > 3 and cocaine_exp = 0: cocaine_exp = 1
+	end
+	dur -= 1
+	pcs_health = pcs_vital * 10 + pcs_stren * 5
+	if willday_cocaine ! daystart: willday_cocaine = daystart & pcs_willpwr += 10
+	pcs_mood = 100
+	pcs_horny = 100
+	nark += 10
+	gs 'stat'
+elseif $ARGS[0] = 'amphetamine':
+	if NarkImmune = 0: 
+		amphetamine_count += 1
+		if amphetamine_count > 5 and amphetamine_exp = 0: amphetamine_exp = 1
+	end
+	if amphIntake < 2:
+		'<font color= blue>You swallow the white pill.</font>'
+		amphIntake += 1
+		amphetamine -=1
+		amphHigh = 12
+	else
+		'Your heart is already beating uncontrollably in your chest, you should avoid taking anymore pills.'
+	end
+	gs 'stat'
+elseif $ARGS[0] = 'alcohol':
+	if NarkImmune = 0: 
+		alcohol_count += 1
+		if alcohol_count > 15 and alcohol_exp = 0: alcohol_exp = 1
+	end	
+	if ARGS[2] <= 1: 
+		alc_count = 1
+	else
+		alc_count = ARGS[2]
+	end
+	:alcohol_jump
+	alc_count -= 1
+	frost = 0
+	pcs_health -= 5
+	pcs_energy -= 5
+	cumspclnt = 2
+	gs 'cum_cleanup'
+	pcs_breath = 0
+	if $ARGS[1] = 'beer':
+		if traits['alko_status'] = -1:
+			alko += rand(1,2)
+		elseif traits['alko_status'] = 1:
+			alko += rand(0,1)
+		else
+			alko += 1
+		end
+		fat += 3
+		pcs_mood += 10
+		if pcs_hydra >= 100:
+			pcs_hydra += 5
+		else
+			pcs_hydra += 10
+		end
+		traits['alko_day'] += 1
+	elseif $ARGS[1] = 'wine' or $ARGS[1] = 'champagne':
+		if traits['alko_status'] = -1:
+			alko += 3
+		elseif traits['alko_status'] = 1:
+			alko += 1
+		else
+			alko += 2
+		end
+		fat += 4
+		pcs_mood += 20
+		if pcs_hydra >= 100:
+			pcs_hydra += 5
+		else
+			pcs_hydra += 10
+		end
+		traits['alko_day'] += 2
+	elseif $ARGS[1] = 'vodka' or $ARGS[1] = 'whiskey' or $ARGS[1] = 'scotch' or $ARGS[1] = 'rum':
+		if traits['alko_status'] = -1:
+			alko += rand(4,5)
+		elseif traits['alko_status'] = 1:
+			alko += rand(1,2)
+		else
+			alko += 3
+		end
+		fat += 6
+		if pcs_hydra >= 100:
+			pcs_hydra -= 5
+		else
+			pcs_hydra -= 10
+		end
+		traits['alko_day'] += 3
+	elseif $ARGS[1] = 'moonshine':
+		if traits['alko_status'] = -1:
+			alko += rand(7,8)
+		elseif traits['alko_status'] = 1:
+			alko += rand(2,3)
+		else
+			alko += 5
+		end
+		fat += 6
+		if pcs_hydra >= 100:
+			pcs_hydra -= 5
+		else
+			pcs_hydra -= 10
+		end
+		traits['alko_day'] += 5
+	else
+		'<br><font color = red>Developer note: The type of alcohol is missing in this scene. Please report this and a small part of the text of the current scene as a bug.</font>'
+	end
+	if alc_count > 0: jump 'alcohol_jump'
+	killvar 'alc_count'
+	gs 'stat'
+elseif $ARGS[0] = 'mentats':
+	mentats_dose += 1
+	mentats_have -= 1
+elseif $ARGS[0] = 'aphrodisiac':
+	if aphrodisiac_overdose = 1:
+		$aphrodisiac_msg = '<br>You''ve had enough aphrodisiac for today.'
+	elseif aphrodisiac_timer = 0:
+		$aphrodisiac_msg = '<font color = #DB7093><br>You take a gum and chew it. It tastes like strawberry, but is also kind of spicy.</font>'
+		aphrodisiac_have -= 1
+		aphrodisiac_timer += 8
+		pcs_horny = 80
+	elseif aphrodisiac_timer > 0 and aphrodisiac_timer <= 8:
+		$aphrodisiac_msg = '<font color = #DB7093><br>You take another gum and chew it. It makes your mouth feel kinda tingly.</font>'
+		aphrodisiac_have -= 1
+		aphrodisiac_timer += 8
+		pcs_horny = 100
+	elseif aphrodisiac_timer > 8 and min_arousal < 60:
+		$aphrodisiac_msg = '<font color = red><b><br>You take yet another gum and start chewing it. Suddenly you find yourself in grip of an intense orgasm!<br>It goes on and on and you sink to the ground and do your best to endure it.</b></font>'
+		aphrodisiac_have -= 1
+		orgasm += 1
+		pcs_mood = 100
+		min_arousal += 10
+		aphrodisiac_overdose = 1
+		if min_arousal = 10:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>That was intense! You can still feel the tingles.</font>'
+		elseif min_arousal = 20:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>You are really starting to enjoy these! Your crotch still feels kinda hot though.</font>'
+		elseif min_arousal = 30:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>As you are trying to get back to your feet you notice that you are still horny. What is happening to you?</font>'
+		elseif min_arousal = 40:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>You are certain of it. Every time those gums give you an orgasm they also increase your libido.</font>'
+		elseif min_arousal = 50:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>You run a finger across your slit and shudder. You really should stop chewing these gums while you can still think of something other than sex.</font>'
+		elseif min_arousal = 60:
+			pcs_horny = min_arousal
+			$min_arousal_msg = '<font color = #DB7093>You are burning up. You feel like you could fuck anything and everything all day long.</font>'
+		end
+	else
+		$aphrodisiac_msg = '<font color = #DB7093>You chew another gum with trepidation, looking forward to more orgasms but nothing happens. Huh. Have you become immune?</font>'
+		aphrodisiac_have -= 1
+	end
+else
+	'<br><font color = red>Developer note: The type of drug is wrong or missing in this scene. Please report this and a small part of the text of the current scene as a bug.</font>'
+end
+
+gs 'traits', 'addictive_personality'
+
+--- drugs ---------------------------------
+

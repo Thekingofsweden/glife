@@ -1,0 +1,609 @@
+# Serge_Shulgin
+!============================================================================================================!
+!Vasily Shulgin (Shulga)''s father------------------------------------------------------------------------------! 
+!FULL NAME: Sergey Borisovich Shulgin-------------------------------------------------------------------------------!
+!------------------------------------------------------------------------------------------------------------!
+!serge_shulgin - relationship stages:--------------------------------------------------------------------------!
+! < 30 - familiar (only chatting)------------------------------------------------------------------!
+! > 30 - friend (opens up different actions in the apartment, watching TV, helping in the kitchen, etc.)--------------------------!
+! > 50 - close friend (sex)---------------------------------------------------------------------------------!
+! > 70 - very close friend (more diverse sex options)----------------------------------------------------!
+! >=100 - Sergey gives you a key to the apartment (you can enter whenever you want)----------------------------------!
+!============================================================================================================! 
+!\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/!
+
+if serge_sleep_sex_day ! daystart: serge_sleep_sex_count = 2
+
+if $ARGS[0] = 'rep':
+	if npc_rel['A112']<10:'You don''t really know Sergey at all.'
+	if npc_rel['A112']>=10 and npc_rel['A112']<20:'You know some things about Sergey, but your relationship is still a bit tenuous.'
+	if npc_rel['A112']>=20 and npc_rel['A112']<30:'You get along alright with Sergey, though there''s still a lot you don''t know about him.'
+	if npc_rel['A112']>=30 and npc_rel['A112']<50:'Sergey doesn''t mind your company, and likes to talk with you when he''s not busy.'
+	if npc_rel['A112']>=50 and npc_rel['A112']<80:'You have a friendly relationship with Sergey, and he enjoys spending time with you.'
+	if npc_rel['A112']>=80:'You have an excellent relationship with Sergey, and you''re always welcome in his home.'
+	''
+end
+!-------------------------------------------------------------------------------------------------------------------!
+
+!Sergey is lying in bed, watching TV. You can chat with him (<30), join him watching TV (>30), sleep in his bed (>50) and seduce him----------!
+!===================================================================================================================! 
+if $ARGS[0] = 'tv':
+	$menu_loc = 'Serge_Shulgin'
+	$menu_arg = 'tv'
+	menu_off = 0
+	gs 'boyStat', 'A112'
+	minut += 1
+	gs 'stat'
+	if sergebazar_day ! daystart: sergebazar_count = 10
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/serge/serge2.jpg"></center>'
+	'Sergey Borisovich, born in 1967. His hair is gray by now, and he has a small beer belly, but in your eyes he still looks good for his age. His then-wife divorced him a long time ago and he has been single ever since, raising Vasily by himself.'
+	gs 'Serge_Shulgin', 'rep'
+
+	act 'Leave him alone': gt 'shulgabed'
+	act 'Chat with Sergey':
+		*clr & cla
+		minut += 15
+		sergebazar_day = daystart
+		sergebazar_count -= 1
+		if sergebazar_count > 0: npc_rel['A112'] +=1
+		gs'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/serge/serge1.jpg"></center>'
+		'Sergey is relaxing on his bed, watching some TV.' 
+		if npc_rel['A112']<30: 'You sit down on a chair in his bedroom.' else 'You signal for Sergey to scooch over, and lie down on the bed next to him.'
+		*pl
+		if sergebazar_count <= 0: 
+			'Sergey seems a tad annoyed when he says: "Not now, <<$pcs_nickname>>! Sorry, but this important match just started and I really want to watch it."'
+		else
+			if npc_rel['A112'] <= 50:gs 'Serge_Shulgin','hide','serge_textb'
+			if npc_rel['A112'] >  50:gs 'Serge_Shulgin','hide','serge_textb2'
+		end
+		act 'Continue': gt 'Serge_Shulgin','tv'
+	end
+
+	if npc_rel['A112'] > 30: 
+		act 'Lie down next to him and watch TV together': gt 'Serge_Shulgin','hide','serge_tv'
+	end
+end
+
+if $ARGS[0] = 'sleep':
+	menu_off = 1
+	gs 'boyStat', 'A112'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/serge/sleep.jpg"></center>'
+	'Sergey is sound asleep.'
+	act 'Get out of bed': gt 'shulgabed'
+	act 'Wake him up': 
+		'Sergey rubs his eyes, a bit irritated that you woke him up: "What do you want, <<$pcs_nickname>>? You really shouldn''t be waking me up, I need my sleep!"'
+		'You bite your lip, feeling bad for waking him up. You ask him: "Sorry, uncle Sergey. Would you mind if I take a nap with you?"'
+		if npc_rel['A112'] < 50: 
+			!--------------------!
+			!He does not allow you to sleep next to him!
+			!--------------------!
+			cla
+			minut += 2
+			npc_rel['A112'] -=1
+			gs 'stat'
+			'He snorts: "Do I look like an idiot, <<$pcs_nickname>>? I''d never hear the end of it! Just go home!"'
+			act 'Leave him alone': gt 'shulgabed'
+		else
+			!---------------------!
+			!He allows you to sleep next to him!
+			!---------------------!
+			cla
+			minut += 2
+			gs 'stat'
+			'He sighs and wordlessly moves over to one side of the bed, offering you the other half while he clutches his pillow.'
+			act 'Sleep with Sergey': 
+				!---------------------------------------!
+				!Sleep next to Sergey!
+				!---------------------------------------!
+				cla
+				'You get comfortable in Sergey''s bed, and sleep for a few hours.'
+				npc_rel['A112'] += 1
+				minut += 240
+				if pcs_sleep >= 60: 
+					pcs_sleep = 100
+				else
+					pcs_sleep += 40
+				end
+				gs 'stat'
+				act 'Get out of bed': gt 'shulgabed'
+			end
+			if pcs_horny > 30 and mesec <= 0: act 'Try to seduce Sergey': gt 'Serge_Shulgin','hide','sleep_prstsex'
+		end
+	end
+end
+
+if $ARGS[0] = 'hide':
+	menu_off = 1
+	if $ARGS[1] = 'serge_tv':
+		if hour < 7 or hour >= 23:
+			gs'stat'
+			'It''s too late, you would awaken Sergey if you turn the TV on!'
+			act 'Get out of bed': gt 'shulgabed'
+		else
+			minut +=30
+			gs'stat'
+			if rand(1,100) > 10: 
+				gs 'Serge_Shulgin','hide','serge_tv_rand'
+			else
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvrekl'+rand(1,4)+'.mp4" width="748" height="540"></video></center> Ugh, commercials...'
+			end
+			act 'Get out of bed': gt 'shulgabed'
+			act 'Change the channel': gt 'Serge_Shulgin','hide','serge_tv'
+			if npc_rel['A112'] > 50:
+				act 'Switch to the porn channel': 
+					*clr & cla
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvporn'+rand(1,5)+'.mp4" width="748" height="540"></video></center>' 
+					'You switch to the porn channel and put the remote away. Sergey is a bit surprised you would want to watch this, but says nothing.'
+					if pcs_horny > 30: 'You feel Sergey''s body shifting a lot during a particularly rough part of the porn scene, and he''s awkwardly covering his groin with his hands. The large bulge in his pants gives away his obvious erection anyway.'
+					gs 'arousal', 'porn', 10
+					gs 'arousal', 'end'
+					act 'Get out of bed': gt 'shulgabed'
+					if pcs_horny > 30 and mesec <= 0: act 'Try to seduce Sergey': gt 'Serge_Shulgin','hide','sleep_prstsex'
+					gs 'stat'
+				end
+			end
+		end
+	end &!--- serge_tv ---
+
+	!---------------------------------------------------------------!
+	!Seduce Sergey into having sex with you, instead of sleeping----!
+	!---------------------------------------------------------------!
+	if $ARGS[1] = 'sleep_prstsex':
+		*clr & cla
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/vert/dr'+rand(1,6)+'.mp4"></video></center>'
+		'You idly rub your hands over your body, occasionally touching his groin or chest to make sure you have his attention. When you let out a soft moan, you can feel him stirring next to you in the bed; he''s definitely paying attention to you now! You secretly smile to yourself: he''s such a typical guy... all you have to do is rub your tits and ass a little, and there''s no way he can resist your charms!'
+		gs 'arousal', 'foreplay', 5
+		gs 'stat'
+		if npc_rel['A112'] < 70: 
+			act 'Continue': gs 'Serge_Shulgin','hide','sleep_nameksex_otkaz'
+		else
+			if serge_sleep_sex_count <= 0: 
+				act 'Continue': gs 'Serge_Shulgin','hide','serge_sleep_sex_perebor'
+			else
+				if pcs_horny < 50: 
+					act 'Suggest you could make him feel good': gt 'Serge_Shulgin','hide','sleep_nameksex_oral'
+				elseif pcs_horny < 75: 
+					act 'Suggest you could make him feel good': gt 'Serge_Shulgin','hide','sleep_nameksex_rought'
+				else
+					act 'Beg him to make you feel good': gt 'Serge_Shulgin','hide','sleep_nameksex_lick'
+				end
+			end
+		end
+	end &!--- sleep_prstsex ---
+	!-------------------------------------------------------------------------!
+	!if relation<70, Sergey refuses to have sex with you!
+	!-------------------------------------------------------------------------!
+	if $ARGS[1] = 'sleep_nameksex_otkaz':
+		cla
+		minut += 2
+		gs 'stat'
+		'Sergey lets out a frustrated sigh, and scolds you: "<<$pcs_nickname>>, I have important things to do tomorrow morning! Don''t bother me, I need my sleep! Leave me alone!'
+		act 'Get out of bed': gt 'shulgabed'
+	end &!--- sleep_nameksex_otkaz ---
+	!----------------------------------------------------------------!
+	!If you have had sex with him twice already on one day, Sergey refuses to have sex with you!
+	!----------------------------------------------------------------!
+	if $ARGS[1] = 'serge_sleep_sex_perebor':
+		cla
+		minut += 2
+		gs 'stat'
+		'Sergey laughs when he feels your hand on his groin again: "<<$pcs_nickname>>, I''m no young guy any more! My stamina isn''t what it used to be... if I were still young I would''ve been all over you, but you''ve completely drained me for today! I just want to sleep... maybe some other time?"'
+		act 'Get out of bed': gt 'shulgabed'
+	end &!--- serge_sleep_sex_perebor ---
+	!--------------------!
+	!Leads to oral sex events!
+	!--------------------!
+	if $ARGS[1] = 'sleep_nameksex_oral':
+		serge_sleep_sex_day = daystart
+		serge_sleep_sex_count -= 1
+		minut += 2
+		serge_countsex += 1
+		npc_sex['A112'] += 1
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/vert/pr1.mp4"></video></center>'
+		'"I bet I could make you feel good, uncle Sergey... would you like that?" you whisper in his ear, with a devious smile on your face.'
+		'He doesn''t reply, but the burning desire in his eyes betrays him: he wants you badly. To drive your point home you press your tongue against your cheek hinting what you could do for him, if only he would let you...'
+		act 'Continue': gt 'Serge_Shulgin','hide','sleep_sex_oral_event<<rand(1,3)>>'
+	end &!--- sleep_nameksex_oral ---
+
+	if $ARGS[1] = 'sleep_nameksex_rought':
+		serge_sleep_sex_day = daystart
+		serge_sleep_sex_count -= 1
+		minut += 2
+		serge_countsex += 1
+		npc_sex['A112'] += 1
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/vert/pr1.mp4"></video></center>'
+		'"I bet I could make you feel good, uncle Sergey... would you like that?" you whisper in his ear, with a devious smile on your face.'
+		'He doesn''t reply, but the burning desire in his eyes betrays him: he wants you badly. To drive your point home you press your tongue against your cheek hinting what you could do for him, if only he would let you...'
+		act 'Continue': gt 'Serge_Shulgin','hide','sleep_sex_rought_event<<rand(1,2)>>'
+	end &!--- sleep_nameksex_rought ---
+	!--------------------!
+	!Leads to cunnilingus event!
+	!--------------------!
+	if $ARGS[1] = 'sleep_nameksex_lick':
+		serge_sleep_sex_day = daystart
+		serge_sleep_sex_count -= 1
+		minut += 2
+		serge_countsex += 1
+		npc_sex['A112'] += 1
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/vert/pr2.mp4"></video></center>'
+		'"I bet you could make me feel good, uncle Sergey... I''m so horny! Could you help me out, pretty please?" you whisper in his ear, with a devious smile on your face.'
+		'He doesn''t reply, but the burning desire in his eyes betrays him: he wants you badly.'
+		act 'Continue': gt 'Serge_Shulgin','hide','sleep_sex_lick_event1' &!'sleep_sex_lick_event1<<rand(1,3)>>'
+	end &!--- sleep_nameksex_lick ---
+!-----------------------------!
+!Oral events!
+!-----------------------------!
+	if $ARGS[1] = 'sleep_sex_oral_event1':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/oral'+rand(6,10)+'.mp4"></video></center>'
+		'You giggle when Sergey reaches for his pants, with a slightly defeated look on his face. He really wanted to resist your charms, but he failed. You lick your <<$lip1>> lips when he pulls his dick out, and looks at you expectantly.'
+		'"Thank you, uncle Sergey", you whisper to him. You tentatively reach for his cock, lightly rubbing and squeezing it with your delicate fingers. Wow, he really does have a magnificent cock...'
+		'You squee with delight when a large bead of precum forms on the head, and you quickly close your lips around his penis to prevent it from falling to the ground. When you begin to bob your head up and down obediently, Sergey relaxes and just smiles down at you, content to let you do your thing for now.'
+		'You know it''s probably just a matter of time before he becomes more involved though; you know Sergey fairly well, and he''s very dominant and demanding. Especially towards women.'
+		'He grunts in his deep voice: "So... you''re turning out to be quite the little slut, isn''t that right <<$pcs_nickname>>? Must run in the family..."'
+		'When you try to pull away to answer, he puts his hands behind your head and pushes his cock back into your mouth, shaking his head: "No, no. It was a rhetorical question, dear... just keep sucking."'
+		gs 'boyStat', 'A112'
+		gs 'arousal', 'bj', 5, 'sub'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/dog'+rand(1,11)+'.mp4"></video></center>'
+			'After you suck him off for a few minutes, you decide you want more. You pull away from him and get on your hands and knees, wagging your ass at him teasingly. Sergey is a bit taken aback at first, not expecting that from you. He quickly recovers though, and grins: "So... you want to get fucked, girl?"'
+			'"Yes, uncle Sergey", you reply in a sweet voice. "I want to get fucked... by you."'
+			'"You know I don''t play nice. Are you sure that''s what you want?" Sergey demands.'
+			'When you bite your lip lewdly and nod, Sergey wordlessly guides his cock to your cunt. He slowly penetrates you until most of his length is in.'
+			'He takes it easy on you at first, but soon forgets about your comfort and fucks you harder and rougher, pulling your hair back and slapping your ass while he''s railing you with the full length of his cock. You moan and cry loudly, not caring if anyone can hear it. Wow, he wasn''t kidding when he said he doesn''t play nice...'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cow8.mp4"></video></center>'
+				'Sergey grabs you in his arms and turns you over, holding you over his chest in his strong arms. "You''re going to get the fucking of a lifetime, <<$pcs_nickname>>! I hope you''re ready", he grins.'
+				'You meekly nod and help him by guiding his erection back inside you, and he begins to fuck your pussy furiously. You can feel his hot breath on your back... he sounds so manly!'
+				'Suddenly you cry out when you feel a stinging pain in your ass; his cock must''ve slipped out of you and entered the wrong hole!'
+				'If Sergey noticed, he''s definitely doing a good job of hiding it since he just keeps fucking you like he has the whole time. Ouch, he''s stretching you out so much!'
+				'Still, being in this position, being used by Sergey as a fucktoy is hot! You can''t help but feel aroused despite the rough assfucking you''re getting, and before you know it you''re actually not feeling the pain as readily any more. It''s still there, but... not as bad. In a way, it actually hurts really good!'
+				'You''re very loud now, crying and moaning like a whore while you let Sergey use you as he sees fit. You didn''t think getting fucked in your ass like this could feel good... but it does!'
+				gs 'arousal', 'anal', 5, 'sub', 'rough'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'cum_call','face',$boy,1
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,6)+'.mp4"></video></center>'
+					'Suddenly Sergey pulls out of you, and pushes you off him to the side.'
+					'"I don''t want to get anyone pregnant, so the only way I cum after having sex is on a woman''s face. Better safe than sorry", he grins.'
+					'You were about to mention that you can''t get pregnant from anal sex either, when Sergey puts you down on your knees before him and begins to jerk off furiously. You winced when you were moving down to the ground, and you notice a naughty glimmer in his eyes; he definitely knew he was fucking your ass! That bastard!'
+					'Within seconds, his hot jizz lands all over your face, while he roars like a lion. "Oh yea... that''s a good little slut! You''re a good fuck, <<$pcs_nickname>>", Sergey praises you when he''s finished. "Go on, clean yourself up. You''re not getting back in bed like that."'
+					'You wince when you get up. Wow... he really wasn''t kidding when he said he wasn''t going to be nice!'
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Finish': gt 'shulgabed'
+				end
+			end
+		end
+	end &!--- sleep_sex_oral_event1 ---
+
+	if $ARGS[1] = 'sleep_sex_oral_event2':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/oral'+rand(1,10)+'.mp4"></video></center>'
+		'Sergey smirks at you confidently and says: "Feeling slutty today, aren''t we? Very well, you may. Go ahead, undress me first."'
+		'Even though this was your idea, you''re a bit taken aback by how fast he turned the tables on you. You were supposed to be teasing him, he wasn''t supposed to be telling you what to do! Still, it''s too late to back down now.'
+		'With a slightly trembling hand, you take off his clothes. When Sergey is naked, he grins: "Very good. You may suck my dick now. For a little while, anyway. I''m going to fuck you in a few minutes." With a wink he adds: "Unless you can get me off with your mouth before then, of course!"'
+		'Is he... challenging you? If so, challenge accepted! Forgetting all about your nerves, you quickly take his cock in your hand and begin to jerk him off already as you guide it to your mouth. You try every trick you know to try and get him to shoot his load in your mouth.'
+		'However, after a few minutes he grabs onto your hair and gently but firmly pulls your head backwards. "Time''s up, <<$pcs_nickname>>. Lie down on the bed."'
+		gs 'arousal', 'bj', 5, 'sub'
+		gs 'stat'
+		act 'Lie down on the bed':
+			*clr & cla
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/miss'+rand(1,2)+'.mp4"></video></center>'	
+			'Sergey has you spread your legs wide, and rams nearly the full length of his dick inside you in one fluent motion. Instinctively you wrap your legs around his hips, which he sees as an encouragement to get even deeper inside you.'
+			'You wrap your arms around his strong torso as well, and let him hammer away at your pussy. Then you squeal: he''s biting your ear lobe!'
+			'Your boobs are squished between your body and his, as Sergey rests his body on top of yours and focuses everything on fucking your cunt as hard as he can. Despite his size, it''s not uncomfortable at all... it feels heavenly! Sergey gets it, this is how you fuck a woman!'
+			'You moan and mewl in pleasure, not even caring if anyone can hear you.'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/dog'+rand(1,11)+'.mp4"></video></center>'
+				'Then Sergey pulls out of you and deftly flips you over, making you sit on your hands and knees on the bed. He immediately slides his cock back inside your by now very wet slit, and has a satisfied grin on his face when he notices how readily your pussy accepts him.'
+				'"You like this, don''t you <<$pcs_nickname>>? You like it when a real man treats you like a slut, that''s why you kept teasing me", he growls in your ear while he begins to fuck you again, just as intensely as before.'
+				'You just slam your hips back against his as a response, not wanting to say it out loud... but yes. This is why you kept teasing him.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'cum_call','face',$boy,1
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,6)+'.mp4"></video></center>'
+					'When he''s about to cum, you quickly drop to your knees before him and take the full length of his cock down your throat, trying to please Sergey to the best of your abilities.'
+					'Sergey laughs and strokes your <<$pcs_haircol>> hair gently, amazed by how eager you suddenly are. After he lets you suck him for a little while, he suddenly pulls out and his dick erupts over your face, shooting hot ropes of semen all over you.'
+					'Then he suddenly looks exhausted, and he lets himself fall back down onto his bed. When you want to join him, he smiles at you and points at his chin, saying: "You''re a bit dirty here, <<$pcs_nickname>>. Maybe you should go wash up before you come back to bed." With a grin he adds: "I''ll save some room for you. You''re a sweet girl, I like you having you near me..."'
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Finish': gt 'shulgabed'
+				end
+			end
+		end
+	end &!--- sleep_sex_oral_event2 ---
+
+	if $ARGS[1] = 'sleep_sex_oral_event3':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/69-'+rand(1,2)+'.mp4"></video></center>'
+		'Without saying a word, you turn around and hover your bare pussy over his face, before you lower your hips confidently. You feel his tongue greedily licking you almost immediately... it''s working, he wants you!'
+		'You weren''t lying when you said you wanted to suck his dick, though. You immediately get to work, planting kisses all the way down his shaft. When you reach his balls, you begin to suck on them; first the right, then the left... at one point, you even had both of them in your mouth at once!'
+		'Sergey, as it turns it, is pretty great at giving oral too, and he guides his tongue from your clitoris all the way to your anus, and everywhere inbetween. Sometimes he thrusts his tongue inside your vagina, sometimes he sucks on your soft pink lips. After a while he begins to use his fingers too, slipping one finger inside your pussy and one inside your ass, fucking them both while he keeps licking you.'
+		'It feels great! For a moment you forget all about what you were doing, and just moan and squirm on his face while he pleases you.'
+		'When he realizes your mind started to wander, the thrusts of his cock against your lips become more insistent, and you automatically open your mouth. He keeps going though, and ends up mostly fucking your mouth while you don''t do very much any more, too distracted by the pleasure you''re getting at the same time.'
+		gs 'arousal', 'bj', 5, 'sub'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/dog'+rand(10,12)+'.mp4"></video></center>'
+			'Then Sergey stops, and just relaxes on the bed. What is he doing!?'
+			'He notices your nervous fidgeting, and smirks: "What''s wrong, slut? Do you need me to fuck you?"'
+			'"Yes, yes!" you groan insistently.'
+			'"Beg for it. Beg for me to fuck you in the ass, and I''ll do it", he grins.'
+			'"Please, uncle Sergey! Please fuck me, I''m begging you!" you plead. You left out the part about your ass on purpose, but he caught that. He''s just lying there with an amused look on his face, waiting for you to say it.'
+			'"Please... fuck my ass, uncle Sergey", you whisper.'
+			'"Are you sure you''re ready?" he smiles. "Actually, don''t answer that. Just show me."'
+			'You turn around obediently and stick out your ass, and he immediately gets up and puts his hands on you. "Hmm, already warmed up a bit, but it could use some more..." he ponders, before he spits on your anus a few times and fingers you for a little while.'
+			'Then he pushes you down onto the bed and mounts you from behind, guiding his cock to your puckered sphincter. You silently thank him for the extra preparations; it''s not all that painful when he enters you.'
+			'You can tell that he got quite worked up over making you beg, and he immediately begins to pound your ass enthusiastically. You shout and cry, but at this point he no longer cares about your feelings. He did his part in preparing you, now he''s reaping his rewards.'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+			gs 'arousal', 'anal', 5, 'sub', 'rough'
+			minut -= 5
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/miss'+rand(1,2)+'.mp4"></video></center>'
+				'Then suddenly he pulls out of you, and lifts you up and puts you down on your back. He immediately leans over your body and begins to kiss you everywhere. He''s kissing your breasts, your hands, your stomach, your hips... you moan softly, thoroughly confused by the sudden change of course. One minute he was fucking your ass like he owned it, and now... he''s pampering you?'
+				'You begin to come to your senses again, just as Sergey kisses you full on your mouth while he leads his cock to your wet pussy lips. He gently presses his cock against them, guiding himself inside of you. You have to fight back the urge to start bucking your hips against him, understanding that he''s trying to please you as well as himself.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+				gs 'arousal', 'kiss', 5, 'sub'
+				minut -= 5
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					pcs_mood = 100
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cow'+rand(4,6)+'.mp4"></video></center>'
+					'After fucking you caringly for a few minutes, he rolls off you and lies on his back next to you. He gives you a peck on your cheek and whispers: "If you want to fuck me on your terms, now is your chance... it''s all yours."'
+					'You eagerly nod and mount him, quickly guiding his cock back to the entrance of your pussy. It feels quite slick from your juices already. Slowly grinding your hips against his pelvis, you begin to ride Sergey. Slowly and gently... you''re going to savour this moment, you tell yourself.'
+					'Your breasts dangle in front of Sergey''s face as you ride him, and he puts an arm around your body to pull you towards him. He takes one of your nipples in his mouth, and softly bites it while you ride him. Meanwhile his hands found their way to your buttocks, and slowly but surely Sergey demands more control again, guiding your buttocks up and down while you ride him.'
+					'You were already quite close to orgasming, and his sudden thrusts push you over the edge making your whole body tremble. You cry out loud and feel your body go limp, resting on his chest while you try to catch your breath.'
+					$orgasm_or = 'custom'
+					$orgasm_txt = 'Your pussy convulsing around his cock, paired with your trembling body, make Sergey realize perfectly well you''re orgasming. He simply embraces you while he lets you ride it out, planting a gentle kiss on your forehead.'
+					gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						minut += 5
+						gs 'cum_call','face',$boy,1
+						'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,6)+'.mp4"></video></center>'
+						'Wow, that felt so good! You had no idea Sergey could be such a gentleman.'
+						'When Sergey is also close to orgasming, you quickly get off him and lick his cock slowly, tasting yourself on his dick. Mmmm, delicious as always...' 
+						'It doesn''t take long for Sergey to cum, shooting his load all over your face like he likes to do. When he''s finished, you smile at him with his cum still all over your face, and whisper: "Thank you, uncle Sergey... that was amazing!"'
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Finish': gt 'shulgabed'
+					end
+				end
+			end
+		end
+	end &!--- sleep_sex_oral_event3 ---
+
+!--------------------------------!
+!Cunnilingus event!
+!--------------------------------!
+	if $ARGS[1] = 'sleep_sex_lick_event1':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/lick'+rand(1,2)+'.mp4"></video></center>'
+		'Sergey spreads your legs and immediately buries his face between them, licking your wet cunt with long, firm strokes. He pays extra attention to your clitoris, lashing it with his tongue over and over.'
+		'The sensation is too much! You try to squirm away from him, but Sergey firmly holds your hips in place and keeps teasing your sensitive mound with an amused smirk.'
+		'Then he switches to thrusting his tongue inside your pussy. It also feels great, but not as intense as before, and you settle into a sweet rhythm of gently grinding your hips against his mouth while he pleases you.'
+		'After a while, you grow restless. You want to do something too! "Uncle Sergey, let me suck your cock... please!" you whisper between your moans.'
+		gs 'arousal', 'cuni', 5, 'dom'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/oral'+rand(1,10)+'.mp4"></video></center>'
+			'His erect cock was already dangling out of his pants, and you gently close your fingers around it when he brings it closer to you. It''s so rigid and firm... so masculine... you can''t wait to close your lips around it!'
+			'You feel it throb between your fingers as you caress it all over, also running your fingers over his balls and pulling his foreskin back to expose the head.'
+			'When you close your <<$lip1>> lips around the head of his cock, you feel Sergey''s body shudder with delight - he was clearly looking forward to this as much as you were!'
+			'Not about to let him down, you do your best to give him the best blowjob he''s ever had. You sometimes let it slide out of your mouth to lick across the whole length of his shaft but always quickly take it back in. You manage to take in just over half his length easily.'
+			'"Do you think you can take it all, <<$pcs_nickname>>?" he asks. You never take his cock out of your mouth but nod, while you look him in the eye. "Go ahead, try", he encourages you.'
+			'You push your head forward, forcing yourself to take more and more of his length down your throat. It''s not easy but from the proud grin Sergey is giving you, you know you must be doing a great job! The room is filled with the sounds of you lewdly gagging and slurping on his cock, and Sergey lovingly brushes your hair with his hand when you come up for air again. "You''re such a sweet little slut, I won''t last long if you keep that up!"'
+			gs 'boyStat', 'A112'
+			gs 'arousal', 'bj', 5, 'sub'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				pcs_mood = 100
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/dog'+rand(1,11)+'.mp4"></video></center>'
+				'You don''t want him to finish already! You quickly get onto the bed on your hands and knees and wiggle your ass at him seductively.'
+				'Sergey positions the head of his dick against your wet folds and immediately drives his whole length inside you.'
+				'You cry out in surprise and grab a few handfuls of his bed sheets, while Sergey begins to pound you from behind. You feel ecstatic! You want him badly!'
+				'You feel like you''re slowly losing your mind when Sergey softly kisses and bites your neck. He''s tender with you on the one hand, but at the same time fucking your wet cunt mercilessly from behind, sometimes slapping your ass cheeks.'
+				'With one hand wrapped around your throat, he grunts: "<<$pcs_nickname>>, you''re wonderful..." and gently kisses your neck again.'
+				$orgasm_or = 'yes'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/miss'+rand(1,2)+'.mp4"></video></center>'
+					'Then Sergey pulls away for you and tells you to roll over and lie on your back. You quickly do as he says and part your labia with your fingertips, inviting him to thrust his dick back in you.'
+					'Sergey quickly enters you again and begins to fuck you in a slow but steady pace. You''re so wet, your pussy is making sopping sounds every time he slams his cock inside you! Unable to control yourself, you automatically match his thrusts and bump your hips forward to take him deeper inside you.'
+					gs 'arousal', 'vaginal', 5, 'sub'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cow'+rand(1,7)+'.mp4"></video></center>'
+						'Sergey then wearily flops down onto the bed and gasps: "Damn... you''re wearing me out, <<$pcs_nickname>>! How about you ride me for a while?"'
+						'You eagerly mount Sergey and guide his cock back into your pussy, giving him a sweet wink and a kiss on his cheek as you do.'
+						'In full control of the tempo now, you can decide exactly how fast and how deep you take his cock inside you! Sergey absent-mindedly massages your boobs and sometimes pinches your nipples while you skewer yourself onto his stiff rod over and over, trying out new techniques and squeezing your vaginal walls tightly.'
+						'When Sergey''s breathing becomes shorter and raspier, you realize he must be close to his orgasm! You don''t want him to cum inside you though...'
+						gs 'arousal', 'vaginal', 5, 'sub'
+						gs 'stat'
+						act 'Continue':
+							*clr & cla
+							minut += 5
+							gs 'cum_call','face',$boy,1
+							'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,7)+'.mp4"></video></center>'
+							'You quickly stand up and kneel down next to the bed, aiming his cock at your face. Mere seconds later he erupts, shooting several ropes of his hot sperm all over your face. You smile happily at Sergey and try to catch it inside your mouth, licking some of the remnants off the head of his dick when he''s finally done.'
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Finish': gt 'shulgabed'
+						end
+					end
+				end
+			end
+		end
+	end &!--- serge_tv ---
+
+	!----------------------!
+	!Rough sex / borderline rape events!
+	!----------------------!
+	if $ARGS[1] = 'sleep_sex_rought_event1':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/oral'+rand(1,10)+'.mp4"></video></center>'
+		'Suddenly Sergey firmly grabs a fistful of your <<$pcs_haircol>> hair and brings your face close to his. He says in a menacing voice: "So, you want to be a slut? I''ll treat you like a slut!"'
+		'You squeak in surprise as he directs your head towards his groin, pulling you roughly by the hair until you give in and follow his lead more readily. You close your lips around his erection in a reflex, and struggle to take it all in when he forces most of his cock down your throat already in the very first thrust. A few thrusts later, the head of his dick is firmly lodged down your throat while your lower lip rubs against his shaved balls.'
+		'Sergey groans softly as he uses you like a sex doll, forcing his cock into your mouth over and over. Thick strands of saliva run down your chin as you do your best to just take it, trying to suppress your gag reflex when he rams his cock down your throat once more. Sergey is not even giving you any chance to object anyway, and uses you as he sees fit.'
+		gs 'boyStat', 'A112'
+		gs 'arousal', 'bj', 5, 'sub', 'rough', 'deepthroat'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			if pcs_makeup >= 2: pcs_makeup = 0
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/dog'+rand(1,12)+'.mp4"></video></center>'
+			'"Get down on the bed with your back to me and spread your legs. I''m going to fuck you now", Sergey says matter-of-factly. He looks at your face amusedly, while you gasp for breath and wipe the worst of the saliva off your chin. He''s way too rough with you! Nevertheless, if this is how he treats you when you comply, you don''t want to know what he''s like when you don''t!'
+			'You meekly get down on your hands and knees and look back at him, just a tad scared of him.'
+			'"Don''t look at me like that, slut. You knew what you were getting into when you got into my bed", he snarls. "Now spread your legs!"'
+			'You spread your legs further, your cheeks burning with shame. Here you are, on the bed of this older man you tried to seduce, offering yourself like a bitch when he tells you to. And yet, you feel a tinge of desire as well!'
+			'Before you know it, Sergey is between your legs and intently rubs the head of his cock against your tender pussy lips. Then he pushes down firmly, sinking it into you.'
+			'His cock is fairly large, and you squeal when he shoves it in further and further despite your discomfort. "You''re beautiful when you''re suffering, <<$pcs_nickname>>", he grunts, and begins to fuck you.'
+			'You bite down on your lip to stifle your groans, but can''t stay quiet when Sergey picks up the pace more and more and hammers his large cock inside your cunt. Your boobs bounce helplessly whenever his hips meet yours, and you cry out and mewl with every thrust.'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/miss'+rand(1,4)+'.mp4"></video></center>'
+				'Sergey suddenly pulls out of you and orders: "Turn around."'
+				'You catch your breath again and take your time doing as he says, trembling at the thought of what happens next.'
+				'Sergey roughly pulls your legs apart and buries two fingers inside your wet snatch, fingering you. Hoarse moans escape your lips when he does, and to your shame you have to admit - this is starting to feel good!'
+				'He recognizes that look in your eyes as well, and you feel embarrassed. He must think you''re some cheap slut!'
+				'Next he slides his dick in and begins to fucks you again, just as roughly as before. You groan loudly, but not from pain or humiliation... it''s lust and pleasure! Your legs are spread wide and Sergey''s hand is over your throat, lightly squeezing you while he fucks you hard. Not enough to make you feel scared, but definitely enough to understand that you belong to this man for now, and he will do whatever he wants with you before you leave this room.'
+				gs 'arousal', 'vaginal_finger', 5, 'sub', 'rough'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'cum_call','face',$boy,1
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,6)+'.mp4"></video></center>'
+					'"Uncle Sergey... please... more..." you moan weakly, unable to help yourself.'
+					'Sergey laughs and shakes his head: "Some other day, slut. I''m too close to last longer now, come here!"'
+					'He pulls you up by your hair again and guides your face to his cock, almost immediately blasting his load all over your face. He groans loudly when he orgasms, and you''d swear you can actually see his balls contract a bit when the jets of jizz come out.'
+					'"Lick!" he orders you, and you obediently lick the remains off his cock before he finally lets go of your hair. He gives you a dismissive but satisfied nod and returns to watching TV, no longer interested in you.'
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Finish': gt 'shulgabed'
+				end
+			end
+		end
+	end &!--- sleep_sex_rought_event1 ---
+
+	if $ARGS[1] = 'sleep_sex_rought_event2':
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/oral'+rand(1,10)+'.mp4"></video></center>'
+		'Without any preliminaries, he undresses and thrusts his erect penis towards your face. With a serious face he says: "You want to make me feel good? Go ahead, slut. Suck."'
+		'You give him a sweet smile and open your mouth, but suddenly feel his hand behind your neck. With nowhere to go, you can''t resist as he shoves the whole length of his cock into your mouth.'
+		'When he realizes you''re not resisting, he lets up a bit and relaxes his grip. You dutifully suck him off as good as you can, trying to keep doing what he made you do. Your chin is covered in spit after a few minutes, and some of it drips down to your boobs. You pay it no heed, and fully focus on servicing Sergey.'
+		'He does notice, and rubs it out all over your boobs and pincles your nipples, encouraging you to keep sucking him off like a good girl.'
+		gs 'boyStat', 'A112'
+		gs 'arousal', 'bj', 5, 'sub', 'rough', 'deepthroat'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/miss'+rand(1,4)+'.mp4"></video></center>'
+			'You want more than that! You stand up and defiantly look Sergey in the eyes while you take off your clothes one piece at a time, offering him a sweet smile when you''re completely naked. Your impressive breasts with protruding nipples have his full attention, and gently move up and down with your breathing.'
+			'"You''re such a horny little minx, <<$pcs_nickname>>! Do you think this is normal, teasing older men with your naked body like that?" Sergey asks intently, quickly closing the distance between you and him.'
+			'"Maybe not, uncle Sergey, but don''t you want to fuck me? Don''t you want to fuck my young little pussy and make me do whatever you want me to do?" you taunt him in a sweet voice, slightly spreading your legs for him while you talk.'
+			'Sergey laughs and pushes you down onto the bed, making you shriek with laughter as you fly through the air. He immediately pounces on top of you and grunts: "That''s exactly what I''m going to do!"'
+			'Sergey thrusts his cock to the hilt inside your wet pussy, making you cry out at the sudden intrusion. Ouch, it hurts if he''s so rough with you!'
+			'"Uncle Sergey, pl-aaaah!" you try to ask him to go slower, but get cut off when he fucks you violently. You silently scold yourself for telling Sergey to do whatever he wants to you... you weren''t expecting this!'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/rought/dog'+rand(1,12)+'.mp4"></video></center>'
+				'While you''re lying on his bad, panting and mewling underneath him, Sergey suddenly gets up and flips you over with one fell swoop. He puts his arms underneath your body, making you sit on your hands and knees.'
+				'He immediately brings his cock back to your welcoming pussy and slams it all the way back in, and begins to fuck you from behind. Every once in a while he lands a hard slap on your buttocks, making you yelp with pain.'
+				'"I love the way you squeeze your vaginal walls around my cock whenever I slap you, <<$pcs_nickname>>! You''re such a good little whore!" Sergey grins proudly, right before landing several ringing slaps on your exposed butt.'
+				'"Uncle Sergey, please slow down! You-aaaahh!!" you try again, but he interrupts your train of thought by slapping and fucking you even harder.'
+				'"Shut up, <<$pcs_nickname>>. You should''ve thought of that before you came in here, acting like a whore! You wanted me to make you do whatever I want, did you not?" he sternly reminds you, not letting up.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'cum_call','face',$boy,1
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/smroom/event/cum'+rand(1,7)+'.mp4"></video></center>'
+					'After a few more minutes of rough sex, Sergey stands up and grabs a fistful of your <<$pcs_haircol>> hair, guiding you to the ground before him. Despite still being slightly out of breath, you automatically close your lips around his cock and suck him off enthusiastically, like any good little slut would.'
+					'"Look at me", Sergey orders. When you do, he smirks and lets go of your hair, and lets you bob your head up and down. That defeated look in your eyes, the way you obediently closed your lips around his cock without him even having to tell you to... he has you exactly where he wants you. It''s not easy to keep looking him in the eye and suck him off at the same time, but you do your best.'
+					'"You like having a hard dick to suck on! Don''t you, whore?" he smiles benevolently. When you try to pull back so you can answer, he puts his hand behind your head and keeps you there: "I didn''t say you could stop! Just blink if it''s true."'
+					'With a deep red hue of shame on your cheeks you flutter your eyelashes at him. He''s right! You''ve been a good girl for most of your life, but this... this feels so much better!'
+					'Exactly at that moment, Sergey groans loudly and a powerful jet of his sperm hits the back of your mouth. After a few spurts he pulls his dick out, and deposits the rest all over your embarrassed face. "That''s a nice look for you, slut! I reckon I''ll be seeing you like that more often..." he laughs, and he lets his tired body crash down onto his bed. Then he directs his attention back at the TV, no longer paying any attention to you.'
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Finish': gt 'shulgabed'
+				end
+			end
+		end
+	end &!--- sleep_sex_rought_event2 ---
+
+	if $ARGS[1] = 'serge_textb':
+		serge_textb = rand(0,6)
+		if serge_textb = 0:$serge_textb = 'When you ask about Vasily''s mother, Sergey shrugs: "It''s a short story, really. I met Vasily''s mother at my graduation party. We all got drunk and she and I had some fun. When she turned out to be pregnant, we got married. We didn''t have much of a say in the matter, that''s just how it worked back then. Shulga was born a few months after that. We tried to make it work, but she got bored and left me a year later when she got offered a job abroad, leaving Shulga with me. I haven''t heard from her since. It''s fine, though... me and him managed just fine, without her."'
+		if serge_textb = 1:$serge_textb = 'You spend fifteen minutes talking to Sergey about everyday things.'
+		if serge_textb = 2:$serge_textb = 'When you ask Sergey what he does for a living, he smiles and says: "I work in a factory where we produce bricks. I work the day shift, from 09:00 to 15:00, five days a week. I''m a foreman there, managing the laborers and keeping an eye on the machinery. Of course I pitch in as well, when the men need help. It''s dusty, hard work, and it doesn''t pay well, but it''s work worth doing!"'
+		if serge_textb = 3:$serge_textb = 'When you ask about his relationship with his son, Sergey shrugs and says in a tired voice: "Eh. We do okay, given the circumstances. He''s... changed, though. He''s rather difficult to handle nowadays. For the last year or so, he has shown no interest in school and he stays out until late every day, doing God knows what. I''m just not sure how to get through to him any more."'
+		if serge_textb = 4:$serge_textb = 'Sergey tells you a funny story.'
+		if serge_textb = 5:$serge_textb = 'Sergey is actually a pretty smart guy, and you listen to him for fifteen minutes while he tells you anecdotes about his past.'
+		if serge_textb = 6:$serge_textb = 'You try to talk to Sergey about clothes, but he''s not all that interested. The only thing he can contribute is that there is a tailor at the garment factory, who adjusted some ill-fitting jeans for him a while ago.'
+		'<<$serge_textb>>'
+		killvar '$serge_textb'
+	end &!--- serge_textb ---
+
+	if $ARGS[1] = 'serge_textb2':
+		serge_textb2 = rand(0,5)
+		if serge_textb2 = 0:$serge_textb2 = 'Sergey tells you a dirty joke.'
+		if serge_textb2 = 1:$serge_textb2 = 'Sergey tells you a dirty story.'
+		if serge_textb2 = 2:$serge_textb2 = 'Sergey tells you a funny story. It''s loaded with sexual innuendos and double entendres.'
+		if serge_textb2 = 3:$serge_textb2 = 'Sergey tells you a dirty joke: A businessman needs to do a large investment, buying a new fax machine for the office. He calls in his secretary and says: "Maria, I have 10000 rubles, minus taxes... what do you think I can get for that?"
+The secretary blushes as she begins to unbutton her shirt, and replies: "For 10000 rubles? Everything but my earrings!"'
+		if serge_textb2 = 4:$serge_textb2 = 'You''re lying on Sergey''s bed relaxing, while he tells you another vulgar anecdote.'
+		if serge_textb2 = 5:$serge_textb2 = 'You have a nice chat with Sergey for fifteen minutes.'
+		'<<$serge_textb2>>'
+		killvar '$serge_textb2'
+	end &!--- serge_textb2 ---
+
+	if $ARGS[1] = 'serge_tv_rand':
+		serge_tv_rand = rand(0,11)
+		if serge_tv_rand = 0:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvdance.mp4" width="748" height="540"></video></center>The TV currently shows a new music video, where mostly undressed girls shake their butts lewdly.'
+		if serge_tv_rand = 1:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo1.mp4" width="750" height="540"></video></center>The TV currently shows a documentary about animals.'
+		if serge_tv_rand = 2:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo2.mp4" width="746" height="540"></video></center>The TV currently shows a documentary about the world.'
+		if serge_tv_rand = 3:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo3.mp4" width="746" height="540"></video></center>The TV currently shows a documentary about nature.'
+		if serge_tv_rand = 4:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo4.mp4" width="748" height="540"></video></center>The TV currently shows a documentary film about the ocean.'
+		if serge_tv_rand = 5:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino1.mp4" width="750" height="540"></video></center>The TV currently shows a popular Soviet comedy show.'
+		if serge_tv_rand = 6:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino2.mp4" width="746" height="540"></video></center>The TV currently shows an imported blockbuster movie.'
+		if serge_tv_rand = 7:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino3.mp4" width="772" height="540"></video></center>The TV currently shows an old western movie.'
+		if serge_tv_rand = 8:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvmult1.mp4" width="748" height="540"></video></center>The TV currently shows a new foreign cartoon. Luckily the audio is still in Russian!'
+		if serge_tv_rand = 9:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvmult2.mp4" width="746" height="540"></video></center>The TV currently shows an old cartoon.'
+		if serge_tv_rand = 10:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvsport1.mp4" width="748" height="540"></video></center>The TV currently shows reruns of the latest UFC fight. How barbaric...'
+		if serge_tv_rand = 11:$serge_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvsport2.mp4" width="746" height="540"></video></center>The TV currently shows a football match. You''re fairly sure it''s not live.'
+		'<<$serge_tv_rand>>'
+		killvar '$serge_tv_rand'
+	end &!--- serge_tv_rand ---
+end &! --- hide ---
+--- Serge_Shulgin ---------------------------------
+

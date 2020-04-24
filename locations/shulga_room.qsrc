@@ -1,0 +1,1673 @@
+# shulga_room
+
+!============================================================================================================!
+!FULL NAME: Vasily Shulgin S. (klikuha Shulga)---------------------------------------------------------------!
+!------------------------------------------------------------------------------------------------------------!
+!npc_rel['A11'] - Counter relations: -------------------------------------------------------------------------!
+!<= 50 - You have known Vasily since childhood --------------------------------------------------------------!
+!> 30 - He talks to you about webcam work -------------------------------------------------------------------!
+!> 50 - Good friends, he offers to arrange a webcam show in his home ----------------------------------------!
+!>= 100 - Very close friends, he offers to arrange a webcam show together at his house ----------------------!
+!============================================================================================================!
+$location_type = 'private'
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+	$menu_loc = 'shulga_room'
+	$menu_arg = 'start'
+	menu_off = 0
+	$metka = 'start'
+	$loc = 'shulga_room'
+	$locclass = 'livingr'
+	!Daily discussions:
+	!Vasily
+	if bazar_day ! daystart: bazar_count = 10
+	!Dan
+	if bazar_day_den ! daystart: bazar_count_den = 5
+	!Vitek
+	if bazar_day_vitek ! daystart: bazar_count_vitek = 5
+	!card games:
+	if playcardgame_day ! daystart: playcardgame_count = 2
+	!Come dressed as a prostitute:
+	if sh_hooker_day ! daystart: sh_hooker_count = 1
+	!limit 1 sex after class
+	if shulga_lern_day ! daystart: shulga_lern_count = 1
+	!----------------------------------------------------
+
+	!============================================================================================================!
+	!The Shulgin family living room-----------------------------------------------------------------A LARGE ROOM!
+	!============================================================================================================!
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	internetS = internet
+	'<center><b><font color = maroon>Living Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom.jpg"></center>'
+	*nl
+	act 'Leave the room': gt 'shulgahall'
+
+	if hour >= 14 and hour <= 18 and shulga_whore ! 0 and shulga_whore ! daystart + 7:
+		if shulga_whore < daystart:
+			shulga_whore = daystart + 7
+			gs 'fame', 'pav', 'sex', 20
+			'As you walk in, the boys are already laughing. "To late <<$pcs_nickname>>, the whole school now knows what a whore you are. But since you''re here you might as well fuck us like the good little whore you are."'
+
+			gs 'willpower', 'misc', 'self', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'Put an end to this (<<will_cost>> Willpower)':
+					cla
+					gs 'willpower', 'misc', 'self', 'hard'
+					gs 'willpower', 'pay', 'self'
+					shulga_whore = 0
+					'You laugh back at them. "Like I care what anyone in this crap hole thinks."'
+					act 'Leave': gt 'shulgahall'
+				end
+			else
+				act 'Put an end to this (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			gs 'willpower', 'misc', 'self', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Run out of the room crying (<<will_cost>> Willpower)': gs 'willpower', 'misc', 'self', 'easy' & gs 'willpower', 'pay', 'self' & gt 'shulgahall'
+			else
+				act 'Run out of the room crying (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Get naked': gt 'shulga_room', 'gang_sex_room_ev1_1'
+			exit
+		else
+			shulga_whore = daystart + 7
+			*clr & cla
+			minut += 5
+			pcs_horny += 5
+			gs 'stat'
+			'You walk into the room and the boys smile at you. "Well look who it is. <<$pcs_nickname>>, our own personal fuck slut. Isn''t that right slut?"'
+			'You nod your head yes, knowing you have no choice but to obey. "Yes I''m your fuck slut."'
+			'Laughing, they look to each other. "Damn if we don''t have the bitch well trained." Then they look back to you. "So... take off your clothes then and come on over here, like the good little slut we know you are."'
+			'You walk over to them taking off your clothes.'
+			act 'Serve them': gt 'shulga_room', 'gang_sex_room_ev1_2'
+			exit
+		end
+	end
+
+	'There are two sofas next to a <a href="exec: gt ''shulga_room'', ''shultv''">TV</a>, and a <a href="exec: gt ''Komp'',''start''">laptop</a> sitting on a table covered in empty beer bottles.'
+	if hour >= 0 and hour < 7: '<a href="exec: gt ''shulga_room'', ''shulga_bazar_sleep''">Vasily</a> is sleeping on the big couch'
+
+	shulga_room_rnd = rand(0,2)
+	if shulga_room_rnd = 0: $shulga_room_rnd = 'The boys are sitting on the couch talking and drinking beer.'
+	if shulga_room_rnd = 1: $shulga_room_rnd = 'The boys are drinking beer and playing cards.'
+	if shulga_room_rnd = 2: $shulga_room_rnd = 'The boys are drinking beer while watching TV.'
+
+	if week < 5 and hour >= 20: '<<$shulga_room_rnd>> <a href="exec: gt ''shulga_room'', ''shulga_bazar_night''">Vasily</a>, <a href="exec: gt ''shulga_room'', ''den_bazar''">Dan</a> and <a href="exec: gt ''shulga_room'', ''vitek_bazar''">Vitek</a>, invites you to <a href="exec: gt ''shulga_room'', ''shulga_beer''">have a drink with them</a>.'
+	if (week >= 6 and hour >= 10 and hour < 17) or (week = 7 and hour >= 20): 'Sergey''s son <a href="exec: gt ''shulga_room'', ''shulga_bazar_day''">Vasily</a> is sitting on the big sofa.'
+
+	if week < 5 and hour >= 20:
+		act 'Drink beer with the guys': gt 'shulga_room', 'shulga_beer'
+		act 'Play cards': gt 'cardgame_durak', 'start'
+	end
+
+	act 'Sit on the small sofa':
+		*clr & cla
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/sdivan.jpg"></center>'
+		'<center>A small sofa just big enough for you to curl up and take nap on</center>'
+		act 'Look around the room': gt 'shulga_room', 'start'
+
+		act 'Take an hour long nap':
+			cla
+			if pcs_sleep < 90:
+				if pcs_sleep >= 80:
+					pcs_sleep = 100
+				else
+					pcs_sleep += 10
+				end
+				pcs_health += 5
+				minut += 60
+				gs 'stat'
+				'You sleep about an hour.'
+				act 'Get up': gt 'shulga_room', 'start'
+			else
+				minut += 5
+				gs 'stat'
+				'You are not tired enough to sleep, even for a short nap.'
+				act 'Stand up': gt 'shulga_room', 'start'
+			end
+		end
+		act 'Sleep for a few hours':
+			cla
+			if pcs_sleep < 90:
+				if pcs_sleep >= 60:
+					pcs_sleep = 100
+				else
+					pcs_sleep += 40
+				end
+				pcs_health += 5
+				minut += 240
+				gs 'stat'
+				'You sleep about four hours.'
+				act 'Get up': gt 'shulga_room', 'start'
+			else
+				minut += 5
+				gs 'stat'
+				'You are not tired enough to sleep, even for a short nap.'
+				act 'Stand up': gt 'shulga_room', 'start'
+			end
+		end
+	end
+
+	act 'Watch TV': gt 'shulga_room', 'shultv'
+
+	!do homework:
+	if shulga_lern_count > 0 and kanikuli = 0 and SchoolAtestat = 0 and ((week >= 6 and hour >= 10 and hour < 17) or (week = 7 and hour >= 20)):
+		act 'Do homework with Vasily': gt 'shulga_room', 'shulga_lern'
+	end
+
+	!You want sex:
+	if (week >= 6 and hour >= 10 and hour < 17 and npc_rel['A11'] >=70) or (week = 7 and hour >= 20 and npc_rel['A11'] >= 70) or (week < 5 and hour >= 20 and pav_slut >= 75 and alko >= 1):
+		if week < 5 and hour >= 20:
+			gs 'willpower', 'sex', 'self'
+			if will_cost <= pcs_willpwr:
+				act 'Seduce the guys (<<will_cost>> Willpower)': gs 'willpower', 'sex', 'self' & gs 'willpower', 'pay', 'self' & gt 'gopsex', 'gopsex_select'
+			else
+				act 'Seduce the guys (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		elseif (week >= 6 and hour >= 10 and hour < 17) or (week = 7 and hour >= 20):
+			gs 'willpower', 'sex', 'self', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Seduce Vasily (<<will_cost>> Willpower)': gs 'willpower', 'sex', 'self', 'easy' & gs 'willpower', 'pay', 'self' & gt 'gopsex', 'gopsex_select'
+			else
+				act 'Seduce Vasily (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+	end
+
+	!Random room events (pav_slut >= 75), Random 5%
+	!You get fucked for days
+	if $ARGS[1] = 'hall':
+		roomsex_gang = rand(0,100)
+		if kotovLoveQW < 1 and roomsex_gang <= 2 and pav_slut >= 75 and gangsexroom_count > 0 and week < 5 and hour >= 20:
+			gt 'shulga_room', 'gang_sex_room_ev1'
+		end
+
+		!Sonia fuck the boys
+		if roomsex_gang >= 97 and soniaPS >=3 and sexev_sonya_count > 0 and week < 5 and hour >= 20:
+			gt 'shulga_room', 'gang_sex_sonya'
+		end
+
+		!Sonya and Vasily
+		roomsex_sonya = rand(0,100)
+		if roomsex_sonya <= 5 and soniaPS >=1 and sexev_sonya_count > 0 and ((week >= 6 and hour >= 10 and hour < 17) or (week = 7 and hour >= 20)):
+			gt 'shulga_room', 'shulv_sex_sonya'
+		end
+
+		!If you came in dressed as a prostitute
+		if PCloStyle = 4 and sh_hooker_count > 0 and week < 5 and hour >= 20: gt 'shulga_room', 'sh_hooker'
+	end
+end
+
+!clothed as a prostitute: day and night
+if $ARGS[0] = 'sh_hooker':
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/gopsex/body/h'+rand(1,10)+'.jpg"></center>'
+	
+	gs 'willpower', 'misc', 'self', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Leave feigning resentment (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'self' & gt 'shulgahall'
+	else
+		act 'Leave feigning resentment (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	
+	if week < 5 and hour >= 20:
+		'"<<$pcs_nickname>>, why on earth are dressed like a whore? You know damn well we aren''t going to pay you for it", Vasily jokes.'
+		'Dan and Vitek snicker and start throwing catcalls your way.'
+		'"Oh, I came over dressed like this for you boys and this is how you greet me. I guess I''ll just be on my way then", you say as you turn toward the door.'
+		'"Wait <<$pcs_nickname>>, it was just a joke. We didn''t mean to offend you. Why don''t you come over and let us make it up to you", Vasily says with a grin.'
+
+		act 'Sigh dramatically and open your arms':
+			shgopsex_gr_day = daystart
+			shgopsex_gr_count -= 1
+			sh_hooker_day = daystart
+			sh_hooker_count -= 1
+			gs 'gopsex', 'settings'
+			gs 'gopsex', 'shgopsex_group'
+		end
+	elseif (week >= 6 and hour >= 10 and hour < 17) or (week = 7 and hour >= 20):
+		'"Hey <<$pcs_nickname>>, why are you dressed like a whore, did you leave work in such a hurry that you forgot to change your uniform?", Vasily asks you sarcastically.'
+		'"Listen you jerk, I came here dressed like this for you. If you want I can turn around and head right back out that door", you say putting on your best pouty expression.'
+		'"Come on <<$pcs_nickname>>, I''m sorry it was just a bad joke. Let''s just kiss and make up", Vasily smiles as he unzips his pants.'
+
+		act 'Accept his apology':
+			$gopsex_n_npc = 1
+			shgopsex_vasya_day = daystart
+			shgopsex_vasya_count -= 1
+			sh_hooker_day = daystart
+			sh_hooker_count -= 1
+			gs 'boyStat', 'A11'
+			gs 'gopsex', 'settings'
+			gs 'gopsex', 'shgopsex'
+		end
+	end
+end
+
+!------------------!
+! Events with Sonya !
+!==================!
+!Event Vasily and Sonya in the big room
+
+if $ARGS[0] = 'shulv_sexev1_sonya':
+	menu_off = 1
+	sexev_sonya_day = daystart
+	sexev_sonya_count -= 1
+	sh_sonya_sexev +=1
+	gs 'arousal', 'voyeur_sex', 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev1_'+rand(1,3)+'.jpg"></center>'
+	'On the way into the living room you stop dead in your tracks. You stand frozen watching Sonia suck Vasily''s cock.'
+	gs 'gopsex', 'masturb_gg'
+
+	act 'Keep watching':
+		*clr & cla
+		gs 'arousal','voyeur_sex',5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev1_'+rand(3,6)+'.jpg"></center>'
+		'Vasily forces his cock deep down Sonia''s throat. Sonia began to work her head back and forth with her lips wrapped tight around his base. You idly fondle yourself until a loud masculine grunt snaps you out of your trance.'
+		gs 'gopsex', 'masturb_gg'
+		act 'Leave reluctantly': gt'shulgahall'
+	end
+end
+
+if $ARGS[0] = 'shulv_sexev2_sonya':
+	menu_off = 1
+	sexev_sonya_day = daystart
+	sexev_sonya_count -= 1
+	sh_sonya_sexev +=1
+	gs 'arousal', 'voyeur_sex', 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev2_11.jpg"></center>'
+	'You poke your head into the living hoping to catch Vasily with Sonia again. Sure enough, Sonia is on her knees dutifully sucking Vasily''s cock.'
+	gs 'gopsex', 'masturb_gg'
+
+	act 'Watch':
+		*clr & cla
+		gs 'arousal','voyeur_sex',5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev2_2'+rand(1,2)+'.jpg"></center>'
+		'As Vasily gets Sonia down on all fours, she instinctively reaches back and guides him into her pussy.'
+		'Once his cock was halfway in, Sonya begins to work her hips in a circular motion as she slowly slides Vasily''s cock the rest of the way inside her.'
+		'She began to quicken her pace, rocking back and forth with abandon. Every thrust of her pelvis was now accompanied by her loud moans and his harsh grunts.'
+		gs 'gopsex', 'masturb_gg'
+
+		act 'Slide a hand between your legs':
+			*clr & cla
+			gs 'arousal','masturbate',5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev2_3'+rand(1,2)+'.jpg"></center>'
+			'Gradually, Sonia''s moans grow even louder. Her cries reach a fevered pitch as she frantically thrust herself along the length of Vasily''s cock. She lets out one last desperate cry, and her body shakes with ecstasy. The only sounds escaping her lips now were a series of soft whimpers.'
+			gs 'gopsex', 'masturb_gg'
+
+			act 'Grind your crotch against your hand':
+				*clr & cla
+				gs 'arousal','masturbate',5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/ev2_4'+rand(1,2)+'.jpg"></center>'
+				'Vasily pulls himself from the still quivering Sonia, and walks around to face her. Crooking his finger under Sonia''s chin, he raises her chin until she is looking him in the eyes. Bringing his cock up to her cute disheveled face, he lets loose, spraying Sonia with enough cum that drips from her chin in large sticky streams. Sonia''s eyes beam up at him with delight apparently very proud of her work'
+				gs 'gopsex', 'masturb_gg'
+				act 'Get out of here': gt'shulgahall'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'shulv_sex_sonya':
+	menu_off = 1
+	shulv_sexev_sonya = rand(0,100)
+	if shulv_sexev_sonya <= 40:
+		gt 'shulga_room', 'shulv_sexev1_sonya'
+	else
+		gt 'shulga_room', 'shulv_sexev2_sonya'
+	end
+end
+
+!Events with Sonia and the boys
+!Event with Sonia #1
+
+if $ARGS[0] = 'gang_sexev1_sonya':
+	menu_off = 1
+	sexev_sonya_day = daystart
+	sexev_sonya_count -= 1
+	sh_sonya_sexev +=1
+	gs 'arousal','voyeur_sex',5,'group','gangbang'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev1_1.jpg"></center>'
+	'You halt on your way into the living room at the sight of Sonia laid out on the couch. Dan''s dick was buried in her pussy, while Vitek slowly fucked her mouth.'
+	gs 'gopsex', 'masturb_gg'
+
+	act 'Slide a hand inside your panties.':
+		*clr & cla
+		gs 'arousal', 'masturbate', 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev1_2.jpg"></center>'
+		'When Dan was out of breath, Vitek sat down and motions for Sonia to hop onto his lap. Sonia eagerly accepted, guiding him into her dripping snatch she lets out a soft moan and begins to ride him in earnest. Moments later, Vasily walks up, and finally gets some attention from Sonia''s eager mouth.'
+		gs 'gopsex', 'masturb_gg'
+
+		act 'Slip a finger inside yourself':
+			*clr & cla
+			gs 'arousal', 'masturbate', 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev1_3.jpg"></center>'
+			'Vasily and Vitek swap places and continued to fuck Sonia.'
+			'You imagine yourself in her place. You moan softly, as you move your finger faster and faster inside of yourself.'
+			gs 'gopsex', 'masturb_gg'
+
+			act 'Work it':
+				*clr & cla
+				gs 'arousal', 'masturbate', 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev1_4.jpg"></center>'
+				'The guys finish playing with Sonia by covering her face in a hot sticky mess. Vitek gives her a playful smack on the ass sending her toward the door to go get cleaned up.'
+				gs 'gopsex', 'masturb_gg'
+				act 'Leave before Sonia catches you spying': gt'shulgahall'
+			end
+		end
+	end
+end
+
+!Event with Sonia #2
+if $ARGS[0] = 'gang_sexev2_sonya':
+	menu_off = 1
+	sexev_sonya_day = daystart
+	sexev_sonya_count -= 1
+	sh_sonya_sexev +=1
+	gs 'arousal','voyeur_sex',5,'group','gangbang'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev2_'+rand(1,2)+'.jpg"></center>'
+	'On your way into the room you see Sonia on her knees as usual. From the way she is happily sucking away, you think they must taste like candy.'
+	act 'Don''t disturb them': gt'shulgahall'
+end
+
+!Event with Sonia #3
+if $ARGS[0] = 'gang_sexev3_sonya':
+	menu_off = 1
+	sexev_sonya_day = daystart
+	sexev_sonya_count -= 1
+	sh_sonya_sexev +=1
+	gs 'arousal','voyeur_sex',5,'group','gangbang'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/shuglinhome/group/ev3_'+rand(1,2)+'.jpg"></center>'
+	'Sonia is cutting into your time with the guys again. She does look good sucking dick in that collar though. The dicks look pretty good too.'
+	act 'Leave reluctantly': gt'shulgahall'
+end
+
+!the choice of the opening event 3
+if $ARGS[0] = 'gang_sex_sonya':
+	menu_off = 1
+	gang_sexev_sonya = rand(0,100)
+	if rand(0,100) < 40:
+		gt 'shulga_room', 'gang_sexev1_sonya'
+	elseif rand(40,100) < 70:
+		gt 'shulga_room', 'gang_sexev2_sonya'
+	else
+		gt 'shulga_room', 'gang_sexev3_sonya'
+	end
+end
+
+!----------------------------------------------!
+!Drink beer with the guys, opening event, etc..d. c Monday - Thursday 20:00 - 24:00!
+!==============================================!
+!Fucked for days by the boys
+
+if $ARGS[0] = 'gang_sex_room_ev1':
+	menu_off = 0
+	minut += 2
+	gangsexroom_day = daystart
+	gangsexroom_count -= 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_1.jpg"></center>'
+	'Entering the room you are greeted by three drunken boys. Seeing you, they rejoice and begin to pester you.'
+
+	act 'Greet them':
+		*clr & cla
+		gs 'arousal','foreplay',3,'group','gangbang'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_2.jpg"></center>'
+		'The drunken boys begin to fondle your chest making their intentions all too clear.'
+		'With an exaggerated sigh and sly smirk, you lean back and subject yourself to their pawing.'
+
+		act 'Have a drink':
+			*clr & cla
+			gs 'arousal','foreplay',5,'group','gangbang'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_3.jpg"></center>'
+			'The guys offer you a beer. You happily drink as their hands continued to explore your body.'
+			'You squirm and giggle until you notice Dan has started to take off his pants. It wouldn''t be right to keep your boys waiting.'
+			act 'Get naked': gt 'shulga_room', 'gang_sex_room_ev1_1'
+		end
+	end
+end
+
+if $ARGS[0] = 'gang_sex_room_ev1_1':
+	menu_off = 1
+	gs 'arousal','foreplay',5,'group','gangbang'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_4.jpg"></center>'
+	'You playfully tell the boys they might as well all get undressed. You grab hold of Vasily and Vitek and slowly start to stroke them. Dan is the odd man out, but a whisper in your ear is all it takes for you fall to you knees.'
+	act 'Serve them': gt 'shulga_room', 'gang_sex_room_ev1_2'
+end
+
+if $ARGS[0] = 'gang_sex_room_ev1_2':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_5.jpg"></center>'
+	gs 'boyStat', 'A9','3'
+	gs 'boyStat', 'A10','1'
+	gs 'boyStat', 'A11','2'
+	gang += 1
+	npc_sex['A9'] += 1
+	npc_sex['A10'] += 1
+	npc_sex['A11'] += 1
+	gs 'arousal','bj',10,'dick[1]','group','gangbang'
+	gs 'stat'
+	'The boys crowd around you eager to be pleased. As Dan approaches from the front you look up and give him a sultry smile'
+	'Spurred into action, Dan almost knocks you over as jabs his <<dick[1]>>cm <<$dick_girth[1]>> cock in you face. You obediently open your mouth as Dan wraps his hand around the back of your head. He lets out a groan as he slowly begins to fuck your mouth.'
+
+	act 'Keep sucking':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_6.jpg"></center>'
+		'The boys each have a turn with your mouth. They all do their best to give your mouth and throat a thorough workout. When they finally pause to let you catch your breath, you smile up at them with tears in your eyes.'
+		'You''re really starting to love having your mouth used like this. Just the thought of servicing your boys is enough to get your wet, but after all this attention your pussy is positively soaked. The memory of the guys telling you that you were now their personal slut to be used as they saw fit bubbles up in your mind, and a plaintive moan escapes your lips'
+		gs 'arousal','bj',5,'dick[3]','group','gangbang'
+		gs 'arousal','bj',5,'dick[2]','group','gangbang'
+		gs 'stat'
+		'As they lead you over to the sofa, the damp spot you left on floor shows how eager you are for more.'
+
+		act 'Show them how turned on you are':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_7.jpg"></center>'
+			'The boys laid you on the sofa, and you spread your legs wide so they can see that even your thighs are all slippery. They get to work between your legs. All you can do is giggle when Vasily remarks on how wet you are. You squirm wildly, as Vitek slides two fingers inside you, while Vasily plays with your clit.'
+			gs 'arousal','vaginal_finger',10,'group','gangbang','exhibitionism'
+			gs 'stat'
+			if analplugin = 1:
+				'Vitek notices your anal plug and voices his approval.'
+				'Dan says happily: "I''m surprised that you came so well prepared. It''s a good thing too, because we may have plans for that cute little ass of yours."'
+				'"I learned a lesson the hard way that a good girl always come prepared, and It was from someone with a bigger cock than yours anyway", you say as you playfully stick your tongue out at him.'
+				'The boys laugh loudly and continue to explore your body.'
+			end
+			'You can''t take it anymore: "I need someone inside now, so who''s first?"'
+
+			act 'Get fucked':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_8.jpg"></center>'
+				'They put you down on all fours, Dan immediately starts to furiously fucking you from behind with his <<dick[1]>>cm <<$dick_girth[1]>> cock. Every few seconds he gives you a little slap on the ass for encouragement.'
+				'You answer back with muffled moans that can barely escape your mouth, which is stuffed full with Vitek''s <<dick[3]>>cm <<$dick_girth[3]>> cock.'
+				'Vitek grabs the back of your head and forces himself further into your mouth. When he yells, "Suck it bitch, take it all", a wave of pleasure runs though your body, and you redouble your effort.'
+				gs 'arousal','vaginal',10,'dick[1]','group','gangbang'
+				gs 'arousal','bj',-10,'dick[3]','group','gangbang'
+				'You do your best to pay some attention to Vasily too, but it looks like he will just have to wait for his turn.'
+				gs 'stat'
+
+				act 'Get thoroughly fucked':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_9.jpg"></center>'
+					gs 'arousal','vaginal',10,'dick[2]','group','gangbang'
+					gs 'stat'
+					'Vitek and Dan stop spit roasting you as Vasily stay down beside you as he waited for his turn, and now you dutifully show him that he was not forgotten. Short sharp breaths are all that escape you mouth as you lower yourself onto <<dick[2]>>cm <<$dick_girth[2]>> cock and ride him with an urgent need.'
+
+					act 'Take a breather':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_10.jpg"></center>'
+						gs 'arousal','foreplay',10,'group','gangbang','exhibitionism'
+						gs 'stat'
+						'It seems the boys have come up with a plan to fill all your holes.'
+						if analplugin = 1:
+							'You just smile and shake your head, wondering how on earth it took your sweet boys this long to enact their plan.'
+						elseif analplugin = 0:
+							'They make a convincing argument. There are three of them and you do have three holes. The math checks out!'
+						end
+						'You loudly proclaim: "Fetch me another drink boys. Your lady requires more anesthesia." Vasily immediately hops up and heads to the kitchen.'
+						'Vasily soon returns with your drink, and presents it to you with a little flourish.'
+
+						act 'Drink some wine':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_11.jpg"></center>'
+							minut += 10
+							gs 'drugs', 'alcohol', 'wine'
+							gs 'stat'
+							'The boys look on with anticipation, as you drink deeply from the bottle.'
+							'"Come on <<$pcs_nickname>>, we didn''t expect you to sit there and down the entire bottle", Vasily complains.'
+							'You answer him with a loud belch, and continue to drink.'
+
+							act 'Get well and truly fucked':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_12.jpg"></center>'
+								if analplugin = 1:
+									analplugin = 0
+									analplugout = 1
+									'Dan was kind enough to help remove anal plug.'
+								end
+								if lubri > 0: 'Remembering it at the last moment, you asked Vasily to grab the lube from your purse.'
+								gs 'arousal', 'anal_finger', 1,'lube'
+								fat -= 1
+								gs 'arousal','vaginal',10,'dick[3]','group','gangbang'
+								gs 'arousal','anal',-5,'dick[1]','group','gangbang'
+								'You mount Vitek, while he is laying on the sofa. As you slide him into you, he leans up suckles at your nipple. Just as you were start to enjoy this pleasant surprise, Dan abruptly drives his <<dick[1]>>cm <<$dick_girth[1]>> cock inside you ass. You let out a loud grunt, but it''s more from the surprise, than any pain.'
+								'By the time Vasily worked himself close enough to allow you to wrap your lips around his cock then there was only pleasure.'
+								gs 'stat'
+
+								act 'Feel it':
+									*clr & cla
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_13.jpg"></center>'
+									'You revel in the feeling of being used so completely. This night of drunken debauchery somehow makes you feel whole.'
+									gs 'arousal','vaginal',10,'dick[3]','group','gangbang'
+									gs 'arousal','anal',-10,'dick[1]','group','gangbang'
+									gs 'arousal','bj',-10,'dick[2]','group','gangbang'
+									gs 'stat'
+									'You get lost in the rhythm, and only snap back to reality when Vasily tells you it''s time for a change as the boys switch positions.'
+
+									act 'Deeper':
+										*clr & cla
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_14.jpg"></center>'
+										'You moan loudly as Vitek rocks you from behind with his powerful <<dick[3]>>cm <<$dick_girth[3]>> cock thrusting into your ass. With your head upturned it doesn''t take Dan long to silence yous cries, and fill your mouth back up.'
+										'It goes on like this for awhile with no sound other than soft grunts and moans. Your lower half is almost numb with pleasure. Having your holes stretched like this all at once almost feels too good to put into words. The only word you can think of to describe it is: full. You feel so wonderfully full.'
+										gs 'arousal','anal',10,'dick[3]','group','gangbang'
+										gs 'arousal','bj',-10,'dick[1]','group','gangbang'
+										gs 'arousal','vaginal',-10,'dick[2]','group','gangbang'
+										gs 'stat'
+										'Eventually Dan decides to take the initiative, or rather take your head in his hands. He forces his cock into the side of you mouth stretching your mouth to it''s limits. Then he sinks halfway down your throat and slowly pulls back out. He orders you to stick out your tongue and begins to slap his rock hard cock against your face. With a groan of appreciation Dan says: "<<$pcs_nickname>> you have become such a good little cocksucker. It wasn''t so long ago that you couldn''t even give a decent hand-job. I think you might even deserve a reward."'
+										'Before you can respond Dan rewards you by violently shoving his cock down your throat until your <<$lip1>> lips are wrapped around the base.'
+
+										act 'Work it':
+											*clr & cla
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/sex/1_15.jpg"></center>'
+											'Eventually the boys lay you down on the sofa. They stand over you and jerk themselves in earnest toward the finish. You eagerly smile up at them awaiting yet another reward.'
+											'The first to finish is Vitek. He grunts as he blows his load on you, the first of many warm wet splashes against your face and chest. As if on cue, after Vitek finishes Dan and Vasily both begin to cum at the same time. You squirm and giggle with delight as it rains down on you.'
+											pcs_horny += 10
+											minut += 10
+											gs 'cum_call', 'face', $boy[3],1,'','',20
+											gs 'cum_call', 'breasts', $boy[3],1,'','',20
+											gs 'cum_call', 'mouth', $boy[1],1
+											gs 'cum_call', 'stomach', $boy[2],1
+											pcs_energy -= 8
+											if pcs_hydra >= 100:
+												pcs_hydra -= 10
+											else
+												pcs_hydra -= 20
+											end
+											pcs_sleep -= 8
+											gs 'arousal', 'end'
+											gs 'stat'
+											'You must have really gotten the guys worked up even your tummy and tits are all sticky. Idly licking your fingers, you head toward the shower. Your legs are a bit wobbly, but there is still a spring in your step. Still licking your fingers, you pause before stepping into the shower. Thinking that maybe next time you won''t even need a shower. It might be easier to just lap all this cum off your body, instead of just washing it all down the drain.'
+											gs 'dinsex','after_anal','boy',$boydesc[3]
+											act 'Clean yourself up': gt 'shulgabath', 'start'
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+!consent to sex if you get drunk years
+
+if $ARGS[0] = 'drunken_sex_yes':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/yes'+rand(1,6)+'.jpg"></center>'
+	'It''s time to show these boys that you know how to have a good time'
+	'The guys urge you on calling out various lewd suggestions'
+
+	act 'Present your ass for inspection': gt 'shulga_room', 'drunken_body_popa'
+	act 'Show them your pussy': gt 'shulga_room', 'drunken_body_piz'
+	act 'Shake your tits': gt 'shulga_room', 'drunken_body_sisi'
+	act 'Finger yourself': gt 'shulga_room', 'drunken_body_mast'
+end
+
+!Present your ass
+
+if $ARGS[0] = 'drunken_body_popa':
+	menu_off = 1
+	gs 'arousal','flash',5,'group','exhibitionism'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/popa'+rand(1,11)+'.jpg"></center>'
+	'You decide to give the boys a good look at your backside.'
+	'The sight of your bare ass draws some appreciative whistles from the boys.'
+	'Encouraged by the drink and the attention, you even spread your cheeks to give them a good view of your tight little puckered asshole.'
+	'"Come over here Kitten. I have some cream for you", Vitek calls as crooks his finger at you.'
+
+	act 'Crawl to them': gt 'shulga_room', 'drunken_sex'
+end
+
+!Show them your pussy
+
+if $ARGS[0] = 'drunken_body_piz':
+	menu_off = 1
+	gs 'arousal','flash',5,'group','exhibitionism'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/piz'+rand(1,10)+'.jpg"></center>'
+	'You slowly spread your legs for the for the boys'
+
+	act 'Crawl to them': gt 'shulga_room', 'drunken_sex'
+end
+
+!Shake your tits
+
+if $ARGS[0] = 'drunken_body_sisi':
+	menu_off = 1
+	gs 'arousal','flash',5,'group','exhibitionism'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sisi'+rand(1,11)+'.jpg"></center>'
+	'You flash your tits for the boys. With a smile, you give them a little shake for good measure.'
+
+	act 'Crawl to them': gt 'shulga_room', 'drunken_sex'
+end
+
+!Finger yourself
+
+if $ARGS[0] = 'drunken_body_mast':
+	menu_off = 1
+	gs 'arousal','masturbate',5,'group','exhibitionism'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/mast'+rand(1,10)+'.jpg"></center>'
+	'A soft moan escapes your lips, as you work your fingers between your thighs.'
+	'You have the undivided attention of the three teenage boys'
+	gs 'gopsex', 'masturb_gg'
+
+	act 'Crawl to them': gt 'shulga_room', 'drunken_sex'
+end
+
+!drunk sex
+
+if $ARGS[0] = 'drunken_sex':
+	menu_off = 1
+	gang += 1
+	gs 'boyStat', 'A9','3'
+	gs 'boyStat', 'A10','1'
+	gs 'boyStat', 'A11','2'
+
+	gs 'arousal','bj',3,'dick[3]','group','gangbang'
+	gs 'arousal','bj',3,'dick[1]','group','gangbang'
+	gs 'arousal','bj',3,'dick[2]','group','gangbang','sub'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sex/bj'+rand(1,13)+'.jpg"></center>'
+	'As you near them, the boys gather around presenting themselves to you for satisfaction. In a haze, you take the nearest cock into your mouth and begin to suck. Your hands instinctively find the shafts of the other boys, and you begin to stroke.'
+	'The next few minutes become a blur of sucking and stroking. Each boy has turn at your mouth, and they all seem determined to test just how good of a cock sucker you are. When you finally take a moment to catch your breath, your throat hurts and your eyes are watering, but you get a sense of pride from all the groans of pleasure you elicited from the guys..'
+
+	act 'Stand up':
+		*clr & cla
+		gs 'arousal','bj',3,'dick[2]','group','gangbang'
+		gs 'arousal','vaginal',7,'dick[2]','group','gangbang'
+		gs 'arousal','bj',-3,'dick[1]','group','gangbang'
+		gs 'arousal','vaginal',-7,'dick[1]','group','gangbang'
+		gs 'arousal','bj',-3,'dick[3]','group','gangbang','sub'
+		gs 'arousal','vaginal',-7,'dick[3]','group','gangbang','sub'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sex/sex'+rand(1,22)+'.jpg"></center>'
+		gs 'gopsex', 'gg_devst_deflor'
+		'You get halfway to your feet, before you stumble back to the floor. Unannounced one of the boys slides his cock into you from behind. Your gasp is cut short when someone else''s cock rudely fills you mouth, and hits the back of your throat. As you gag and gasp for air, it all becomes a blur. The boys take turns using your young body from end-to-end.'
+		'As time passes, their rough treatment stops hurting and even starts to feel pretty good. You encourage whoever it is behind to keep it up by grinding back into his pelvis.'
+		gs 'gopsex', 'gg_sex_orgasm'
+
+		act 'Feel it':
+			*clr & cla
+			minut += 5
+			pcs_horny += 5
+			temp = rand(0,2)
+			if temp = 0: gs 'cum_call', 'stomach', $boy[2],1
+			if temp = 1: gs 'cum_call', 'face', $boy[2],1
+			if temp = 2: gs 'cum_call', 'mouth', $boy[2],1
+			temp = rand(0,2)
+			if temp = 0: gs 'cum_call', 'face', $boy[1],1
+			if temp = 1: gs 'cum_call', 'mouth', $boy[1],1
+			if temp = 2: gs 'cum_call', 'stomach', $boy[1],1
+			temp = rand(0,2)
+			if temp = 0: gs 'cum_call', 'mouth', $boy[3],1
+			if temp = 1: gs 'cum_call', 'stomach', $boy[3],1
+			if temp = 2: gs 'cum_call', 'face', $boy[3],1
+			pcs_sleep -= 5
+			npc_sex['A9'] += 1
+			npc_sex['A10'] += 1
+			npc_sex['A11'] += 1
+			gs 'arousal', 'end'
+			gs 'stat'
+			killvar 'temp'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sex/cum'+rand(1,9)+'.jpg"></center>'
+			shulga_whore = daystart + 7
+			'It feels so intense!'
+			'Head spinning, you find yourself back on your knees, and quickly realize the boys weren''t finished. Hot cum and laughter rains down on you. You make a final effort to finish what you started. You open wide for your boys and smile up at them seeking approval. After you have milked the last drop from each of them. Dan pats you on the head and says: "What a good little slut you are <<$pcs_nickname>>. From now on you get to be our personal whore. You are going to have so much fun with us. Now, what do you say? Or we will tell the whole school what a whore you are."'
+			'You gaze up at him, with your <<$pcs_eyecol>> eyes open wide as saucers and whisper, "Thank you."'
+			'Dan continues: "For your first official duty you will lick me clean"'
+			'With some hesitation and maybe a little excitement you bend down and lick Dan''s cock clean, occasionally moving to gently suckle on the tip'
+
+			act 'The room starts spinning': gt 'shulga_room', 'drunken_sleep'
+		end
+	end
+end
+
+!abstaining from sex if you get drunk turnip years: pav_slut < 75 (If turnips >= 3, the failure will not be accessible)
+
+if $ARGS[0] = 'drunken_sex_no':
+	menu_off = 1
+	minut += 5
+	pcs_health -= healthmax/10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sleep'+rand(1,17)+'.jpg"></center>'
+	'"You are all fixing to get a swift kick in the balls if you guys don''t cut it out, or I can wake this whole building up with a scream", you drunkenly slur.'
+	'Dan sneers at you: "Settle down bitch, nobody is going to hurt you. Why don''t you go lie down on the couch and sleep it off."'
+	'The guys lose interest in you and go back to pounding beers. You crawl away in the direction of the sofa.'
+
+	act 'Pass out': gt 'shulga_room', 'drunken_sleep'
+end
+
+if $ARGS[0] = 'drunken_sleep':
+	menu_off = 1
+	minut += 180
+	if pcs_sleep < 75:
+		pcs_sleep += 25
+	else
+		pcs_sleep = 100
+	end
+	pcs_health -= healthmax/10
+	pcs_mood -= 25
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/pohmel'+rand(1,4)+'.jpg"></center>'
+	'You passed out for about three hours.'
+	'You wake up with a splitting headache and only vague memories of your night with the guys. Remembering that somebody deserved a kick in the balls you look around the room. Vasily is the only one left, and he is passed out in a heap on the sofa. "It was probably Dan that deserved a kick", you mutter to yourself as you try to get your bearings.'
+
+	act 'Clear your head': gt 'shulga_room', 'start'
+end
+
+if $ARGS[0] = 'shulga_beer':
+	menu_off = 1
+	if alko < 6:
+		minut += 5
+		*clr & cla
+		gs 'drugs', 'alcohol', 'beer'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/beer'+rand(1,8)+'.jpg"></center>'
+		func('gopsex','hide','gop_text_beer2')
+
+		gs 'willpower', 'drink', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'You''ve had enough (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'self' & gt 'shulga_room', 'start'
+		else
+			act 'You''ve had enough (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Have another drink': gt 'shulga_room', 'shulga_beer'
+	else
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/pjanaja'+rand(1,8)+'.jpg"></center>'
+		'You are almost too drunk to stand'
+		'The boys notice and start to harass you'
+		'"We let you drink for free all night <<$pcs_nickname>>. Show us a little skin as a thank you", says Vasily'
+		
+		if pav_slut < 75 or kotovLoveQW > 0:
+			if kotovLoveQW <= 0: gs 'willpower', 'sex', 'resist'
+			if will_cost <= pcs_willpwr and kotovLoveQW <= 0:
+				act 'Tell them to knock it off (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'shulga_room', 'drunken_sex_no'
+			elseif kotovLoveQW > 0:
+				act 'Tell them to knock it off': gt 'shulga_room', 'drunken_sex_no'
+			else
+				act 'Tell them to knock it off (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			if kotovLoveQW <= 0: act 'Get this party started': gt 'shulga_room', 'drunken_sex_yes'
+		else
+			act 'Get this party started': gt 'shulga_room', 'drunken_sex_yes'
+		end
+	end
+end
+!------------------------------------!
+!TV porn channel, opening event, etc..d.!
+!====================================!
+!watch porn TV
+if $ARGS[0] = 'view_pornotv':
+	menu_off = 1
+	act 'Flip to the porn channel':
+		*clr & cla
+		gs 'arousal','porn',20
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvporn'+rand(1,5)+'.mp4" width="748" height="540"></video></center> You switched to the porn channel.'
+		'You watch porn for about 20 minutes.'
+		'It''s very exciting'
+		act 'Flip': gt 'shulga_room', 'start'
+	end
+end
+!Group Event with porn hours 0 to 2 weekdays, when gopota hang out...
+if $ARGS[0] = 'view_pornotv_evgr':
+	menu_off = 1
+	act 'Watch some porn':
+		*clr & cla
+		gs 'arousal','porn',10
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvporn'+rand(1,5)+'.mp4" width="748" height="540"></video></center> You switched to porn channel.'
+		'The guys getting excited watching porn with you.'
+		'Vasily asks if you would like to help them get some relief.'
+		'Everyone''s eyes are fixed on you, as they await your answer.'
+
+		if pav_slut < 75 or kotovLoveQW > 0:
+			act 'Flee the scene': gt 'shulga_room', 'start'
+		else
+			gs 'willpower', 'bj', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Flee the scene (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'shulga_room', 'start'
+			else
+				act 'Flee the scene (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Suck a cock or three':
+				*clr & cla
+				O = func('gopsex','hide','rndorder3')
+				gs 'boyStat', 'A<<O mod 12>>','3'
+				gs 'boyStat', 'A<<(O/12) mod 12>>','1'
+				gs 'boyStat', 'A<<O/144>>','2'
+				killvar 'O'
+				gs 'arousal','bj',5,'dick[3]','group','sub'
+				gs 'arousal','bj',2,'dick[2]','group'
+				gs 'arousal','bj',3,'dick[1]','group'
+				npc_sex['A9'] += 1
+				npc_sex['A10'] += 1
+				npc_sex['A11'] += 1
+				gang += 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/tv_ev/sex_group/bj'+rand(1,13)+'.jpg"></center>'
+				'When you nod yes, the boys start laughing and get their dicks out and form a pinwheel of flesh around your mouth. You roll your eyes and smile saying: "One at a time at boys. I would tell you to settle down, but I think we''re well past that."'
+				'You decide to reward Vitek for his patience by slowly licking him from base to tip, before wrapping your <<$liptalk3>> lips around him. For a good five minutes you slowly suck, savoring the taste his hard cock.'
+				'Eventually Dan and Vasily get their turns too. While dutifully sucking away at one boy, you worked your hands on whoever was waiting, doing your best to make sure nobody felt left out.'
+				'The guys start talking to each other about who gets to fuck you first.'
+				gs 'willpower', 'sex', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'Tempt them to blow their loads on your face instead (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'resist'
+						minut += 5
+						pcs_horny += 10
+						gs 'cum_call','face', $boy[3],1
+						gs 'cum_call','hair', $boy[1],1
+						gs 'cum_call','mouth', $boy[2],1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/tv_ev/sex_group/cum'+rand(1,7)+'.jpg"></center>'
+						'You''d rather get showered in cum than fucked, so you open your mouth wide and stick out your tongue, looking up at them expectantly. The talk of fucking you dies down pretty quickly as your display successfully captivates the boys and moments later they shoot their loads all over you.'
+						act 'Yummy': gt 'shulga_room','start'
+					end
+				else
+					act 'Tempt them to blow their loads on your face instead (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+				act 'Get fucked':
+					*clr & cla
+					shulga_orgasm_temp = orgasm
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/tv_ev/sex_group/sex'+rand(1,23)+'.jpg"></center>'
+					'The guys unceremoniously take turns pounding your pussy, while keeping your hands and mouth busy too. They continue casually using you for a good 20 minutes. No one even speaks, the only sounds are of flesh slapping, wet slurping, and the occasionally muffled grunt. The thought of what these strong young men are doing to your young body is driving you wild with need.'
+					$orgasm_txt = 'With these strange thoughts swirling in your head, you break the silence, with a loud cry. The orgasm wracks your entire body, and leaves you panting in a heap.<br>When you finally regain your senses, the boys snickering at each other. Dan says: "I told you guys, our slutty <<$pcs_nickname>> can''t get enough of it. She''s still shaking like a leaf from being used like a piece of meat."'
+					gs 'arousal','vaginal',7,'dick[3]','group'
+					gs 'arousal','vaginal',7,'dick[1]','group'
+					gs 'arousal','vaginal',6,'dick[2]','group'
+					gs 'stat'
+					if shulga_orgasm_temp ! orgasm:
+						act 'Recover':
+							*clr & cla
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/drunk_ev/sex/kaif'+rand(1,7)+'.jpg"></center>'
+							'The boys gather around to praise you for being such a dutiful little whore. Vasily says: "<<$pcs_nickname>> I swear your pussy is like a fucking drug. I just can''t get enough of it."'
+							'Dan chimes with: "Girl, those <<$lip1>> lips of yours are the best thing I''ve ever had wrapped around my dick"'
+							'Vitek comes over and sweetly kisses you on the forehead saying: "You''re something special Kitten, <<$titsize>> breasts and <<$pcs_haircol>> hair have always been my thing. Those combined with the rest of your charms, and well, you are the total package, Kitten"'
+							'While receiving all this unexpected praise, you play with your still quivering pussy. The thought of your sweet boys taking time just to tell you what a good girl you are is so hot.'
+							'You finally speak up and sheepishly say: "Guys can we, I mean, can you please finish?"'
+							act 'Taste it':
+								*clr & cla
+								minut += 10
+								pcs_horny += 5
+								gs 'cum_call', 'face', $boy[3],1
+								gs 'cum_call', 'face', $boy[1],1
+								gs 'cum_call', 'face', $boy[2],1
+								gs 'arousal', 'end'
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/tv_ev/sex_group/cum'+rand(1,7)+'.jpg"></center>'
+								'The guys splatter your face with heaps of their cum. It feels great.'
+
+								act 'Finish': gt 'shulga_room', 'start'
+							end
+						end
+					else
+						act 'Further':
+							*clr & cla
+							minut += 10
+							pcs_horny += 5
+							gs 'cum_call', 'face', $boy[3],1
+							gs 'cum_call', 'face', $boy[1],1
+							gs 'cum_call', 'face', $boy[2],1
+							gs 'arousal', 'end'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/tv_ev/sex_group/cum'+rand(1,7)+'.jpg"></center>'
+							'The guys splatter your face with heaps of their cum.'
+
+							act 'Finish': gt 'shulga_room', 'start'
+						end
+					end
+					killvar 'shulga_orgasm_temp'
+				end
+			end
+		end
+	end
+end
+
+!Event viewing porn channel with Vasily
+if $ARGS[0] = 'view_pornotv_vasya':
+	menu_off = 1
+	act 'Watch porn channel':
+		*clr & cla
+		pcs_mood += 4
+		gs 'boyStat', 'A11'
+		gs 'arousal','porn',10
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvporn'+rand(1,5)+'.mp4" width="748" height="540"></video></center> You switched to porn channel.'
+		if npc_rel['A11'] < 20:
+			'Vasily stirs in his seat. You look over and notice a bulge in his crotch.'
+		elseif npc_rel['A11'] < 50:
+			'Vasily opens his pants and starts stroking his cock right in front of you. "<<$pcs_nickname>> would you please lend me a hand?", he asks.'
+			gs 'willpower', 'hj', 'resist', 'easy'
+		elseif npc_rel['A11'] < 70:
+			'Vasily is very excited. He opens his pants and starts jerking off almost as soon as he sits down. He looks you in the eye and silently waits'
+			gs 'willpower', 'bj', 'resist', 'easy'
+		else
+			'Vasily unceremoniously walks up to you and slaps his cock against the side of your face. You don''t even have time to understand whats going before he has you off the couch and down on your knees.'
+			gs 'willpower', 'sex', 'resist', 'easy'
+		end
+
+		if will_cost <= pcs_willpwr and npc_rel['A11'] => 20:
+			act 'Chicken out (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'shulga_room', 'start'
+		elseif npc_rel['A11'] < 20:
+			act 'Chicken out': gt 'shulga_room', 'start'
+		else
+			act 'Chicken out (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		if npc_rel['A11'] >= 50 and pav_slut < 75:
+			act 'Suck it':
+				*clr & cla
+				npc_sex['A11'] += 1
+				gs 'arousal','bj',10,'sub'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/bj'+rand(1,11)+'.jpg"></center>'
+				'Vasily smiles down at you, as you tentatively part your <<$liptalk3>> lips, and gently suckle on the head of his <<dick>>cm <<$dick_girth>> cock. The salty taste of his pre-cum sends a little chill through your body. Remembering how the girls on the porn channel do it, you take as much of him in your mouth as you can, while still trying to keep a good pace. You must have done a good job, because it isn''t long before Vasily stops you. He grabs hold of his cock and jerks it furiously. It''s pointed right at your face.'
+
+				act 'Open your mouth':
+					*clr & cla
+					minut += 10
+					gs 'cum_call', 'face', $boy,1
+					gs 'cum_call', 'mouth', $boy,1
+					gs 'arousal', 'end'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/cum'+rand(1,10)+'.jpg"></center>'
+					'Wow, he got a bunch of it in your mouth, but your face and lips are all sticky too. He made such mess, but that''s why you find it so exciting. You gather a little cum off your chin with your finger, and lick it clean. It''s still warm!'
+					'As usual Vasily has gone back to watching TV, and pays no attention to you sitting on the floor, playing with his cum.'
+					act 'Finish':gt 'shulga_room', 'start'
+				end
+			end
+		end
+		if npc_rel['A11'] >= 20 and npc_rel['A11'] < 50:
+			act 'Handjob':
+				*clr & cla
+				gs 'arousal','hj',20,'sub'
+				gs 'cum_call', 'hands', $boy,1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/hj'+rand(1,7)+'.jpg"></center>'
+				'Vasily guides your hand around the shaft of his <<dick>>cm <<$dick_girth>> penis, and slowly starts moving your hand up and down his length. When he removes his hand, your hand continues to tentatively pump. Vasily voices a small grunt of encouragement, and you pick up the pace. He relaxes, as you build a steady rhythm.'
+				'He let''s out a sharp grunt, and your hand is covered in sticky warmth. Without a word, he quickly tucks himself back in his pants, and goes back to watching TV. Before looking for a tissue, you examine the white mess on your hand. Curious, you give it a little lick with the tip of your tongue.'
+				act 'Stand': gt 'shulga_room', 'start'
+			end
+		end
+		if pav_slut >= 75 and npc_rel['A11'] >= 70:
+			act 'Get it wet':
+				*clr & cla
+				npc_sex['A11'] += 1
+				gs 'arousal','bj',5,'sub'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/bj'+rand(1,11)+'.jpg"></center>'
+				'Vasily imperiously looks down, as you work your tongue and <<$lip1>> lips around his shaft and head. When he is rock hard you swallow him fully, and actively begin to suck. You work a hand inside your panties, and manage to stroke your little pussy, while never breaking the rhythm of your head bobbing on his <<dick>>cm <<$dick_girth>> cock.'
+
+				act 'Doggystyle':
+					*clr & cla
+					gs 'gopsex', 'gg_devst_deflor'
+					gs 'arousal','vaginal',10,'sub'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/sex'+rand(1,10)+'.jpg"></center>'
+					'Laughing you raise your backside, and wiggle it with anticipation.'
+					'"Doggystyle suits you <<$pcs_nickname>> you are already begging for it", Vasily chuckles.'
+					'You give him a moan of affirmation, as he easily sinks his <<dick>>cm <<$dick_girth>> cock into your wet pussy. Roughly thrusting into you from behind, Vasily leans forward and grabs a hand full of <<$pcs_haircol>> hair. He forces your head back with a light, but insistent pull. Vasily leans in close to your ear and whispers, "Giddy-up". He yanks your hair hard enough to hurt, but it hurts so good.'
+					gs 'gopsex', 'gg_sex_orgasm'
+
+					act 'Whimper':
+						*clr & cla
+						minut += 5
+						gs 'cum_call','face',$boy,1
+						gs 'arousal', 'end'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/tv/cum'+rand(1,10)+'.jpg"></center>'
+						'Vasily gasps loudly, and thick streams of semen begin to slap against your face'
+						'He finishes with one last loud groan, and gives you a little pat on the head.'
+						'He immediately starts getting dressed while flipping though TV channels, leaving you on the floor feeling like a hot sticky mess.'
+						'You idly clean some of his mess off your face, and lick your fingers, while trying to decide what to do next'
+						act 'Stand up':gt 'shulga_room', 'start'
+					end
+				end
+			end
+		end
+	end
+end
+!----------------------------------!
+!TV in the living room with Vasily!
+!==================================!
+if $ARGS[0] = 'shultv':
+	menu_off = 1
+	rndtvs = rand(1,100)
+	*clr & cla
+	if rndtvs > 10: minut += 30
+	if rndtvs > 10: pcs_mood += 10
+	if rndtvs <= 10: minut += 5
+	gs 'stat'
+
+	shulga_tv_rnd = rand(0,3)
+	if shulga_tv_rnd = 0: $shulga_tv_rnd = 'You watch'
+	if shulga_tv_rnd = 1: $shulga_tv_rnd = 'You watch'
+	if shulga_tv_rnd = 2: $shulga_tv_rnd = 'You find'
+	if shulga_tv_rnd = 3: $shulga_tv_rnd = 'It''s'
+
+	shulga_tv_rand = rand(0,11)
+	if shulga_tv_rand = 0: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvdance.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a teenage music video, with a half-naked girl shaking her charms.'
+	if shulga_tv_rand = 1: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo1.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a David Attenborough documentary about animals.'
+	if shulga_tv_rand = 2: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo2.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a documentary about the world, with Morgan Freeman narrating.'
+	if shulga_tv_rand = 3: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo3.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a David Attenborough documentary about nature.'
+	if shulga_tv_rand = 4: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvgeo4.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a documentary film about the ocean called Blue Planet.'
+	if shulga_tv_rand = 5: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino1.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> that much-loved Soviet comedy.'
+	if shulga_tv_rand = 6: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino2.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> Import blockbuster.'
+	if shulga_tv_rand = 7: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvkino3.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> an old Western. You hope Clint Eastwood shows up, and shoots someone'
+	if shulga_tv_rand = 8: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvmult1.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> some cartoons It looks like a cheap imitation of Pixar.'
+	if shulga_tv_rand = 9: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvmult2.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a classic Disney cartoon.'
+	if shulga_tv_rand = 10: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvsport1.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> an MMA fight. You wonder if Vitek is as good as these guys.'
+	if shulga_tv_rand = 11: $shulga_tv_rand = '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvsport2.mp4" width="748" height="540"></video></center><<$shulga_tv_rnd>> a football match.'
+
+	if rndtvs > 10: '<<$shulga_tv_rand>> <br> You veg out in front of the TV for 30 minutes.'
+	if rndtvs <= 10: '<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/tv/tvrekl'+rand(1,4)+'.mp4" width="748" height="540"></video></center> You find some advertising.'
+
+	act 'Look around the room': gt 'shulga_room', 'start'
+	act 'Change the channel': gt 'shulga_room', 'shultv'
+
+	porno_tv_rand = rand(0,100)
+	if porno_tv_rand < 50 or porno_tv_rand >= 50 and week < 6 and hour >= 3 and hour <= 23 or porno_tv_rand >= 50 and week >= 6 and hour > 2 and hour < 10 or porno_tv_rand >= 50 and week >= 6 and hour > 16 and hour <= 23: gt 'shulga_room', 'view_pornotv'
+	if porno_tv_rand >= 50:
+		if week >= 6 and hour >= 10 and hour <= 16: gt 'shulga_room', 'view_pornotv_vasya'
+		if week >= 6 and hour >= 0 and hour <= 2: gt 'shulga_room', 'view_pornotv_vasya'
+		if week < 6 and hour >= 0 and hour <= 2: gt 'shulga_room', 'view_pornotv_evgr'
+	end
+end
+
+!--------------------------------------!
+!Bazaar night with Vasily, Vitek, and Dan. On Weekdays hours: 0 to 2!
+!======================================!
+if $ARGS[0] = 'shulga_bazar_night':
+	menu_off = 1
+	rnd_rebyata = rand(0,1)
+	if rnd_rebyata = 0: $rnd_rebyata = 'Dan'
+	if rnd_rebyata = 1: $rnd_rebyata = 'Vitek'
+
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+	'Vasily is always with Dan and Vitek, who are his best friends. His nickname is Shulga. He''s physically the weakest one of the three, but is a bit of a prankster and always makes the others laugh. He was raised by just his father, after his mother left when he was still an infant.'
+
+	gs 'shulga_room', 'vasya_shulgin_rep'
+
+	act 'Move away': gt 'shulga_room'
+	act 'Talk':
+		*clr & cla
+		minut += 10
+		bazar_day = daystart
+		bazar_count -= 1
+		if bazar_count > 0: npc_rel['A11'] +=1
+		gs 'stat'
+!Bazaar night conversations with Vasily pav_slut < 75:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/talk/talk'+rand(1,5)+'.jpg"></center>'
+		vasyan_textb = rand(0,8)
+		if vasyan_textb = 0: $vasyan_textb = '  "Life is like a Matryoshka doll", Vasily says mysteriously.<br>  "What the hell is that supposed to mean?", you ask.<br>  "Think about it", is all he says.<br>  You roll you eyes and give him a sarcastic: "Oh I will."'
+		if vasyan_textb = 1: $vasyan_textb = '  "I love <<$pcs_haircol>> hair, and it looks so good on you <<$pcs_nickname>>."<br>  "Thanks Vasily, that''s very sweet", you say blushing.<br>  "Does the carpet match the drapes?", he asks with a smirk.<br>  "Typical", is all you answer with an exasperated sigh.'
+		if vasyan_textb = 2 and SchoolAtestat = 0: $vasyan_textb = '  He gives you some advice: "If you have a phone it will make school go by much faster, just be careful not to let the teacher catch you playing with it."<br>  "Nobody is getting my phone without a fight", you declare with a smile.'
+		if vasyan_textb = 2 and SchoolAtestat = 1: $vasyan_textb = '  You tell Vasily a story from gym class: "This one time after gym class I was all sweaty and Katja tried to drag me into the shower. It was really weird."<br>  Vasily adds: "She told me to take a shower a few weeks ago too."<br>  "Well, that''s just cause you stink", you say sticking you tongue out at him.'
+		if vasyan_textb = 3: $vasyan_textb = '  He tells you a story about a fight: "I got into a scrap with Dimka behind the community center once. I totally whipped his ass, but be careful around him he''s a nasty piece of work."'
+		if vasyan_textb = 4: $vasyan_textb = '  He tells you a story about his trip to the city: "I lost my wallet in the city and had no way to get home. The only way I could earn money for the train was by washing dishes at the barbecue. It turned out great though. The cute barmaid was flirting with me all night, and I even got to make out with her before I left. The next time I make it up there I''m going to rock her world."<br>  "You go get her tiger", you encourage him.'
+		if vasyan_textb = 5: $vasyan_textb = '  Vasily complains: "The economy is broken, and none of these idiots is doing anything about it."<br>  "What should be done to fix it", you ask curiously.<br>  "Oh, I don''t care. I can use my laptop to hack the banks, and get money whenever I need it", he says.<br> "Then why the hell are you complaining", you say frustrated'
+		if vasyan_textb = 6: $vasyan_textb = '  He talks about his trip to the city: "I got lost in the old section of the city. I nearly starved to death, before I found my way out. If you ever end up there be careful. That place is like a Byzantine labyrinth."<br>  "Did you find anything interesting?", you ask.<br>  Not really, there was lot''s of grass and abandoned buildings. I did see a leather clad woman get out of a cab, but she disappeared like a puff of smoke.'
+		if vasyan_textb = 7: $vasyan_textb = '  "Hey <<$pcs_nickname>>, the guys and I were trying to figure something out. How big are your tits? I said they look like <<$titsize>>s, but I figured I''d ask you to be sure."<br>  You cross your arms over your chest, and glare at him in response.<br>  "So,bigger then?", he quirks an eyebrow.<br>  You give him a little slug in the arm for an answer.'
+		if vasyan_textb = 8 and npc_rel['A11'] < 30: $vasyan_textb = '  He tells you a story about magic fairies, who live in the countryside. He swears it''s true, but you just roll you eyes.'
+		if vasyan_textb = 8 and npc_rel['A11'] >= 30 and webcamera = 1: $vasyan_textb = '  Don''t you sometimes do homework at Julia Milova''s place after school?, he asks.<br>  "Maybe", you say suspiciously.<br>  "Well, if you ever do please put in a good word for me. I think she''s cute", he finishes.'
+		if vasyan_textb = 8 and npc_rel['A11'] >= 30 and npc_rel['A11'] < 50 and webcamera = 0: $vasyan_textb = '  Vasily says: "Have you heard about all the webcam sites that are popping up? Apparently girls can make a lot of money on them. If you have a computer, webcam, and are willing to show a little skin I bet you could do very well <<$pcs_nickname>>."<br>  "I''m not sure I would be comfortable doing something like that", you say.<br>  "You should think about it. It''s not like you would be selling it on the street. All you have to do is lie around on a bed and talk to a bunch of lonely guys. Then you show them a little skin and the money starts rolling in. It would be so easy", he finishes.'
+		if vasyan_textb = 8 and npc_rel['A11'] >= 50 and npc_rel['A11'] < 70: $vasyan_textb = '  Vasily asks: "Do you remember when I told you about the webcam sites, where you can earn big money for showing some skin?"<br>  "Yea, I remember", you answer.<br>  "Well, not to long ago I bought a webcam, so that I could video chat on Skype. If you want to use it I wouldn''t mind."<br>  "Umm thanks, I will think about it", you say.'
+		if vasyan_textb = 8 and npc_rel['A11'] >= 100: $vasyan_textb = '  "Hey <<$pcs_nickname>>, have you checked out the webcam I bought?", Vasily asks.<br>  "Yea, I may have checked it out a little", you say.<br>  "Well, if you ever want to get on there during the weekend let me know. We could do a show together, and rake in some big bucks", he says with a wink and a smile.<br>  "That''s not a bad idea. I''ll have to think about it", you blush.'
+
+!Bazaar night conversations with Vasily pav_slut >= 75:
+		vasyan_textb_gorslut = rand(0,12)
+		if vasyan_textb_gorslut = 0 and soniaPS = 1: $vasyan_textb_gorslut = '  He tells you about fucking Sonia: "The boys and I were all taking turns with that slut, until she couldn''t even stand. She eventually just collapsed in a heap. Then the fist thing she did when she got up was try to get my cock in her mouth. It''s crazy, that girl is fucking addicted to cock."'
+		if vasyan_textb_gorslut = 0 and soniaPS <= 0: $vasyan_textb_gorslut = '  Vasily tells you: "I saw you poke your head in the door the other day when we were screwing Sonia. You seemed to enjoy it, because you watched for a long time. Were you trying to learn something, or just wishing it was you getting fucked by us"'
+		if vasyan_textb_gorslut = 1: $vasyan_textb_gorslut = '  You really seemed to enjoy getting fucked like a drunken slut the other day <<$pcs_nickname>>", Vasily snickers<br>  "Well I...Yea, I kind of got into it", you stammer meekly.<br>  "Then you should come drinking with us in the park more often. We will gladly fuck you six ways to Sunday if you show up there", Vasily say with a sly grin.<br>  Don''t be surprised if I take you up on that offer", you say with a wink and a blush.'
+		if vasyan_textb_gorslut = 2 and soniaPS = 1: $vasyan_textb_gorslut = '  "We have to figure out how to get you and Sonia in the same room", Vasily says hungrily.<br>  "I certainly wouldn''t kick her out of bed", you say giving him a wink.<br>  "Just thinking about it is getting me going. Actually seeing you two together would be hot enough to start a fire."<br>  You rest your hand on his groin, and give it a squeeze. "Oh, I can tell", you whisper seductively.'
+		if vasyan_textb_gorslut = 2 and soniaPS <= 0: $vasyan_textb_gorslut = '  Vasily says: "Sonia was talking about you the other day."<br>  "Oh really, what did she say?", you ask.<br>  "She said and I quote: That <<$pcs_nickname>> is crazy hot. Every time I see her I just want to eat her like a bowl of ice cream.", he says laughing.<br>  "Well next time you see her tell her it tastes like cherry", you tell him laughing.'
+		if vasyan_textb_gorslut = 3 and SchoolAtestat = 0: $vasyan_textb_gorslut = '  Vasily says dreamily: "Oh, what I would give to see under that little skirt our English teacher wears. Her ass just looks unbelievable in that thing. I swear she must wear it just to drive the kids crazy."<br>  "I totally agree, knows whats she is doing. If she keeps it up I might get under that skirt myself. If I ever do manage to get in there I''ll report back to you with the details commander", you say giving him a mock salute.'
+		if vasyan_textb_gorslut = 3 and SchoolAtestat = 1: $vasyan_textb_gorslut = '  He says dreamily: "God, I would love to get in Julia''s pants. The quiet ones like her always turn into freaks in the bedroom."<br>  "I think she has a crush on me. Maybe I''ll get her drunk, and find out for myself. I could have that little wallflower licking between my legs in no time. Should we make a bet?", you ask with a wink.<br>  "No, but just the thought of it is getting a rise out of me. Luckily I already have a little freak in the bedroom handy",he says looking at you with lust.'
+		if vasyan_textb_gorslut = 4: $vasyan_textb_gorslut = '  Vasily says: "Hey <<$pcs_nickname>>, did you know that your <<$npc_nickname[''A29'']>> is still a slut. We saw her in the cafe after closing with her boss. She was sucking his dick like it was the fountain of youth. I see where you got your skills, she must have been a really good teacher."<br>  "Ha, dream on asshole", you tell with a laugh.'
+		if vasyan_textb_gorslut = 5 and SchoolAtestat = 0 and soniaPS = 1: $vasyan_textb_gorslut = '  Vasily tells you: "Sonia spends almost the whole day in the boys bathroom at school now. That girl sucks and fucks like quantity is the only things that matters."<br>  "I think most of her diet is cum these days", you say.<br>  "Yea, I do my part to feed her almost every day", he says laughing.'
+		if vasyan_textb_gorslut = 5 and SchoolAtestat = 1 and soniaPS = 1: $vasyan_textb_gorslut = '  He says: "Sonia was fucking one of the teachers the other day. It was so damn loud I bet half the school heard it."<br>  "Oh, who was she fucking?", you ask with interest.<br>  " I couldn''t tell, but that''s not the point. That slut is completely out of control. I almost feel bad for her. There is no way this will end well", he laments.'
+		if vasyan_textb_gorslut = 5 and soniaPS <= 0: $vasyan_textb_gorslut = '"Come over here babe. Idle hands are the devil''s plaything", Vasily says motioning you to sit.<br>  He put an arm around, and fondles your breast. You giggle and give him a peck on the cheek.'
+		if vasyan_textb_gorslut = 6: $vasyan_textb_gorslut = 'The guys have all gathered around you. Vasily says, "How about we get this party started?" All the boys are looking on with anticipation.<br>  "Well one of you guys is going to have to get me a drink first" you smile.<br>  "Why do you always need a drink? Let''s just get to it.<br>  It''s the only way I can make you guys look good enough to fuck", you say laughing. "Now fetch me a drink."'
+		if vasyan_textb_gorslut = 7: $vasyan_textb_gorslut = '  "Do you like anal now <<$pcs_nickname>>? Does it hurt, or does it give you pleasure?", Vasily asks.<br>  "My <<$npc_nickname[''A29'']>> has a dildo in here closet. I could get it if you want to find out for yourself", you say laughing.<br>  "Yeah, I''ll pass", he says dryly.<br>  "Party pooper", you say sticking out you tongue at him.'
+		if vasyan_textb_gorslut = 8: $vasyan_textb_gorslut = '  Vasily asks: "What your favorite position?"<br>  "Comfortable", answer you laughing.<br>  All the boys join in laughing.'
+		if vasyan_textb_gorslut = 9: $vasyan_textb_gorslut = '  "Hey <<$pcs_nickname>>, you want to play some cards?", Vasily asks.<br>  "I don''t know, will I get to keep my clothes on?",you ask.<br>  "Sure, we can to play for money", he says.<br>  "Too bad, I guess I''l pass", you say disappointedly. You flash him you tits, and have a good laugh.'
+		if vasyan_textb_gorslut = 10: $vasyan_textb_gorslut = '  Vasily says: "Do you remember that barmaid in the city I was telling you about? I finally made it back to the barbecue to see her again. She gave me the best blowjob I''ve had in my life!"<br>  "Umm Vasily, there''s something I...."<br>  "I didn''t mean it babe. She was good is all. nobody is better than you", he says apologetically.<br>  You decide not to push the topic of the barmaid.'
+		if vasyan_textb_gorslut = 11: $vasyan_textb_gorslut = '"Hey <<$pcs_nickname>>, are you into water sports?", he ask innocently.<br>  "Oh, I don''t know. I''m better at volleyball and running than I am at swimming. If it''s warm out I do like to cool off in the water though"<br>  Vasily announces to the room: "I think that means she''s up for it guys."<br> "What are you guys talking about? Up for what?", you say suspiciously.'
+		if vasyan_textb_gorslut = 12 and npc_rel['A11'] < 30: $vasyan_textb_gorslut = '  "I love <<$pcs_haircol>> hair, and it looks so good on you <<$pcs_nickname>>."<br>  "Thanks Vasily, that''s very sweet", you say blushing.<br>  "Does the carpet match the drapes?", he asks with a smirk.<br>  "Typical", is all you answer with an exasperated sigh.'
+		if vasyan_textb_gorslut = 12 and npc_rel['A11'] >= 30 and webcamera = 1: $vasyan_textb_gorslut = '  "<<$pcs_nickname>> would you grab me a beer?", Vasily asks.<br>  "Sure thing", you say.<br>  "Grab one for yourself too", he adds.<br>  "Vasily Shulgin, are you trying to get me drunk?", you answer in a shocked tone. Laughing you head for the kitchen.'
+		if vasyan_textb_gorslut = 12 and npc_rel['A11'] >= 30 and npc_rel['A11'] < 50 and webcamera = 0: $vasyan_textb_gorslut = '  Vasily says: "Have you heard about all the webcam sites that are popping up? Apparently girls can make a lot of money on them. If you have a computer, webcam, and are willing to show a little skin I bet you could do very well <<$pcs_nickname>>."<br>  "I''m not sure I would be comfortable doing something like that", you say.<br>  "You should think about it. It''s not like you would be selling it on the street. All you have to do is lie around on a bed and talk to a bunch of lonely guys. Then you show them a little skin and the money starts rolling in. It would be so easy", he finishes.'
+		if vasyan_textb = 12 and npc_rel['A11'] >= 50 and npc_rel['A11'] < 70: $vasyan_textb_gorslut = '  Vasily asks: "Do you remember when I told you about the webcam sites, where you can earn big money for showing some skin?"<br>  "Yea, I remember", you answer.<br>  "Well, not to long ago I bought a Webcam, so that I could video chat on Skype. If you want to use it I wouldn''t mind."<br>  "Umm thanks, I will think about it", you say.'
+		if vasyan_textb = 12 and npc_rel['A11'] >= 100: $vasyan_textb_gorslut = '  "Hey <<$pcs_nickname>>, have you checked out the webcam I bought?", Vasily asks.<br>  "Yea, I may have checked it out a little", you say.<br> "Well, if you ever want to get on there during the weekend let me know. We could do a show together, and rake in some big bucks", he says with a wink and a smile.<br>  "That''s not a bad idea. I''ll have to think about it", you blush.'
+		if bazar_count <= 0: '"Give it a rest <<$pcs_nickname>>. How about a drink instead?", Vasily offers.'
+		if pav_slut < 75 and bazar_count > 0: '<<$vasyan_textb>>'
+		if pav_slut >= 75 and bazar_count > 0: '<<$vasyan_textb_gorslut>>'
+		act 'Further': gt 'shulga_room', 'shulga_bazar_night'
+	end
+	act 'Drink beer': gt 'shulga_room', 'shulga_beer'
+	if npc_rel['A11'] >= 70 and alko >= 1 or npc_rel['A11'] >= 70 and pcs_horny > 50 or pav_slut >= 75 and alko >= 1:
+		gs 'willpower', 'sex', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Ask him for sex (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'self'
+				if shgopsex_vasya_count = 0:
+					cla
+					'Vasily says: "Keep your pants on, woman. I''m not a machine."'
+					act 'Humph': gt 'shulga_room','shulga_bazar_night'
+				elseif shgopsex_vasya_count > 0:
+					$gopsex_n_npc = 1
+					shgopsex_vasya_day = daystart
+					shgopsex_vasya_count -= 1
+					gs 'boyStat', 'A11'
+					gs 'gopsex', 'settings'
+					gs 'gopsex', 'shgopsex'
+				end
+			end
+		else
+			act 'Ask him for sex (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+!--------------------------------------------!
+!Bazaar night with Dan. Monday - Thurstday hours: 20:00 - 24:00!
+!============================================!
+if $ARGS[0] = 'den_bazar':
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+	'Dan (Denis) Ryzhov is a tall and skinny guy, who usually communicates to others with disdain and contempt. He''s a very stubborn guy who will never let an argument go. He''s best friends with Vitek and Vasily, and can be considered the smartest one of the three.'
+
+	act 'Move away': gt 'shulga_room'
+	act 'Talk':
+		*clr & cla
+		minut += 5
+		bazar_day_den = daystart
+		bazar_count_den -= 1
+		if bazar_count_den > 0: npc_rel['A10'] +=1
+		gs 'stat'
+!Bazaar night conversations with Dan pav_slut < 75:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/talk/talk'+rand(1,5)+'.jpg"></center>'
+		den_textb = rand(0,6)
+		if den_textb = 0: $den_textb = '  Dan tells you about a girl they saw giving a guy a blowjob in the park today. "She had such lovely <<$pcs_eyecol>> eyes, and beautiful <<$pcs_haircol>> hair", he says smiling at you. "Oh <<$pcs_nickname>>, you should come join us in the park after school. We are almost always there having drinks", he adds as an afterthought.'
+		if den_textb = 1 and SchoolAtestat = 0: $den_textb = '  "Hey <<$pcs_nickname>>, how is school going?", Dan says. Before you can answer he continues, "I don''t think smart people even belong in school. I have to cut class and hang out in the bathroom just so I don''t lose my mind"'
+		if den_textb = 1 and SchoolAtestat = 1: $den_textb = '  Dan tells you his plans after graduation: "I can''t wait to get to get out of this one horse town. I want to move to the city. That place has all the best food, women, drugs, and everything else you could think of."'
+		if den_textb = 2: $den_textb = '  "<<$pcs_nickname>>, get over here and make yourself useful. I need a back massage, and you look like just the right girl for the job.", Dan hollers. <br>  "How would you like a swift kick instead? If you had bothered to ask me nicely I still would''t have done it, but it never hurts to be polite", you smile back at him sweetly'
+		if den_textb = 3: $den_textb = '  Dan asks you to grab him a beer. When you return from the kitchen with his beer, he politely asks you to open it for him. Rolling your eyes, you crack it open and hand it over to him. <br>  "Thanks <<$pcs_nickname>>, you are going to make a fine little wife", Dan laughs.<br>  You give him a little kick in the shin before turning to leave. He just laughs, and sends you on your way with a smack on the ass'
+		if den_textb = 4: $den_textb = '  "<<$pcs_nickname>>, if you are looking for work I hear the hotel is hiring. They have a job opening for a <<$lip1>> set of lips", Dan says.<br>  You flick your hand between his legs, and he lets out a sharp cry of pain. "Thanks for the tip asshole", you smile back at him.'
+		if den_textb = 5: $den_textb = '  Dan gives you his opinion on religion: "A church is no fit place for a woman on her knees. That should be reserved for places like alleys, bathrooms, and living rooms. Speaking of which, <<$pcs_nickname>> would you be a dear."<br>  You walk away shaking you head before he can finish'
+		if den_textb = 6: $den_textb = '  Unprompted Dan turns to and says, "You got a real pretty mouth girl", in his best creepy accent.<br>  You swiftly raise your knee like you are going for his crotch, but stop short and just walk past him. Seeing him instinctively double over in fear puts a little spring in your step.'
+!Bazaar night conversations with Dan pav_slut >= 75:
+		den_textb_gorslut = rand(0,7)
+		if den_textb_gorslut = 0: $den_textb_gorslut =  '  Dan looks at you appraisingly: "<<$pcs_nickname>> Do you have any money? If you need some I am sure I could find some work putting your body to good use."<br>  "Dream on, the only work I am thinking of using this body for involves a swift kick between your balls", you snarl.<br>  With one hand protecting his nuts Dan says: "Settle down slut, I was not suggesting you become a whore. Honestly, I was just thinking out loud. I mean if you are already giving it away for free why not." You leave in a huff before he can finish.'
+		if den_textb_gorslut = 1 and soniaPS = 1: $den_textb_gorslut = '  Dan mockingly issues you a challenge<br>  "<<$pcs_nickname>> I can''t decide if I prefer your cute set of <<$lip1>> lips or Sonia''s. We need to all get together to find out who has the best skills. I have a warm wet surprise for the winner."<br>  "Dream on", you say shaking your head. Secretly you do wonder you would win. Sonia looks so good at giving a BJ, but you think you might be able to best her.'
+		if den_textb_gorslut = 1 and soniaPS <=0: $den_textb_gorslut = '  Dan is idly going on about what a good girl Sonia is when he turns to you and says, "Hey <<$pcs_nickname>>, you are friends with Sonia right?"<br>  "Not this again Dan", you say with a weary sigh.<br>  "Oh come on, you girls both like to have a good time. It could be a lot of fun", Dan says.<br>  You stop him right there: "Listen Dan I like Sonia, but she has a look in her eyes lately that makes me nervous. Besides any girl willing to sleep with you has to be half-mad, getting two of us in the same room might be more than you could handle." You give Dan a little sway of your hips as you walk away. At least he did''t ask you to go out on the and kidnap a virgin for him'
+		if den_textb_gorslut = 2 and soniaPS = 1: $den_textb_gorslut = '  Dan says: "Yesterday Sonia was servicing every boy in the mens bathroom in any fashion they desired. Not to long ago she was such a stuck up goody-two-shoes, now she is free and does''t have a care in the world. You could probably learn a thing or two from her <<$pcs_nickname>>."<br>  You just stare back at him with your arms crossed. He slowly moves a hand in front of his crotch for protection.'
+		if den_textb_gorslut = 2 and soniaPS <=0: $den_textb_gorslut = '  Dan says, "Be a dear and fetch me another beer <<$pcs_lastname>>."<br>  It was sweet of him to ask you think as you head to the kitchen. You take a little sip and give him a smile when you hand him his beer. Dan gives you rough slap on the ass, as he sends you away giggling.'
+		if den_textb_gorslut = 3: $den_textb_gorslut = '  Dan looks like he is up to something: "<<$pcs_nickname>> who is your best girlfriend at school?"<br>  "Why", you say giving him a stern look.<br>	"Well, I was just thinking maybe you would like to bring a friend on one of your visits here.", Dan says trying his best sound diplomatic.<br>  Your anger boils over as you say "Don''t you think for one second that I am going to drag some innocent girl back here and throw her to you jackals. If you are so desperate to have a three-way I would be happy to let you help me suck Vitek''s cock right now." <br>  You hear Dan mutter, "Moody bitch, what the hell crawled up your ass tonight", as you turn to go.'
+		if den_textb_gorslut = 4: $den_textb_gorslut = '  "Hey babe, how about you stop by the park the next time we are hanging out there, and have some beers with us. You are so much fun when you get a few beers in you" Dan says roughly giving your ass a squeeze.<br>  You give him a playful slap on the thigh and a giggle. Your boys can get a little rough, but you wouldn''t have it any other way.'
+		if den_textb_gorslut = 5: $den_textb_gorslut = '  "<<$pcs_nickname>>, hand me the TV remote", Dan says.<br>  He is way closer to it than you, but he looks comfortable. You happily fetch it for him.<br>  "Good girl", he praises you for a job well done.'
+		if den_textb_gorslut = 6: $den_textb_gorslut = '  Dan asks:" <<$pcs_nickname>>, does your sister still work at the local supermarket?"<br>  "Yea, but she does not enjoy it much, so I try not to bother her when she is working", you inform him.<br>  "You should bring her over here sometime. I bet we could find a way to cheer her up", he says suggestively.<br>  "God, is sex the only thing you ever think about, and what on earth makes you think I would do that sort of thing with my sister?", you say a little sheepishly while giving him a sideways glance.'
+		if den_textb_gorslut = 7: $den_textb_gorslut = '  Dan tells you about his visit to the strip club: "You need an ID to get in, but once you do it''s great. They have some of the best looking woman I''ve ever seen in there, and I think on some nights the even have male strippers for ladies"'
+
+		if bazar_count_den <= 0: '  "Be quiet <<$pcs_nickname>>. That''s enough talk out of you tonight. Leave me in peace, unless you want to put those <<$lip1>> lips to a better use", Dan says'
+		if pav_slut < 75 and bazar_count_den > 0: '<<$den_textb>>'
+		if pav_slut >= 75 and bazar_count_den > 0: '<<$den_textb_gorslut>>'
+		act 'Further': gt 'shulga_room', 'den_bazar'
+	end
+
+	act 'Drink beer': gt 'shulga_room', 'shulga_beer'
+
+	if pav_slut >= 75 and alko >= 1:
+		gs 'willpower', 'sex', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Have sex with Dan (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'self'
+				if shgopsex_den_count = 0:
+					cla
+					'Dan says: "Damn slut, I''m only one man. Suck your supper out of someones else''s cock"'
+					act 'Leave': gt 'shulga_room', 'start'
+				elseif shgopsex_den_count > 0:
+					$gopsex_n_npc = 0
+					shgopsex_den_day = daystart
+					shgopsex_den_count -= 1
+					gs 'boyStat', 'A10'
+					gs 'gopsex', 'settings'
+					gs 'gopsex', 'shgopsex'
+				end
+			end
+		else
+			act 'Have sex with Dan (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+!---------------------------------------------!
+!Bazaar with Vitek(Kotov) Monday - Thurstday hours: 20:00 - 24:00!
+!=============================================!
+if $ARGS[0] = 'vitek_bazar':
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vitek/vitek.jpg"></center>'
+	'Vitek (Viktor) Kotov is an aggressive and strong guy, who considers himself a gangsta. But his personality is pretty much see-through. Lena is his twin-sister.'
+	act 'Move away': gt 'shulga_room'
+	act 'Talk':
+		*clr & cla
+		minut += 5
+		bazar_day_vitek = daystart
+		bazar_count_vitek -= 1
+		if bazar_count_vitek > 0: npc_rel['A9'] +=1
+		gs 'stat'
+!Bazaar night conversations with Vitek pav_slut < 75:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/talk/talk'+rand(1,5)+'.jpg"></center>'
+		vitek_textb = rand(0,7)
+		if vitek_textb = 0: $vitek_textb = '  "Any chance I could get you to come over, and do some cleaning? My apartment is such a wreck that it''s virtually uninhabitable. It could really use a woman''s touch."<br>  "I''ll think about it", you answer shyly.<br>  The thought of cleaning Vitek''s place in a skimpy little outfit bubbles up in your mind, and you turn away blushing'
+		if vitek_textb = 1 and SchoolAtestat = 0: $vitek_textb = '  Vitek flexes his bicep, and tells you to feel it. Somewhat hesitantly you give his muscle a little squeeze. It''s hard as a rock, and a little exciting too.<br> "I can bench 300", he boasts.<br>  You have no idea what that means but say: "Wow, that''s really good. I''m impressed."'
+		if vitek_textb = 1 and SchoolAtestat = 1: $vitek_textb = '  Vitek compliments you: "<<$pcs_nickname>>, your hair looks beautiful. I''ve always had a thing for girls with <<$pcs_haircol>> hair"<br>  "Thank you", you say blushing.'
+		if vitek_textb = 2: $vitek_textb = '  Vitek invites you to the community center at night to drink and dance with him. The thought of dancing with him sends a little flutter though your chest.<br>  "I might just take you up on that offer you tell", you tell him trying your best to sound sexy.'
+		if vitek_textb = 3: $vitek_textb = '  Vitek talks to you about his boxing training at that community center. He thinks he is getting pretty good. "Stop by if you want to see me in action. There is plenty of other stuff to do there too", he finishes.'
+		if vitek_textb = 4: $vitek_textb = '  Vitek asks: "Do you ever go down to the lake to swim?"<br>  "Sometimes, but it''s been a while", you answer.<br>  "It''s a shame I''ve never seen you in a bathing suit", he says almost shyly.'
+		if vitek_textb = 5: $vitek_textb = '  Vitek advises you: "I had to kick the shit out of that Igor kid after the dance a few weeks ago. You should steer clear of that guy <<$pcs_nickname>>. I don''t like the way he treats women."'
+		if vitek_textb = 6: $vitek_textb = '  Vitek must have been boxing today. His shoulders look tense. Trying to be helpful you walk up behind him, and start giving them a good rub.<br>  "Oh <<$pcs_nickname>>, your hands feel great", he sighs in appreciation.'
+		if vitek_textb = 7: $vitek_textb = '  You notice Vitek''s beer is almost empty. Thinking this looks like a job you can handle you go to the kitchen. You return just as he is ready for another one, and hand him a beer smiling.<br>  "Thanks <<$pcs_nickname>>, You read my mind", he says. His hand grazes your hip when he takes his beer, sending butterflies flying around in your tummy.'
+
+!Bazaar night conversations with Vitek pav_slut >= 75:
+		vitek_textb_gorslut = rand(0,7)
+		if vitek_textb_gorslut = 0: $vitek_textb_gorslut = '  Your lying on the couch when Vitek sits down, and puts your feet in his lap. Without saying anything, he gently starts to massage them. You let him know how good it feels with a series of soft moans. Vitek can be so good to you when he wants to be. You think you should probably reward him.'
+		if vitek_textb_gorslut = 1: $vitek_textb_gorslut = '  Vitek imparts some wisdom: "You can determine how close your relationship is with someone by how much you can mock them, before receiving a beating."<br>  "What if I said you have a tiny cock?", you say.<br>  "Then I would attack you", he says. He takes both hands and furiously tickles you around your sides and stomach.<br>  You sequel with delight laughing until you are out of breath.'
+		if vitek_textb_gorslut = 2: $vitek_textb_gorslut = '  Vitek is full of fun facts: "<<$pcs_nickname>>, did you know that it''s empirically proven that 95% of girls can no longer pronounce the name of the city Naberezhnye Cheln if they go a month without sex?"<br>  Deadpan you respond: "I speak seven languages."'
+		if vitek_textb_gorslut = 3 and SchoolAtestat = 0 and soniaPS = 1: $vitek_textb_gorslut = '  Vitek says: "Sonia pulled me into the school toilet yesterday, climbed on top of me, and used me for sex. She basically raped me. I may have to go see the therapist at the clinic to get over it."<br>  He says it with a smile, but you can tell he is worried about Sonia.'
+		if vitek_textb_gorslut = 3 and SchoolAtestat = 1 and soniaPS = 1: $vitek_textb_gorslut = '  Vitek says: "Sonia was pestering me in the park yesterday. When I told her no, and walked away she just followed me. I decided I''d had enough, and started to jog away. She chased me! She actually chased me though the park trying to have sex with me..." He just shakes his head dumbfounded by this turn of events.'
+		if vitek_textb_gorslut = 3 and soniaPS <= 0: $vitek_textb_gorslut = '  Vitek advises you: "If you ever lend money to Natasha Belova don''t expect to get it back. Well, not with cash anyway, her methods of repayment are very interesting though."<br>  You give him a playful slug on the shoulder, and start thinking about Natasha''s legs.'
+		if vitek_textb_gorslut = 4: $vitek_textb_gorslut = '  Vitek starts talking like he is telling a ghost story: " There is a woman who walks our quite streets at night wearing leather and brandishing a whip. They say if she catches you wind up in her dungeon never to be seen again." He finishes by laughing and making spooky sounds.<br>  You are to distracted by thoughts of mysterious leather clad women to laugh with him.'
+		if vitek_textb_gorslut = 5: $vitek_textb_gorslut = '  Vitek asks: "<<$pcs_nickname>>, what is your favorite thing about a penis?"<br>  "They always stand up when a fine lady like myself enters the room", you answer back.<br>  Vitek bursts out laughing, and starts to tickle your sides.'
+		if vitek_textb_gorslut = 6: $vitek_textb_gorslut = 'Vitek speaks: "Drunk girls might as well call their pussy mistress. They can think of nothing, but obeying its wishes".<br>  You parry: "Yea, and guys should call their cocks sir. They follow every order like it''s a life and death mission issued by their commanding officer."<br>  You both burst out laughing, when Vitek gives his crotch a salute.'
+		if vitek_textb_gorslut = 7: $vitek_textb_gorslut = '  Vitek tells a joke:<br> A man walks into a pharmacy and loudly declares: "I''ll have a pack of condoms, please!"<br>  The cute young clerk blushed and whispered: "Sir, this sort of thing should be asked for in the ear, not...."<br>  "What about ears? I don''t need them for me ears! I need them for my dick!!!"'
+		if bazar_count_vitek <= 0: 'Vitek said: "That''s enough talk for now <<$pcs_nickname>>."'
+		if pav_slut < 75 and bazar_count_vitek > 0: '<<$vitek_textb>>'
+		if pav_slut >= 75 and bazar_count_vitek > 0: '<<$vitek_textb_gorslut>>'
+		act 'Further': gt 'shulga_room', 'vitek_bazar'
+	end
+
+	act 'Drink beer': gt 'shulga_room', 'shulga_beer'
+
+	if pav_slut >= 75 and alko >= 1:
+		gs 'willpower', 'sex', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Get laid (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'self'
+				if shgopsex_vitya_count = 0:
+					cla
+					'Vitek says: "Sorry kitten, you''ve worn me out for the day."'
+					act 'Humph': gt 'shulga_room', 'start'
+				elseif shgopsex_vitya_count > 0:
+					$gopsex_n_npc = 2
+					shgopsex_vitya_day = daystart
+					shgopsex_vitya_count -= 1
+					gs 'boyStat', 'A9'
+					gs 'gopsex', 'settings'
+					gs 'gopsex', 'shgopsex'
+					gs 'stat'
+				end
+			end
+		else
+			act 'Get laid (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+!-----------------------------------------------------------------!
+!Bazaar events with Vasily and other game events at the weekend with 10 to 17 and 20:00 to 24:00 on sunday!
+!=================================================================!
+!----------------------!
+!-----Sex lessons with Vasily-----!
+!======================!
+
+!Do homework with Vasily
+if $ARGS[0] = 'shulga_lern':
+	menu_off = 1
+	!choice of set pictures
+	lern_imgset = rand(1,7)
+	if lernHome ! 0:
+		minut += 60
+		lern += rand(1,6)
+		intel_exp += rand(1,2) + (mentats_dose - rand(0,mentats_dose))
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>.jpg"></center>'
+		'You sit down with Vasily for an hour, and do your homework.'
+		act 'Keeps studying':
+			lernHome = 0
+			gt 'shulga_room', 'shulga_lern'
+		end
+		act 'Take a break':
+			lernHome = 0
+			gt 'shulga_room', 'shulga_bazar_day'
+		end
+	else
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_1.jpg"></center>'
+		if pav_slut >= 75:
+			'"<<$pcs_nickname>>, there is no way I can concentrate with you in that outfit. Let''s get you out of it, so we can continue", he suggests.'
+			'From the way he is pawing at you, it looks like more school work is out of the question'
+			'The only questions that remains is: What are you going to do about that bulge in Vasily''s pants?'
+			gs 'willpower', 'sex', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'You''re not in the mood (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'shulga_room', 'shulga_lern_sex_no'
+			else
+				act 'You''re not in the mood (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act iif(pcs_horny >= 50, 'You''re already wet', 'Oh, I suppose'): gt 'shulga_room', 'shulga_lern_sex_yes'
+		elseif pav_slut < 75:
+			'"<<$pcs_nickname>>, if you would like to keep learning, I''ve been told that I''m an excellent teacher", Vasily says as he gently starts to paw at you.'
+			'You have a sneaking suspicion that he isn''t talking about the Biology assignment.'
+			'You stammer: "I...don''t know...would you please..."'
+			if pcs_vag >= 1:
+				gs 'willpower', 'sex', 'resist', 'easy'
+				if will_cost <= pcs_willpwr:
+					act 'Stop it (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'shulga_room', 'shulga_lern_sex_no'
+				else
+					act 'Stop it (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+				act 'Teach me': gt 'shulga_room', 'shulga_lern_sex_yes'
+			else
+				act 'Stop it': gt 'shulga_room', 'shulga_lern_sex_no'
+			end
+		end
+	end
+end
+
+!Consent to sex
+if $ARGS[0] = 'shulga_lern_sex_yes':
+	menu_off = 1
+	shulga_lern_day = daystart
+	shulga_lern_count -= 1
+	npc_sex['A11'] += 1
+	gs 'boyStat', 'A11'
+	gs 'arousal','bj',5
+	gs 'arousal','cuni',5
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_2.jpg"></center>'
+	'You whimper softy and whisper, "Please Vasily, please teach me."'
+	'He smiles at you. "Ok <<$pcs_nickname>> open your mouth." As he pulls out his dick and begins stroking it.'
+	'His first lesson involves oral sex. You don''t know if you are a straight A student, but from the way he groans in pleasure as you work your mouth on his <<dick>>cm <<$dick_girth>> penis, you think you earned a passing grade.'
+	'When he eventually lays you on your back and gently licks at your labia you know longer know what to think. Eventually, he parts your lips with one hand, as his tongue finds you clitoris. It''s almost to much. You let out a desperate cry, and buck you hips burying his face deep between your thighs.'
+	act 'I want you inside me':
+		*clr & cla
+		if lern_imgset = 2 or lern_imgset = 3 or lern_imgset = 4 or lern_imgset = 6 or lern_imgset = 7:
+			if analplugin = 1:
+				analplugin = 0
+				analplugout=1
+				'"<<$pcs_nickname>>, I didn''t expect you to bring toys", Vasily says cheerfully as he pulls out your butt plug.'
+				'"You won''t need this little anymore. I have something more substantial for you.", Vasily continues.'
+			end
+			if lubri > 0:
+				lubri -= 1
+				agape = 1
+				pcs_horny += 20
+				'"I want you in my ass, but please get the lube from my bag and help me get ready", you say.'
+				'Vasily gets your lube, spreads your cheeks, and works his slick hand against your back-door.'
+			elseif lubri = 0:
+				agape = 2
+				pcs_horny += 10
+			end
+		end
+		if lern_imgset = 1 or lern_imgset = 2 or lern_imgset = 4 or lern_imgset = 5:
+			gs 'gopsex', 'gg_devst_deflor'
+			gs 'arousal','vaginal',10
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_3.jpg"></center>'
+			'Once your pussy is good and wet he stops eating you out and slips his <<dick>>cm <<$dick_girth>> dick into your warm wet pussy. As he says. "This is pussy 101."'
+			'He is gentle and slow at first letting you get wetter and stretch to accommodate him easily. Once he is sliding in and out of you easily he keeps putting you in new positions from which he can pound your little twat.'
+			'Many minutes go by, when he stops a moment, pulling out of you, perhaps to take a break? You''re not sure how long it has been, you lost track of anything but Vasily''s cock stuffed inside of you'
+		else
+			gs 'arousal','anal',10
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_3.jpg"></center>'
+			'He rubs his fingers over your anus for a bit, then he slides in one finger in your ass and fucks you with it, shortly it is joined by a second finger. You moan in pleasure as he fingers you ass. Pulling out his finger''s you feel the head of his cock rubbing against your asshole, with a slight grunt he forces his <<dick>>cm <<$dick_girth>> cock in your ass. You wince and cry out a little in a mixture of pleasure and pain as he says. "I call this one, how to be a good little buttslut."'
+			'Then he starts slowly fucking your ass, giving you time to adjust to the feeling.'
+			'The pain fades and is replaced solely by pleasure.'
+		end
+
+		act 'Further':
+			*clr & cla
+			if lern_imgset = 1 or lern_imgset = 5:
+				gs 'arousal','vaginal',5
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_4.jpg"></center>'
+				'He lifts you up and man handles you into a new position. Just as you are getting settled in your new position he plunges his <<dick>>cm <<$dick_girth>> dick back in your pussy and begins to furiously fuck you. "I call this one, how to rip a cunt up."'
+				'The slow and gentle sex is now replaced by hard brutal fucking, he pounds into you seemingly uncaring if you are still enjoying yourself or not. A part of you still is, a part of you is loving being used like his personal fuck slut.'
+				'It doesn''t take to long until your body spasms as you orgasm hard. Your breath coming in short gasps, you think you might even have been screaming at one point as you come down off your orgasmic high.'
+				'He starts grunting hard himself now and you can tell he won''t last much longer either.'
+			else
+				gs 'arousal','anal',5
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_4.jpg"></center>'
+				'He lifts you up and man handles you into a new position. Just as you are getting settled in your new position he plunges his <<dick>>cm <<$dick_girth>> dick in your ass and begins to furiously fuck you. "I call this one, how to be an anal whore."'
+				'The slow and gentle sex is now replaced by hard brutal fucking, he pounds into you seemingly uncaring if you are still enjoying yourself or not. A part of you still is, a part of you is loving being used like his personal fuck slut.'
+				'Despite the pain of the ferocious anal fucking you are getting, it still doesn''t take to long until your body spasms as you orgasm hard. Your breath coming in short gasps, you think you might even have been screaming at one point as you come down off your orgasmic high.'
+				'He starts grunting hard himself now and you can tell he won''t last much longer either.'
+			end
+
+			act 'Further':
+				*clr & cla
+				minut += 5
+				pcs_horny += 15
+				pcs_hairbsh = 0
+				gs 'cum_call','face',$boy,1
+				gs 'cum_call','mouth',$boy,1
+				gs 'arousal', 'end'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/ev<<lern_imgset>>_5.jpg"></center>'
+				'His grunts and breathing getting louder and louder, suddenly he pulls out of you and grabs you by the hair. He pulls you around so your face is in front of his cock.'
+				'Just as hot spurts of cum land on your face, in your mouth and even some squirting up in your hair. With a final spasm from his body and a moan, he slows his breath. "That one is called how to be a good little cum slut. Time for clean up." Before you can even consider what he has planned for clean up, he forces his dick back in your mouth and makes you suck him clean.'
+				gs 'dinsex','after_anal','boy',$boydesc
+				'Once you finished sucking his cock clean, he pulls it out of your mouth and puts it back in his pants. He seems to completely lose interest in you now and turns on the tv.'
+
+				act 'Leave': gt 'shulga_room'
+				gs 'stat'
+			end
+			gs 'stat'
+		end
+		gs 'stat'
+	end
+	gs 'stat'
+end
+
+!Abstaining from sex
+if $ARGS[0] = 'shulga_lern_sex_no':
+	menu_off = 1
+	minut += 2
+	shulga_lern_day = daystart
+	shulga_lern_count -= 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/shuglinhome/lern/no.jpg"></center>'
+	'"That''s enough, I''m not in the mood. It should be enough that I let you touch me, but if you really want to fuck here you go", you say as you flip your middle finger.'
+	'He bursts out laughing, and playfully tries to bite your finger'
+	'"Hey, watch those teeth! You are such a good teacher that you might give me ideas", you finish by playfully snapping your teeth at him'
+	'He just laughs even harder'
+	act 'Stand': gt 'shulga_room'
+end
+!--------------------------------------------------------------------
+!Conversations with Vasily
+if $ARGS[0] = 'shulga_bazar_day':
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+	'Vasily is always with Dan and Vitek, who are his best friends. His nickname is Shulga. He''s physically the weakest one of the three, but is a bit of a prankster and always makes the others laugh. He was raised by just his father, after his mother left when he was still an infant.'
+
+	gs 'shulga_room', 'vasya_shulgin_rep'
+
+	act 'Move away': gt 'shulga_room'
+	act 'Talk':
+		*clr & cla
+		minut += 10
+		bazar_day = daystart
+		bazar_count -= 1
+		if bazar_count > 0: npc_rel['A11'] +=1
+		gs 'shulga_room', 'vasya_shulgin_rep'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/talk/talk'+rand(1,5)+'.jpg"></center>'
+		vasyan_textb_day = rand(0,8)
+		if vasyan_textb_day = 0: $vasyan_textb_day = '  "Life is like a Matryoshka doll", Vasily says mysteriously.<br>  "What the hell is that supposed to mean?", you ask.<br>  "Think about it", is all he says.<br>  You roll you eyes and give him a sarcastic: "Oh, I will."'
+		if vasyan_textb_day = 1: $vasyan_textb_day = '  He tells you a story about his trip to the city: "I lost my wallet in the city and had no way to get home. The only way I could earn money for the train was by washing dishes at the barbecue. It turned out great though. The cute barmaid was flirting with me all night, and I even got to make out with her before I left. The next time I make it up there I''m going to rock her world."<br>  "You go get her tiger", you encourage him.'
+		if vasyan_textb = 2 and SchoolAtestat = 0: $vasyan_textb_day = '  He gives you some advice: "If you have a phone it will make school go by much faster, just be careful not to let the teacher catch you playing with it."<br>  "Nobody is getting my phone without a fight", you declare with a smile.'
+		if vasyan_textb = 2 and SchoolAtestat = 1: $vasyan_textb_day = '  You tell Vasily a story from gym class: "This one time after gym class I was all sweaty and Katja tried to drag me into the shower. It was really weird."<br>  Vasily adds: "She told me to take a shower a few weeks ago too."<br>  "Well, that''s just cause you stink", you say sticking you tongue out at him.'
+		if vasyan_textb = 3: $vasyan_textb_day = '  He tells you a story about a fight: "I got into a scrap with Dimka behind the community center once. I totally whipped his ass, but be careful around him he''s a nasty piece of work."'
+		if vasyan_textb = 4: $vasyan_textb_day = '  He tells you a story about magic fairies, who live in the countryside. He swears it''s true, but you just roll you eyes.'
+		if vasyan_textb = 5: $vasyan_textb_day = '  Vasily complains: "The economy is broken, and none of these idiots is doing anything about it."<br>  "What should be done to fix it?", you ask curiously.<br> "Oh, I don''t care. I can use my laptop to hack the banks, and get money whenever I need it", he says.<br> "Then why the hell are you complaining", you say frustrated'
+		if vasyan_textb = 6: $vasyan_textb_day = '  He talks about his trip to the city: "I got lost in the old section of the city. I nearly starved to death, before I found my way out. If you ever end up there be careful. That place is like a Byzantine labyrinth."<br>  "Did you find anything interesting?", you ask.<br>  Not really, there was lot''s of grass and abandoned buildings. I did see a leather clad woman get out of a cab, but she disappeared like a puff of smoke.'
+		if vasyan_textb = 7: $vasyan_textb_day = '  "Hey <<$pcs_nickname>>, the guys and I  were trying to figure something out. How big are your tits? I said they look like <<$titsize>>s, but I figured I''d ask you to be sure."<br>  You cross your arms over your chest, and glare at him in response.<br>  "So,bigger then?", he quirks an eyebrow.<br>  You give him a little slug in the arm for an answer.'
+		if vasyan_textb_day = 8 and npc_rel['A11'] < 30: $vasyan_textb_day = '  "I love <<$pcs_haircol>> hair, and it looks so good on you <<$pcs_nickname>>."<br>  "Thanks Vasily, that''s very sweet", you say blushing.<br>  "Does the carpet match the drapes?", he asks with a smirk.<br>  "Typical", is all you answer with an exasperated sigh.'
+		if vasyan_textb_day = 8 and npc_rel['A11'] >=30 and webcamera = 1: $vasyan_textb_day = '  Don''t you sometimes do homework at Julia Milova''s place after school?, he asks.<br>  "Maybe", you say suspiciously.<br>  "Well, if you ever do please put in a good word for me. I think she''s cute", he finishes.'
+		if vasyan_textb_day = 8 and npc_rel['A11'] >=30 and npc_rel['A11'] <50 and webcamera = 0: $vasyan_textb_day = '  Vasily says: "Have you heard about all the webcam sites that are popping up? Apparently girls can make a lot of money on them. If you have a computer, webcam, and are willing to show a little skin I bet you could do very well <<$pcs_nickname>>."<br>  "I''m not sure I would be comfortable doing something like that", you say.<br>  "You should think about it. It''s not like you would be selling it on the street. All you have to do is lie around on a bed and talk to a bunch of lonely guys. Then you show them a little skin and the money starts rolling in. It would be so easy", he finishes.'
+		if vasyan_textb_day = 8 and npc_rel['A11'] >=50 and npc_rel['A11'] < 70: $vasyan_textb_day = '  Vasily asks: "Do you remember when I told you about the webcam sites, where you can earn big money for showing some skin?"<br>  "Yea, I remember", you answer.<br> "Well, not to long ago I bought a webcam, so that I could video chat on Skype. If you want to use it I wouldn''t mind."<br>  "Umm thanks, I will think about it", you say.'
+		if vasyan_textb_day = 8 and npc_rel['A11'] >=100: $vasyan_textb_day = '  "Hey <<$pcs_nickname>>, have you checked out the webcam I bought?", Vasily asks.<br>  "Yea, I may have checked it out a little", you say.<br> "Well, If you ever want to get on there during the weekend let me know. We could do a show together, and rake in some big bucks", he says with a wink and a smile.<br>  "That''s not a bad idea. I''ll have to think about it", you blush.'
+		if bazar_count <= 0: 'Vasily says: "<<$pcs_nickname>>, I''m tired of your talk. Leave me alone."'
+		if bazar_count > 0: '<<$vasyan_textb_day>>'
+		act 'Further': gt 'shulga_room', 'shulga_bazar_day'
+		gs 'stat'
+	end
+
+	if shulga_lern_count > 0 and SchoolAtestat = 0:
+		act 'Do homework': gt 'shulga_room', 'shulga_lern'
+	end
+
+	if npc_rel['A11'] >= 70 and pcs_vag >= 1 and (alko >= 1 or pcs_horny >= 30):
+		gs 'willpower', 'sex', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Suggest sex (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'self'
+				if shgopsex_vasya_count = 0:
+					cla
+					'Vasily says: "Maybe next time <<$pcs_nickname>>. I''ve had an enough for day."'
+					act 'Sigh': gt 'shulga_room', 'start'
+				else
+					$gopsex_n_npc = 1
+					shgopsex_vasya_day = daystart
+					shgopsex_vasya_count -= 1
+					gs 'boyStat', 'A11'
+					gs 'gopsex', 'settings'
+					gs 'gopsex', 'shgopsex'
+					gs 'stat'
+				end
+			end
+		else
+			act 'Suggest sex (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+!---------------------------------------!
+!You nap with Vasilt!
+!---------------------------------------!
+if $ARGS[0] = 'sleep_vasya_bed':
+	menu_off = 1
+	cla
+	npc_rel['A11'] += 1
+	if pcs_sleep >= 60:
+		pcs_sleep = 100
+	else
+		pcs_sleep += 40
+	end
+	minut += 240
+	'You lay down and sleep for a few hours.'
+	act 'Get up': gt 'shulga_room'
+	gs 'stat'
+end
+!--------------------!
+!He refuses to let you sleep next to him!
+!--------------------!
+if $ARGS[0] = 'sleep_vasya_otkaz':
+	menu_off = 1
+	cla
+	minut += 2
+	npc_rel['A11'] -=1
+	'What do you want <<$pcs_nickname>>, can''t you see I''m sleeping?!'
+	'"Vasily may I lay next to you while I sleep?", you asked'
+	'"Go get some sleep on a small couch or just go home you big baby," Vasily answered.'
+	act 'Leave': gt 'shulga_room'
+	gs 'stat'
+end
+!---------------------!
+!He allows you to sleep next to him!
+!---------------------!
+if $ARGS[0] = 'sleep_vasya_soglasie':
+	menu_off = 1
+	cla
+	minut += 2
+	gs 'stat'
+	'Vasily rubbed his eyes and asks: "What do you want <<$pcs_nickname>>?"'
+	'You plead: "Vasily can I sleep next to you? I can''t get comfortable on the little sofa"'
+	'He couldn''t refuse you, and he scooched over to let you into the bed.'
+
+	act 'Take a nap': gt 'shulga_room', 'sleep_vasya_bed'
+
+	if npc_rel['A11'] >= 70:
+		gs 'willpower', 'sex', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Suggest fuck (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'self'
+				if shgopsex_vasya_count = 0:
+					cla
+					'Vasily says: "<<$pcs_nickname>>, I''m beat let''s just call it a day."'
+					act 'Sigh': gt 'shulga_room', 'start'
+				elseif shgopsex_vasya_count > 0:
+					$gopsex_n_npc = 1
+					shgopsex_vasya_day = daystart
+					shgopsex_vasya_count -= 1
+					gs 'boyStat', 'A11'
+					gs 'gopsex', 'settings'
+					gs 'gopsex', 'shgopsex'
+				end
+			end
+		else
+			act 'Suggest fuck (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+!---------------------!
+!-----Vasily sleeps-----!
+!---------------------!
+if $ARGS[0] = 'shulga_bazar_sleep':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya_sleep.jpg"></center>'
+	'Vasily fast asleep'
+	act 'Leave': gt 'shulga_room'
+	act 'Wake up':
+		if npc_rel['A11'] < 50: gt 'shulga_room', 'sleep_vasya_otkaz'
+		if npc_rel['A11'] >= 50: gt 'shulga_room', 'sleep_vasya_soglasie'
+	end
+	gs 'stat'
+end
+if $ARGS[0] = 'vasya_shulgin_rep':
+	if npc_rel['A11'] < 50:
+		'You have known Vasily since childhood'
+	elseif npc_rel['A11'] >= 50 and npc_rel['A11'] < 100:
+		'You are good friends with Vasily'
+	else
+		'Vasily is your very close friend'
+	end
+end
+
+--- shulga_room ---------------------------------
+

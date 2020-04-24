@@ -1,0 +1,1343 @@
+# gdksport
+
+if $ARGS[0] = 'start':
+	CLOSE ALL
+	*clr & cla
+	$metka ='start'
+	$metkaM = 'start'
+	$loc = 'gdksport'
+	$locM = 'gdksport'
+	$menu_loc = 'gdksport'
+	$menu_arg = 'start'
+	menu_off = 0
+	$location_type = 'public_indoors'
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">community center</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/gdksport.jpg"></center>'
+	'The community center sports club offers lessons in <a href="exec: gt ''gdksport'',''racing1''">Racing</a>, <a href="exec: gt ''gdksport'',''dance1''">Dance</a> and <a href="exec: gt ''gdksport'',''vball1''">Volleyball</a>. All lessons start before 18:00'
+	*nl
+	'In the locker room is a <a href="exec: gt ''mirror'',''start''">mirror</a>, where you can ' + iif(pcs_hairbsh = 0,'<a href="exec: gt ''mirror'',''brush''">brush</a>','brush') + ' your hair.'
+	*nl
+	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+
+	if kotovLoveQW > 0 and hour = 16:
+		'You see <a href="exec:minut += 3 & gt ''kotovEv''">Vitek Kotov</a> with a large sports bag entering the sports club.'
+	elseif npc_rel['A3'] >= 80 and hour = 17 and ivansportday ! daystart:
+		'You see <a href="exec:minut += 3 & gt ''IvanEv''">Ivan Prokhorov</a> with a large sports bag entering the sports club.'
+	end
+
+	if npc_rel['A5'] >= 80 and fedorKozlovQW = 0 and pcs_apprnc >= 20 and fedorkozbreak < 2 and GorSlut < 2: gt 'gdksport', 'Fedor First Date'
+
+	if week <= 5 and hour >= 16 and hour < 18 and fedorKozlovQW >= 20:
+		'You can see <a href="exec: gt ''FedorMisc'', ''Fedor Workout''">Fedor</a> on his phone next to some punching bags.'
+	end
+	
+	if (temper < 15 or sunWeather ! 1) and hour > 8 and hour < 12 and week = 6 and bbpickupDay + 14 <= daystart and fbpickupDay ! daystart:
+		*nl
+		'As you pass by the sports field you notice that most of the ''jocks'' have gathered around the <a href="exec:gt ''bbgamein'', ''start''">basketball court</a>.'
+	end
+
+	*nl
+	if $clothingworntype ! 'exercise': 'You are not dressed in sports clothes.'
+	if $shoeworntype ! 'trainers': 'You are not wearing training shoes.'
+
+	act 'Go outside':
+		if $clothingworntype = 'nude':
+			msg'<b><font color = red>You need to get dressed before leaving.</font></b>'
+			gt 'gdksport', 'start'
+		elseif lariskaQwestStart <= daystart and lariskaQwestStart ! 0 and lariskaHelp = 0:
+			lariskaHelp = 1
+			gt 'LariskaStart', 'start'
+		elseif lariskaHelp = 1 and lariskaHelp_end = 0 and lariskaQwestDay <= daystart and AlbZverHelp = 0 and AlbEnemy = 0 and AlbinaInPrison = 0:
+			lariskaHelp_end = 1
+			gt 'LariskaStart', 'end'
+		else
+			gt 'gdk'
+		end
+	end
+
+	act 'Go to the toilets':
+		if $clothingworntype = 'nude':
+			msg'<b><font color = red>You need to get dressed before leaving.</font></b>'
+			gt 'gdksport', 'start'
+		elseif lariskaQwestStart <= daystart and lariskaQwestStart ! 0 and lariskaHelp = 0:
+			lariskaHelp = 1
+			gt 'LariskaStart', 'start'
+		elseif lariskaHelp = 1 and lariskaHelp_end = 0 and lariskaQwestDay <= daystart and AlbZverHelp = 0 and AlbEnemy = 0 and AlbinaInPrison = 0:
+			lariskaHelp_end = 1
+			gt 'LariskaStart', 'end'
+		else
+			gt 'gdktoilet', 'start'
+		end
+	end
+
+	act 'Change outfit in the locker room':
+		cla
+		gt 'wardrobe', 'start'
+	end
+
+	gs 'wardrobe', 'sports_outfit'
+
+	if shampoo > 0 or (StoryLine = 1 and (SchoolAtestat = 0 or SchoolBlock = 0)):
+		act 'Take a shower': gt 'gdksport', 'shower'
+	else
+		'<font color="red">You''ve run out of shampoo and will have to buy some more before you can wash yourself.</font>'
+	end
+
+	*nl
+
+	if pcs_stam > 20 and $clothingworntype = 'exercise' and $shoeworntype = 'trainers' and hour < 18:
+		if gsAboBeg > 0 and npc_pregtalk['A131'] = 0:
+			act 'Take a track lesson, you have <<gsAboBeg>> lessons remaining': gt 'gdksport', 'racing2'
+		end
+		if gsAboVolley > 0 and volleysostav = 0 and npc_pregtalk['A69'] = 0:
+			if week ! 5:
+				act 'Take a volleyball lesson, you have <<gsAboVolley>> lessons remaining': gt 'gdksport', 'vball2'
+			else
+				act 'Take a volleyball lesson, you have <<gsAboVolley>> lessons remaining': gt 'gdksport', 'vball3'
+			end
+		end
+		if volleysostav > 0:
+			if week ! 6 and volkomday ! daystart:
+				act 'Play with the team': gt 'gdksport', 'vball4'
+			elseif week = 6 and sorevday ! daystart and hour <= 18:
+				act 'Play in Tournament': gt 'gdksport', 'vball5'
+			elseif week = 6 and sorevday ! daystart and hour > 18:
+				'As you look around, you don''t see anyone from the team. You suddenly realize that there was a tournament game today and you were supposed to be here at 18:00! You missed the bus and the coach is going to be furious!'
+				npc_rel['A69'] -= 20
+				sorevday = daystart
+				act 'Back': gt 'gdksport', 'start'
+			elseif pregtime >= 90:
+				act 'Play with the team': gt 'gdksport', 'vballreact'
+			end
+		end
+		if gsAboDance > 0 and albinaQWdance = 0 and npc_pregtalk['A23'] = 0:
+			act 'Take a dance lesson, you have <<gsAboDance>> lessons remaining': gt 'gdksport', 'dance2'
+		elseif albinaQWdance > 0 and AlbinaBlokDance = 0 and ZvezdEnd = 0 and npc_pregtalk['A23'] = 0 and startletsday ! daystart:
+			if pregtime >= 90:
+				act 'Train with Starlets': gt 'gdksport', 'Starletsreact'
+			else
+				act 'Train with Starlets': gt 'gdksport', 'starlets'
+			end
+		end
+	elseif pcs_stam <= 20:
+		*nl
+		'You are too tired to do any exercise. You need to rest and replenish your stamina.'
+	end
+	
+	if deodorant > 0 and deodorant_on = 0:
+		'Your deodorant will last you for <b><<deodorant>></b> more '+iif(deodorant = 1, 'application.', 'applications.')
+		act 'Apply deodorant (0:01)':
+			*clr & cla
+			menu_off = 1
+			minut += 1
+			deodorant -= 1
+			gs 'sweat', 'deo'
+			iif(func('body_din','pregnancyVisibility') = 1, '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant_preg.jpg"></center>', '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant.jpg"></center>')
+			'You apply deodorant to your armpits. It will keep you feeling fresh and clean for longer.'
+			act 'Continue': menu_off = 0 & gt $loc, $metka
+		end
+	end
+end
+
+if $ARGS[0] = 'racing1':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'Race training cost 300 <b>₽</b> for 30 lessons.'
+
+	act 'Leave': gt 'gdksport', 'start'
+
+	if money >= 300 and gsAboBeg <= 0:
+		act 'Buy 30 racing lessons (300 <b>₽</b>)':
+			*clr & cla
+			money -= 300
+			gsAboBeg = 30
+			gs 'stat'
+			'You paid for 30 racing lessons.'
+			act 'Leave': gt 'gdksport', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'dance1':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'Dance lessons cost 300 <b>₽</b> for 30 lessons.'
+
+	act 'Leave': gt 'gdksport', 'start'
+
+	if money >= 300 and gsAboDance <= 0:
+		act 'Buy 30 dance lessons (300 <b>₽</b>)':
+			*clr & cla
+			money -= 300
+			gsAboDance = 30
+			gs 'stat'
+			'You paid for 30 dance lessons.'
+			act 'Leave': gt 'gdksport', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'vball1':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'Volleyball lessons cost 300 <b>₽</b> for 30 visits.'
+
+	act 'Leave': gt 'gdksport', 'start'
+
+	if money >= 300 and gsAboVolley <= 0:
+		act 'Buy 30 volleyball lessons (300 <b>₽</b>)':
+			*clr & cla
+			money -= 300
+			gsAboVolley = 30
+			gs 'stat'
+			'You paid for 30 volleyball lessons.'
+			act 'Leave': gt 'gdksport', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'dance2':
+	cla & *clr
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/gym/fit1.jpg"></center>'
+
+	act 'Leave': gt 'gdksport', 'start'
+
+	if pcs_danc < 50:
+		gsAboDance -= 1
+		timemult = 8
+		loopcount = 1
+		:dancetimeloop
+		gs 'exercise', 'tier2', 0, 'agil_exp', 'danc_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'dancetimeloop'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 40:inhib_exp += rand(1,2)
+
+		'You take a lesson in modern dance, which is very popular with people your age.'
+
+		if pcs_danc < pcs_agil:
+			'Your skill still has a ways to go, but your agility helps you pull off some of the dance moves.'
+		else
+			'Your body lacks the agility to perform the dance moves that you are being taught.'
+		end
+		!place for use in events
+		if rand(0, 1) = 0:'You see something <a href="exec: gt ''danceGev''">interesting</a>.'
+		gs 'stat'
+	else
+		'There is nothing you can learn from this dance class with your current skill, you need to find a new teacher or travel to the city to find better dance classes if you wish to improve further.'
+
+		if rand(0, 1) = 0:
+			'You see something <a href="exec: gt ''danceGev''">interesting</a>.'
+		elseif albinaQWdance = 0 and StoryLine ! 0 and npc_rel['A23'] <= 20:
+			gt 'gdksport', 'albina1'
+		elseif albinaQWdance = 0 and StoryLine ! 0 and npc_rel['A23'] <= 60:
+			gt 'gdksport', 'albina2'
+		elseif albinaQWdance = 0 and StoryLine ! 0:
+			gt 'gdksport', 'albina3'
+		end
+	end
+end
+
+if $ARGS[0] = 'albina1':
+	menu_off = 1
+	*clr & cla
+	numnpc = 23
+	$static_num = 'A23'
+	gs 'stat'
+	'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+	'At the end of the class, a few girls enter the dance studio, including Albina Barlovskaya. You''ve seen Albina around, but you know almost nothing about her.'
+
+	act 'Say hello to Albina':
+		*clr & cla
+		gs 'stat'
+		'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+		'You approach Albina and say hello. She raised an eyebrow haughtily.'
+		'"And you are? Oh yeah <<$pcs_nickname>>. You''ve taken up dancing, have you?" You nodded confirming the obvious. Albina laughed dismissively. "Well, how''s that going for you?"'
+		'"Not bad." You answer her coldly, "Not bad at all."'
+		'Albina gave you an arrogant look, "Not bad? Well, maybe in comparison with other local bowlegged cows, but I doubt that you can dance on a professional level."'
+
+		act 'I do not care':
+			*clr & cla
+			npc_rel['A23'] -= 5
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'You replied to Albina as scornfully as possible that you do not care and turned away from her.'
+			'She snickered nastily then said to the other girls, "Alright, girls. Let''s get to work."'
+
+			act 'Leave': gt 'gdksport', 'start'
+		end
+
+		act 'I know how to dance':
+			*clr & cla
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'Albina''s arrogance was getting on your nerves so you told her. "I know how to dance."'
+			'Albina turned to you with a sneer and said, "You can sit and see how professionals do it. Then we''ll see if you still think you can dance."'
+			'Turning to the other girls, she said, "Alright girls, Let''s get to work!"'
+
+			act 'Leave': gt 'gdksport', 'start'
+			act 'Watch': gt 'gdksport', 'albina4'
+		end
+	end
+end
+
+if $ARGS[0] = 'albina2':
+	menu_off = 1
+	*clr & cla
+	numnpc = 23
+	$static_num = 'A23'
+	gs 'stat'
+	'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+	'At the end of the class, a few girls enter the dance studio, including Albina Barlovskaya. You know Albina from school and you have a pretty good relationship.'
+
+	act 'Say hello to Albina':
+		*clr & cla
+		gs 'stat'
+		'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+		'You approached Albina and said hello. She turned to you and smiled.'
+		'"Oh, hello, <<$pcs_nickname>>. I didn''t know you started dancing. Are you any good?" Albina asked with interest.'
+		'"I''m pretty good, I think." you replied with an answering smile, "Even if I do say so myself."'
+		'"Pretty good, huh?" Albina answered with in a condescending tone, "Well, I''ve seen some of the dancers that take lessons here. It wouldn''t take much to be better them those bow-legged cows. I doubt you''re up to any kind of professional standard though."'
+
+		act 'I do not care':
+			*clr & cla
+			npc_rel['A23'] -= 5
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'Offended by her tone, you replied to Albina as scornfully as possible, "I couldn''t care less what you think."'
+			'As you walked away, she snickered nastily then said to the other girls, "Alright, girls. Let''s get to work."'
+
+			act 'Leave': gt 'gdksport', 'start'
+		end
+
+		act 'I know how to dance':
+			*clr & cla
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'Albina''s tone offended you and you replied hotly, "I can dance as well as any of these girls."'
+			'Albina turned to you with a look of disbelief and said, "You can sit and see how professionals do it. Then we''ll see if you still think you can dance."'
+			'Turning to the other girls, she said, "Alright girls, Let''s get to work!"'
+
+			act 'Leave': gt 'gdksport', 'start'
+			act 'Watch': gt 'gdksport', 'albina4'
+		end
+	end
+end
+
+if $ARGS[0] = 'albina3':
+	menu_off = 1
+	*clr & cla
+	numnpc = 23
+	$static_num = 'A23'
+	gs 'stat'
+	'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+	'At the end of the class, a few girls enter the dance studio, including Albina Barlovskaya. You know Albina from school and you have a very close relationship.'
+
+	act 'Say hello to Albina':
+		*clr & cla
+		gs 'stat'
+		'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+		'You approached Albina and said hello. She turned to you and smiled.'
+		'"Oh, hello, <<$pcs_nickname>>. I forget you told me you started dancing. Are you any good?" Albina asked with interest.'
+		'"I''m pretty good, I think." you replied with an answering smile, "Even if I do say so myself."'
+		'"Pretty good, huh?" Albina answered with laugh, "Well, I''ve seen some of the dancers that take lessons here. It wouldn''t take much to be better them those bow-legged cows. Do you think you''re up to any kind of professional level?"'
+
+		act 'Not really':
+			*clr & cla
+			npc_rel['A23'] -= 5
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'Unsure of yourself, you relied hesitantly, "I couldn''t really say, I''ve never really thought about it."'
+			'"Well, you keep working at it, maybe you''ll get there someday." then she turned and said to the other girls, "Alright, girls. Let''s get to work."'
+
+			act 'Leave': gt 'gdksport', 'start'
+		end
+
+		act 'I know how to dance':
+			*clr & cla
+			gs 'stat'
+			'<center><b><font color="maroon"><<$npc_firstname[''A23'']>> <<$npc_lastname[''A23'']>></font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+			'"I''d like to think I can dance as good as anyone, even a professional." you replied honestly.'
+			'Albina turned to you with a look of consideration and said, "You can sit and see how professionals do it. Then we''ll see if you still think you can dance."'
+			'Turning to the other girls, she said, "Alright girls, Let''s get to work!"'
+
+			act 'Leave': gt 'gdksport', 'start'
+			act 'Watch': gt 'gdksport', 'albina4'
+		end
+	end
+end
+
+if $ARGS[0] = 'albina4':
+	menu_off = 1
+	*clr & cla
+	numnpc = 23
+	$static_num = 'A23'
+	minut += 15
+	gs 'stat'
+	'The girls turned on their stereo and started dancing. It immediately became clear to you that they dance very well and professionally. Probably even better than you. Albina herself dances much better than you. It was also clear that they have practiced this routine many times as their movements were closely synchronized with no wasted effort.'
+	'When the music ended, Albina said, "Girls, take a little break."'
+	'She came to you and said a little breathlessly, "You see, we are pros, real dancers. We are the dance troupe "The Starlets". We do shows on holidays and have even been in a music video."'
+
+	act 'Leave': gt 'gdksport', 'start'
+
+	if pregtime >= 90:
+		'Maybe after you''ve had your child you might try out for them.'
+	else
+		act 'Ask if you can join':
+			*clr & cla
+			minut += 15
+			gs 'stat'
+			'You asked to join the dance group. Albina grinned, "Can you? We all worked hard to get here so you''ll have to prove yourself. Show us that you know how to dance." Albina started the music and girls gathered to watch you dance.'
+
+			act 'Dance':
+				*clr & cla
+				minut += 5
+				if pcs_inhib < 40:inhib_exp += rand(1,2)
+				gs 'stat'
+				'You began to dance to the music, trying as hard as you could to impress them. When the music stopped you came Albina.'
+				'"You dance like a country bumpkin, of course, but you do have some potential." Albina mused as you stood panting before her.'
+
+				act 'Will you take me for your team?':
+					*clr & cla
+					albinaQWdance = 1
+					minut += 5
+					gs 'stat'
+					'"Well, am I good enough to join the troupe?" you asked Albina.'
+					'Albina thought about it and looked at the other girls; some nodded, others shrugged.'
+					'Finally she answered you, "Okay, we''ll take a shot. Maybe you''ll learn something and be worthwhile."'
+
+					act 'Leave': gt 'gdksport', 'start'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'starlets':
+	menu_off = 1
+	*clr & cla
+
+	startletsday = daystart
+
+	timemult = 8
+	loopcount = 1
+	:starletstimeloop
+	gs 'exercise', 'tier2', 0, 'agil_exp', 'dancero_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'starletstimeloop'
+	loopcount = 0
+	timemult = 0
+	pcs_mood -= 5
+	inhib_exp += rand(2,4)
+
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/gym/fit1.jpg"></center>'
+
+	if pcs_dancero < 15:
+		'You train together with the girls in "The Starlets". You danced badly and Albina constantly yelled at you and called you a bowlegged cow.'
+	elseif pcs_dancero < 30:
+		'You train together with the girls of "The Starlets". You sometimes managed to get the moves right, but most of the time you were out of synch or made the wrong move. Albina constantly yelled at you and called you a bowlegged cow.'
+	elseif pcs_dancero < 45:
+		'You train together with the girls of "The Starlets". You managed to get into the general rhythm and moved well with the other girls, but Albina is still not happy. "<<$pcs_nickname>>, you are very sluggish, you need to put more life into it."'
+	elseif pcs_dancero < 55:
+		'You train together with the girls of "The Starlets". You had the routine down pat with no mistakes, but Albina still nagged at you. "<<$pcs_nickname>>, you are not at a funeral, raise your head and smile!"'
+	else
+		stardance += 1
+		'You danced beautifully and Albina started to use you as an example for the other girls.'
+
+		if stardance < 6:
+			if otkazDanceWhore = 1:
+				if AlbinaLast = 1:
+					AlbinaBlokDance = 1
+					'After training Albina drew you aside and started berating you. "You clumsy cow. Because of you I am losing customers. So fuck off, you are no longer welcome on the team."'
+				else
+					AlbinaLast = 1
+					otkazDanceWhore = 0
+					if AlbFather = 0:AlbFather = 1
+					'After training Albina drew you aside and started berating you. "I know you''re young and stupid, but I will explain this to you for the first and last time. You are making the customers miserable and they are giving up on "The Starlets". Entertaining the men is part of the business."'
+				end
+			end
+
+			if DanceWhoreT > 0: DanceWhoreT = 0
+			if AlbFather = 0 and DanceWhore >= 8:
+				AlbFather = 1
+				'Albina after training beckoned you to her. "Good work, <<$pcs_nickname>>. The clients were satisfied and you were very discrete. You''re doing fine, doing excellent, in fact. Stick with me and you will have all the money, cars and apartments you could want."'
+			end
+		else
+			stardance = 0
+			albpayrand = rand(1, 5)
+			'Albina gathered the girls. Today we have a small show planned. Each of you will receive <<albpayrand*1000>>. The show will take a couple of hours.'
+
+			act 'Do the show':
+				*clr & cla
+				timemult = 8
+				loopcount = 1
+				:showtimeloop
+				gs 'exercise', 'tier2', 0, 'agil_exp', 'danc_exp'
+				if loopcount < timemult: loopcount += 1 & jump 'showtimeloop'
+				loopcount = 0
+				timemult = 0
+				money += albpayrand * 1000
+				noShampoo = 1
+				dynamic $showerdin
+				profiDanceTime += 1
+				inhib_exp += rand(3,5)
+				gs 'stat'
+				'You agreed and Albina called for a car. Soon the car arrived the girls and you got into the car. Soon you arrived at a building with a large hall where people were sitting around a stage.'
+				'You dressed in costumes that were designed and commissioned by Albina, then went on stage to dance to the fiery music. You danced very well and everything went smoothly. You left the stage and Albina distributed the money. You took turns using the shower in the small dressing room.'
+				if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+
+				if pcs_apprnc >= 52:
+					if pcs_apprnc < 64:wealthmanrand = rand(0,15)
+					if pcs_apprnc >= 64 and pcs_apprnc < 72:wealthmanrand = rand(0,12)
+					if pcs_apprnc >= 72:wealthmanrand = rand(0,10)
+
+					if wealthmanrand = 0:
+						kolvomanparty = 1
+						danceWhorePay = rand(3,8)
+						'You saw that a man in a decent suit went up to Albina and started to talk quietly with her.'
+					elseif wealthmanrand = 1:
+						kolvomanparty = 2
+						danceWhorePay = rand(5,10)
+						'You saw that two guys approached Albina and started to talk to her.'
+					elseif wealthmanrand = 2:
+						kolvomanparty = 1
+						danceWhorePay = rand(4,9)
+						'You saw that an Armenian went up to Albina and started talking to her and gesticulating wildly.'
+					elseif wealthmanrand = 3:
+						kolvomanparty = 2
+						danceWhorePay = rand(6,12)
+						'You saw that two Armenians went up to Albina and started talking to her.'
+					elseif wealthmanrand = 4:
+						kolvomanparty = 3
+						danceWhorePay = rand(8,14)
+						'You saw that three Armenians approached Albina and started talking to her.'
+					elseif wealthmanrand = 5:
+						kolvomanparty = 1
+						danceWhorePay = rand(5,10)
+						'You saw that a black went up Albina and started talking to her.'
+					elseif wealthmanrand = 6:
+						kolvomanparty = 2
+						danceWhorePay = rand(7,15)
+						'You saw that two black men went up Albina and started talking to her.'
+					elseif wealthmanrand = 7:
+						kolvomanparty = 3
+						danceWhorePay = rand(10,20)
+						'You saw that three black men went up Albina and started talking to her.'
+					end
+
+					if wealthmanrand <= 7:
+						'After talking Albina came to you. "<<$pcs_nickname>>, we need to talk."'
+						act 'About what?':
+							*clr & cla
+							minut += 15
+							gs 'stat'
+							'You asked Albina what she wanted to talk about.'
+
+							if kolvomanparty = 1:
+								'Albina came closer to you and quietly began to speak, "You see this guy? If you stay with him for an hour or so and be affectionate, you will be able to earn <<danceWhorePay*1000>> <b>₽</b>."'
+							else
+								'Albina came closer to you and quietly began to speak, "You see these guys? If you stay with them for a couple of hours and be affectionate, you will be able to earn <<danceWhorePay*1000>> <b>₽</b>."'
+							end
+							
+							gs 'willpower', 'prostitution', 'resist', 'hard'
+							if will_cost <= pcs_willpwr:
+								act 'Refuse and leave (<<will_cost>> Willpower)':
+									*clr & cla
+									gs 'willpower', 'prostitution', 'resist', 'hard'
+									gs 'willpower', 'pay', 'resist'
+									minut += 15
+									otkazDanceWhore = 1
+									DanceWhoreT = 0
+									gs 'stat'
+									'You got in the car along with the rest of the troupe, and shortly you returned to town.'
+
+									act 'Leave': gt 'pavResidential'
+								end
+							else
+								act 'Refuse and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+							end
+
+							act 'Agree':
+								*clr & cla
+								money += danceWhorePay * 1000
+								DanceWhore += 1
+								DanceWhoreT += 1
+								otkazDanceWhore = 0
+								slutty += 1
+								gs 'stat'
+								'You agreed to be "nice" and Albina counted out your money.'
+								if wealthmanrand = 0:act 'Go with the man': gt 'AlbStarsWhore', 'whore1'
+								if wealthmanrand = 1:act 'Go with the men': gt 'AlbStarsWhore', 'whore2'
+								if wealthmanrand = 2:act 'Go with the Armenian': gt 'AlbStarsWhore', 'whore3'
+								if wealthmanrand = 3:act 'Go with the Armenians': gt 'AlbStarsWhore', 'whore4'
+								if wealthmanrand = 4:act 'Go with the Armenians': gt 'AlbStarsWhore', 'whore5'
+								if wealthmanrand = 5:act 'Go with the black man': gt 'AlbStarsWhore', 'whore6'
+								if wealthmanrand = 6:act 'Go with the blacks': gt 'AlbStarsWhore', 'whore7'
+								if wealthmanrand = 7:act 'Go with the blacks': gt 'AlbStarsWhore', 'whore8'
+							end
+						end
+					end
+				elseif pcs_apprnc < 52:
+					'After dancing Albina talked with some of the men.'
+				end
+
+				act 'Drive back':
+					*clr & cla
+					minut += 15
+					gs 'stat'
+					'You got in the car along with the rest of the troupe, and shortly you returned to town.'
+
+					act 'Leave': gt 'pavResidential'
+				end
+			end
+		end
+	end
+	act 'Leave': gt 'gdksport', 'start'
+end
+
+if $ARGS[0] = 'cab_home':
+	menu_off = 1
+	*clr & cla
+	minut += 15
+	gs 'stat'
+	'You called a taxi and it took you back to town.'
+	if spafinloc = 11:
+		cumspclnt = 11
+		gs 'cum_cleanup'
+		'Along the way you wiped the sperm from your face.'
+	end
+
+	act 'Leave': gt 'pavResidential'
+end
+
+if $ARGS[0] = 'racing2':
+	*clr & cla
+	menu_off = 1
+	gsAboBeg -= 1
+	timemult = 8
+	loopcount = 1
+	:runtimeloop
+	gs 'exercise', 'tier2', 0, 'run_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'runtimeloop'
+	loopcount = 0
+	timemult = 0
+
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/park/parkbeg.jpg"></center>'
+	'You spend 20 minutes on warm up, run for 90 minutes then spend 10 minutes on your cool down.'
+
+	act 'Leave': gt 'gdksport', 'start'
+end
+
+if $ARGS[0] = 'vball2':
+	*clr & cla
+	menu_off = 1
+	gsAboVolley -= 1
+	if alko < 2:
+		npc_rel['A69'] += rand(0,2)
+		timemult = 8
+		loopcount = 1
+		:vballtimeloop1
+		gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'vballtimeloop1'
+		loopcount = 0
+		timemult = 0
+	else
+		timemult = 8
+		loopcount = 1
+		:vballtimeloop2
+		gs 'exercise', 'tier1', 0, 'run_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'vballtimeloop2'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 40:inhib_exp += rand(0,1)
+	end
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/gdksport.jpg"></center>'
+	if alko < 2:
+		'At the beginning of the workout you ran a few laps around the gym. After some sprints, you did abdominal exercises. Afterwards, you practiced volleying and serving the ball.'
+	else
+		npc_rel['A69'] -= rand(0,2)
+		'You tried to train, but your level of intoxication doesn''t let you focus. The coach sent you to spend the lesson doing laps.'
+	end
+
+	act 'Leave': gt 'gdksport', 'start'
+	act 'Talk to the coach': gt 'Voltrener', 'start'
+end
+
+if $ARGS[0] = 'vball3':
+	*clr & cla
+	menu_off = 1
+	gsAboVolley -= 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/gdksport.jpg"></center>'
+	'On Fridays they hold intramural competitions. Scouts for professional teams sometime come to see who the stronger and more talented players are.'
+
+	if alko < 2:
+		timemult = 8
+		loopcount = 1
+		:vballtimeloop3
+		gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'vballtimeloop3'
+		loopcount = 0
+		timemult = 0
+		if pcs_vball < 25:
+			'You were an absolutely lousy player and made constant mistakes. Eventually, the coach had enough and he removed you from the court.'
+		elseif pcs_vball < 50:
+			'You did not play very well. Sometimes you made some blunders. The coach was angry, but tolerated your antics.'
+		elseif pcs_vball < 75:
+			'You played well on the court and rarely made any mistakes. The coach looked pleased with you.'
+		else
+			'You played great on the court, and easily defeated your rivals. The coach looked pleased with your game.'
+			if rand(0, 1) = 0:
+				if andGevknow = 0:$nameAndGev = 'some guy'
+				if andGevknow > 0:$nameAndGev = 'Andrei'
+
+				'During the game you got pushed by <a href="exec: gt ''volAndGev'', ''start''"><<$nameAndGev>></a>.'
+			end
+		end
+	else
+		minut += 120
+		'You took to the court, but kept missing plays because you were too drunk to focus. The coach noticed your state and removed you from the game.'
+	end
+	act 'Leave': gt 'gdksport', 'start'
+	act 'Talk to the coach': gt 'Voltrener', 'start'
+end
+
+if $ARGS[0] = 'vball4':
+	*clr & cla
+	menu_off = 1
+	volkomday = daystart
+	timemult = 8
+	loopcount = 1
+	:vballtimeloop4
+	gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'vballtimeloop4'
+	loopcount = 0
+	timemult = 0
+	npc_rel['A69'] += 1
+	if pcs_inhib < 40:inhib_exp += rand(0,1)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/gdksport.jpg"></center>'
+	'Number of games <<volsesongame>>, Win - <<volsesonwin>>, lesions - <<volsesonloss>>.'
+	'At the beginning of the workout you ran a few laps around the room. Afterwards the coach has you do push-ups and crunches. Then you practiced receiving and setting up plays and serving the ball. At the end of the workout you had a practice game.'
+	act 'Leave': gt 'gdksport', 'start'
+	if $pantyworntype = 'none' and rand(0,1) = 1 and (volleytanga = 1 or VoltrenerVoyeur >= 5):
+		gs 'willpower', 'exhib', 'self'
+		if will_cost <= pcs_willpwr:
+			act 'Correct clothing (<<will_cost>> Willpower)':
+				*clr & cla
+				inhib_exp += rand(1,5)
+				TrenerLust += 3
+				Voltrenersee += 1 & ! setcheck on gg without panties
+				gs 'willpower', 'exhib', 'self'
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/event/game'+rand(1,2)+'.jpg"></center>'
+				'It seems the coach noticed you weren''t wearing any panties, his eyes lit up and he said turning away: "<<$pcs_lastname>>. Come see me after training. I need to show you UH ... a few things" '
+				act 'Leave':gs'stat'& gt 'gdksport', 'start'
+				act 'Go to the coach''s office': gt 'Voltrenersex', 'start'
+			end
+		else
+			act 'Correct clothing (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	else
+		act 'Talk to the coach': gt 'Voltrener', 'start'
+	end
+end
+
+if $ARGS[0] = 'vball5':
+	*clr & cla
+	menu_off = 1
+	timemult = 8
+!	loopcount = 1
+!	:vballtimeloop5
+!	gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+!	if loopcount < timemult: loopcount += 1 & jump 'vballtimeloop5'
+!	loopcount = 0
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/gdksport.jpg"></center>'
+	'The tournament starts at 19:00. Your bus departs at 18:00. You gathered your things together with the rest of the team and got on a bus that took you to the out of town match.'
+	act 'Leave': gt 'gdksport', 'start'
+	act 'Get on bus and go to play':
+		volltime = 0
+		sorevday = daystart
+		if hour < 18: hour = 18 & minut = 0
+		timemult = 0
+		npc_rel['A69'] += 2
+		minut += 60 & !total time should be 4 hours, 2 hours for the game and 2 hours travel
+		gt 'gdksport', 'volley'
+	end
+end
+
+if $ARGS[0] = 'volley':
+	menu_off = 1
+	gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+	gs 'exercise', 'tier2', 0, 'vball_exp', 'run_exp', 'agil_exp', 'stren_exp', 'vital_exp'
+!	minut += 30
+	gs 'stat'
+
+	if volltime = 0:
+		!! reset the scores
+		volpoint = 0
+		volpointv = 0
+
+	'The teams take to the court and start playing.'
+
+		!! reserve player or you were caught drinking by the coach and he forbid you from playing
+		if trener_Speak < 8 or seealko = 1:
+			volleysostav = 1
+			poverkomand = 50
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game3.jpg"></center>'
+			'You sit on the bench watching your team play.'
+
+		!! starter
+		else
+			volleysostav = 2
+			!! between 0 and 200 dependent on player skills
+			poverkomand = ((pcs_vball*2) + ((pcs_stren + pcs_vital + pcs_agil + pcs_react)/2))/2
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game4.jpg"></center>'
+			'After warming up you run out on the court to join your teammates.'
+		end
+
+		!! opponent skill - between 0 and 200. A perfect player should be able to win every match.
+		poverkomandV = rand(0, 200)
+
+		if poverkomand > poverkomandV:
+			volpoint = 1
+			'Your team plays better than your opponents.'
+		elseif poverkomand < poverkomandV:
+			volpointv = 1
+			'Your opponents play better than your team.'
+		else
+			'The scoring varies one way, then the other, obviously the teams are evenly matched.'
+		end
+
+		act 'Continue':volltime = 1 & gt 'gdksport', 'volley'
+
+	!! halftime
+	elseif volltime = 1:
+		'During the break, both teams have a rest.'
+
+		if volpointv = 0:
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/teacher/mikhail/volleytrener6.jpg"></center>'
+			'Coach tells the team that you can''t relax, though winning you still need to be focused and not let the opponents back into the game.'
+		elseif volpoint = 0:
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/teacher/mikhail/volleytrener2.jpg"></center>'
+			'Coach tells the team that losing the first half is bad, but it''s not a disaster, you pick yourselves up and go out and kick their asses. You can still win this game in the second half.'
+		else
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/teacher/mikhail/volleytrener1.jpg"></center>'
+			'Coach tells the team that there is no draws in volleyball, he expects you to keep doing the things that you are doing well, but increase pressure. With more discipline and toughness, you can win this game. '
+		end
+
+		if volleysostav = 1:
+			'You are sitting on the bench.'
+
+			act 'Ask to play':
+				if seealko = 1:
+					*clr & cla
+					'The coach refuses to let you play because he caught you drinking.'
+					act 'Continue':volltime = 2 & gt 'gdksport', 'volley'
+				else
+					*clr & cla
+					gs 'stat'
+
+					if npc_rel['A69'] >= rand(0, 80):
+						volleysostav = 2
+						poverkomand = ((pcs_vball*2) + ((pcs_stren + pcs_vital + pcs_agil + pcs_react)/2))/2
+						'The coach agrees to let you play the second half.'
+
+						act 'Continue':volltime = 2 & gt 'gdksport', 'volley'
+					else
+						'You ask the coach to play, but he shakes his head and explains that it is not strategically right for the team.'
+
+						act 'Continue':volltime = 2 & gt 'gdksport', 'volley'
+					end
+				end
+			end
+		end
+
+		act 'Continue':volltime = 2 & gt 'gdksport', 'volley'
+
+	!! 2nd half
+	elseif volltime = 2:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game5.jpg"></center>'
+		'Break is over and the team starts the second half.'
+
+		if volleysostav = 1:'You sit on the bench watching your team play.'
+
+
+		!! change the opponent skill a bit so both halves are not an entirely static affair.
+		poverkomandV += rand(-50, 50)
+
+		if poverkomand > poverkomandV:
+			volpoint += 1
+			'Your team plays better than your opponents.'
+
+			!! you came in and your team scored when they would not have without you
+			if volleysostav = 2 and volpointv = 1:npc_rel['A69'] += 10
+		elseif poverkomand < poverkomandV:
+			volpointv += 1
+			'Your opponents play better than your team.'
+
+			!! you came in and your team gave up a point they would not have without you
+			if volleysostav = 2 and volpoint = 1:npc_rel['A69'] -= 5
+		else
+			'The scoring varies one way, then the other, obviously the teams are evenly matched.'
+
+			!! you came in and your team tied when they would have lost without you
+			if volleysostav = 2 and volpointv = 1:npc_rel['A69'] += 5
+		end
+
+		act 'Continue':volltime = 3 & gt 'gdksport', 'volley'
+
+	!! end of game
+	elseif volltime = 3:
+		*clr
+		cla
+		volsesongame += 1
+		if rand (1, 100) < 3:
+			if volpointv = 2:
+				volpoint = 0
+				volpointv = 2
+			elseif volpoint = 2:
+				volpoint = 2
+				volpointv = 0
+			end
+		end
+
+		'Final whistle.'
+		seealko = 0
+		if volpoint > volpointv:
+			volsesonwin += 1
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game6.jpg"></center>'
+			'Your team wins.'
+		elseif volpoint < volpointv:
+			volsesonloss += 1
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game8.jpg"></center>'
+			'Your team loses.'
+		else
+			if rand (0, 1) = 0:
+				volsesonwin += 1
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game7.jpg"></center>'
+				'The match was very close, but in the end your team pulls of a win.'
+			else
+				volsesonloss += 1
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gym/volley/game7.jpg"></center>'
+				'The match was very close, but in the end your team still loses.'
+			end
+		end
+		minut += 60 & !total time should be 4 hours, 2 hours for the game and 2 hours travel
+		act 'Leave': gt 'gdksport', 'start'
+		act 'Talk to the coach': gt 'Voltrener', 'start'
+	end
+end
+
+if $ARGS[0] = 'shower':
+	menu_off = 1
+	*clr & cla
+	$location_type = 'bathroom'
+	if StoryLine = 1 and (SchoolAtestat = 0 or SchoolBlock = 0): noShampoo = 1
+	dynamic $showerdin
+	minut += 15
+	pcs_horny += 1
+	pcs_makeup = 1
+	if frost > 0:frost = 0
+	gs 'stat'
+	'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+
+	if IvanShowerYes = 1 and rand(0,3) = 1 and ShowerIvan < 3:
+		if ShowerIvan = 1: ShowerIvan = 2
+		'You entered the women''s shower, turning the water on you began to lather up your body with a washcloth. Suddenly, you hear the door creak as it opened and you remember that you agreed not to lock it for Ivan.'
+		'You looked around and see Ivan Prokhorov standing there looking at you. "Hello <<$pcs_nickname>>. The men''s shower is full, so I thought I would join you instead." Ivan smiled after these words.'
+		act 'Shower with Ivan': gt 'gdksport', 'ShowerWithIvan'
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Not today (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'bj', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shower1.jpg"></center>'
+				'You cover your breasts with one hand and turn sideways crossing your legs while flashing Ivan your best smile.'
+				'"How about another time Ivan? I''m not feeling it right now." Ivan just laughs and walk out of the shower room.'
+				'You quickly lock the door, before finishing your shower in peace.'
+				act 'Get out of the shower': gt 'gdksport', 'start'
+			end
+		else
+			act 'Not today (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif kotovVSprohorov = 1 and ShowerIvan < 3:
+		kotovVSprohorov = 2
+		'You enter the women''s shower and turning the water on begin to lather your body with a washcloth. Suddenly, you hear the door creak as it opened and you remember that you forgot to lock it.'
+		'You looked around and saw Ivan Prokhorov standing in the doorway looking at you. "Hi <<$pcs_nickname>>. Can I join you? The men''s shower is full." Ivan smiled after these words.'
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Throw Ivan out (<<will_cost>> Willpower)':
+				*clr & cla
+				IvanShowerQW = 1
+				gs 'willpower', 'bj', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shower1.jpg"></center>'
+				'You cover your breasts with one hand and turn sideways crossing your legs as you hurl your washcloth at Ivan. He easily dodged the flying cloth and laughs as he exits the shower room.'
+				'You quickly lock the door, before finishing your shower in peace.'
+				act 'Get out of the shower': gt 'gdksport', 'start'
+			end
+		else
+			act 'Throw Ivan out (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Uh, what?':
+			*clr & cla
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/shower2.jpg"></center>'
+			'You''re completely surprised and confused by Ivan''s sudden appearance, you are struck speechless. Ivan takes your inaction and silence as consent, as he walks into the shower room and closes the door behind him.'
+			
+			gs 'willpower', 'bj', 'resist', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'Escape from the shower (<<will_cost>> Willpower)':
+					*clr & cla
+					IvanShowerQW = 1
+					gs 'willpower', 'bj', 'resist', 'hard'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shower1.jpg"></center>'
+					'You cover your breasts with one hand as you quickly grab your towel and run from the shower. As you run into the changing room, you can hear Ivan laughing.'
+					act 'Get out of the shower': gt 'gdksport', 'start'
+				end
+			else
+				act 'Escape from the shower (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Wash together':
+				IvanShowerYes = 0
+				if ShowerIvan = 0: ShowerIvan = 1
+				gt 'gdksport', 'ShowerWithIvan'
+			end
+		end
+	else
+		'You enter the women''s shower and turning the water on begin to lather your body with a washcloth. After you rinsed off the soap, you washed your hair with shampoo. Next you rinsed out the shampoo out of your hair and feel completely clean.'
+		if (trenerlust >= 40 or trenersex = 1) and rand(0,3) = 0 and VoltrenerVoyeur = 0:
+			act 'Continue': gt 'VoltrenerSexShower', '0'
+		elseif (trenerlust >= 40 or trenersex = 1) and rand(0,3) = 0 and VoltrenerVoyeur = 1:
+			act 'Continue': gt 'VoltrenerSexShower', '1'
+		elseif (trenerlust >= 40 or trenersex = 1) and rand(0,3) = 0 and VoltrenerVoyeur = 2 and IvanShowerYes = 0:
+			act 'Continue': gt 'VoltrenerSexShower', '2'
+		else
+			'After your shower, you get dressed.'
+			act 'Get out of the shower': gt 'gdksport', 'start'
+		end
+	end
+	if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+end
+
+if $ARGS[0] = 'ShowerWithIvan':
+	menu_off = 1
+	*clr & cla
+	'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+	'Ivan walks over to you, pulling his boxer shorts and stepping out of them as they fall around his ankles. Stepping into the shower with you, getting himself wet under the shower. His muscular body was very close to yours.'
+	'You tried not to look at him but your eyes involuntarily dropped to his groin where his thick cock hung and swung as he moved. Ivan seeing where you were looking winked, "Want to wash me?"'
+	gs 'arousal', 'foreplay', 5
+	gs 'stat'
+	act 'Lather Ivan':
+		*clr & cla
+		gs 'boyStat', 'A3'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shower.jpg"></center>'
+		'You took your washcloth and began to lather Ivan''s body. As you move around him, you can''t help but notice his <<dick>>cm <<$dick_girth>> cock began to rise up and getting hard, you feel it brush against your thigh.'
+		'Ivan begins to rubs his hands over your body and caress you with his hands. After a few moments you feel his hands on your shoulders as he gentle but firmly pushes you down to your knees.'
+		gs 'arousal', 'foreplay', 5
+		gs 'stat'
+		act 'Give blowjob':
+			*clr & cla
+
+			if npc_Sex['A3'] = 0: npc_Sex['A3'] = 1 & guy += 1
+
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shover.jpg"></center>'
+			'You slowly sink to your knees in front of Ivan and his <<dick>>cm <<$dick_girth>> cock in front of your face. Ivan leaned forward probing impatiently with the head of his cock against your lips. Your mouth opens almost against your will and you let his cock slide in your mouth.'
+			'Your lips tightly wrapped around Ivan''s solid rod and you sucked him as the streams of warm water wash over you. Suddenly Ivan pulled his dick out of your mouth and takes you by the hand, pulling you back up to your feet. He brought his lips to your breast and began to suck on your nipple.'
+			'Bliss sweeps over you as he suckles your stiff nipple. Releasing your nipple with a wet pop, Ivan pushed you back onto your knees and bent you backwards as he straddles your face, once again sliding his hot cock into your mouth. He began pushing it deeper into your throat.'
+			gs 'arousal', 'bj', 5, 'sub', 'deepthroat'
+			gs 'stat'
+			act 'Allow him to continue':
+				cla & *clr
+				if pcs_throat < 15:
+					'<center><video autoplay loop src="images/shared/sex/blowjob/shower6.mp4"></video></center>'
+					'Penetrating further and further into your mouth, then into your throat, his member blocked your breath, which caused a gag reflex, nearly causing you to vomit. Freeing your mouth from his dick and wiping your tears, you screamed at Ivan, "This isn''t some bottomless hole for you to shove your dick into, you know!" Ivan gave you a guilty look then he pulled you back to your feet again as he began to kiss you, caress your breasts and ass until you began to moan with desire. He turned you around then bent you over with your ass towards him.'
+				else
+					'<center><video autoplay loop src="images/shared/sex/blowjob/shower7.mp4"></video></center>'
+					'Penetrating further and further into your mouth, then into your throat, you take his member to the root without any problems and without causing you discomfort, and bringing Ivan "heavenly delight", if his groans and moans were any indication. Feeling that your classmate would flood your throat with his seed at any moment, you pulled your mouth off of his cock and turned and bent over, presenting your ass to Ivan. You also wanted some satisfaction.'
+				end
+
+				if agape > 0:
+					act 'Continue':
+						*clr & cla
+						if pcs_throat < dick:pcs_throat += 1
+						spafinloc = 12
+						gs 'cum_manage'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum49.jpg"></center>'
+						'Bent over, expecting to feel his <<dick>>cm <<$dick_girth>> cock against your pussy at any moment, you are momentarily surprised when you feel Ivan cock pressed up against your asshole.'
+						'Thinking he was unaware you speak up. "Ivan that''s my asshole." You hear Ivan snort. "Yeah I know." And with those words he pushes the head of his <<dick>>cm <<$dick_girth>> cock in your ass. You moan in a mixture of pain and pleasure.'
+						'He takes it slow, giving you time to adjust to his dick invading your ass. Once your moans turn more to ones of pleasure then pain, he slips it in deeper, slowly working himself balls deep in your ass.'
+						'Once there he begins stroking his <<dick>>cm <<$dick_girth>> cock faster and faster in your ass. Soon his skin is slapping against your bare ass, as he pounds you hard and fast.'
+						'One of your hands rubs your clit while the other one stays against the wall to brace yourself. He has amazing stamina a seemingly endless supply. No matter how much you love him fucking your ass, after awhile you feel your ass beginning to get sore, your moans of pleasure start to turn into grunts of pain.'
+						'Apparently sensing your growing discomfort he makes one more powerful thrust with a grunt then pulls out of your ass. He pulls you around and pushes you back down to your knees, he pushes his cock back in your mouth. You try to ignore the taste of his cock, considering just where it was.'
+						'You do you best to suck him off quickly. With in moments he is shooting his sperm in your mouth. Once he is done he goes back to showering, he quickly finishes up and starts to get dressed. He watches you as you get dressed. "That was great <<$pcs_nickname>>, we should do that again sometime." Without waiting for a reply he leaves the shower.'
+						gs 'arousal', 'anal', 5, 'sub', 'rough'
+						gs 'arousal', 'masturbate', 5
+						minut -= 5
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Get out of the shower': gt 'gdksport', 'start'
+					end
+				else
+					act 'Turn around and bend over':
+						*clr & cla
+						IvanShowerQW = 1
+						lubonus = 2
+						spafinloc = 3
+						gs 'Cum_Manage'
+						if pcs_ass + lubonus + 2 < dick:
+							if pcs_makeup > 1:pcs_makeup = 0
+							pcs_horny -= 20
+							pcs_mood -= 20
+							if agape < 3:agape = 3
+						elseif pcs_ass < dick:
+							pcs_horny += 10
+							if agape < 2 and lubonus = 0:agape = 2
+						end
+						gs 'stat'
+						'<center><video autoplay loop src="images/shared/sex/vag/doggy/shover2.mp4"></video></center>'
+						'As you bend over, you feel Ivan''s hand stroking your ass and his finger starts to massage your anus. You are momentarily surprised when you feel his fingers pressed up against your asshole. Thinking he was unaware you speak up. "Ivan that''s my asshole."'
+						'You hear Ivan snort. "Yeah I know." And with those words he pushes the head of his <<dick>>cm <<$dick_girth>> cock in your ass. You moan in a mixture of pain and pleasure. He takes it slow, giving you time to adjust to his dick invading your ass.'
+						'Once your moans turn more to ones of pleasure then pain, he slips it in deeper, slowly working himself balls deep in your ass. Once there he begins stroking his <<dick>>cm <<$dick_girth>> cock faster and faster in your ass. Soon his skin is slapping against your bare ass, as he pounds you hard and fast.'
+						'One of your hands rubs your clit while the other one stays against the wall to brace yourself. He has amazing stamina a seemingly endless supply. For awhile you buck your hips back against him, fucking him as much as he was fucking you, but no matter how much you love him fucking your ass, after awhile you feel your ass beginning to get sore.'
+
+						gs 'arousal', 'anal', 5, 'sub', 'rough'
+						gs 'arousal', 'masturbate', 5
+						minut -= 5
+						gs 'stat'
+
+						if VoltrenerVoyeur = 3:
+							act 'Continue': gt 'VoltrenerSexShower', '3'
+						elseif VoltrenerVoyeur = 4:
+							act 'Continue': gt 'VoltrenerSexShower', '4'
+						elseif VoltrenerVoyeur = 5:
+							act 'Continue': gt 'VoltrenerSexShower', '5'
+						else
+							if pcs_horny >= 100:
+								if stat['anal'] >= 10 and orgasm > 0:
+									pcs_mood += 20
+									$orgasm_or = 'custom'
+									$orgasm_txt = 'Your whole body contracts and then you cry out in orgasm.'
+								end
+							end
+							'Your moans of pleasure start to turn into grunts of pain. Apparently sensing your growing discomfort he makes one more powerful thrust with a grunt. His body spasms against yours as you feel him cumming in your ass. Once he is done he pulls out of your ass and goes back to showering, he quickly finishes up and starts to get dressed.'
+							'He watches you as you get dressed. "That was great <<$pcs_nickname>>, we should do that again sometime." Without waiting for a reply he leaves the shower.'
+							cumspclnt = 1
+							gs 'cum_cleanup'
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Get out of the shower': gt 'gdksport', 'start'
+						end
+					end
+				end
+			end
+			gs 'willpower', 'anal', 'resist', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'That''s enough for now (<<will_cost>> Willpower)':
+					gs 'willpower', 'anal', 'resist', 'hard'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/community/shower1.jpg"></center>'
+					'Ivan pauses for a brief second and you use the chance to quickly stand up and jump out of the shower.'
+					'You look back at him and say, "I think you''ve had enough of me for today. Maybe you can have more next time."'
+					act 'Get out of the shower': gt 'gdksport', 'start'
+				end
+			else
+				act 'That''s enough for now (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'Ivan_bored':
+	menu_off = 1
+	*clr & cla
+	minut += 5
+	pcs_horny += 10
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/school/ivan2.jpg"></center>'
+	'You look at Ivan for a long moment and bite your lower lip and then whisper just loud enough he can barely hear you. "I''m bored." He looks at you a moment then smiles, he looks around, then takes you by the hand and leads you away from the others, into one of the lesser used area''s of the school. He stops at one of the boys restrooms, going inside and leaving you outside. A few moments later two younger boys are ushered out by Ivan and sent packing. He watches them go, once they round the corner he pulls you into the bathroom.'
+	
+	gs 'willpower', 'anal', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'anal', 'resist'
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'gschool_lessons', 'short_break'
+		end
+	else
+		act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+
+	act 'Go into the bathroom with Ivan':
+		*clr & cla
+		pcs_horny += 20
+		gs 'boyStat', 'A3'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/school/bbivanbj.jpg"></center>'
+		'Once inside Ivan starts to kiss you passionately while pulling your clothes off and tossing them all over, you return his kiss and help remove your clothes. He backs up pulling you along into one of the stalls with him. Once your clothes are removed he starts removing his own clothes, which you are only to happy to help with. Once you''re both fully naked, he sits down on the toilet and gently pushes you down to your knees.'
+		'He guides your head to his <<dick>>cm <<$dick_girth>> cock, using one of your hands you grab his dick and start to stroke the shaft while you open your mouth and take his dick into your mouth. You wrap your lips tightly around his shaft and start sucking him, while using your tongue to tease the head. You alternate your hand from stroking him and fondling his balls.'
+		'He moans and grabs your hair, you can feel he is restraining himself from forcing your head down and jamming his dick down your throat. After a couple of minutes, he growls a bit and stands up, pulling you up as well. Without explaining he turns you around so quickly you almost stumble, only his strong hands on you keep you from falling into the stall wall. He roughly bends you over, using one hand to guide his cock the other grabs your butt cheek to spread it open.'
+		gs 'arousal', 'kiss', 5, 'sub'
+		gs 'arousal', 'hj', 5, 'dom'
+		gs 'arousal', 'bj', 5, 'sub', 'deepthroat'
+		minut -= 5
+		gs 'stat'
+		act 'Let him':
+			*clr & cla
+			lubonus = 2
+			gs 'cum_call', 'anus', 'A3', 1
+
+			if pcs_ass + lubonus + 2 < dick:
+				if pcs_makeup > 1:pcs_makeup = 0
+				pcs_horny -= 20
+				pcs_mood -= 20
+				if agape < 3:agape = 3
+
+			elseif pcs_ass < dick:
+				if agape < 2 and lubonus = 0:agape = 2
+
+			end
+
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/ivan/sex/school/schoolanal.jpg"></center>'
+			'He rubs the tip of his dick against your asshole for a couple of moments and then you feel a sharp pain as he pushes it in. With only your saliva as lubrication, it doesn''t slide in as easily. You bite your lip and cry out a little in pain. He relaxes a little and rubs your back as he takes it slow, giving you time to stretch and adjust to his cock invading your ass.'
+			'He slowly strokes his <<dick>>cm <<$dick_girth>> cock in your ass, with each stroke pushing it just a little deeper in your ass. Once he is about half way in your moans turn from pain to pleasure, while one of your hands starts rubbing your clit. You start moaning louder and panting, your pussy is now soaking wet. After a couple of minutes the pleasure is building up inside of your body so much you no longer even need to stimulate your clitorous any longer. "Fuck <<$pcs_nickname>>, you not only have the hottest ass of any girls in school, but the tightest one I have ever fucked." Ivan says as he can tell your getting into it, grabbing your hips with both hands. He drives himself balls deep into your ass, eliciting a squeak of pain from you, but sensation of pain is quickly overwhelmed by pleasure.'
+			'Holding onto your hips with both hands, he holds you steady and keeps you from pulling away, as he jack hammers his <<dick>>cm <<$dick_girth>> cock balls deep in your ass. You moan in pain and pleasure, mostly pleasure, the sounds of your moans, almost drowned out the sounds of his skin slapping against yours, his balls slapping against your wet pussy. You place your hands against the stall wall to keep him from driving your head into it, from his powerful and violent thrusts. As he abuses your poor little asshole, you find yourself loving every second of it.'
+			'You have an intense orgasm that leaves your legs shaking and barely able to keep standing. You are almost to the point where you are unable to take it anymore, either from the intense pleasure or the growing burning sensation in your ass. Either way the matter is moot, as Ivan drives himself once more balls deep into your ass, but this time holds himself there. You feel his cock twitching as he shoots hot sperm deep in your ass, spurt after spurt filling you up with his semen in what seems an almost unending stream. Finally he takes a shuddering breath and pulls out of you, leaving you to almost collapse with out his support.'
+			'You both start to get dressed, him faster than you, as your still unsteady on your feet, from your shaky legs. Once he is done getting dressed he helps you gather the rest of your clothes from where he tossed them aside. As you are seeing to the final adjustments of your clothes he goes to the bathroom door and looks out both ways down the hall, motioning you over just as the class bell rings. Oh well, at least you have a good excuse to be a little late, you think to yourself with a smile.'
+			'As you start to go out the door, he stops you and squeezes your ass with his strong hand and says. "That was great <<$pcs_nickname>>, you are coolest chick in school, not to mention the hottest. Maybe we can do this again sometime soon, or maybe I will come see you in the shower at the community center some night, maybe even tonight." He grins and winks at you, giving your ass a hard slap, as he rushes off to class. You only have time to nod in agreement to his idea of doing this again, you bite your lip as you watch him go. You have mixed feelings about this, Ivan is a great guy and a lot of fun, but you know he doesn''t want a girlfriend. He just wants to be friends with benefits, but is that enough for you? You don''t have time to think on it more as you hurry to class.'
+
+			$orgasm_or = 'yes'
+			gs 'arousal', 'anal', 5, 'sub', 'rough'
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Continue': gt 'gschool_lessons', 'short_break'
+
+		end
+
+	end
+end
+
+
+if $ARGS[0] = 'Fedor First Date':
+	menu_off = 1
+	*clr & cla
+	numnpc = 5
+	gs 'stat'
+	'<center><b><h4><font color="blue"><<"Fyodor [Fedor] Kozlov">></font></h4></b></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big5.jpg"></center>'
+	if fedorkozbreak = 1:
+		'You enter the sports club and see Fyodor Kozlov, standing by the front door. He looks as though he is waiting for someone and as soon as he sees you, he flashes you a smile and he approaches with an affable smile on his face. "Hello <<$pcs_firstname>>." he says with a warm smile. He pauses for a moment then reaches into his pockets and pulls out 2 tickets and says, "Here is the deal ... I know that we had a bit of a bumpy relationship before but I would like to try again if you will. So what do you say? Wanna go on another date with me?'
+	else
+		'You enter the sports club and see Fyodor Kozlov, standing by the front door. He looks as though he is waiting for someone and as soon as he sees you, his eyes light up and he approaches you with an affable smile on his face. "Hello <<$pcs_firstname>>." he says with a warm smile. He pauses for a moment then reaches into his pockets and pulls out 2 tickets and says, "Here is the deal ... I have an extra ticket to the movies and I would you like know if you would be up for a good comedy?"'
+	end
+
+	act 'Agree':
+		*clr & cla
+		minut += 15
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/park/walk.jpg"></center>'
+		'"I would like that." you said with a smile and Fedor responds: "Good, I hear that this movie will have us in stiches." with a delighted look on his face as he wraps his arm around yours then walks you to the movie theater.'
+
+		act 'Watch a movie':
+			*clr & cla
+			minut += 90
+			pcs_mood += 90
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/cinema/kino_1.jpg"></center>'
+			'Fedor presents the tickets at the entrance and together you walked into the theater. You look around and notice that the seats were mostly empty so Fedor leads you to the front row and both got seated. The lights dim then the movie starts. Fedor sits motionless and only occasionally glancing at you. The movie was quite interesting and you couldn''t help but laugh occasionally at the wackiness of the movie. When the movie ends, the lights turn on and Fedor walks you out. "<<$pcs_firstname>>. You seem like a cool girl. Maybe we could go out together. What do you say?"'
+
+			act 'Agree':
+				*clr & cla
+				npc_rel['A5'] += 20
+				fedorKozlovQW = 10
+				minut += 15
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/park/walk.jpg"></center>'
+				'"Sure, I would love to go out with you." you replied. Fedor was visibly delighted "Alright I look forward to hanging out with you again. Whenever you are up for another date then meet me in the school yard, after school." Fedor says as he walks you back home. The two of you have fun discussing your favorite movies as you continue your way home.'
+
+				act 'Leave': gt 'pavResidential'
+			end
+			act 'Refuse':
+				*clr & cla
+				if fedorkozbreak = 0:fedorKozlovQW = 0
+				if fedorkozbreak = 1:fedorKozlovQW = -1
+				npc_rel['A5'] = 75
+				minut += 15
+				gs 'stat'
+				'<center><b><h4><font color="blue"><<"Fyodor [Fedor] Kozlov">></font></h4></b></center>'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/fedorsad.jpg"></center>'
+				if fedorkozbreak = 1:
+					'You say to Fedor "Sorry Fedor but I don''t think that this is really working out. I''m sorry." Fedor looks visibly upset as he replies, "I guess it was never meant to be, I''m sorry for wasting your time.." Fedor then, silently walks you home.'
+				else
+					'You say to Fedor "You seem like a cool guy but I''m just not ready for a relationship right now." Fedor was visibly upset as he replies, "I guess it wasn''t a good time, if you ever change your mind then pay me a visit at school." he says with a forced smile as he silently walks you home.'
+				end
+
+				act 'Leave': gt 'pavResidential'
+			end
+		end
+	end
+	act 'Refuse':
+		*clr & cla
+		npc_rel['A5'] = 70
+		gs 'stat'
+		'<center><b><h4><font color="blue"><<"Fyodor ">><<"[Fedor]">><<" Kozlov">></font></h4></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/fedorsad.jpg"></center>'
+		'You said to Fedor "I have too much that I need to do right now... maybe some other time." Fedor then lowered his head with a frown. "Okay. Maybe some other time."'
+
+		act 'Leave': gt 'pavResidential'
+	end
+end
+
+if $ARGS[0] = 'Starletsreact':
+	cla
+	menu_off = 1
+	'As you approach the Starlets, Albina looks at you in disgust. Loudly enough for the whole team to hear, she says "<<$pcs_nickname>>, no one wants to see some pregnant whore dance. Leave. You''re done." Tears welling in your eyes, you leave, the sound of laughter and taunting following your departure.'
+	act 'Continue':npc_pregtalk['A23'] = 1 & gt 'gdk'
+end
+
+if $ARGS[0] = 'vballreact':
+	cla
+	menu_off = 1
+	'As you approach the team, your coach notices you and calls you aside. "<<$pcs_firstname>>, are you pregnant? I can''t let you play like that. Also, a pregnant teenager would definitely reflect poorly on me and the rest of the team. Sorry, but off the team." Tears welling in your eyes, you leave.'
+	act 'Continue':npc_pregtalk['A69'] = 1 & gt 'gdk'
+end
+
+
+--- gdksport ---------------------------------
+

@@ -25,7 +25,7 @@ for location in root.iter('Location'):
     iname = iname.replace("$","_")
 
     try:
-        ifile = io.open(os.path.join(idir,iname), 'rt', encoding='utf-8')
+        ifile = io.open(os.path.join(idir,iname + '.qsrc'), 'rt', encoding='utf-8')
         text = ifile.read()
 
         # make sure there's a line at the end of file
@@ -36,7 +36,7 @@ for location in root.iter('Location'):
         ofile.write(text)
         ifile.close()
     except IOError:
-        print "WARNING: missing location %s" % iname
+        print("WARNING: missing location %s" % iname)
         pass
 
 ofile.close()

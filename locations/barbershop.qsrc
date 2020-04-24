@@ -1,0 +1,1292 @@
+# barbershop
+!!! Maruda Hair Mod
+!!pcs_hairlng <= 30 = vshort
+!!pcs_hairlng <= 80 = short
+!!pcs_hairlng <= 160 = med
+!!pcs_hairlng <= 260 = medlo
+!!pcs_hairlng <= 400 = lng
+!!pcs_hairlng <= 600 = qlng
+!!pcs_hairlng <= 800 = vlng
+!!pcs_hairlng > 800 = xlng
+!!pcs_hairbsh - 0 = unbrushed 1 = brushed
+!!defcurly - 0 = naturally straight, 1 = naturally curly
+!!straight = curly hair straightened (days remaining)
+!!hbraids = braids
+!!hpigtail = pigtails
+!!curly = curly
+!!hbangs = bangs
+!!hpingripw = buns
+!!hscrunchw = scrunch
+!!hbangs + hscrunchw = bangs-scrunch
+!!hbangs + hpingripw = bangs-buns
+!!curly = hscrunchw = curly-scrunch
+!!curly + hpingripw = curly-buns
+!!curly + hbangs = curly-bangs
+!!curly + hbangs + hscrunchw = curly-bangs-scrunch
+!!curly + hbangs + hpingripw = curly-bangs-buns
+!!nathcol = natural hair colour
+!!pcs_haircol 0 = Black
+!!pcs_haircol 1 = Brown
+!!pcs_haircol 2 = Red
+!!pcs_haircol 3 = Blonde
+!!pcs_haircol 4 = Light Red
+!!pcs_haircol 5 = Dark Blue
+!!pcs_haircol 6 = Medium Blue
+!!pcs_haircol 7 = Light Blue
+!!pcs_haircol 8 = Dark Green
+!!pcs_haircol 10 = Light Green
+!!pcs_haircol 11 = Dark Pink
+!!pcs_haircol 12 = Medium Pink
+!!pcs_haircol 13 = Light Pink
+!!pcs_haircol 14 = Dark Purple
+!!pcs_haircol 15 = Medium Purple
+!!pcs_haircol 16 = Light Purple
+!!pcs_haircol 17 = Orange
+!!pcs_haircol 18 = Dark Red
+!!pcs_haircol 19 = Medium Red
+
+$menu_loc = 'barbershop'
+$menu_arg = 'start'
+menu_off = 0
+
+if $ARGS[0] = 'start':
+	gs 'stat'
+	'<center><b><font color="maroon">The Barber Shop</font></b></center>'
+	'<center>The only barber shop in the area owned by Oleg Anatolyevich Syomin. He denies ever playing football, but your brother is convinced he is "The Oleg Anatolyevich Syomin". While he can''t do very special hairstyles, he''s cheap and works fast.</center>'
+	clr
+	gs 'stat'
+	gs 'themes', 'indoors'
+	*nl
+
+	if pcs_hairlng <= 15:
+		'Your hair is not long enough to require cutting.'
+	else
+		'<a href=' + iif(money >= 700, '"exec:gt ''barbershop'', ''cuthair''"', '') + '>Cut your hair - 700 <b>₽</b></a>'
+	end
+
+	*nl
+
+	if pcs_hairlng <= 80:
+		'Your hair is not long enough to be curled.'
+	else
+		'<a href=' + iif(money >= 1500, '"exec:gt ''barbershop'', ''perm''"','') + '>Curl your hair - 1500 <b>₽</b></a>'
+	end
+	
+	*nl
+
+	if pcs_hairlng <= 80:
+		'Your hair is not long enough to be straightened.'
+	else
+		'<a href=' + iif(money >= 1500, '"exec:gt ''barbershop'', ''perm2''"', '') + '>Straighten your hair - 1500 <b>₽</b></a>'
+	end
+	
+	*nl
+
+	'<a href=' + iif(money >= 750, '"exec:gt ''barbershop'', ''dyehair''"', '') + '>Dye your hair - 750 <b>₽</b></a>'
+
+	*nl
+
+	if dyefade > 0 and dyefade < 7:
+		'<a href=' + iif(money >= 375, '"exec:gt ''barbershop'', ''touchup''"', '') + '>Touch up hair color - 375 <b>₽</b></a>'
+		*nl
+	elseif dyefade = 0:
+		'<a href=' + iif(money >= 750, '"exec:gt ''barbershop'', ''touchup2''"', '') + '>Re-dye your existing hair color - 750 <b>₽</b></a>'
+		*nl
+	end
+	
+	*nl
+
+	if hour =< 8 or hour >= 20:
+		*clr & cla
+		'The barber shop is closed at the moment, you should probably come back, when Mr. Syomin is in'
+
+		act 'Leave':minut += 3 & gt 'pavCommercial'
+
+		exit
+	end
+
+	act 'Leave':minut += 3 & gt 'pavCommercial'
+end
+
+if money >= 60:
+	act 'Buy Scrunchies - 60 <b>₽</b>':
+		*clr & cla
+		menu_off = 1
+		money -= 60
+		hscrunch += 10
+		'You pay Mr. Syomin and buy the small box.'
+
+		act 'Move away':gt 'barbershop', 'start'
+	end
+end
+
+if money >= 80:
+	act 'Buy Hairaccessories - 80 <b>₽</b>':
+		*clr & cla
+		menu_off = 1
+		money -= 80
+		hpingrip += 10
+		'You pay Mr. Syomin and buy the small box.'
+
+		act 'Move away':gt 'barbershop', 'start'
+	end
+end
+
+if barbershop_wrk = 0:
+	act 'Ask for work':
+		cla
+		*clr
+		menu_off = 1
+		minut += 5
+		'You walk up to Mr. Syomin, the owner of the barbershop.'
+		'"Hello Mr. Syomin", you greet him.'
+		'"Hello <<$pcs_nickname>>! What can I do for you today?", he asks you in his usual soothing voice.'
+		'"I was wondering if you''re looking for some help around here"'
+		'"Well, I don''t think you have experience as a hairdresser..." He thinks for a second. "..., but my back isn''t the best anymore, so I could use some help keeping the shop clean. It''s not much work, but I''d be happy if you could come in once a day for about an hour. Just come by, when you''re done with school and when I''m still open, obviously."'
+		'You smile cheerfully. "That sound great! What would I have to do?"'
+		'"Well," he says, while looking around and gathering tasks for you. "...,  you''d have to mop the floor here in the main room and the break room in the back as well. Take out all the trash, clean the breakroom kitchen, clean the mirrors, windows, chairs and toilet and of course dust the shelves. It might sound like a lot, but don''t worry, even doing one thing, makes my life easier."'
+		'You think about it for a second, but you guess it won''t be too bad and you could need any amount of money... "I...uhm...hate to ask, but how much would I earn per hour?"'
+		'"Ah yes," Mr. Syomin chuckles. "..., the most important question. Are you alright with 125 <b>₽</b> per hour?"'
+			
+		act 'Accept the job':
+			cla
+			*nl
+			'"That''s great", you nod. "When can I start?"'
+			'"If you could come back tomorrow, that''d be great."'
+			barbershop_wrk = 1
+			act 'Leave': gt 'barbershop','start'
+		end
+		
+		act 'Think about it':
+			cla
+			*nl
+			'"I guess I''ll think about it some more.", you answer.'
+			'"Sure <<$pcs_nickname>>, come back when you want to work."'
+			act 'Leave': gt 'barbershop','start'
+		end
+	end
+elseif barbershop_wrk = 1 and barbershop_wrk_day ! daystart:
+	act 'Clean the shop for 125 <b>₽</b> (1:00)':
+		cla
+		*clr
+		menu_off = 1
+		minut += 60
+		money += 125
+		barbershop_wrk_day = daystart
+		gs 'stat'
+		'You work diligently and fast. You clean the floor, take out the trash, dust off the shelves and wipe some mirrors and windows. Before you know an hour has passed and you''re 125 <b>₽</b> richer.'
+
+		act 'Leave': gt 'barbershop','start'
+	end
+end
+
+if $ARGS[0] = 'cuthair':
+	cla
+	*clr
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+	'You look at your yourself in the mirror then ask Mr. Syomin if you can get your hair cut.'
+	'"Of course, how would you like your hair cut?", he asks you.'
+
+	if pcs_hairlng > 10:
+		act 'Very short':
+			cla
+			*clr
+			money -= 700
+			'You sit down and say, "I want my hair to be very short."'
+			'"Of course", he says with a friendly smile on her face, while leading you to a free seat.'
+
+			act 'Sit down':
+				*clr & cla
+				minut += 30
+				pcs_hairlng = 10
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About half an hour later he is done and shows you your very short buzzcut.'
+				'You stand up and pay Mr. Syomin at the counter.'
+
+				act 'Stand up':gt 'barbershop', 'start'
+			end
+		end
+	end
+
+	if pcs_hairlng > 31:
+		act 'Short, but not too short':
+			cla
+			*clr
+			money -= 700
+			'"I''d like to have my hair cut short, but it shouldn''t get too short. I hope, you know what I mean.", you tell him, hoping he wouldn''t cut everything off.'
+			'"I know what you mean, that''s not problem at all", he says, then he turns around one of the free seats and makes a gesture to you, to sit down.'
+
+			act 'Sit down':
+				if pcs_hairlng > 60:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 31
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle, which barely reaches your earlobes.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 31
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle, which barely reaches your earlobes.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 31
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you your new hairstyle, which barely reaches your earlobes.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 81:
+		act 'About chin-line length':
+			cla
+			*clr
+			money -= 700
+			'"Could you cut my hair back to between my chin and shoulder, please?", you ask him.'
+			'"Sure, no problem", he tells you getting a chair for you ready.'
+
+			act 'Sit down.':
+				if pcs_hairlng > 90:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 81
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which goes down to you chin-line and you have a fringe, covering your forehead.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 30
+						pcs_hairlng = 81
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done and shows you your new hairstyle which goes down to you chin-line.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 31
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done and shows you your new hairstyle which goes down to you chin-line.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 161:
+		act 'Shoulder Length':
+			cla
+			*clr
+			money -= 700
+			'"I would like to have my hair cut back to about the height of my shoulder.", you tell him.'
+			'"Sure, no problem", he tells you, gesturing you, to sit down into a free chair.'
+
+			act 'Sit down':
+				if pcs_hairlng > 170:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 161
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which just reaches your shoulders and you have a fringe, covering your forehead.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 30
+						pcs_hairlng = 161
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'30 minutes later, he is done cutting your hair. He shows you your new hairstyle which just reaches your shoulders.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 161
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which just reaches your shoulders.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 261:
+		act 'About Brastrap length':
+			cla
+			*clr
+			money -= 700
+			'"Could you cut my hair back to about where my bra-strap sits?", you ask him.'
+			'"That''s absolutely no problem.", he says, when gesturing you sit down on one of the free seat'
+
+			act 'Sit down.':
+				if pcs_hairlng > 280:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 261
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to your bra strap, in addition he made you a fringe, which covers your forehead, as requested.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 261
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to your bra strap.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 261
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to your bra strap.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 401:
+		act 'About small of back length':
+			cla
+			*clr
+			money -= 700
+			'"Could you cut my hair back to about the small of my back?", you ask him.'
+			'"That''s absolutely no problem.", he says, when gesturing you sit down on one of the free seat'
+
+			act 'Sit down.':
+				if pcs_hairlng > 420:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 401
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the small of your back, in addition he made you a fringe, which covers your forehead, as requested.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 401
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the small of your back.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 401
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the small of your back.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 601:
+		act 'About Hip length':
+			cla
+			*clr
+			money -= 700
+			'"Could you cut my hair back to about the top of my hips?", you ask him.'
+			'"That''s absolutely no problem.", he says, when gesturing you sit down on one of the free seat'
+
+			act 'Sit down.':
+				if pcs_hairlng > 620:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 601
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the top of your hips, in addition he made you a fringe, which covers your forehead, as requested.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 601
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the top of your hips.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 601
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you your new hairstyle which reaches down to the top of your hips.'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+
+	if pcs_hairlng > 801:
+		act 'Cut the tips':
+			cla
+			*clr
+			money -= 700
+			'"I''d like to keep this length, but my tips might need some cutting. Could you do that?", you ask him. '
+			'"Of course, please sit down.", he says.'
+
+			act 'Sit down.':
+				if pcs_hairlng > 801:
+					cla
+					*clr
+					'"Before we begin, I need to ask, if I should cut you a fringe or not.", he tells you.'
+
+					act 'Yes':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 801
+						hbangs = 1
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you how he trimmed your hair as requested keeping it as much of the length as possible, he cut you a nice fringe, which now covers your forehead.'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+
+					act 'No':
+						*clr & cla
+						minut += 20
+						pcs_hairlng = 801
+						hbangs = 0
+						pcs_hairbsh = 1
+						gs 'stat'
+						'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+						'20 minutes later, he is done cutting your hair. He shows you how he trimmed your hair as requested keeping it as much of the length as possible'
+						'You stand up and pay Mr. Syomin at the counter.'
+
+						act 'Stand up':gt 'barbershop', 'start'
+					end
+				else
+					*clr & cla
+					minut += 20
+					pcs_hairlng = 801
+					pcs_hairbsh = 1
+					gs 'stat'
+					'<center><img src="<<FUNC(''$face_image'')>>"></center>'
+					'20 minutes later, he is done cutting your hair. He shows you how he trimmed your hair as requested keeping it as much of the length as possible'
+					'You stand up and pay Mr. Syomin at the counter.'
+
+					act 'Stand up':gt 'barbershop', 'start'
+				end
+			end
+		end
+	end
+	
+	act 'Change you mind': gt 'barbershop', 'start'
+end
+
+if $ARGS[0] = 'perm':
+	cla
+	*clr
+	menu_off = 1
+	minut += 20
+	money -= 1500
+	if defcurly = 0:
+		curly = rand(12,16)
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		'You get your hair curled. It should hold for around 2 weeks.'
+	else
+		curly = 2147483647
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		'You get your hair curled, as it should be naturally.'
+	end
+	act 'Leave': gt 'barbershop', 'start'
+end
+
+if $ARGS[0] = 'perm2':
+	cla
+	*clr
+	menu_off = 1
+	minut += 20
+	money -= 1500
+	curly = 0
+	if defcurly = 0:
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		'You get your hair straightened, as it should be naturally.'
+	else
+		straight = rand(12,16)
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		'You get your hair straightened. It should hold for around 2 weeks.'	
+	end
+	act 'Leave': gt 'barbershop', 'start'
+end
+
+if $ARGS[0] = 'dyehair':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'You ask Mr. Syomin, the barber, if he could dye your hair.'
+	'"Sure.", he says.'
+	'"What colour would like to have your hair dyed?"'
+	
+	act 'Change your mind':gt 'barbershop', 'start'
+	
+	if pcs_haircol ! nathcol:
+		act'Restore your hair to its natural colour':
+			cla
+			*clr
+			'"I want to go back to my natural hair colour." you say as you pick at your hair in the mirror, "I don''t think <<$pcs_haircol>> is working for me."' 
+			'"Sure thing!", he says, "Why don''t you take a seat?"'
+			'"We''ll be done in no time!", he says and points your over to sit down on one of the seats.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = nathcol
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'Less than an hour later your hair is dyed and dried.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 0:
+		act 'Black':
+			cla
+			*clr
+			gs 'stat'
+			'"Black", you say, "I want to have it as dark as possible, please."'
+			'"Sure thing!", he says, "Why don''t you take a seat?"'
+			'"We''ll be done in no time!", he says and points your over to sit down on one of the seats.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 0
+				dyefade = rand(28,35)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'Not even an hour later everything seems to have dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+
+	if pcs_haircol ! 1:
+		act 'Brown':
+			cla
+			*clr
+			gs 'stat'
+			'"I''d like to have my hair brown", you say.'
+			'"Sure thing!", he answer in a happy tone, "Why don''t you take a seat?"'
+			'"We''ll be done in no time!", he says.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 1
+				dyefade = rand(28,35)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'45 minutes later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+
+	if pcs_haircol ! 2:
+		act 'Red':
+			cla
+			*clr
+			gs 'stat'
+			'"Red is a colour I''d love to try out.", you say.'
+			'"Sure thing!", he smiles, "Why don''t you take a seat?"'
+			'"We''ll be done in no time!", he says as he turns around one of the seats for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 2
+				dyefade = rand(28,35)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'45 minutes later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+
+	if pcs_haircol ! 3:
+		act 'Blonde':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to have my hair coloured blonde, please", you tell him.'
+			'"As you wish, please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 3
+				dyefade = rand(28,35)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+
+	if pcs_haircol ! 4:
+		act 'Light Red':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Light red, like a fire truck." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 4
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 5:
+		act 'Dark Blue':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I want a really dark blue, almost purple." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 5
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 6:
+		act 'Medium Blue':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I feel like trying an electric blue." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 6
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 7:
+		act 'Light Blue':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Make my hair light blue, like candy floss." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 7
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 8:
+		act 'Dark Green':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I want a deep green, like emerald." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 8
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+!	if pcs_haircol ! 9:
+!		act 'Medium Green':
+!			cla
+!			*clr
+!			gs 'stat'
+!			'"I want to try something really different." you tell him.'
+!			'"And what would that be?" Mr. Syomin asks cheerfully.'
+!			'"I''d like a nice forest green, like summer leaves." you announce.'
+!			'"As you wish, although I''not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+!
+!			act 'Sit down':
+!				cla
+!				*clr
+!				minut += 45
+!				pcs_haircol = 9
+!				collength = pcs_hairlng
+!				money -= 750
+!				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+!				'About an hour later, everything should be dried up.'
+!				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+!				'You stand up from the chair and pay him 750 <b>₽</b>.'
+!
+!				act 'Leave':gt 'barbershop', 'start'
+!			end
+!		end
+!	end
+	if pcs_haircol ! 10:
+		act 'Light Green':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Can you do a nice light green, sort of like new leaves?" you ask.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 10
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 11:
+		act 'Dark Pink':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"How about a really dark pink, almost like a cross between purple and red." you tell him with a smile.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 11
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 12:
+		act 'Medium Pink':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I want it to be pink like bubble gum with maybe a few really light pink streaks." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 12
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 13:
+		act 'Light Pink':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"A soft light pink, like candy floss." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 13
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 14:
+		act 'Dark Purple':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I want it nice dark purple, like a dark wine." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 14
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 15:
+		act 'Medium Purple':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I''m leaning towards purple, not so dark that you can''t tell it is purple, you know?" you tell him.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 15
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 16:
+		act 'Light Purple':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"I''m thinking a really light purple, like grape soda." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 16
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 17:
+		act 'Orange':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Really orange, like a fox." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 17
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 18:
+		act 'Dark Red':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Dark Red, like a fine wine." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 18
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+	if pcs_haircol ! 19:
+		act 'Medium Red':
+			cla
+			*clr
+			gs 'stat'
+			'"I want to try something really different." you tell him.'
+			'"And what would that be?" Mr. Syomin asks cheerfully.'
+			'"Medium Red, like a cherry." you announce.'
+			'"As you wish, although I''ve not done too many like that. Please have a seat.", he says and turns around one of the chairs for you.'
+
+			act 'Sit down':
+				cla
+				*clr
+				minut += 45
+				pcs_haircol = 19
+				dyefade = rand(23,30)
+				collength = pcs_hairlng
+				money -= 750
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+				'About an hour later, everything should be dried up.'
+				'Mr. Syomin removes the dryer hood. "And we''re all done."'
+				'You stand up from the chair and pay him 750 <b>₽</b>.'
+
+				act 'Leave':gt 'barbershop', 'start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'touchup':
+	cla
+	*clr
+	menu_off = 1
+	minut += 45
+	dyefade = rand(35,42)
+	collength = pcs_hairlng
+	money -= 375
+	gs 'stat'
+	'The hairdresser nods her head excitedly and leads you to an empty chair.'
+	'She has a bubbly personality, chatting about this and that without pause or much feedback from you, but you don''t mind as it keeps you distracted while you go through the usual wash and dry routine.'
+	'She flits around your head with her tools, and before you know it, your hair is restored to its earlier luster and color.'
+	'You stand up from the chair and pay her 375 <b>₽</b>.'
+
+	act 'Move away':gt 'barbershop', 'start'
+end
+
+if $ARGS[0] = 'touchup2':
+	cla
+	*clr
+	menu_off = 1
+	'The hairdresser smiles apologetically, "Sorry, but you''re going to need a completely new dye job to cover that up. I can do it, if you want? It''s only 750 <b>₽</b>."'
+	act 'Sure':
+		cla
+		*clr
+		minut += 45
+		dyefade = rand(35,42)
+		collength = pcs_hairlng
+		money -= 750
+		gs 'stat'
+		'About an hour later, everything should be dried up.'
+		'The hairdresser removes the dryer hood. "And we''re all done."'
+		'You stand up from the chair and pay her 750 <b>₽</b>.'
+
+		act 'Move away':gt 'barbershop', 'start'
+	end
+
+	act 'No thanks':gt 'barbershop', 'start'
+end
+
+!!! Maruda Hair Mod
+
+--- barbershop ---------------------------------
+

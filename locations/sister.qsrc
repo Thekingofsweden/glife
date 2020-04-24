@@ -1,0 +1,478 @@
+# sister
+
+!!model Valentina Azarov - Megan Vale - Lupe Burnett
+sisterAge = year - ((npc_dob['A33'] - (npc_dob['A33'] mod 10000)) / 10000)
+$sisterLocationTitle = '<center><h1><font color="maroon">Anya</font></h1></center>'
+gs 'stat'
+
+'<center><h1><font color="maroon">Anya</font></h1></center>'
+'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/sister' + rand(1,3) + '.jpg"></center>'
+'Your sister Anya is a bit older than you. She is <<sisterAge>> years old. She graduated from Secondary school, but didn''t go to the university and now works at the local supermarket, here in Pavlovsk.'
+gs 'sister_chat', 'checks'
+
+if hour = 8 and week < 6:
+	'God damn it, <<$pcs_nickname>>, because of you I will be late for work.'
+	act 'Apologize and let her get ready': gt $loc, $metka
+exit
+end
+
+if $ARGS[0] = 'gdk':
+	*clr & cla
+	if npc_rel['A33'] < 20:
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma1.jpg"></center>'
+		'"What do you want? Fuck off!" Anya and her friends laugh and point at you, until you leave them alone.'
+		act 'Move away': SiSgdk = 0 & gt $loc, $metka
+	! Showing up after party invite
+	elseif week = 5 and (daystart - (daystart mod 7)) mod 2 = 0 and sisterQW['party'] = 1 and daystart - sisterQW['partyday'] < 5:
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma2.jpg"></center>'
+		'Anya and some of her friends are dressed up organizing themselves before going to the party. Anya sees you and waves you to her. "Come on, I was starting to wonder if you were going to show up."'
+		gs 'sister', 'partyanswer', 'anya'
+	! Anya heading to party
+	elseif npc_rel['A33'] >= 70 and week = 5 and (daystart - (daystart mod 7)) mod 2 = 0 and (sisterQW['party'] = 0 or sisterQW['party'] = 2):
+		minut += 5
+		gs 'stat'
+		if npc_rel['A57'] >= 80:
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/reks.jpg"></center>'
+			'Anya and her friends are dressed up and hanging out, like they are about to leave and go somewhere.'
+			gs 'sister', 'partyanswer', 'rex'
+		else
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma2.jpg"></center>'
+			'Anya and her friends are dressed up and hanging out, like they are about to leave and go somewhere.'
+			'Then your sister sees you, smiles and waves you over. "Hi <<$pcs_nickname>>, we''re going to a party at Rex''s today. Want to come with us?"'
+			gs 'sister', 'partyanswer', 'anya'
+		end
+	else
+		cla
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anya.jpg"></center>'
+		'Anya sits with some girls and boys, drinking beer. "Hey <<$pcs_nickname>>!" Anya smiles, "Want a beer?"'
+		act 'Drink beer':
+			*clr & cla
+			minut += 60
+			npc_rel['A33'] += 5
+			gs 'drugs ', 'alcohol', 'beer', 3
+			gs 'stat'
+			if AniaFrends >= 1:
+				gt 'sister', 'scene1'
+			else
+				AniaFrends = 1
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma1.jpg"></center>'
+				'You meet Anya''s friends. They are all her former classmates. There''s small and nimble Lusya, Ira who is constantly confused, a tall athletic guy, whom everyone calls Rex, and a red-haired lanky guy named Roma. After the introductions you sit down with them, drinking beer and chatting with Anya and her friends.'
+			end
+			act 'Move away': SiSgdk = 0 & gt $loc, $metka
+		end
+		gs 'willpower', 'drink', 'resist', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Decline and move along (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt $loc, $metka
+		else
+			act 'Decline and move along (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to resist.</font>'
+		end
+	end
+end
+
+if $ARGS[0] = 'partyanswer':
+	if $ARGS[1] = 'anya':
+		if mesec > 0 or pcs_mood < 25 or alko >= 3 or cumloc[11] = 1 or cumloc[6] = 1 or cumloc[7] = 1:
+			sisterQW['party'] = -1
+			if mesec > 0:
+				'"Sorry Anya, I''m not in the mood today, you go without me."'
+				'"What, are you on the rag today? You should have told me! Alright, go home and get some rest."'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			elseif pcs_mood < 25:
+				'"Sorry Anya, I''m not in the mood today, you go without me."'
+				'"You do look a little pale sis, go home and get some rest."'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			elseif alko >= 3:
+				'"<<$pcs_nickname>>, how the hell did you get so drunk already? I was going to invite you to a party, but you look like you have already been to one. Go home and sleep it off."'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			else
+				'Her smile fades and she seems confused for a moment then gets a look of disgust on her face. "My God, why are you walking around with your face coverd in cum? You''ll get yourself a reputation! Go home and wash that off, quickly."'
+				'You feel a little ashamed that your sister has seen you looking like this in public.'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			end
+		else
+			act 'Decline':
+				*clr & cla
+				minut += 5
+				sisterQW['party'] = -1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/rekshome/party/party_sister_1.jpg"></center>'
+				'"I''d love to, but I have a lot of homework to do. I''m sorry."'
+				'"Don''t worry, maybe next time you can come."'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			end
+			act 'Go to the party': if sisterQW['partycount'] > 0: gt 'sbReksHome', 'party' else gt 'sister_party', 'sisboyQW_party'
+		end
+	elseif $ARGS[1] = 'rex':
+		if pav_slut >= 125 or cumloc[11] = 1 or (cumloc[6] = 1 or cumloc[7] = 1):
+			rex_breakup = 1
+			reksLike = 0 
+			npc_rel['A57'] = 0
+			rexPark = 0
+			rexCar = 0
+			if pav_slut >= 125:
+				'"Shit, <<$pcs_nickname>> everywhere people are saying you are a fucking whore. What is this garbage, <<$pcs_nickname>>? I thought we were an item, and things were getting serious, and you''re fucking around?"'
+				'"I do not know what came over me, I was not myself, please forgive me, if you can."'
+				'"Listen, everything''s OK, but let''s just be friends and forget being together. Okay?"'
+				'"Okay..."'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			else
+				'"Shit, <<$pcs_nickname>> are you covered in cum? What is this garbage, <<$pcs_nickname>>?" He leans in to get a better look then recoils in disgust.'
+				'Your hand goes up to the dried cum on your face, you forgot about it. "I do not know what came over me, I was not myself, please forgive me, if you can."'
+				'"What ever slut, just get away from me." With that he moves away from you and now you see everyone giving you either a disgusted or angry look.'
+				'"Okay..." Not knowing what else to say you walk away.'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			end
+		elseif mesec > 0 or pcs_mood < 50:
+			'"Sorry Rex, sweetie, I''m not feeling too good today, you go without me."'
+			'"Sweetie, I do not want to leave you alone, but I need to go with the guys, take care, and do not be sad."'
+			'Rex gives you a gentle kiss on your cheek and leaves.'
+			act 'Move away': SiSgdk = 0 & gt $loc, $metka
+		elseif alko >= 3:
+			'"<<$pcs_nickname>>, are you drunk? I wanted to invite you to the party, but you look like you just left a party. Go home and sleep it off."'
+			act 'Move away': SiSgdk = 0 & gt $loc, $metka
+		else
+			'"Baby, let''s go to my place, I am throwing another one of my parties."'
+			act 'Decline':
+				cla
+				minut += 5
+				sisterQW['party'] = -1
+				gs 'stat'
+				'"Sorry Rex, I have a lot of homework. I''d love to but I don''t want to fail my exams."'
+				'"Well, go on then, but next time you definitely come, okay?"'
+				act 'Move away': SiSgdk = 0 & gt $loc, $metka
+			end
+			act 'Accept': gt 'sbReksHome', 'party'
+		end
+	end
+end
+
+if $ARGS[0] = 'scene1':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma1.jpg"></center>'
+	'Your sister Anya and her friends Lusya, Ira, Rex, and Roman are sitting outside the community center drinking beer.'
+	if npc_QW['A33'] = 1:
+		act 'Meet your sister''s boyfriend':
+			*clr & cla
+			minut += 5
+			npc_QW['A33'] = 2
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/sisboyqw_02.jpg"></center>'
+			'"<<$pcs_nickname>>, you wanted to meet my boyfriend? This is my boyfriend Roma, and this is my sister <<$pcs_nickname>>."'
+			'"To friendship!!!" Rex shouts drunkenly, raising his cup. You pick up a cup full of beer and start drinking, glancing at your sister''s boyfriend.'
+			'Roma, red-haired and skinny, is actually pretty cute, he kinda reminds you of Katja and Vicky but more manly. You think to yourself, "Sister, how very lucky you are."'
+			act 'Continue to drink beer': gt 'sister', 'scene2'
+		end
+	else
+		temp = rand(0,4)
+		if temp = 0:
+			'Impatiently, Anya picks up a bottle of beer and shouts, "Come on guys! Will you pour me some beer today or what?"'
+			if rand(0,1) = 0:
+				'Rex takes the bottle out of Anya''s hands.'
+				temprand = rand(0,4)
+				if temprand = 0:
+					'"Stop shouting, I''m pouring!"'
+					temprand = rand(0,2)
+					if temprand = 0:
+						'Between fits of giggles, Anya says "I haven''t even started to yell. If I do, you''ll know!"'
+					elseif temprand = 1:
+						'With a resounding slap on Rex''s shoulder, Lusya says "Hurry up, you piece of dog shit!"'
+					else
+						'With a smile, Ira says "Don''t get angry, Rex."'
+						if rand(0,10) = 0:'Anya quickly interjects, "We might need to chain him to a post until he calms down."'
+					end
+				elseif temprand = 1:
+					'"Well, you always like to be late for the fun. Relax your ass, I''m sorting it all out."'
+					temprand = rand(0,2)
+					if temprand = 0:
+						'Between fits of giggles, Anya says "My ass is always relaxed."'
+						'Roma wraps his arm around her and cups the side of her hip with his hand. "Hell yeah it is." Which gets everyone laughing.'
+					elseif temprand = 1:
+						'With a resounding slap on Rex''s shoulder, Lusya says "If we had something to drink we would be relaxed!"'
+					else
+						'Roma giggles and says "If she relaxes it anymore it will be too loose to feel anything."'
+						'Anya quips, "That''s just because you have a little dick." Which gets everyone laughing.'
+					end
+				elseif temprand = 2:
+					'"Come on, you could have opened it yourself, lazy bitch. Don''t you have hands?" He says with a smile'
+					temprand = rand(0,2)
+					if temprand = 0:
+						'Anya giggles "Yeah, but what else are yours good for?"'
+						if rand(0,10) = 0:'With mock indignation, Rex answers "Really just one other thing."'
+					elseif temprand = 1:
+						'With a resounding slap on Rex''s shoulder, Lusya says "Is that how you speak to a lady?"'
+						if rand(0,10) = 0:'With mock indignation, Rex answers "Yes. I speak Russian to her."'
+					else
+						'Ira smiles, saying "Don''t get so upset, Rex."'
+						if rand(0,10) = 0:'Anya quickly interjects, "We might need to chain him up to a tree to keep him calm."'
+					end
+				elseif temprand = 3:
+					'"Allow me, madame."'
+					temprand = rand(0,2)
+					if temprand = 0:
+						'Anya giggles "Of course, monsieur."'
+					elseif temprand = 1:
+						'With mock indignation, Anya says "Don''t you Madame me!"'
+						if rand(0,10) = 0:'Rex bows gallantly and answers "I''m truly sorry, mademoiselle."'
+					else
+						'Impatiently, Anya says "Pour it already, you clown."'
+					end
+				else
+					'"Shit! Where''re the cups? Did we not buy any?"'
+					temprand = rand(0,2)
+					if temprand = 0:
+						'Anya picks up the cups, "Here they are, you blind monster."'
+					elseif temprand = 1:
+						'Roma says "Rex, you''re the one who bought them, is your memory really that bad?"'
+					else
+						'Lusya holds up the cups and says "Rex, calm down."'
+					end
+				end
+			else
+				'Roma takes the bottle from Anya and opens it. "Somebody hold the cups."'
+				temprand = rand(0, 3)
+				if temprand = 0:
+					'Rex holds the cups while Roma pours the beer.'
+				elseif temprand = 1:
+					'Rex takes the cups and mutters "That worthless ass. Can''t he use both of his hands at once?"'
+				elseif temprand = 2:
+					'Ira takes the cups and says "Pour it already, you big doofus."'
+				else
+					'As Roma pours beer in the cups, they suddenly starts to tip over, unable to regain his balance this drunk, he falls over and spills all the beer on the ground.'
+					temprand = rand(0, 2)
+					if temprand = 0:
+						'Outraged, Rex screams "You worthless drunk ass! No one can trust you! Didn''t your mother ever tell you, ''Always pour with two hands!''"'
+					elseif temprand = 1:
+						'Outraged, Rex says "How the fuck could you spill that, are you really that drunk already?"'
+					else
+						'Indignantly, Anya says "Always the same, getting too drunk, too fast.."'
+					end
+				end
+			end
+		elseif temp = 1:
+			'Indignantly, Lusya says "Did we come here to drink beer or to look at it?"'
+		elseif temp = 2:
+			'With a flirty look, Ira bats her eyelashes and says "Boys, are we going to drink beer today or not?"'
+		elseif temp = 3:
+			if rand(0,1) = 0:
+				'Rex picks up a bottle of beer and pops it open.'
+				if rand(0,2) = 0:
+					'"Shit! Where''re the cups? Did we not buy any?"'
+					temprand = rand(0, 2)
+					if temprand = 0:
+						'Anya picks up the cups, "Here they are, you blind monster."'
+					elseif temprand = 1:
+						'Roma says "Rex, you''re the one who bought them, is your memory really that bad?"'
+					else
+						'Lusya holds up the cups and says "Rex, calm down."'
+					end
+				else
+					'"Roma, hold the cups while I pour."'
+				end
+			else
+				'Rex picks up a bottle of beer and hands it to Roma. "You pour this time."'
+				'Roma takes the bottle from Rex and opens it. "Somebody hold the cups."'
+				temprand = rand(0, 3)
+				if temprand = 0:
+					'Rex holds the cups while Roma pours the beer.'
+				elseif temprand = 1:
+					'Rex takes the cups and mutters "That worthless ass. Can''t he use both of his hands at once?"'
+				elseif temprand = 2:
+					'Ira takes the cups and says "Pour it already, you big doofus."'
+				else
+					'As Roma pours beer in the cups, they suddenly starts to tip over, unable to regain his balance this drunk, he falls over and spills all the beer on the ground.'
+					temprand = rand(0, 2)
+					if temprand = 0:
+						'Outraged, Rex screams "You worthless drunk ass! No one can trust you! Didn''t your mother ever tell you, ''Always pour with two hands!''"'
+					elseif temprand = 1:
+						'Outraged, Rex says "How the fuck could you spill that, are you really that drunk already?"'
+					else
+						'Indignantly, Anya says "Always the same; getting to drunk, to fast.."'
+					end
+				end
+			end
+		else
+			'Roma picks up the bottle of beer, opens it and says "Somebody hold the cups."'
+			temprand = rand(0, 3)
+			if temprand = 0:
+				'Rex holds the cups while Roma pours the beer.'
+			elseif temprand = 1:
+				'Rex takes the cups and mutters "That worthless ass. Can''t he use both of his hands at once?"'
+			elseif temprand = 2:
+				'Ira takes the cups and says "Pour it already, you big doofus."'
+			else
+				'As Roma pours beer in the cups, they suddenly starts to tip over, unable to regain his balance this drunk, he falls over and spills all the beer on the ground.'
+				temprand = rand(0, 2)
+				if temprand = 0:
+					'Outraged, Rex screams "You worthless drunk ass! No one can trust you! Didn''t your mother ever tell you, ''Always pour with two hands!''"'
+				elseif temprand = 1:
+					'Outraged, Rex says "How the fuck could you spill that, are you really that drunk already?"'
+				else
+					'Indignantly, Anya says "Always the same; getting to drunk, to fast.."'
+				end
+			end
+		end
+		act 'Continue to drink beer': gt 'sister', 'scene2'
+	end
+	
+	
+	'Finally, everybody''s plastic cup is filled with cold beer. You all merrily drink together.'
+	if reksLike = 1 and toiletRexSex = 0 and sisterQW['partycount'] > 0 and rex_breakup = 0:
+		temp = rand(1,100)
+		if temp >= 70:
+			'You notice Rex briefly glancing at your feet.'
+			if pcs_horny > 30 and (PCloSkirt > 2 or PCloPants > 4):
+				act 'Show off your legs ':
+					cla
+					minut += 5
+					pcs_horny += 5
+					npc_rel['A57'] += 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/event/community/rexpod<<rand(1,3)>>.jpg"></center>'
+					'You cross your foot over your leg, doing your best to appear seductive without being obvious.'
+					act 'Continue to drink beer': gt 'sister', 'scene2'
+					exit
+				end
+			end
+		elseif alko > 2 and temp <= 20 and npc_rel['A57'] <= 60:
+			*clr & cla
+			minut += 5
+			npc_rel['A57'] += 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/rex.jpg"></center>'
+			'Already pretty tipsy, Rex approaches you - "<<$pcs_nickname>>, let me refill your glass" - but he, seemingly accidentally, spills some on your foot. - "Oh, <<$pcs_nickname>>, forgive me! Here, I''ll clean that up."'
+			'Rex begins wiping off your legs with his shirt sleeve.'
+			gs 'willpower', 'foreplay', 'resist', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Step back (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'resist'
+					minut += 5
+					npc_rel['A57'] -= 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/event/community/rexnet.jpg"></center>'
+					'"No problem, I can manage that." You say as you clean your own shoe.'
+					act 'Continue to drink beer': gt 'sister', 'scene2'
+				end
+			else
+				act 'Step back (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Wait':
+				*clr & cla
+				minut += 5
+				pcs_horny += 5
+				npc_rel['A57'] += 1
+				gs 'stat'
+				'<center><video autoplay loop src="images/characters/pavlovsk/resident/reks/event/community/rexda.mp4"></video></center>'
+				'Laughing, you wait until Rex finishes wiping your foot. While you are giggling, Rex becomes more bold, gradually replacing his sleeve with his palm and working up your leg towards your thigh. Just as Rex''s hand starts to drift to your inner thigh, you realize what is going on and hurriedly remove his hand, saying: "Hey..."'
+				act 'Continue to drink beer': gt 'sister', 'scene2'
+			end
+		elseif rexPark = 1 and rexParkDay < daystart and rexSisTalk = 2:
+			cla
+			minut += 5
+			npc_rel['A57'] = 50
+			rexPark = 0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/rex.jpg"></center>'
+			gs 'reks', 'rexRep'
+			'Rex comes up to you. "<<$pcs_nickname>>, I looked like a real chump waiting for you alone in the park yesterday! That wasn''t very nice..."'
+			act 'Continue to drink beer': gt 'sister', 'scene2'
+		elseif rexCar = 1 and rexCarDay < daystart and rexSisTalk = 3:
+			cla
+			minut += 5
+			npc_rel['A57'] = 50
+			rexCar = 0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/rex.jpg"></center>'
+			gs 'reks', 'rexRep'
+			'Rex comes up to you. "<<$pcs_nickname>>, I was waiting at your door for almost two hours last night! It wasn''t very nice to ditch me like that..."'
+			act 'Continue to drink beer': gt 'sister', 'scene2'
+		elseif rexCar = 1 and rexCarDay < daystart and rexSisTalk = 4:
+			cla
+			minut += 5
+			npc_rel['A57'] = 50
+			rexCar = 0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/rex.jpg"></center>'
+			gs 'reks', 'rexRep'
+			'Rex comes up to you. "<<$pcs_nickname>>, you could have at least told me you didn''t want to go out... last night was a disaster! Next time, please just tell me if you can''t make it."'
+			act 'Continue to drink beer': gt 'sister', 'scene2'
+		elseif temp > 50 and npc_rel['A57'] >= 30:
+			cla
+			minut += 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/reks/rex.jpg"></center>'
+			gs 'reks', 'rexRep'
+			'Rex is drinking a glass of beer.'
+			act 'Chat':
+				cla
+				npc_rel['A57'] += 1
+				minut += 5
+				gt 'reks', 'rexGdkTalk'
+			end
+			act 'Continue to drink beer': gt 'sister', 'scene2'
+
+!sisboyparty
+!-1 - don''t go to the party
+!0 - don''t know about the parties
+!1 - knows about the parties
+!2 - agreed to go to the party
+!!again want to change rexs party to only every other Friday
+		elseif week < 5 and week > 1 and (daystart - (daystart mod 7)) mod 2 = 0 and pcs_vag > 0 and (sisterQW['party'] = 0 or sisterQW['party'] = 2) and daystart - sisterQW['partyday'] > 3:
+			'Roma looks up at you, suddenly remembering something. "<<$pcs_nickname>>, Rex''s apartment is available on Friday and he''s having a party, do you want to go?"'
+			sisterQW['partyday'] = daystart
+			minut += 5
+			gs 'stat'
+			act 'No (study)':
+				sisterQW['party'] = -1
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/rekshome/party/sisboyqwparty_3.jpg"></center>'
+				'You turn down the invitation.'
+				'"Sorry Roma, I would love to, but I can''t get behind at school. I have homework and books to read, you know what it''s like."'
+				act 'Finish':SiSgdk = 0 & gt 'sister', 'gdk'
+			end
+			if razradbeg > 0:
+				act 'No (training)':
+					sisterQW['party'] = -1
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/rekshome/party/sisboyqwparty_4.jpg"></center>'
+					'You turn down the invitation.'
+					'"I would love to, but I have a competition to prepare for. I have to train."'
+					act 'Finish':SiSgdk = 0 & gt 'sister', 'gdk'
+				end
+			end
+			if volleysostav = 1 or volleysostav = 2:
+				act 'No (volleyball)':
+					sisterQW['party'] = -1
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/rekshome/party/sisboyqwparty_5.jpg"></center>'
+					'You turn down the invitation.'
+					'"I can''t, the coach does not allow my to stay out late, and drinking is also prohibited."'
+					act 'Finish':SiSgdk = 0 & gt 'sister', 'gdk'
+				end
+			end
+			act 'Yes':
+				sisterQW['party'] = 1
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma1.jpg"></center>'
+				'You agree to go to the party.'
+				'"Awesome <<$pcs_nickname>>, it''ll be fun. We will meet here, don''t forget to be there before 18:00, otherwise we will leave without you."'
+				'Anya gives Roma a dirty look, but he just shrugs it off.'
+				act 'Finish':SiSgdk = 0 & gt 'sister', 'gdk'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'scene2':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/community/anyaroma1.jpg"></center>'
+	'The bottles of beer are quickly drained and everyone seems a little tipsy at this point. Soon everyone gets up and staggers inside, as they go they tell you bye, you wave to them and head on your way.'
+	act 'Leave':SiSonWork = 0 & SiSgdk = 0 & gt 'gdk'
+end
+
+--- sister ---------------------------------
+

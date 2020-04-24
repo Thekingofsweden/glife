@@ -1,0 +1,459 @@
+# chessplay
+
+menu_off = 1
+
+if $ARGS[0] = '':
+	if $chess_name='':$chess_name='Boy'
+	gs'stat'
+	chess_GG = 20
+	chess_com = 20
+
+	! chess_ind is used to show the integer difference between Sveta and her opponent
+	! if it is 0 then Sveta is equally skilled as her opponent
+	! the opponent will play more neutrally if the skill gap is within 5 points
+	! if it is > 0 then Sveta is less skilled then her opponent
+	! the opponent will play more aggressively if Sveta is less skilled by at least 5 points
+	! if it is < 0 then Sveta is more skilled then her opponent
+	! the opponent will play more conservatively if Sveta is more skilled by at least 5 points
+	chess_ind = chessV - pcs_chess
+	! chess_diff is used to show how that difference affects the swing in momentum with each move
+	if chess_ind < 0:
+		chess_diff = (chess_ind/2)*-1
+	else
+		chess_diff = (chess_ind/2)
+	end
+	! move_limit and time_limit keeps games from going forever
+	chess_move_limit = 60
+	chess_time_limit = 120
+	! chess_move and total_chess_time keep track of total moves and time until it hits the limits
+	chess_move = 0
+	total_chess_time = 0
+	gt 'chessplay', 'game'
+end
+
+if $ARGS[0] = 'game':
+	chess_exp += rand(0,1)
+	intel_exp += rand(0,1)
+	chess_move += 1
+	chess_time = rand(1,3)
+	minut += chess_time
+	total_chess_time += chess_time
+	gs 'stat'
+
+	if chess_move = 1:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/board' + rand(1,1) + '.jpg"></center>'
+		*nl
+		if chess_ind > 5:
+			'You are less skilled at chess than '+$chess_name+'. They will play more aggressively to try and defeat you.'
+			'You might want to play more conservatively and wear down their attacks.'
+		elseif chess_ind < -5:
+			'You are more skilled at chess than '+$chess_name+'. They will play more conservatively to try and defeat you.'
+			'You might want to play more aggressively and wear down their defenses.'
+		else
+			'You are about equally skilled at chess as '+$chess_name+'. They will use a wide range of moves to try and defeat you.'
+			'You might want to try different types of moves to keep your opponent off balance.'
+		end
+	end
+
+	if chess_GG <= 0 and chess_com <= 0:
+		*clr & cla
+
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/stalemate' + rand(1,1) + '.jpg"></center>'
+		*nl
+		'Stalemate! You have drawn the match against '+$chess_name+'!'
+		'You and '+$chess_name+' could not find a way to win the match.'
+		
+		act 'Return': gt 'kruchess'
+	elseif chess_GG <= 0:
+		*clr & cla
+
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/lose' + rand(1,1) + '.jpg"></center>'
+		*nl
+		'Checkmate! You have lost the match against '+$chess_name+'!'
+		
+		act 'Return': gt 'kruchess'
+	elseif chess_com <= 0:
+		*clr & cla
+
+		chess_win += 1
+
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/win' + rand(1,1) + '.jpg"></center>'
+		*nl
+		'Checkmate! You have won the match against '+$chess_name+'!'
+
+		act 'Return': gt 'kruchess'
+	elseif chess_moves >= chess_move_limit:
+		*clr & cla
+
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/stalemate' + rand(1,1) + '.jpg"></center>'
+		*nl
+		'Draw! You agree to end the match with '+$chess_name+'.'
+		'You and '+$chess_name+' have both used too many moves and neither could find a way to win the match.'
+
+		act 'Return': gt 'kruchess'
+	elseif total_chess_time >= chess_time_limit:
+		*clr & cla
+
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/stalemate' + rand(1,1) + '.jpg"></center>'
+		*nl
+		'Draw! You agree to end the match with '+$chess_name+'.'
+		'You and '+$chess_name+' have both used too much time and neither could find a way to win the match.'
+
+		act 'Return': gt 'kruchess'
+	else
+		gs 'chessplay', 'moves'
+	end
+end
+
+if $ARGS[0] = 'moves':
+	if chess_ind > 5:
+		chessM = rand(4,11)
+	elseif chess_ind < -5:
+		chessM = rand(0,7)
+	else
+		chessM = rand(2,9)
+	end
+
+	act 'Play conservatively':
+		! this works as the opposite of aggressive play
+		! conservative wins against offense and trap
+		! conservative loses to defense and tactical
+		! conservative ties with conservative and aggressive
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also plays conservatively.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays defensively and is now in a better position than you.'
+			gs 'chessplay', 'advantage', 'conservative', 'bad'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays tactically and is able to deftly pick apart your conservative defenses.'
+			gs 'chessplay', 'advantage', 'conservative', 'bad'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' tries to trap you, but you encircle it with your defenses.'
+			gs 'chessplay', 'advantage', 'conservative', 'good'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays offensively, but your defense repulses his attacks.'
+			gs 'chessplay', 'advantage', 'conservative', 'good'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays aggressively, but your defense manages to hold them off.'
+			'Neither of you gain an advantage from this move.'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+
+	act 'Play defensively':
+		! this works as the opposite of offensive play
+		! defense wins against trap and conservative
+		! defense loses to aggressive and tactical
+		! defense ties with offense and defense
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays very conservatively and does not threaten your defenses at all.'
+			gs 'chessplay', 'advantage', 'defense', 'good'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also plays defensively.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays tactically and is able to deftly pick apart your defenses.'
+			gs 'chessplay', 'advantage', 'defense', 'bad'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' tries to trap you, but you avoid it with your defenses.'
+			gs 'chessplay', 'advantage', 'defense', 'good'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays offensively, but your defense absorbs his attacks.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays aggressively and overwhelms your defenses.'
+			gs 'chessplay', 'advantage', 'defense', 'bad'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+		
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+
+	act 'Play tactically':
+		! this works as the opposite of trap play
+		! tactical wins against defense and conservative
+		! tactical loses to aggressive and offense
+		! tactical ties with tactical and trap
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays very conservatively and your tactical moves leave you in a better position.'
+			gs 'chessplay', 'advantage', 'tactical', 'good'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays defensively allowing you to pick apart their defenses.'
+			gs 'chessplay', 'advantage', 'tactical', 'good'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also plays tactically.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' tries to trap you, but you avoid it with your tactical movements.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays offensively, and some of your pieces are caught out of position.'
+			gs 'chessplay', 'advantage', 'tactical', 'bad'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays aggressively and rushes past your unprepared defenses.'
+			gs 'chessplay', 'advantage', 'tactical', 'bad'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+
+	act 'Bait a trap for your opponent':
+		! this works as the opposite of tactical play
+		! trap wins against offense and aggressive
+		! trap loses to conservative and defense
+		! trap ties with tactical and trap
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays very conservatively and their defenses are now very well prepared.'
+			gs 'chessplay', 'advantage', 'trap', 'bad'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays defensively and your bait is now out of position.'
+			gs 'chessplay', 'advantage', 'trap', 'bad'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays tactically and avoids your trap.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also tries to trap you.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays offensively, and a couple of their pieces are caught out of position.'
+			gs 'chessplay', 'advantage', 'trap', 'good'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays aggressively and many of their pieces fall into your trap.'
+			gs 'chessplay', 'advantage', 'trap', 'good'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+
+	act 'Play offensively':
+		! this works as the opposite of defensive play
+		! offense wins against tactical and aggressive
+		! offense loses to conservative and trap
+		! offense ties with offense and defense
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays very conservatively and repulses all your attacks.'
+			gs 'chessplay', 'advantage', 'offense', 'bad'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays defensively and manages to absorb all your attacks.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays tactically, but your offense is able to outmaneuver them.'
+			gs 'chessplay', 'advantage', 'offense', 'good'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' traps some of your pieces. You should think more carefully next time.'
+			gs 'chessplay', 'advantage', 'offense', 'bad'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also plays offensively.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays aggressively and overextends themselves.'
+			gs 'chessplay', 'advantage', 'offense', 'good'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+
+	act 'Play aggressively':
+		! this works as the opposite of conservative play
+		! aggressive wins against defense and tactical
+		! aggressive loses to offense and trap
+		! aggressive ties with conservative and aggressive
+		*clr & cla
+
+		if chessM <= 1:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/conservative' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays conservatively and their defenses manage to hold you off.'
+			'Neither of you gain an advantage from this move.'
+		elseif chessM <= 3:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/defensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays defensively and you overwhelm a few of their pieces.'
+			gs 'chessplay', 'advantage', 'aggressive', 'good'
+		elseif chessM <= 5:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/tactical' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays tactically and cannot cope with your aggressive moves.'
+			gs 'chessplay', 'advantage', 'aggressive', 'good'
+		elseif chessM <= 7:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/trap' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' tries to trap you, but some of your pieces fall for it.'
+			gs 'chessplay', 'advantage', 'aggressive', 'bad'
+		elseif chessM <= 9:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/offensive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' plays offensively, leaving some of your pieces exposed.'
+			gs 'chessplay', 'advantage', 'aggressive', 'bad'
+		elseif chessM <= 11:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/chess/aggressive' + rand(1,1) + '.jpg"></center>'
+			*nl
+			$chess_name+' also plays aggressively.'
+			'Neither of you gain an advantage from this move.'
+		end
+		*nl
+		'You are on move '+str(chess_move)+' out of '+str(chess_move_limit)
+		'You are on minute '+str(total_chess_time)+' out of '+str(chess_time_limit)
+
+		chess_GG -= 1
+		chess_com -= 1
+
+		gs 'chessplay', 'game'
+	end
+end
+
+! $ARGS[1] = move chosen by player - used to set base skill difference and advantage change
+! $ARGS[2] = whether this move was a good choice - whether Sveta should gain or lose advantage
+if $ARGS[0] = 'advantage':
+	! conservative and aggressive are the most extreme and therefore have the biggest reward and risk
+	! but also requires the greatest difference in skill to pull off successfully or prevent your opponent from using successfully
+	if $ARGS[1] = 'conservative' or $ARGS[1] = 'aggressive':
+		chess_pos = 4
+		chess_neg = -4
+		chess_adv = 4
+	! defense and offense are a middle ground and have medium reward and risk
+	! requires a medium skill gap to pull off successfully or prevent your opponent from using successfully
+	elseif $ARGS[1] = 'defense' or $ARGS[1] = 'offense':
+		chess_pos = 2
+		chess_neg = -2
+		chess_adv = 2
+	! tactical and trap are the least extreme and therefore have the least reward and risk
+	! they require the least difference in skill to pull off successfully or prevent your opponent from using successfully
+	elseif $ARGS[1] = 'tactical' or $ARGS[1] = 'trap':
+		chess_pos = 1
+		chess_neg = -1
+		chess_adv = 1	
+	end
+
+	if $ARGS[2] = 'good':
+		if chess_ind > chess_pos:
+			'You are less skilled than your opponent and cannot capitalize on your advantage.'
+			'Try to gain more skill at chess to use this move successfully against this opponent.'
+		elseif chess_ind < chess_neg:
+			'You are more skilled than your opponent and gain a major advantage.'
+			chess_GG = chess_GG + chess_adv + chess_diff
+			chess_com = chess_com - chess_adv - chess_diff
+		else
+			'You are about equally skilled as your opponent and gain some advantage.'
+			chess_GG = chess_GG + chess_adv/2 + chess_diff/2
+			chess_com = chess_com - chess_adv/2 - chess_diff/2
+		end
+	elseif $ARGS[2] = 'bad':
+		if chess_ind > chess_pos:
+			'You are less skilled than your opponent and you lose a major advantage.'
+			'Try to gain more skill at chess to prevent your opponent from using this move successfully.'
+			chess_GG = chess_GG - chess_adv - chess_diff
+			chess_com = chess_com + chess_adv + chess_diff
+		elseif chess_ind < chess_neg:
+			'You are more skilled than your opponent and prevent them from capitalizing on their advantage.'			
+		else
+			'You are about equally skilled as your opponent and you lose some advantage.'
+			chess_GG = chess_GG - chess_adv/2 - chess_diff/2
+			chess_com = chess_com + chess_adv/2 + chess_diff/2
+		end
+	end
+end
+
+--- chessplay ---------------------------------
+

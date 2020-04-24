@@ -1,0 +1,198 @@
+# swamp
+
+if $ARGS[0] = 'start':
+	*clr & cla
+
+	$loc = 'swamp'
+	$metka = 'start'
+	$location_type = 'secluded'
+
+	$menu_loc = 'swamp'
+	$menu_arg = 'start'
+	menu_off = 0
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs 'stat'
+
+	'<center><H4>Swamp</H4></center>'
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_night.jpg"></center>'
+		end
+	else
+		if hour >= 8 and hour < 20:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_winter.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_winter_night.jpg"></center>'
+		end
+	end
+	*nl
+	'You are at the swamp on the far side of the woods from the village.'
+	'It can be dangerous to hike in this area, unless physically fit or have a good knowledge of the forest.'
+
+	act 'Head back to the forest (0:15)': minut += 15 & gt 'gadforest', 'forest_center'
+
+	if hunterscabin = 1:
+		'You can see the small path to the clearing that contains the hunters cabin.'
+		act 'Go to the hunters cabin (0:15)':
+			! daytime chance to get stuck in swamp - use bike to get there 100% of the time
+			if hour >= 6 and hour <= 22:
+				swamp_stuck = 0
+				gt 'swamp', 'stuck','swamp'
+			! nighttime chased by wolves - Sveta probably should not be roaming the forest at this time
+			else
+				gt 'gadforestlost','wolves','swamp'
+			end
+		end
+	end
+
+end
+
+if $ARGS[0] = 'stuck':
+	! if player is skilled at forest or very agile or strong then don''t get stuck in swamp at all
+	if pcs_bushcraft < 70 and pcs_agil < 70 and pcs_stren < 70:
+		*clr & cla
+
+		$loc = 'swamp'
+		$metka = 'stuck'
+		$location_type = 'secluded'
+
+		$menu_loc = 'swamp'
+		$menu_arg = 'stuck'
+		menu_off = 0
+
+		CLOSE ALL
+		gs 'gadukino_event', 'sound'
+		gs 'stat'
+
+		'<center><H4>Swamp</H4></center>'
+		if $clothingworntype ! 'nude' and PCloSkirt = 0:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp1.jpg"></center>'
+		elseif $clothingworntype ! 'nude' and PCloSkirt > 0:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_ski1.jpg"></center>'
+		elseif $clothingworntype = 'nude':
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_nude0.'+rand(4,5)+'.jpg"></center>'
+		end
+		*nl
+		'As you walk through the swamp, you feel yourself begin to sink into the mud of the swamp with each step.'
+		'You know you''re so close to your destination, but you''re not sure you can make it.'
+
+		act 'Struggle':
+			*clr & cla
+			swamp_stuck += 1
+			minut += 15
+			gs 'sweat', 'add', 15
+			gs 'stat'
+			if swamp_stuck mod 3 = 0:
+				swamp_check = pcs_stren + pcs_agil + pcs_bushcraft
+				swamprand = rand(0,225)
+			elseif swamp_stuck mod 2 = 0:
+				swamp_check = pcs_stren + pcs_agil
+				swamprand = rand(0,150)
+			else
+				swamp_check = pcs_stren
+				swamprand = rand(0,75)
+			end
+			if swamp_stuck = 10 and Enable_nogameover = 0:
+				over = 10
+				gt 'gameover'
+			else
+				if swamp_check > swamprand:
+					'<center><H4>Swamp</H4></center>'
+					if $clothingworntype ! 'nude' and PCloSkirt = 0:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp.jpg"></center>'
+					elseif $clothingworntype ! 'nude' and PCloSkirt > 0:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_ski.jpg"></center>'
+					elseif $clothingworntype = 'nude':
+						swamprand = rand(0,3)
+						if swamprand = 0:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_nude0..jpg"></center>'
+						else
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_nude0.'+swamprand+'.jpg"></center>'
+						end
+					end
+					*nl
+					'Your efforts are not in vain as you begin to feel the muds hold loosen. With another burst of strength you free yourself and breathe a sigh of relief.'
+
+					act 'Success!':gt 'swamp_yard','start'
+				else
+					'<center><H4>Swamp</H4></center>'
+					if $clothingworntype ! 'nude' and PCloSkirt = 0:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp1.jpg"></center>'
+					elseif $clothingworntype ! 'nude' and PCloSkirt > 0:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_ski1.jpg"></center>'
+					elseif $clothingworntype = 'nude':
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/goswamp_nude0.'+rand(4,5)+'.jpg"></center>'
+					end
+					*nl
+					'Your efforts are for nothing, the muds hold feels as tight as ever. In fact you feel yourself sinking even deeper.'
+
+					act 'Failure':gt 'swamp','stuck'
+				end
+			end
+		end
+		if month >= 4 and month <= 10:
+			act 'Scream for help':
+				*clr & cla
+				minut += 15
+				if ((hour >= 8 and hour < 12) or (hour >= 14 and hour < 18)):
+					swamprand = rand(1,4)
+				elseif (hour >= 7 and hour < 23):
+					swamprand = rand(1,5)
+				else
+					swamprand = rand(1,6)
+				end
+				gs 'stat'
+				'<center><H4>Swamp</H4></center>'
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/gadforestlosthelp.jpg"></center>'
+				*nl
+				'You don''t think you''re strong enough to break free of the mud and decide your best chance is to simply yell for help. Hopefully you''re close enough to the hunters cabin that they''ll hear you.'
+
+				if swamprand = 1:
+					act 'Success!':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/handshelp.jpg"></center>'
+						*nl
+						'You hear men speaking and begin to shout louder. The voices come closer and finally, you feel strong hands grab you and drag you out to solid ground.'
+						act 'Relax':gt 'swamp_yard','start'
+					end
+				else
+					*nl
+					'You yell out into the void, but your only response is the howling of the wind and the chirp of some crickets.'
+					act 'Failure':gt 'swamp','stuck'
+				end
+			end
+		end
+	else
+		'<center><H4>Swamp</H4></center>'
+		if month >= 4 and month <= 10:
+			if hour >= 6 and hour < 22:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/gadforestlostswamp.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/gadforestlostswamp_night.jpg"></center>'
+			end
+		else
+			if hour >= 8 and hour < 18:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/gadforestlostswamp_winter.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/gadforestlostswamp_winter_night.jpg"></center>'
+			end
+		end
+		*nl
+		if $ARGS[1] = 'forest_edge':
+			minut += 60
+			'After an hour walking through the forest you finally see the hunters cabin ahead.'
+		elseif $ARGS[1] = 'swamp':
+			minut += 15
+			'After a few mintues walking through the swamp you finally see the hunters cabin ahead.'
+		end
+		gs 'stat'
+		act 'Continue':gt 'swamp_yard', 'start'
+	end
+end
+
+--- swamp ---------------------------------
+

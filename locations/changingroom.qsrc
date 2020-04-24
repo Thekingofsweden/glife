@@ -1,0 +1,83 @@
+# changingroom
+
+menu_off = 1
+
+if $ARGS[0] = 'view_swim_list':
+
+	if $loc = 'fit' or $loc = 'bass' or temper >= 15:
+		if $clothingworntype ! 'swimwear':
+			if $clothingworntype = 'nude':
+				if $lastwornclothingtype ! 'swimwear':
+					$normalclothingworntype = $lastwornclothingtype
+					normalclothingwornno = lastwornclothingnumber
+				end
+			else
+				$normalclothingworntype = $clothingworntype
+				normalclothingwornno = clothingwornnumber
+			end
+		end
+
+		i = 1
+		h = 0
+		:loopswimwear
+			if swimwear[i] = 1 and swimwearS[i] = 0 and ($clothingworntype ! 'swimwear' or clothingwornnumber ! i):h += 1 & *p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''swimwear'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
+			i += 1
+		if i <= ARRSIZE('swimwear'):jump 'loopswimwear'
+
+		if h = 0 and $clothingworntype ! 'swimwear': '<center>You do not own any swimwear.</center>'
+		if h = 0 and $clothingworntype = 'swimwear': '<center>You are wearing your swimwear.</center>'
+
+	elseif temper < 15:
+		'<center>It''s below 15C - far too cold to get changed into swimwear. You should wait until the weather warms up.</center>'
+	end
+
+	act 'Leave':gt $loc, $metka
+	
+	if $clothingworntype = 'swimwear':
+		act 'Put your regular clothes back on':
+			gs 'underwear', 'wear'
+			gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
+			gt $loc, $metka
+		end
+	end
+end
+
+if $ARGS[0] = 'view_swim_item':
+	!! ARGS 0 - view_clothing_item
+	!! ARGS 1 - clothing type
+	!! ARGS 2 - clothing index
+
+	cla
+	'<center><img <<$set_imgh>> src="<<FUNC(''$clothing_image'',  $ARGS[1], ARGS[2])>>"></center>'
+	'<<$ARGS[1]>> no.<<ARGS[2]>>'
+	FUNC('$attributes_swimwear', $ARGS[1], ARGS[2])
+	FUNC('$clothing_name', $ARGS[1], ARGS[2])
+
+	$RESULT = '(strength '
+	dynamic '$RESULT += <<$ARGS[1]>>H[<<ARGS[2]>>]'
+	$RESULT += ')'
+	'<<$RESULT>>'
+
+	act 'Return':gt 'changingroom', 'view_swim_list'
+	
+	!! if the clothing is worn out
+	if dyneval('RESULT = <<$ARGS[1]>>H[<<ARGS[2]>>]') <= 0:
+		'This item is worn and is not suitable for further wear.'
+		act 'Throw it away':
+			dynamic '<<$ARGS[1]>>[<<ARGS[2]>>] = 0'
+			gt 'changingroom', 'view_swim_list'
+		end
+	elseif CloInhibit > pcs_inhib:
+		'You don''t feel daring enough to wear swimwear this revealing.'
+	else
+		if CloInhibit + 10 > pcs_inhib: 'You find this swimwear to be more revealing than you are completely comfortable with but that makes it quite exciting too.'
+		act 'Wear':
+			gs 'underwear', 'remove'
+			gs 'clothing', 'wear', $ARGS[1], ARGS[2]
+			gt $loc, $metka
+		end
+	end
+end
+
+--- changingroom ---------------------------------
+

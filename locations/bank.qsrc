@@ -1,0 +1,110 @@
+# bank
+
+if $ARGS[0] = 'start':
+	*clr & cla
+	$loc = 'bank'
+	$metka = 'start'
+	$menu_loc = 'bank'
+	$menu_arg = 'start'
+	menu_off = 0
+	$location_type = 'public_indoors'
+	minut += 2
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Bank</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/bank/bank.jpg"></center>'
+
+	if week <= 5 and hour = 16 and minut >= 30 and mey_vika['mey_vika_qw'] >= 32: 'Seems like <a href="exec:gs''mey_tamara_events'',''tamara''">Tamara Mikhailovna</a> is heading home.'
+	
+	if bankAccount = 0:
+		'Do you want to open an account?'
+	else
+		if karta >= 0:
+			'You have <<karta>> <b>₽</b> in your account.'
+			'You can take out a loan of <font color="blue"><<bankDebtLimit>></font>!'
+		else
+			'You hava a debt of <font color="red"><<-1 * karta>></font> <b>₽</b>.'
+			'You can take out a loan of <font color="blue"><<bankDebtLimit + karta>></font>!'
+		end
+	end
+
+	act 'Leave':
+		minut += 2
+		if bankloc = 1:
+			gt 'down'
+		else
+			gt 'pavCommercial'
+		end
+	end
+	
+	if BankPapper = 1 and dayBankPapper = daystart:
+		act 'Show documents':
+			*clr & cla
+			menu_off = 1
+			minut += 15
+			BankPapper = 2
+			gs 'stat'
+			'You went to the office and showed the required documents to the manager.'
+
+			act 'Leave':
+				minut += 5
+				if bankloc = 1:
+					gt 'down'
+				else
+					gt 'pavCommercial'
+				end
+			end
+		end
+	end
+
+	if money > 0:
+		act 'Deposit money':
+			cla
+			menu_off = 1
+			kartaIN = input ("How much money you want to deposit into the account?")
+
+			if kartaIN <= 0 or kartaIN > money:
+				'That is not a valid operation.'
+			else
+				karta += kartaIN
+				money -= kartaIN
+				
+				if bankAccount = 0: 
+					bankAccount = 1
+					bankDebtLimit = 5000
+				end
+				
+				'<br>You deposited <<kartaIN>> <b>₽</b>, your account balance is now ' + iif(karta >= 0,'<<karta>>','<font color="red"><<karta>></font>') + ' <b>₽</b>.'
+			end
+			killvar 'kartaIN'
+			act 'Walk away':gt 'bank', 'start'
+		end
+	end
+
+	if karta + bankDebtLimit > 0:
+		act 'Withdraw money':
+			cla
+			menu_off = 1
+			kartaOUT = input ("How much do you want to withdraw from account?")
+
+			if kartaOUT <= 0 or kartaOUT > karta + bankDebtLimit:
+				'That is not a valid operation.'
+			else
+				karta -= kartaOUT
+				money += kartaOUT
+				if karta > 0:
+					'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have <<karta>> <b>₽</b> left in your bank account.'
+				elseif karta = 0:
+					'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have no money left in your bank account.'
+				else
+					'<br>You withdraw <<kartaOUT>> <b>₽</b>. <font color="red">Your bank account is overdrawn by <b><<karta>> ₽</b>.</font>'
+				end
+			end
+			killvar 'kartaOUT'
+			act 'Walk away':gt 'bank', 'start'
+		end
+	end
+end
+
+--- bank ---------------------------------
+

@@ -1,0 +1,597 @@
+# sentence
+
+!if Sveta has a home, receives an envelope home from the court to appear. If possible make it trigger as Sveta enters the home
+!!shows up when courtletter_date = daystart
+if $ARGS[0] = 'letter':
+	*clr & cla
+	menu_off = 1
+	courtletter_date = 0
+	courthearing_date = daystart + 7
+	if week = 6: courthearing_date += 2
+	if week = 7: courthearing_date += 1
+	if courtletter_counter < 10:
+		courtletter_counter += 1
+		minut += 5
+		pcs_mood -= 100
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/court/openletter.jpg"></center>'
+		'As you enter your home you notice an envelope from the court. You anxiously look at it and take a deep breath before opening the envelope.'
+		if week < 6:
+			'Going through the letter you read that you''ve been summoned to appear in court a week from now.'
+		else
+			'Going through the letter you read that you''ve been summoned to appear in court on Monday, a week from now.'
+		end
+		'<i>Failing to appear in court will have dire consequences for the accused.</i> Your heart drops as you read that line...'
+		'<i>The court is located in the city center. You should arrive at 9:00 as there are a lot of cases and we can''t say when your turn might come up.</i>'
+		'You put the letter back in the envelope and let out a loud sigh...'
+
+		act 'Continue': gt $loc, $metka
+		! or 'etoexhib', 'pos51'
+	else
+		!after ten times Sveta gets an envelope home
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/court/openletter.jpg"></center>'
+		'As you come home you see the familiar envelope from the court. You already know the gist of it, <i>failure to show up will have dire consequences,</i> yadda yadda...'
+		'You glance through the letter seeing the same information once again and as you finish you throw it to the side and continue further on inside your apartment...'
+
+		act 'Continue': gt $loc, $metka
+		! or 'etoexhib', 'pos51'
+	end
+end
+
+!the text showing up when the week is up, same function as when meeting up for a date, only appears between 7:00 - 11:00
+!if the player chooses to ignore to show up add to the counter missedCourtDate
+!!'Head to the <a href="exec:gt ''start'', ''sentence''">courthouse</a> for your sentencing.'
+
+
+if $ARGS[0] = 'start':
+	*clr & cla
+	minut += 2
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/shared/court/courthouse.jpg"></center>'
+	'You are standing in the middle of the Greco-Roman inspired main courthouse for the whole city of St. Petersburg.'
+	'There are many statues of political and legal figures in the region going right back to a bust of Catherine the Great.'
+
+	act 'Leave': gt 'down'
+	if courthearing_date = daystart and hour >= 7 and hour < 11: act 'Go to your hearing': gt 'sentence', 'hearing'
+end
+
+if $ARGS[0] = 'hearing':
+	*clr & cla
+	minut += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/shared/court/entrance.jpg"></center>'
+	'You walk inside the courthouse dragging your legs and as you enter you notice a line has formed while people are walking through a body scanner. You patiently await your turn and head straight to the reception area.'
+	'"Hello, my name is <<$pcs_firstname>> <<$pcs_lastname>> and I got this summon in the mail," you tell the woman sitting there.'
+	'She tells you to hand it over and looks through it and nonchalantly says, "Okay, head to courtroom number 5 and they''ll call out your name when it''s your turn."'
+	'Nervously you nod and head over to the designated courtroom.'
+
+	act 'Head to the courtroom':
+		*clr & cla
+		minut += 10
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/court/courtroom.jpg"></center>'
+		'You spend some time searching for the correct courtroom and you stop and ask several people where the room is located. Thankfully, they''re really helpful and point you in the right direction.'
+		'Before opening the door you take a deep breath as you try to shake off the nervousness and after a few seconds you grab the handle and push the door to let yourself in.'
+		'Hardly anyone pays attention to you as you walk in as there''s already a sentencing in process.'
+
+		act 'Wait':
+			*clr & cla
+			minut += 120
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/shared/court/wait.jpg"></center>'
+			'For what feels like an eternity you sit there and listen to a court-case after another. The process seems to be quite streamlined, the judge starts out by telling the accused what they''re accused of and then lets the defendant state their case.'
+			'You try your best to listen to some of the defenses maybe you can pick up something useful before seeing the judge but it doesn''t take long before you lose focus and dream yourself away not really focusing on what''s happening around you.'
+			'All of a sudden you''re interrupted as you hear your name being called out. Startled, you quickly let the whole room know that you''re here as you hear some people quietly let out a laugh.'
+
+			if shplft_tmp = 1:
+				act 'Stand in front of the judge':
+					*clr & cla
+					minut += 20
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/shared/court/judge.jpg"></center>'
+					'The judge speaks up with a stern voice, "So I see that you''re here because of you''ve gotten caught stealing."'
+					'You sink your glance in shame and nod meekly.'
+					'The judge continues on, "Let''s see what the detectives concluded during their investigation."'
+
+					if $detec_type = 'easy':
+						'The judge sits and quietly glances through the report, looking towards you from time to time, "Miss <<$pcs_lastname>>, the detective seem to be quite positive in the report."'
+						'Suddenly, you feel a bit emboldened as the detective seems to have come through for you. You even manage to let out a little smirk.'
+						'"Well as you''ve already admitted being guilty I guess we don''t need to listen to your pleading," he sternly looks at you.'
+						'"Yes your honor." you respectfully answer.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+
+					elseif $detec_type = 'norm':
+						'The judge sits and quietly glances through the report, looking towards you from time to time, "Miss <<$pcs_lastname>>, the detective has only written neutral comments in the report."'
+						'Suddenly, you feel a bit looser as you can probably expect a lighter sentencing than usual. You let out a relieving sigh.'
+						'"Well as you''ve already admitted being guilty I guess we don''t need to listen to your pleading," he sternly looks at you.'
+						'"Yes your honor." you respectfully answer.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+
+					else
+						'The judge sits and quietly glances through the report, looking towards you from time to time, "Miss <<$pcs_lastname>>, what is wrong with you? The report written by the detective is quite damaging and you will be getting a harsher sentencing."'
+						'You look nonchalantly at the judge, almost ignoring what he has to say.'
+						'"Well as you''ve already admitted being guilty, no need listening to your pleading," he sternly looks at you.'
+						'"Whatever." you shrug your shoulders.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+					end
+				end
+
+			elseif prst_tmp = 1:
+				act 'Stand in front of the judge':
+					*clr & cla
+					minut += 20
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/shared/court/judge.jpg"></center>'
+					'The judge speaks up with a stern voice, "So I see that you''re here because of you''ve gotten caught prostituting."'
+					'You sink your glance in shame and nod meekly.'
+					'The judge continues on, "Let''s see what the detectives concluded during their investigation."'
+
+					if $detec_type = 'easy':
+						'Suddenly, you feel a bit emboldened as the detective seems to have come through for you. You even manage to let out a little smirk.'
+						'"Well as you''ve already admitted being guilty I guess we don''t need to listen to your pleading," he sternly looks at you.'
+						'"Yes your honor." you respectfully answer.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+
+					elseif $detec_type = 'norm':
+						'The judge sits and quietly glances through the report, looking towards you from time to time, "Miss <<$pcs_lastname>>, the detective has only written neutral comments in the report."'
+						'Suddenly, you feel a bit looser as you can probably expect a lighter sentencing than usual. You let out a relieving sigh.'
+						'"Well as you''ve already admitted being guilty I guess we don''t need to listen to your pleading," he sternly looks at you.'
+						'"Yes your honor." you respectfully answer.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+
+					else
+						'The judge sits and quietly glances through the report, looking towards you from time to time, "Miss <<$pcs_lastname>>, what is wrong with you? The report written by the detective is quite damaging and you will be getting a harsher sentencing."'
+						'You look nonchalantly at the judge, almost ignoring what he has to say.'
+						'"Well as you''ve already admitted being guilty, no need listening to your pleading," he sternly looks at you.'
+						'"Whatever." you shrug your shoulders.'
+
+						!do a check if the player missed any earlier sentencing
+						!if there''s a missed sentencing
+							!!'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>," and just as he''s about to close it, he stops at the last page, "Wait! What is this? Have you missed a sentencing?" he inquirers.'
+							!!'You begin to look around, trying to come up with an excuse. But in the end you decide it''s best to admit, "Yes..." you meekly answer.'
+							!!'With the judges eyes piercing through you, they clear their throat, "Well then this will affect your punishment. This is a serious thing Miss <<$pcs_lastname>>. The court can''t turn a blind eye to this. We''ll have to take this into the consideration when deciding your punishment."'
+							!!'You try your best to hold back the tears as you nod that you understand.'
+
+							!!act 'Await punishment': gt 'sentence', 'punishment'
+
+						!else
+							'The judge continues on flipping throughout the report, "Well everything seems to check out <<$pcs_lastname>>, shall we proceed to the punishment?" the judge asks.'
+							'You nod and take a deep breath as you await your punishment.'
+
+							act 'Await punishment': gt 'sentence', 'punishment'
+						!end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'punishment':
+	! I''m thinking that the punishment will be incremental if possible
+	!if Sveta skipped a sentencing, one up her level so if she was supposed to have the easy going detective route, the player gets the normal detective punishment instead. When the last stage is reached always go to the biggest punishment possible if the player failed to appear in front of the court.
+	*clr & cla
+	minut += 20
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/shared/court/sentence.jpg"></center>'
+	'The judge is looking sternly at you, "So miss <<$pcs_lastname>>. You''ve caused quite ruckus. Now the law is quite stern when it comes to even petty crimes."'
+	'You tremble a bit in fear as he keeps on talking, "With that said, I believe in a more soft approach and that you can improve yourself by learning from your mistakes."'
+	'You meekly nod and feel a bit relieved as you hear that.'
+
+	!Shoplifting
+	! Stage 1 / 1-5 sentences / Punishment level = 50% of the amount Sveta stole if easy going detective, 100% normal detective, 150% bad detective - fixed based sum for the trial 5000 rubles
+	! Stage 2 / 6-10 sentences / Punishment level = 75% of the amount Sveta stole if easy going detective, 150% normal detective, 200% bad detective and 20 hours at the Mercy Clinic - fixed based sum for the trial 7500 rubles
+	! Stage 3 / 11-15 sentences / Punishment level = 100% of the amount Sveta stole if easy going detective, 200% normal detective and 20 hours at the Mercy Clinic, 250% bad detective and 40 hours at the Mercy Clinic - fixed based sum for the trial 10000 rubles
+	! Stage 4 / 16-20 sentences / Punishment level = 125% of the amount Sveta stole if easy going detective and 20 hours at the Mercy Clinic, 250% normal detective and 40 hours at the Mercy Clinic, 300% bad detective and 80 hours at the Mercy Clinic - fixed based sum for the trial 15000 rubles
+	! Stage 5 / 21-25 sentences / Punishment level = 150% of the amount Sveta stole if easy going detective and 40 hours at the Mercy Clinic, 300% normal detective and 80 hours at the Mercy Clinic, 400% bad detective and 120 hours at the Mercy Clinic - fixed based sum for the trial 25000 rubles
+	! Stage 6 / 26+ sentences / Punishment level = 200% of the amount Sveta stole if easy going detective and 80 hours at the Mercy Clinic, 400% normal detective and 120 hours at the Mercy Clinic, 500% bad detective and 160 hours at the Mercy Clinic - fixed based sum for the trial 50000 rubles
+
+	if shplft_tmp = 1:
+		shplft_counter += 1
+
+		if shplft_counter <= 5:
+			!present how much the player needs to pay
+			if $detec_type = 'easy':
+				legal_fine += 5000 + (shplft_value/2)
+				'"I hereby sentence you to a fine of <<legal_fine>> <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office. You''ve been lucky this time Miss <<$pcs_lastname>>." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 5000 + shplft_value
+				'"I hereby sentence you to a fine of <<legal_fine>> <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 5000 + (shplft_value/2*3)
+				'"I hereby sentence you to a fine of <<legal_fine>> <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office. And if it happens that you appear in front of this court again, check your attitude." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif shplft_counter <= 10:
+		!present how much the player needs to pay
+			if $detec_type = 'easy':
+				legal_fine += 7500 + (shplft_value/4*3)
+				'"Seems that I need to increase the fine for you to pay back to a sum of <<legal_fine>> <b>₽</b>. Hopefully, this will teach you a lesson." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 7500 + (shplft_value/2*3)
+				'"Seems that I need to increase the fine for you to pay back to a sum of <<legal_fine>> <b>₽</b>. Hopefully, this will teach you a lesson." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 7500 + (shplft_value*2)
+				'"I sentence you hereby to pay back a sum of <<legal_fine>> <b>₽</b> and I''ll also sentence you to some community service at the Mercy Clinic to 20 hours, hopefully this will help." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic? I see you''ve still got an attitude issue." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif shplft_counter <= 15:
+			if $detec_type = 'easy':
+				legal_fine += 10000 + shplft_value
+				'"<<$pcs_lastname>> I see that name come up quite often here. Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 10000 + (shplft_value*2)
+				'"<<$pcs_lastname>> I see that name come up quite often here. Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b> and sentence you to community service at the Mercy Clinic to 20 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and by now you should know where to find the Mercy Clinic." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 10000 + (shplft_value/2*5)
+				'"<<$pcs_lastname>> I see that name come up quite often here.  Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b> and increase the community service at the Mercy Clinic to 40 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and by now you should know where to find the Mercy Clinic." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif shplft_counter <= 20:
+			if $detec_type = 'easy':
+				legal_fine += 15000 + (shplft_value/4*5)
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b> and sentence you to community service at the Mercy Clinic to 20 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 15000 + (shplft_value/2*5)
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b> and increase the community service at the Mercy Clinic to 40 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 15000 + (shplft_value*3)
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to a sum of <<legal_fine>> <b>₽</b> and increase the community service at the Mercy Clinic to 80 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif shplft_counter <= 25:
+			if $detec_type = 'easy':
+				legal_fine += 25000 + (shplft_value/2*3)
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay this fine of <<legal_fine>> <b>₽</b> and enjoy your community service at the Mercy Clinic for 40 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 25000 + (shplft_value*3)
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay the fine of <<legal_fine>> <b>₽</b> and enjoy your community service at the Mercy Clinic for 80 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 25000 + (shplft_value*4)
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay the fine of <<legal_fine>> <b>₽</b> and enjoy your community service at the Mercy Clinic for 120 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		else
+			if $detec_type = 'easy':
+				legal_fine += 50000 + (shplft_value*2)
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to <<legal_fine>> <b>₽</b> and the community service at the Mercy Clinic for 80 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 50000 + (shplft_value*4)
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to <<legal_fine>> <b>₽</b> and the community service at the Mercy Clinic for 120 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 50000 + (shplft_value*5)
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to <<legal_fine>> <b>₽</b> and the community service at the Mercy Clinic for 160 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		end
+
+	!Prostitution
+	! Stage 1 / 1-5 sentences / Punishment level = 1000 rubles if easy going detective, 2000 rubles normal detective, 3000 rubles bad detective - fixed based sum for the trial 5000 rubles
+	! Stage 2 / 6-10 sentences / Punishment level = 1500 rubles if easy going detective, 3000 rubles normal detective, 4000 rubles bad detective and 20 hours at the Mercy Clinic - fixed based sum for the trial 7500 rubles
+	! Stage 3 / 11-15 sentences / Punishment level = 2000 rubles if easy going detective, 4000 rubles normal detective and 20 hours at the Mercy Clinic, 5000 rubles bad detective and 40 hours at the Mercy Clinic - fixed based sum for the trial 10000 rubles
+	! Stage 4 / 16-20 sentences / Punishment level = 2500 rubles if easy going detective and 20 hours at the Mercy Clinic, 5000 rubles normal detective and 40 hours at the Mercy Clinic, 6000 rubles bad detective and 80 hours at the Mercy Clinic - fixed based sum for the trial 15000 rubles
+	! Stage 5 / 21-25 sentences / Punishment level = 3000 rubles if easy going detective and 40 hours at the Mercy Clinic, 6000 rubles normal detective and 80 hours at the Mercy Clinic, 7000 rubles bad detective and 140 hours at the Mercy Clinic - fixed based sum for the trial 25000 rubles
+	! Stage 6 / 26+ sentences / Punishment level = 5000 rubles if easy going detective and 80 hours at the Mercy Clinic, 7500 rubles normal detective and 140 hours at the Mercy Clinic, 10000 rubles bad detective and 200 hours at the Mercy Clinic - fixed based sum for the trial 50000 rubles
+
+	elseif prst_tmp = 1:
+		prst_counter += 1
+
+		if shplft_counter <= 5:
+			!present how much the player needs to pay
+			if $detec_type = 'easy':
+				legal_fine += 6000
+				'"I hereby sentence you to a fine of 6000 <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office. You''ve been lucky this time Miss <<$pcs_lastname>>." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 7000
+				'"I hereby sentence you to a fine of 7000 <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 8000
+				'"I hereby sentence you to a fine of 8000 <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office. And if it happens that you appear in front of this court again, check your attitude." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif prost_counter <= 10:
+		!present how much the player needs to pay
+			if $detec_type = 'easy':
+				legal_fine += 9000
+				'"I need to increase the fine to 9000 <b>₽</b>. Hopefully, this will get you to reconsider your actions." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 10500
+				'"I need to increase the fine to 10,500 <b>₽</b>. Hopefully, this will get you to reconsider your actions." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 11500
+				'"I sentence you hereby to pay back 11,500 <b>₽</b> you''ve stolen and I''ll also add some community service at the Mercy Clinic to 20 hours, hopefully this will help you reconsider your actions." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic? I see you''ve still got an attitude issue." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif prost_counter <= 15:
+		!Stage 3
+			if $detec_type = 'easy':
+				legal_fine += 12000
+				'"<<$pcs_lastname>> I see that name come up quite often here. Seems like I need to increase the fine even further to 12000 <b>₽</b>." the judge reads out your sentence.'
+				'"You can pay your fine at the post office." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 14000
+				'"<<$pcs_lastname>> I see that name come up quite often here. Seems like I need to increase the fine even further to 14000 <b>₽</b> and sentence you to community service at the Mercy Clinic for 20 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and by now you should know where to find the Mercy Clinic." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 15000
+				'"<<$pcs_lastname>> I see that name come up quite often here.  Seems like I need to increase the fine even further to 15000 <b>₽</b> and increase the community service at the Mercy Clinic to 40 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and by now you should know where to find the Mercy Clinic." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif prost_counter <= 20:
+		!Stage 4
+			if $detec_type = 'easy':
+				legal_fine += 17500
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to 17500 <b>₽</b> and sentence you to community service at the Mercy Clinic to 20 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 20000
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to 20000 <b>₽</b> and increase the community service at the Mercy Clinic to 40 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 21000
+				'"This is starting to get out of hand, <<$pcs_lastname>>!  Seems like I need to increase the fine even further to 21000 <b>₽</b> and increase the community service at the Mercy Clinic to 80 hours." the judge reads out your sentence.'
+				'"You already know what you need to do." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		elseif prost_counter <= 25:
+		!Stage 5
+			if $detec_type = 'easy':
+				legal_fine += 28000
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay this fine of 28000 <b>₽</b> and enjoy your community service at the Mercy Clinic for 40 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 21000
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay the fine of 31000 <b>₽</b> and enjoy your community service at the Mercy Clinic for 80 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine +=32000
+				'"Well well, what a surprise, <<$pcs_lastname>> stands in front of me again. You''re starting to annoy me! Are you doing this on purpose? Don''t answer and instead pay the fine of 32000 <b>₽</b> and enjoy your community service at the Mercy Clinic for 120 hours." the judge reads out your sentence.'
+				'"You can pay your fine at the post office and I suppose you know where to find the Mercy Clinic?" the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		else
+		!Stage 6
+			if $detec_type = 'easy':
+				legal_fine += 55000
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to 55000 <b>₽</b> and the community service at the Mercy Clinic for 80 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			elseif $detec_type = 'norm':
+				legal_fine += 57500
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to 57500 <b>₽</b> and the community service at the Mercy Clinic for 120 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+
+			else
+				legal_fine += 60000
+				'The judge sighs, "Here we are again <<$pcs_lastname>>! I''m getting tired of being lenient so you''re getting the maximum sentence. The fine will be set to 60000 <b>₽</b> and the community service at the Mercy Clinic for 160 hours." the judge reads out your sentence.'
+				'"You already know what you need to do. I hope you will think about your actions before stealing again." the judge finishes.'
+				'You nod and quickly make your way out of courtroom.'
+
+				act 'Leave the court':gt 'down'
+			end
+		end
+	end
+end
+
+
+--- sentence ---------------------------------
+

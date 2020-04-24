@@ -1,0 +1,563 @@
+# gLake
+
+CLOSE ALL
+if sound = 0:PLAY 'sound/lakeshore1.mp3', 30
+$loc = 'gLake'
+$metka = ''
+$menu_loc = 'glake'
+$menu_arg = ''
+$locclass = 'beach'
+menu_off = 0
+$location_type = 'public_outdoors'
+gs'stat'
+
+! --- meynold event --- !. edit to month 5~10
+if $clothingworntype ! 'swimwear' and $clothingworntype ! 'nude' and temper >= 5 and sunWeather = 1 and month >= 5 and month <= 10 and hour < 20 and ((hour >= 10 and week >= 6) or (hour >= 14 and week < 6)) and mey_vika['mey_vika_qw'] >= 18 and mey_vika['mey_vika_qw'] < 20 and mey_vika['qw_day'] ! daystart: gt 'mey_vika_events', 'beach_event1'
+
+'<center><H4>Lake</H4></center>'
+
+! to memorize were cowards or not
+if month >= 3 and month <= 5:
+	if hour >= 6 and hour <= 17:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.spring.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.spring.night.jpg"></center>'
+	end
+	'<center>A small lake, located not far from Pavlovsk. You''re not sure whether Pavlovsk was built near the lake on purpose or not. When it is warm enough people often come to sunbath or go swimming.</center>'
+	*nl
+elseif month >= 6 and month <= 8:
+	if hour >= 6 and hour <= 19:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.summer.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.summer.night.jpg"></center>'
+	end
+	'<center>A small lake, located not far from Pavlovsk. You''re not sure whether Pavlovsk was built near the lake on purpose or not. During summer people often come to sunbath or go swimming.</center>'
+	*nl
+elseif month >= 9 and month <= 11:
+	if hour >= 6 and hour <= 18:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.autumn.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.autumn.night.jpg"></center>'
+	end
+	'<center>A small lake, located not far from Pavlovsk. You''re not sure whether Pavlovsk was built near the lake on purpose or not. When it is warm enough people often come to sunbath or go swimming.</center>'
+	*nl
+elseif month < 3 or month = 12:
+	if hour >= 7 and hour <= 16:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.winter.jpg"></center>'
+	'<center>A small lake, located not far from Pavlovsk. You''re not sure whether Pavlovsk was built near the lake on purpose or not.</center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.winter.night.jpg"></center>'
+	end
+	'<center>A small lake, located not far from Pavlovsk. You''re not sure whether Pavlovsk was built near the lake on purpose or not. Ever since winter arrived, the lake in Pavlovsk has been frozen over. The lake is being used as a skating rink and lots of people go to skate there every day; if you have skates you could join them.</center>'
+	*nl
+	if pcs_icesktng>0: 'Your ice-skating skill is <<pcs_icesktng>>.'
+end
+
+if storyline = 1 and (month <= 2 or month = 12):
+	if week >= 6 and hour >= 8 and hour <= 11:
+		'Looking over the frozen lake, you see a figure in the distance. The figure is figure skating and is doing all types of crazy moves. Stepping out on the ice and take a few steps out you finally notice who it is, <a href="exec:gt ''gschool_socialchg1'', ''tVeronika''">Veronika</a>.'
+	end
+end
+
+if storyline = 1 and ((month >= 3 and month <= 5) or (month >= 9 and month <= 11)) and rand(0,4) = 0:
+	if week <= 5 and hour >= 15 and hour <= 20 and $clothingworntype = 'nude' and rand(0,3) = 0 and socialchg['christina_day'] ! daystart:
+		gt 'gschool_socialchg1', 'chrislina_naked'
+	else
+		iif(socialchg['tChristina_day'] ! daystart, '<a href="exec:gt ''gschool_socialchg1'', ''tChristina''">Christina</a>', 'Christina')+' is standing by the beach looking out over the lake. You also notice '+iif(socialchg['tLina_day'] ! daystart, '<a href="exec:gt ''gschool_socialchg1'', ''tLina''">Lina</a>', 'Lina')+' in the background standing next to her, breathing heavily.'
+		act'Walk away':gt'glake'
+	end
+end
+
+act'Return to Pavlovsk':
+	*clr & cla
+	if konki_cloth = 1:
+		'You need to remove your skates. How are you going to walk on the streets in those?'
+		act'Back':gt'glake'
+	elseif $clothingworntype = 'swimwear':
+		'You need to get dressed in regular clothing first.'
+		act'Return':gt'glake'
+	elseif $clothingworntype ! 'nude':
+		minut += 5
+		gt'pavResidential'
+	else
+		'You need to wear some clothes. It''s not decent to walk the streets naked.'
+		act'Return':gt'glake'
+	end
+end
+
+if month >= 5 and month <= 9:
+
+	if arrsize('swimwear') > 0:
+		act 'Use changing room':gt 'changingroom', 'view_swim_list'
+	else
+		*nl
+		'You should probably buy some swimwear if you intend of spending time at the beach'
+		*nl
+	end
+
+	if $clothingworntype ! 'nude' and (pcs_inhib > 30 or (exhibitionist_lvl > 1 and pcs_horny >= 60)):
+		gs 'willpower', 'exhib', 'self', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Strip naked (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				menu_off = 1
+				minut += 5
+				sauna_stripped = 0
+				if pcs_inhib < 60: inhib_exp += rand(1,3)
+				gs 'underwear', 'remove'
+				gs 'clothing', 'strip'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/strip.jpg"></center>'
+				'Without hesitation, despite the fact other people are around, you take off all your clothes and neatly fold them before putting them down on a pile. Without your clothes holding you back, you can go for a nice swim in the lake or just lie down in the sand and do some sunbathing.'
+				act'Continue':gt'glake'
+			end
+		else
+			act 'Strip naked (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif $clothingworntype = 'nude' and sauna_stripped = 0:
+		act 'Put your clothes back on':
+			*clr & cla
+			menu_off = 1
+			minut+=5
+			nudelake = rand(1,20)
+			if nudelake <= 3:
+				minut += 5
+				pcs_mood -= 5
+				inhib_exp += rand(1,3)
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/noclothes.jpg"></center>'
+				'You return to the place where you thought you put your clothes to get dressed... except you can''t find them. Oh crap, you can''t find them! You desperately search the beach for a while, while a few passers-by look amused at the naked girl running around the beach. When you can''t find them, you panic and run all the way home... hopefully they''ll turn up.'
+				act 'Run home naked': gt 'glake', 'nude_home'
+			elseif nudelake = 4:
+				minut += 5
+				pcs_mood -= 5
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/nakedcar.jpg"></center>'
+				'You return to the place where you thought you put your clothes to get dressed... except you can''t find them. Oh crap, you can''t find them! You desperately search the beach for a while, while a few passers-by look amused at the naked girl running around the beach. Eventually a man approaches you. You can tell his eyes are darting over your body as he asks: "Is there a problem, sweetheart? You seem upset..."'
+				if bag = 1:
+					'Luckily, your bag is sitting right where you left it.'
+				else
+					money = 0
+				end
+				'You''re seriously panicking now, and you blurt out: "I can''t find my clothes! I left them right here and now they''re gone! I don''t know what to do!"'
+				'He tries to put you at ease: "Don''t worry girl, you''re going to be fine. Come on, I happen to have some sportswear in my car."'
+				'You profusely thank him while he guides you to his car. He was not lying, he pulls out a set of sportswear that looks brand new, they even look like they would fit you. He doesn''t hand them over though, and says with a serious look: "Of course I can''t just give these away... they''re brand new. These cost me 3000 <b>₽</b>, if you can give me that they''re all yours."'
+				if money >= 3000:
+					act 'Pay 3,000 <b>₽</b>':
+						*clr & cla
+						money -= 3000
+						exercise[1] = 1
+						exerciseS[1] = 0
+						exerciseH[1] = 100
+						exerciseB[1] = pcs_hips
+						gs 'clothing', 'wear', 'exercise', 1
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/nakedcar.jpg"></center>'
+						'So... there''s the catch. The guy looks at your naked body while you mull over his proposition, and you come to the conclusion that you really don''t have any other choice. You can''t walk home through town naked! You silently nod and give him the money, quickly putting the clothes on when he hands them over. You feel relieved in the knowledge that at least you won''t have to go home naked... hopefully your clothes will turn up later.'
+						act'Continue':gt'glake'
+					end
+				else
+					act 'Tell him you don''t have enough money':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/nakedcar.jpg"></center>'
+						'So... there''s the catch. The guy looks over your naked body while you mull over your predicament. "Well I don''t have that kind of money, do you have a towel or anything I can have?"'
+						'He shakes his head and you can see a slight bulge forming in his pants the more he looks at your naked body. "No sorry, but I might be willing to trade the clothes..." He trails off suggestively and with the way he is looking at you, you have no doubt what he has in mind.'
+						'But it never hurts to see. "What did you have in mind?"'
+						'He grins a bit. "Well how about we get in my car and you let me fuck you and then you can have the clothes."'
+						gs 'willpower', 'prostitution', 'resist'
+						if will_cost <= pcs_willpwr:
+							act 'Refuse and run home naked (<<will_cost>> Willpower)':
+								gs 'willpower', 'pay', 'resist'
+								gt 'glake', 'nude_home'
+							end
+						else
+							act 'Refuse and run home naked (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+						end
+						act 'Agree to have sex': gt 'glake', 'car_sex'
+					end
+				end
+				gs 'willpower', 'prostitution', 'self'
+				if will_cost <= pcs_willpwr:
+					act 'Suggest alternative payment (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'self'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/nakedcar.jpg"></center>'
+						'3000 <b>₽</b>... you know it''s a fair price for him to ask, but you don''t want to pay 3000 <b>₽</b> right now! This is not how you planned for your day to go. Too afraid to look him in the eye when you ask, you suggest: "Is there... is there some other way I can pay you? 3000 <b>₽</b> is a lot of money."'
+						'He''s been gawking at your naked body the whole time you''ve been talking, and your suggestion seems to be exactly what he wanted to hear. He grins: "I can think of one way..."'
+						'The growing bulge in his pants does an excellent job of telling exactly what he''s thinking.'
+						act 'Agree to have sex': gt 'glake', 'car_sex'
+						if money >= 3000:
+							act 'Pay 3,000 <b>₽</b>':
+								*clr & cla
+								money -= 3000
+								exercise[1] = 1
+								exerciseS[1] = 0
+								exerciseH[1] = 100
+								exerciseB[1] = pcs_hips
+								gs 'clothing', 'wear', 'exercise', 1
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/event/nakedcar.jpg"></center>'
+								'You don''t want to have sex with him... but you also don''t want to go home naked! Not seeing any other option, you decide to pay him the 3,000 <b>₽</b> after all. You quickly put on the clothes as he hands them over, feeling relieved in the knowledge that at least you don''t have to walk through town in the nude. Now that you''re clothed, you feel more confident in searching the beach a bit more; hopefully your clothes will turn up after all.'
+								act 'Continue': gt 'glake'
+							end
+						end
+					end
+				else
+					act 'Suggest alternative payment (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			else
+				gs 'clothing', 'wear_last_worn'
+				gs 'underwear', 'wear'
+				'You return to the place where you left your clothes, and put them back on.'
+				act'Continue':gt'glake'
+			end
+		end
+	end
+end
+
+if temper >= 15 and month>=5 and month<=9 and hour>=6 and hour<=20:
+	act 'Take a walk along the beach (30 minutes)':
+		*clr & cla
+		menu_off = 1
+		minut += 30
+		pcs_mood += 5
+		gs'stat'
+
+		if $clothingworntype = 'swimwear' and pcs_hips<=90:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini0,'+rand(0,3)+'.jpg"></center>'
+		elseif $clothingworntype = 'swimwear' and pcs_hips >= 90 and pcs_hips<=110:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini.fat0,0.jpg"></center>'
+		elseif $clothingworntype = 'swimwear' and pcs_hips>=110:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini.fat0,1.jpg"></center>'
+			if pcs_inhib < 50:inhib_exp += rand(1,2)
+		elseif $clothingworntype = 'nude':
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/walknude.jpg"></center>'
+			inhib_exp += rand(1,3)
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk0,'+rand(0,2)+'.jpg"></center>'
+		end
+
+		'You walk along the beach, enjoying the feeling of the sun on your body.'
+		act 'Continue':gt'glake'
+	end
+	
+	if $clothingworntype = 'swimwear' or $clothingworntype = 'nude':
+		act 'Go swim in the lake (30 minutes)':
+			*clr & cla
+			menu_off = 1
+			pcs_makeup = 1
+			cumspclnt = 4
+			gs 'cum_cleanup'
+			minut += 30
+			pcs_mood += 5
+			if pcs_sweat > 10: pcs_sweat = 10 + rand(0,4)
+			if pcs_stren < 30: stren_exp += 1
+			fat -= 1
+			if $clothingworntype = 'nude':
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/swimnude.jpg"></center>'
+				inhib_exp += rand(1,2)
+			else
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/swim.jpg"></center>'
+				if pcs_inhib < 50: inhib_exp += rand(1,2)
+			end
+			'You swim and play in the lake, feeling refreshed and invigorated by the clean lake water.'
+			if $clothingworntype = 'nude' and rand(0,1): pcs_mood -= 5 & 'After a few minutes, you feel the piercing gaze of several nearby women on you. They''re making an effort of whispering to one another, yet loud enough so you can hear them: "Look at that <<$pcs_lastname>> slut! She has no decency whatsoever, shamelessly flaunting her naked body like that!" The men at the lake are much more appreciative, and openly stare at your attractive body. You can see bulges forming in the shorts of some of them.'
+			if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+			act 'Get out of the water':gt'glake'
+		end
+		
+		if sunWeather = 1:
+			act 'Go sunbathing (30 minutes)':
+				*clr & cla
+				minut += 30
+				if pcs_sweat < 35 : gs 'sweat', 'add', 5
+				pcs_mood += 5
+				gs'stat'
+				if $clothingworntype = 'swimwear':
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbath.jpg"></center>'
+					if pcs_inhib < 50:inhib_exp += rand(1,2)
+				else
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbathnude.jpg"></center>'
+					inhib_exp += rand(1,3)
+				end
+
+				if krem = 0:
+					'You lie down on your towel for some sunbathing and hopefully a nicer tan, and enjoy the warm rays of the sun on your body.'
+					pcs_tan = pcs_tan + 1
+				else
+					krem = krem - 1
+					'You smear your body with sunscreen and lie down on your towel for some sunbathing, hoping to work on your tan. You enjoy the warm rays of the sun on your body.'
+					pcs_tan = pcs_tan + 3
+				end
+
+				if pcs_apprnc >= rand(1,400):
+					tipelakeboyrand = rand(1,100)
+					if tipelakeboyrand <= 5:
+						if npc_QW['A113'] = 1:
+							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+							'While you are sunbathing, you see Vadim Bely and his brother sitting not far away from you. The brother points at you, and moments later Vadim walks over to you and sits down next to you. He idly scratches his tattoo covered belly as he asks: "Hello <<$pcs_nickname>>, want to go for a ride with me?"'
+							'The greedy look in his eyes tells you that when he says ''ride'', he doesn''t just mean in his car.'
+							if $clothingworntype = 'nude':
+								act 'Get dressed and go with him':
+									gs 'clothing', 'wear_last_worn'
+									if $clothingworntype = 'swimwear':gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
+									gt 'LakeBoyDy', 'ride'
+								end
+							else
+								act 'Get dressed and go with him':
+									gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
+									gt 'LakeBoyDy', 'ride'
+								end
+							end
+							exit
+						elseif $clothingworntype ! 'nude' and npc_QW['A113'] < 1:
+							*clr & cla
+							gs'stat'
+							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+							'While you are sunbathing you can''t help but notice a man walking towards you. He looks truly intimidating, his entire body covered in criminal gang tattoos. A bit further down the beach you see a younger man with similar tattoos, keeping an eye on the man approaching you.'
+							'His head is mostly bald, and a large golden cross dangles on a thick chain from his neck. He sits his fat body down next to you before you can protest, idly scratching his belly as he begins to chat: "Hello! I''m not interrupting anything, am I?"'
+							act'Be outraged':
+								*clr & cla
+								minut += 5
+								gs'stat'
+								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+								'You were here first! You''re outraged by the way he just plants himself down next to you and exclaim: "Erm, excuse me!? I was here first!"'
+								'The man is not impressed in the slightest, obviously having played this game before. He immediately challenges your claim: "Oh, excuse me princess! Is this your spot? Do you own it?"'
+
+								act'Yes you do!':
+									*clr & cla
+									minut += 5
+									gs'stat'
+									'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+									'You respond indignantly: "Yes, this is my spot! I was here first, that''s how it works!"'
+									'Suddenly you hear a deep voice behind you: "This beach is only used by prostitutes and bus drivers, and I don''t see a fucking bus."'
+									'Damn, that voice startled you. You look behind you and you see the tattooed younger man behind you. He has tattoos over his whole body as well, most notably several tombs and skulls on his chest. He stares you down with a stone cold look on his face.'
+									'The bald man smiles and puts his hand on your chest as if he owns it, roughly squeezing your tit through your swimsuit.'
+									'"So... how much?"'
+									act 'Resist': gs 'LakeBoyDy', 'slap'
+									act 'Move away': gt 'LakeBoyDy', 'go'
+
+								end
+							end
+
+							act'Ignore them':
+								*clr & cla
+								minut+=5
+								gs'stat'
+								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+								'Those guys look intimidating. You don''t want any trouble and just pretend they''re not there, laying on the beach with your eyes closed. However, a few moments later you feel a strange tickling on your stomach. You open your eyes to see what''s causing it, and you see the fat man running a blade of grass over your stomach with a smug grin on his face. Looks like you can''t ignore them any longer.'
+
+								act'Keep ignoring them':
+									*clr & cla
+									minut+=5
+									gs'stat'
+									'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+									'You try to ignore them anyway, closing your eyes again. You feel the blade of grass continuously teasing your body, and after a few minutes his sweaty hand is pawing at your breasts through your swimsuit.'
+									'He whispers in your ear: "Come with me baby, I''ll make you feel good. You won''t regret it". His groping becomes more insistent and he''s roughly pinching your nipples now, and the outline of them slowly but surely becomes visible through your swimsuit.'
+									act 'Resist': gs 'LakeBoyDy', 'slap'
+								end
+							end
+
+							act 'Walk away':gt 'glake'
+							exit
+						else
+							*clr & cla
+							'While you are sunbathing, three guys sit down near you. While you notice them looking at you and talking about your body, they don''t come over.'
+							act'Stop sunbathing':gt'glake'
+						end
+					elseif tipelakeboyrand <= 30:
+						!! {below is for when this event is fixed. Generates a boy[0], boy[1], and boy[2]}
+						!! killvar '$boy'
+						!! i = rand((age - 5),(age + 5))
+						!! if i < 16: i = 16
+						!! gs 'npcgeneratec', 0, 'Guy', rand((i - 1),(i + 1))
+						!! gs 'boyStat', $npclastgenerated
+						!! gs 'npcgeneratec', 0, 'Guy', rand((i - 1),(i + 1))
+						!! gs 'boyStat', $npclastgenerated, 1
+						!! gs 'npcgeneratec', 0, 'Guy', rand((i - 1),(i + 1))
+						!! gs 'boyStat', $npclastgenerated, 2
+						'While you are sunbathing, three guys sit down near you. While you notice them looking at you and talking about you, they don''t come over.'
+
+						act 'Continue':gt'glake'
+						exit
+					elseif tipelakeboyrand <= 80:
+						i = age - 5
+						if i < 16: i = 16
+						gs 'npcgeneratec', 0, 'Guy', rand((i),(age + 5))
+						gs 'boyStat', $npclastgenerated
+						$boydesc = $npc_firstname[$npclastgenerated]
+						gs'LakeBoyZ'
+						'While you are sunbathing, a guy sits down next to you. He''s kind of cute, actually.'
+						'He tries to chat you up: "Hey there beautiful, I''m <<$boydesc>>. What''s your name?"'
+
+						act 'Get away from him':gt'glake'
+						dynamic $gL_boy_z
+						exit
+					else
+						'While you are sunbathing, three guys sit down near you. While you notice them looking at you and talking about your body, they don''t come over.'
+						act 'Stop sunbathing':gt'glake'
+						exit
+					end
+				else
+					act'Stop sunbathing':gt'glake'
+				end
+			end
+		end
+	end
+end
+
+act'Go to the secluded beach':minut += 10 & gt'gLakeNude'
+
+if month = 12 or month < 3:
+	if konki_cloth = 1:
+		act'Take off your skates':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			konki_cloth=0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/konki0,1.jpg"></center>'
+			'You take off your skates and put your shoes back on. For a while it feels kinda weird to walk, after you got used to skating.'
+			act'Continue':gt'glake'
+		end
+	elseif konki_cloth ! 1 and konki > 0 and hour >= 8 and hour <= 17:
+		act'Put your skates on':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			konki_cloth = 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/konki0,0.jpg"></center>'
+			'You take off your shoes, and put your skates on. Now you''re ready to go ice skating.'
+			act 'Continue': gt'glake'
+		end
+	end
+	if konki_cloth = 1: act'Skate on the ice rink': gt 'glake', 'skating_start'
+end
+
+if $ARGS[0] = 'car_sex': 
+	*clr & cla
+	exercise[1] = 1
+	exerciseS[1] = 0
+	exerciseH[1] = 100
+	exerciseB[1] = pcs_hips
+	gs 'clothing', 'wear', 'exercise', 1
+	'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar1.jpg"></center>'
+	'He wastes no time for you to second guess yourself, and immediately throws you down on the back seat of his car when you agree. He quickly pulls down his pants and, after quickly putting a condom on, quickly guides his cock to your pussy lips. He obviously doesn''t plan on spending a lot of time with you and sinks it in one firm thrust, fucking you with rapid, short strokes. Soon he shoots his load in the condom, ties a knot in it and throws it away. Seconds after he hands you the clothes as promised, he drives off.'
+	*nl
+	'It was not the most pleasurable sex for you, but you convince yourself it was for a good cause when you put your well-earned clothes on. He used a condom too, without you even having to ask. You don''t have to go home naked now! With a sigh of relief you straighten the clothes and feel ready to take the day on again, hoping your own clothes will turn up at some point.'
+	gs 'arousal', 'vaginal', 10, 'sub'
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Continue': gt 'glake'
+end
+
+if $ARGS[0] = 'nude_home':
+	*clr & cla
+	minut += 10
+	menu_off = 1
+	inhib_exp += rand(1,3)
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/homenude.jpg"></center>'
+	'You cover yourself up as best you can and go through the woods, you use the woods to get as close as you can to your apartment. Luckily no one else seems to be wandering the woods right now and no one spots you. Now though you are at the edge of the woods, so you have decided if you want to sneak the rest of the way and hope no one see''s you are just make a run for it and hope no one recognizes you.'
+	
+	gs 'willpower', 'exhib', 'self'
+	if will_cost <= pcs_willpwr:
+		act 'Run home (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'pay', 'self'
+			minut += 7
+			gs 'fame', 'pav', 'sex', 5
+			inhib_exp += rand(2,4)
+			if month < 3 or month = 12:
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/naked/runhomenakedw.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/naked/runhomenaked.jpg"></center>'
+			end
+			'You decided to just get this over with and make a run for it. You use you hands to cover yourself as best you can, looking away from people. Sometimes you have to use your hands to cover you face in the hopes no one recognizes you. Several people gasp, more than a few people, mostly older women chastise you for being such a whore. Some of the men whistle and more than a few people take your picture, you really hope none of those pictures show your face. Finally after what seems forever you make it to the apartment complex.'
+			gs 'arousal', 'flash', 3, 'exhibitionism'
+			gs 'stat'
+			act 'Continue to complex': gt 'pavaptcourtev', 'naked_aptcomplex'
+		end
+	else
+		act 'Run home (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	
+	act 'Sneak home':
+		*clr & cla
+		minut += 20
+		gs 'fame', 'pav', 'sex', 2
+		inhib_exp += rand(1,3)
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/naked/sneakhomenaked.jpg"></center>'
+		'You decided it would be better to take your time and sneak home, doing your best to not be seen. You use you hands to cover yourself as best you can, using cover as often as you, can. Hiding behind trees, parked cars, ducking down alleyways and when that doesn''t work you wait till you don''t see anyone and dart across open stretches of ground. Once or twice you think someone might have seen you, but you hope you weren''t recognized, if you were seen. Finally after what seems forever you make it to the apartment complex.'
+		gs 'arousal', 'flash', 10, 'exhibitionism'
+		gs 'stat'
+		act 'Continue to complex': gt 'pavaptcourtev', 'naked_aptcomplex'
+	end
+end
+
+if $ARGS[0] = 'skating_start':
+	*clr & cla
+	minut += 3
+	menu_off = 1
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/katok0,'+rand(0,3)+'.jpg"></center>'
+	'You slowly make your way over to the ice rink, where a lot of people are already skating. Some people are really good at skating and basically fly around the lake on their skates, while others carefully shuffle around, doing their best to just stay on their skates without falling.'
+	act'Leave the rink':gt'glake'
+	act'Skate on the rink': gt 'glake', 'skating'
+end
+
+if $ARGS[0] = 'skating':
+	*clr & cla
+	menu_off = 1
+	fat -= 1
+	gs 'sweat', 'add', 10
+	stren_exp += 1
+	agil_exp += 1
+	react_exp += 1
+	icesktng_exp += 1
+	minut += 30
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/katok_do0,'+rand(0,7)+'.jpg"></center>'
+	if pcs_icesktng <= 10:
+		pcs_mood -= 10
+		'You do your best to ride your skates, but you''re not very good at it. You fall flat on your ass several times, and your butt is starting to feel a bit sore.'
+		'Some of the friendlier skaters are cheering you on and try to give you some tips, while others just laugh when you fall down on your ass yet again.'
+	elseif pcs_icesktng <= 30:
+		pcs_mood -= 5
+		'Your persistent attempts to learn how to skate are starting to pay off. You don''t fall as often any more, even though it still happens on occasion. Ice skating is a lot more fun when you''re not falling flat on your ass all the time!'
+		if rand(1,3) = 1:
+			icesktng_exp += 1
+			'While you''re trying some new things, you suddenly figure out how to do a certain move properly. It definitely improves your skating skills.'
+		end
+	elseif pcs_icesktng <= 50:
+		pcs_mood += 5
+		'At long last, you finally manage to skate for a full 100 meters without falling. It''s definitely going a lot better. Some of the other regulars who have seen you struggle before notice how much better you''re doing, and congratulate you on your progress.'
+		'You become a bit more daring as you continue to ride, almost never falling any more.'
+		if rand(1,3) = 1:
+			icesktng_exp += 2
+			'You fall down, just this once. One of the more experienced skaters notices, and helps you up. Once you''re up on your skates again, he explains what you did wrong. His explanation will go a long way in you not making the same mistake again, and you feel like you''re a better skater for it. You thank him as you skate off, trying to apply the trick he just taught you.'
+		end
+	elseif pcs_icesktng<=70:
+		pcs_mood += 10
+		'You''re getting better and better at ice skating. You basically never fall any more, and enjoy the flow of the wind on your face as you dare to go faster and faster.'
+		if rand(1,3) = 1:
+			icesktng_exp += 3
+			'As you ride you watch the more experienced skaters, trying to pick up new tricks. You try to copy some of the things they are doing, and notice that those moves are indeed more efficient than how you were doing it before.'
+		end
+	else
+		pcs_mood += 15
+		'You''ve pretty much mastered ice skating now, and won''t get any better without professional training. Occasionally you do some tricks while you skate around the rink, and others admire your skills as you fly past them.'
+	end
+
+	gs'stat'
+	
+	if hour <= 17:
+		act 'Leave the rink': gt'glake'
+		act 'Skate some more': gt 'glake', 'skating'
+	else
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/katok0,'+rand(0,3)+'.jpg"></center>'
+		'It''s too dark to go ice skating now, and the rink is closed.'
+		act 'Leave': gt'glake'
+	end
+end
+
+
+--- gLake ---------------------------------
+

@@ -1,0 +1,1467 @@
+# nichTanya
+
+!! Tanya is registered as NPC A218
+
+!! Important variables concerning Tanya:
+!! nichTanyaKnown: 0= no, 1= yes
+!! nichTanyaRelationship:
+!!					0= not in a relationship
+!!					1= in a relationship (sex is enabled)
+!! nichTanyaRelationshipState:
+!!					0 = they have never been together
+!!					10 = lovers (casually dating)
+!!					20 = girlfriends
+!!					1000-1009 = relationship broken up by Sveta
+!!					1010-1019 = relationship broken up by Tanya
+!! nichTanyaRelationshipBreakup:
+!!					1 = Sveta has told Tanya that she doesnt want a real relationship. Break up can easily happen now.
+!! nichTanyaOpinion (deprecated!): 
+!!					0= she doesn't know you
+!!					1= you are her lover
+!!					10= you are her gf
+!!					20= you are her lover and told her you don't want to be her gf
+!!					30= you are her former lover
+!! nichTanyaBF: 0= she doesn't have a bf (includes her and Nicholas doing it, see nichNTRelation), 1= her bf is vladik, 2= her bf is grigory
+!! nichTanyaBFState: 0= PC hasn't met BF, 1 = PC has met BF, 2 = PC has fucked BF, 3 = PC has fucked BF and Tanya knows it
+
+!! nichTanyaDate: the type of date Tanya and Sveta are currently having
+!! nichTanyaDateCounter
+!! nichTanyaDateLast
+!! nichTanyaDateShopping: how many times Tanya and Sveta were shopping together (without special shopping events)
+
+!! nichTanyaFuckCounter: how many times Tanya and PC have fucked (doing it several times a day only counts once)
+!! nichTanyaFuckLast: the last day Tanya and PC have fucked
+!! nichTanyaFuckToday: how many times PC and Tanya have fucked today
+!! nichTanyaFuckPositions: how many positions there were during the current encounter. 3 are minimum and kissing does not count.
+!! nichTanyaFuckDom: how many times Tanya was dominant during the current encounter
+!! nichTanyaFuckSub: how many times Tanya was submissive during the current encounter
+
+!! nichTanyaStrapon: >0: Tanya owns a strapon and might use it sometimes (the value is the size of the strapon)
+
+!! nichTanyaDominance: how dominant Tanya is <= -70: very submissive, <= -20: submissive, >= 20: dominant, >= 70 very dominant
+!! nichTanyaUni = 1: Nicholas has asked Tanya to go to university, 11: PC has agreed to help convince Tanya, 50: Tanya has decided to quit university and Nicholas hasnt reacted yet, 51: Nicholas has reacted to 50, 100: Tanya goes to university and Sveta has not been rewarded by Nicholas, 101: Sveta got her reward
+!! nichTanyaUniStart: the day Tanya decided to attend university again. Her schedule will not be affected on this day (meaning she will not just vanish to university)
+
+!! nichTanyaRoom: 0= Tanya doesnt clean her room herself, 1= Tanya cleans her room herself
+
+menu_off = 1
+
+if nichTanyaFuckLast ! daystart:
+	nichTanyaFuckToday = 0
+end
+
+if $ARGS[0] = 'bedroomTanya':
+	$nichTanyaPic = func('nichUtil','tanyaPic','idle','apartment')
+	'<center><img <<$set_imgh>> src="<<$nichTanyaPic>>"></center>'
+	nichTanyaPropDate = 0
+	nichTanyaPropSex = 0
+	
+	
+	if nichGalaKnowsPT = 10:
+		!! Galas order to break up
+		if nichTanyaRelationship = 0:
+			!! they broke up already or never were together (most likely because the player tinkered with the vars)
+			nichGalaKnowsPT = 11
+			gt 'nichTanya', 'bedroomTanya'
+		else
+			'Gala ordered you to break up with Tanya. Maybe you should talk with her. But if you do so you risk losing her.' 
+			cla
+			act 'Talk with her':
+				'"Tanya, I have to talk with you..."'
+				'You tell her how her mother demanded you to break up with her.'
+				'After you finished you look at Tanya waiting for her reaction.'
+				
+				if nichTanyaRelationshipBreakup = 1:
+					'She does not appear to be very upset.'
+					'"Well, maybe she is right. After all you told me that you don''t want something more meaningful with me."'
+					'She hesitates for a second.'
+					'"And I really don''t want you to get into trouble with my mother. I think it would be for the best if stopped... well... whatever it is we are having."'
+					'You are about to object but Tanya seems to have made up her mind. So you can only nod and turn away.'
+					nichTanyaRelationship = 0
+					nichTanyaRelationshipState = 1010
+					nichGalaKnowsPT = 11
+					killvar 'nichTanyaRelationshipBreakup'
+					cla
+					act 'Leave':
+						gt $loc,'return'
+					end
+				elseif nichTanyaRelationshipState = 10:
+					'She does not appear to be very upset.'
+					'"Well, maybe she is right. I mean I wouldn''t have dreamt of being with a girl before I met you. And except for you I feel more attracted to men anyways."'
+					'She hesitates for a second.'
+					'"And I really don''t want you to get into trouble with my mother. I think it would be for the best if stopped... well... whatever it is we are having."'
+					'You are about to object but Tanya seems to have made up her mind. So you can only nod and turn away.'
+					nichTanyaRelationship = 0
+					nichTanyaRelationshipState = 1010
+					nichGalaKnowsPT = 11
+					cla
+					act 'Leave':
+						gt $loc,'return'
+					end
+				elseif nichTanyaRelationshipState = 20:
+					'She appears very upset.'
+					'"What?! How can she..." she begins to sob. Trying to comfort her you embrace her.'
+					act 'Break up':
+						'"Tanya, I think you mother is right. It would be for the best if we broke up."'
+						'Hearing your words she pushes you away. Her eyes are watery but now she has an angry expression on her face.'
+						'"How can you?!" she yells at you. "Do I mean so little to you?! Get out of my room! Right! Now!"'
+						nichTanyaRelationship = 0
+						nichTanyaRelationshipState = 1000
+						nichGalaKnowsPT = 11
+						cla
+						act 'Leave':
+							gt 'nichApartment'
+						end
+					end
+					act 'Continue in secret':
+						'"Tanya, I don''t want to leave you. But we have to be careful. At least until your mother accepts us."'
+						'Tanya sobs again. Then she nods.'
+						'You continue comforting her for a few minutes until she appears to be fine again. You kiss her passionately before leaving her.'
+						minut += 15
+						nichGalaKnowsPT = 12
+						cla
+						act 'Leave':
+							gt $loc,'return'
+						end
+					end
+					act 'Defy Gala':
+						'"Tanya, I don''t want to leave you. And you mother can''t force us apart. You are an adult and Nicholas won''t fire me because of this. There is nothing Gala can really do to us."'
+						'Tanya sobs again. "I... I don''t know. Do you really think so? I mean I don''t want to lose you. Shouldn''t we just try to meet in secret?"'
+						'"No, we don''t have to. Don''t worry. Everything will be just fine. You will see."'
+						'You continue comforting her for a few minutes until she appears to be fine again. You kiss her passionately before leaving her.'
+						minut += 15
+						nichGalaKnowsPT = 14
+						cla
+						act 'Leave':
+							gt $loc,'return'
+						end
+					end
+				end
+			end
+			act 'Don''t tell her':
+				nichGalaKnowsPT = 13
+				'You decide that it''s better not to upset Tanya with her mothers wishes.'
+				cla
+				act 'Further':
+					gt 'nichTanya', 'bedroomTanya'
+				end
+			end
+		end
+	elseif nichTanyaRelationshipBreakup = 1:
+		if nichTanyaFuckCounter > rand(20,30) and nichTanyaFuckToday = 0:
+			'As you approach her she greets you with a smile. She walks over to her bed and sits down on the edge. Apparently she expects you to sit next to her.'
+			'Once you''he settled down she says with a serious voice "<<$pcs_nickname>>, we have to talk."'
+			'"You remember the boy I told you about? Well, we went out for a few dates. He is a really great guy and I think he genuinely loves me."'
+			'She hesitates for a few seconds. "And since you told me that you are not interested in something longlasting..."'
+			'She stops for another few seconds. She obviously feels uncomfortable to speak out what she has to say.'
+			'"Well... he is my boyfriend now. And I am his girlfriend."'
+			'"So you are saying..."'
+			'"Yes. I''m afraid our time of having fun together is over. Don''t get me wrong, I really enjoyed it. But it''s time for me to move on now. You understand that, do you?"'
+			!! Tanya will break off with Nicholas
+			nichNTRelation = 10
+			act 'Sure':
+				cla
+				nichTanyaRelationship = 0
+				nichTanyaRelationshipState = 1011
+				'"Of course."'
+				'"Oh <<$pcs_nickname>>, I hoped you''d say that." She hugs you.'
+				if nichTanyaUni >= 100:
+					'"You will meet Vlad shortly. I''m sure you will like him. He is a really nice guy."'
+					nichTanyaBF = 1
+				else
+					'"You will meet Grigory shortly. I''m sure you will like him. You two have much in common."'
+					nichTanyaBF = 2
+				end
+				
+				act 'Stand up':
+					gt $loc
+				end
+			end
+			!!Todo: fight for her
+		else
+			'As you approach her she greets you with a smile.'
+			nichTanyaPropSex = 1
+			nichTanyaPropDate = 1
+		end
+	elseif nichTanyaRelationshipState = 10:
+		if nichTanyaFuckCounter > rand(12,15) and nichTanyaFuckToday = 0:
+			'As you approach her she greets you with a smile. She walks over to her bed and sits down on the edge. Apparently she expects you to sit next to her.'
+			'Once you''he settled down she says with a serious voice "<<$pcs_nickname>>, we have to talk."'
+			'You look at her. Her face does''t give away her thoughts.'
+			'"I really enjoy our... well... special times. I really do. And I really really like you. But there is somebody... ehm... I guess..."'
+			'"So there is this guy who asked me out for a date... and he is really cute and so..."'
+			'"I really didn''t know what to tell him. I don''t have the feeling that you think our friendship is more than just a friendship. Please tell me if I am wrong!"'
+			act 'Lets stay friends with benefits':
+				cla
+				'"You''re right, Tanya. I really like you, but I''d like things to stay casual."'
+				'She looks a tiny bit dissapointed. "Oh, that''s ok. So you wouldn''t mind if I brought a boy over here?"'
+				'"No, of course not."'
+				'"Well... that''s good... you have given me a lot to think about. Would you mind letting me think everything over?"'
+				nichTanyaRelationshipBreakup = 1
+				act 'Of course not (Leave her)':
+					gt $loc
+				end
+			end
+			act 'I love you':
+				cla
+				'"Actually, Tanya, I wish we could be so much more than just friends."'
+				'"Really?" She beams. "I feel the same way! I was only afraid..."'
+				'She is silenced by your kiss.'
+				'Once she is able to talk again she jumps up and hugs you. "Oh, this is so great. I am so happy now. Does this mean you are my girlfriend now?"'
+				'"I guess so."'
+				'Tanya looks overjoyed. Unable to find any more words to express her emotions she starts to hug and kiss you again.'
+				nichTanyaRelationshipState = 20
+				!! Tanya will break off with Nicholas
+				nichNTRelation = 10
+				act 'Fuck her':
+					gt 'nichTanya', 'sexL'
+				end
+				act 'Leave':
+					gt $loc, 'return'
+				end
+			end
+		else
+			'As you approach her she greets you with a smile.'
+			nichTanyaPropSex = 1
+			nichTanyaPropDate = 1
+		end
+	elseif nichTanyaRelationshipState = 20:
+		if nichTanyaFuckLast < daystart - 5:
+			'As you approach her she greets you with a smile. "Hello sweety. Why didn''t you visit me lately? Have you been busy?"'
+		elseif nichTanyaFuckLast = daystart:
+			'As you approach her she greets you with a smile. "Hello sweety. Are you back for another round?"'
+		else
+			'As you approach her she greets you with a smile. "Hello sweety. How are you doing?"'
+		end
+		nichTanyaPropSex = 1
+		nichTanyaPropDate = 1
+	
+	end
+	
+	if nichTanyaPropSex = 1:
+		act 'Propose having sex':
+			cla
+			if nichTanyaFuckToday >= 3:
+				'As you propose going for yet another round Tanya slowly shakes her head.'
+				'"I''m sorry, <<$pcs_nickname>>. I''m really exhausted. Doing it four times a day is too much for me. But we can cuddle if you''d like."'
+				act 'Cuddle':
+					gt 'nichTanya', 'cuddle'
+				end
+				act 'Move away':
+					gt $loc
+				end
+			else
+				'"Hey Tanya. I was wondering if you are in the mood to have some fun."'
+				'"Of course! Just give me a minute."'
+				act 'Wait for her':
+					gt 'nichTanya', 'sexL'
+				end
+			end
+			
+		end
+	end
+	
+	if nichTanyaPropDate = 1 and (nichTanyaDateLast ! daystart or nichDebug = 1):
+		act 'Propose going on a date':
+			cla
+			*nl
+			nichTanyaDateCounter += 1
+			nichTanyaDateLast = daystart
+			'"Hey Tanya. I was wondering if you would like to go out on a date."'
+			'"Sure. That''s a great idea. What would you like to do?"'
+			act 'Let her pick':
+				cla
+				*nl
+				'"I don''t know. How about you?"'
+				if nichTanyaDominance >= 20 and nichTanyaStrapon = 0 and (rand(1,100) <= 50 or nichDebug = 1):
+					'"There is one thing I wanted to do with you for a while. Don''t ask what it is, it''s a surprise."'
+					nichTanyaDate = 100
+				else	
+					nichRand = rand(1,2)
+					if nichRand = 1:
+						'"There is a movie I''d like to see. I think they show it at the nearby movie theatre."'
+						nichTanyaDate = 1
+					else
+						'"Okay. Lets go shopping then."'
+						nichTanyaDate = 2
+					end
+				end
+				act 'Leave with her':
+					gt 'nichTanya','date'
+				end
+			end
+			act 'Movie theatre':
+				cla
+				'"How about watching a movie?"'
+				'"Okay, sounds good. Lets go to the movie theatre then."'
+				nichTanyaDate = 1
+				act 'Leave with her':
+					gt 'nichTanya','date'
+				end
+			end
+			act 'Shopping':
+				cla
+				'"I''d like to go shopping."'
+				'"Great idea. Lets go to the mall then."'
+				nichTanyaDate = 2
+				act 'Leave with her':
+					gt 'nichTanya','date'
+				end
+			end
+		end
+	end
+	
+	killvar 'nichTanyaPropDate'
+	killvar 'nichTanyaPropSex'
+	
+	act 'Talk with her':
+		gt 'nichTanya', 'chat'
+	end
+	
+	
+	act 'Move away':
+		gt $loc
+	end
+elseif $ARGS[0] = 'bathroom':
+	'<center><img <<$set_imgh>> src="images/characters/city/tanya/idle/shower.jpg"></center>'
+	'Tanya is currently taking a shower. She hasn''t noticed you so far.'
+	if nichTanyaRelationship = 1:
+		act 'Join her':
+			cla
+			*clr
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol0.jpg"></center>'
+			'You silently put your clothes off. Then you join Tanya in the shower and gently place one hand on her right breast. She turns to face you.'
+			
+			gs 'underwear', 'remove'
+			gs 'clothing', 'strip'
+			gs 'arousal', 'foreplay', 5, 'dom', 'lesbian'
+			gs 'stat'
+			
+			'"Hey <<$pcs_nickname>>."'
+			'She kisses you and start stroking your hair. Then she stops abruptly.'
+			'"We shouldn''t be doing this here. Lets meet in my room later. We have more privacy there."'
+			'With that she softly pushes you out.'
+			act 'Leave': gs 'underwear', 'wear' & gs 'clothing', 'wear_last_worn' & gt 'nichBathMaster','return'
+		end
+	else
+		act 'Molest her':
+			cla
+			*clr
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol0.jpg"></center>'
+			'You silently put your clothes off. Then you join Tanya in the shower and gently place one hand on her right breast. She turns to face you.'
+			
+			gs 'underwear', 'remove'
+			gs 'clothing', 'strip'
+			gs 'arousal', 'foreplay', 5, 'dom', 'lesbian'
+			gs 'stat'
+		
+			if nichTanyaRelationshipState >= 1000 and nichTanyaRelationshipState < 1010:
+				'Tanya pushes you off.'
+				'"What the hell are you doing, <<$pcs_nickname>>?! First you break up with me and then you want to fuck me anyways? Get lost!"'	
+				act 'Leave': gs 'underwear', 'wear' & gs 'clothing', 'wear_last_worn' & gt 'nichBathMaster','return'
+			elseif nichTanyaRelationshipState >= 1010 and nichTanyaRelationshipState < 1020:
+				'Tanya pushes you off.'
+				'"What the hell are you doing, <<$pcs_nickname>>?! I told you it''s over! Get lost!"'	
+				act 'Leave': gs 'underwear', 'wear' & gs 'clothing', 'wear_last_worn' & gt 'nichBathMaster','return'
+			elseif pcs_apprnc < 80:
+				'Tanya pushes you off.'
+				'"What the hell are you doing, <<$pcs_nickname>>?! Get lost!"'	
+				act 'Leave': gs 'underwear', 'wear' & gs 'clothing', 'wear_last_worn' & gt 'nichBathMaster','return'
+			elseif pcs_apprnc >= 80:
+				'Tanya quickly turns around. She looks a little bit puzzled as she realizes that it was you who grabbed her. Did she expect somebody else?.'
+
+				act 'Take advantage of the confusion':
+					cla
+					*clr
+					
+					'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol1.jpg"></center>'
+					'While she is trying to understand what is happening you begin fondling her sex with your fingers, and then her hand strokes your ass.'
+
+					gs 'arousal', 'foreplay', 10, 'dom', 'lesbian'
+					gs 'stat'
+
+					act 'Further': gt 'nichTanya', 'bathroomMolestSuccess'
+				end
+
+				act 'Wait for her reaction':
+					*clr & cla
+					gs 'stat'
+
+					if pcs_apprnc < 120:
+						'Tanya smiles at you, but removes your hand and leaves, blowing you a kiss.'
+
+						act 'Leave': gs 'underwear', 'wear' & gs 'clothing', 'wear_last_worn' & gt 'nichBathMaster','return'
+					elseif pcs_apprnc >= 120:
+						cla
+						*clr
+						'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol2.jpg"></center>'
+						'Tanya presses up to you even stronger and kisses your lips.'
+
+						gs 'arousal', 'kiss', 5, 'dom', 'lesbian'
+						gs 'stat'
+
+						act 'Further':
+							gt 'nichTanya', 'bathroomMolestSuccess'
+						end
+					end
+				end
+			end
+		end
+	end
+	act 'Leave': gt 'nichBathMaster','return'
+elseif $ARGS[0] = 'bathroomMolestSuccess':
+	'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower1.jpg"></center>'
+	'Just as the both of you are about to get more intimate you hear Tanyas name being called from outside the bathroom. She is clearly afraid of being spotted in the shower with you and quickly gets out of it and starts dressing.'
+	'"Sorry, <<$pcs_nickname>>. That what fun but I can''t risk being seen like this. Just talk to me in my room later. We have more privacy there."'
+	'With that she pushes you outside the bathroom once you are dressed.'
+	nichTanyaRelationship = 1
+	nichTanyaRelationshipState = 10
+	npc_rel['A218'] += 5
+	nichTanyaFuckLast = daystart
+	gs 'underwear', 'wear'
+	gs 'clothing', 'wear_last_worn'
+	gs 'stat'
+	act 'Back': gt 'nichApartment'
+elseif $ARGS[0] = 'date':
+	if nichTanyaDate = 1:
+		if nichDateState = 0:
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/cinema/cinema.jpg"></center>'
+			'The two of you head over to the cinema at the mall.'
+			'Tanya pays for the tickets and you settle down in your seats. You are alone in the last row.'
+			
+			act 'Watch the movie':
+				nichDateState = 10
+				gt 'nichTanya','date'
+			end
+			
+			act 'Kiss Tanya':
+				nichDateState = 20
+				gt 'nichTanya','date'
+			end
+		elseif nichDateState = 10:
+			minut += 150
+			gs 'kino','movie'
+			*nl
+			'After the movie is done Tanya smiles at you. "That was fun. But lets go home now."'
+			cla
+			act 'Return to Apartment':
+				nichDateState = 10000
+				gt 'nichTanya','date'
+			end
+		elseif nichDateState = 20:
+			*clr & cla 
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/cinema/sex/kinoKissLesbian1.jpg"></center>'
+			'The light goes dark and the movie starts. You lean over to Tanya and the two of you share a deep kiss.'
+			act 'Go down on her':
+				*clr & cla
+				gs 'arousal', 'cuni_give', -90, 'lesbian'
+				'<center><img <<$set_imgh>> src="images/characters/city/tanya/sexL/arimjob/arimjob1.jpg"></center>'
+				'Making sure that nobody sees you you slip down from your seat.'
+				'Tanya looks a little bit surprised at first. Quickly realizing what you are up to she opens her legs for you.'
+				'You slowly raise her shirt and push her panties aside. She is already a little wet from excitement.'
+				'You decide to go slowly on her, softly kissing, licking and sucking her sex.'
+				'Her breath quickens and her muscles get tense. She lets out a single moan has she cums, trying to keep quite so the other people in the cinema don''t recognize what''s going on.'
+				'You get back on your feet and slip back on your seat. To your surprise you nearly missed all of the movie.'
+				*nl
+				'After the movie is done Tanya smiles at you. "That was fun. But lets go home now."'
+				cla
+				minut += 150
+				act 'Return to Apartment':
+					nichDateState = 10000
+					gt 'nichTanya','date'
+				end
+			end
+			act 'Watch the movie':
+				nichDateState = 10
+				gt 'nichTanya','date'
+			end
+		else
+			killvar 'nichTanyaDate'
+			killvar 'nichDateState'
+			gt 'nichBedroomTanja'
+		end
+	elseif nichTanyaDate = 2:
+		if nichTanyaDateShopping = 0:
+			minut += 120
+			nichTanyaDateShopping += 1
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/date/shopping1.jpg"></center>'
+			'The two of you go to a shop for young fashion. You take turns trying on clothes and posing for each other.'
+			'You notice that the clothes Tanya puts on get skimpier every time. The last outfit she puts on only consists of high heels, a blue tanga and a revealing white shirt.'
+			'"What do you think? I think you would gorgeous in this."'
+			'"Wait? Me?"'
+			'Tanya laughs out. "Yes. I would really like you to wear it. And look, I even found a matching skirt. Please let me buy this for you."'
+			gs 'clothing_attributes', 'cheap', 415
+			if CloInhibit <= pcs_inhib:
+				act 'Agree':
+					cheap[415] = 1
+					cheapB[415] = pcs_hips
+					cheapH[415] = 70
+					cheapS[415] = 0
+					$clothingworntype = 'cheap'
+					clothingwornnumber = 415
+					cla
+					'"Okay. Thank you, Tanya."'
+					'Tanya smiles at you as she changes back into her own clothes. Then she walks over to the cashier. After she paid for the outfit she returns to you so you can put it on now.'
+					'You put it on. The two of you spend another hour in the mall before returning to the apartment.'
+					act 'Return to the apartment':
+						gt 'nichBedroomTanja'
+					end
+				end
+			end
+			act 'Decline':
+				'"Sorry Tanya, but that''s really not my style."'
+				'She looks a little bit dissapointed.'
+				'The two of you spend another hour in the mall before returning to the apartment.'
+				cla
+				act 'Return to the apartment':
+					gt 'nichBedroomTanja'
+				end
+			end
+		elseif nichTanyaDateShopping = 1:
+			minut += 60
+			nichTanyaDateShopping += 1
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/date/shopping2.jpg"></center>'
+			'The two of you visit various shops in the mall. One of the shops appears to be aimed at lumberjacks and truckers.'
+			'You take a look a the shirts and wonder why you are here. Then you realize that Tanya went missing. After a quick search you figure out that she must be in one of the chaning rooms.'
+			'"Hey <<$pcs_nickname>>, come in here."'
+			'You step into the room from where Tanyas voice came. She is wearing nothing but her panties and a truckers cap.'
+			'"Aha, there is my girl." she tries to speak with a deeper voice, obviously trying to impersonate a trucker. "Get your hot ass over here." She smacks you on your cheek. "Now let daddy finish changing." She laughs out loudly.'
+			'Once she has put her clothes back on the two of you go back to the apartment.'
+			act 'Return to the apartment':
+				gt 'nichBedroomTanja'
+			end
+		elseif nichTanyaDateShopping = 2:
+			minut += 60
+			nichTanyaDateShopping += 1
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/date/shopping3a.jpg"></center>'
+			'The two of you visit various shops in the mall. The last shop is an expensive boutique.'
+			'Tanya goes straight to the lingerie department. She collects some items, then she takes you by the hand and leads you to a changing room.'
+			'She strips down and puts the bra and the panties she took on.'
+			if $braworntype = 'boutique' and brawornnumber = 19:
+				'"Hey, I think I took the same bra you are wearing right now. We really have very much in common." She smiles at you.'
+				'After she is done trying out some other clothes she pays for the ones she wants to buy and the two ouf you head back home.'
+				act 'Return to the apartment':
+					gt 'nichBedroomTanja'
+				end
+			else
+				'She squeezes and pushes her breasts a little inside the breastforms.'
+				'"I think I picked the wrong size."'
+				'She turns around and looks at you.'
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/city/tanya/date/shopping3b.jpg"></center>'
+					'"I think this bra could fit you. Try it out."'
+					act 'Try it':
+						*nl
+						'Once you put it on Tanya inspects the fit by pressing and pulling it at various spots.'
+						'"How does it feel? I think it''s a perfect fit. I would like to buy it for you. As a gift."'
+						cla
+						act 'Agree':
+							'"That would be great. Thank you, Tanya."'
+							'Tanya beams at you as the both of you put your clothes back on.'
+							'Tanya pays for the bra and also buys the matching panties for you.'
+							'After spending another few minutes visiting another shop the two of you head back to the apartment.'
+							boutique_bras[19] = 1
+							boutique_brasS[19] = 0
+							boutique_panties[31] = 1
+							boutique_pantiesS[31] = 0
+							cla
+							act 'Return to the apartment':
+								gt 'nichBedroomTanja'
+							end
+						end
+					end
+				end
+			end
+		else
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/torgcentr.jpg"></center>'
+			'The two of you go to the mall.'
+			'After spending two hours visiting various shops the two of you return to the apartment.'
+			act 'Return to the apartment':
+				gt 'nichBedroomTanja'
+			end
+		end
+	
+	elseif nichTanyaDate = 100:
+		!! Tanya wants to buy a dildo
+		if nichDateState = 0:
+			minut += 45
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/sexshop/sexshop.jpg"></center>'
+			'Tanya leads you to the metro. You ask yourself what she is up to, because she usually uses calls a cab if she wants to travel longer distances.'
+			'After a few minutes you arrive at the industrial area of the town. From there Tanya leads you straigth to the Red Light Destrict.'
+			'"Tanya. Where are we going?"'
+			'"Don''t worry. There is a shop I wanted to show you. We can''t go to the ones in the city center because we could run into somebody I know. Ah, there it is."'
+			'She leads you into the local sex shop. It appears as if she has been here before.'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/sexshop/sexshop.jpg"></center>'
+				'You inspect the different types of sex toys presented here. Just as you''re starting to wonder what Tanya wants here she points at a shelf which has strap-on of various sizes and forms on it.'
+				'"There it is. I thought it would be fun to fuck you in a whole new way. And I think you should have a say in who your new ''lover'' will be."'
+				'She takes one of the strap-ons in her hand. "This one is called Vlad. How do you like it? Wait, there is one that''s called Igor. It''s a little bigger. Do you think you could handle it? Or how about this one? ''Labaan''. Sounds African. Look how big it is. It''s nearly as long and thick as my arm." She laughs out. "Which one would you prefer?"'
+				act 'Vlad (15 cm)':
+					nichTanyaStrapon = 15
+					'"I think I like Vlad best."'
+					if pcs_vag >= 25:
+						'"Really? I thought you might prefer a bigger one. But okay, I will buy this one then."'
+					else
+						'"Great. I will buy this one then."'
+					end
+					cla
+					act 'Wait for her':
+						nichDateState = 10
+						gt 'nichTanya','date'
+					end
+				end			
+				act 'Igor (25 cm)':
+					nichTanyaStrapon = 25
+					'"I think I like Igor best."'
+					if pcs_vag >= 35:
+						'"Really? I thought you might prefer a bigger one. But okay, I will buy this one then."'
+					else
+						'"Great. I will buy this one then."'
+					end
+					cla
+					act 'Wait for her':
+						nichDateState = 10
+						gt 'nichTanya','date'
+					end
+				end
+				act 'Labaan (35 cm)':
+					nichTanyaStrapon = 35
+					'"I think I like Labaan best."'
+					if pcs_vag <= 25:
+						'"Really? Are you sure? I didn''t think... well, it''s your choice. I will buy it then. Just don''t complain afterwards."'
+					else
+						'"Great. I will buy this one then."'
+					end
+					cla
+					act 'Wait for her':
+						nichDateState = 10
+						gt 'nichTanya','date'
+					end
+				end
+			end
+		elseif nichDateState = 10:
+			minut += 20
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/sexshop/sexshop.jpg"></center>'
+			'Tanya pays for the strap-on and also some items she collected while you were''t paying attention.'
+			'"I think I got everything I need. Lets get back to the appartment."'
+			act 'Return to the appartment':
+				nichDateState = 20
+				gt 'nichTanya','date'
+			end
+		elseif nichDateState = 20:
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/date/strapona.jpg"></center>'
+			'Once you are back at Tanyas'' bedroom she tells you to undress and lie on her bed head down.'
+			'She takes out some kind of rope of her shopping bag. One by one she connects your wrists and ankles to the posts of her bed. You are trapped, lieing in a spread position, unable to move.'
+			'The next thing Tanya takes out is a whip. She whips your back for a few minutes.'
+			gs 'arousal', 'foreplay', 5, 'lesbian', 'maso', 'bound', 'sub'
+			act 'Further':
+				nichDateState = 30
+				gt 'nichTanya','date'
+			end
+		elseif nichDateState = 30:
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/sexL/psovaginal/psovaginal0.jpg"></center>'
+			'Tanya puts her whip aside and puts her clothes off. You can''t turn your head enough to see what she is doing exactly but it appears as if she is putting on her new strap-on. She also seems to fasten her favorite vibrator on the inner side.'
+			'"I think this is going to be our favorite toy."'
+			'She probes your holes before generously applying lube on her strap-on.'
+			gs 'arousal', 'foreplay', 5, 'lesbian', 'maso', 'bound', 'sub'
+			act 'Further':
+				nichDateState = 40
+				gt 'nichTanya','date'
+			end
+		elseif nichDateState = 40:	
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/sexL/psovaginal/psovaginal0.jpg"></center>'
+			'Tanya mercilessly fucks you for more than ten minutes.'
+			'From your position you can''t see her. You can only feel her hands on your hips and her fake member grinding into you.'
+			dick = nichTanyaStrapon
+			gs 'arousal', 'vaginal_strap', 15, 'lesbian', 'sub'
+			'After a while you hear a breath quicken. She pulls back your head by pulling on your hair. With a deep moan she cums.'
+			'She doens''t untie you for another ten minutes. You feel her lying on your back, her breasts resintg on your shoulders. Finally she unties one of your wrists so you are able to untie the other knots.'
+			
+			minut += 15
+			act 'Finish':
+				gs 'arousal', 'end'
+				killvar 'nichTanyaDate'
+				killvar 'nichDateState'
+				gt 'nichBedroomTanja'
+			end
+		end
+	else
+		!! Catch invalid dates
+		minut += 120
+		'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park.jpg"></center>'
+		'You spend two nice hours with Tanya in the cities central park.'
+		act 'Return to the apartment':
+			gt 'nichBedroomTanja'
+		end
+	end
+	
+elseif $ARGS[0] = 'desc':
+	'<center><img <<$set_imgh>> src="images/characters/city/tanya/0'+rand(1,3)+'.jpg"></center>'
+	'Tanya is the daughter of Gala and the step-daughter of Nicholas.'
+	
+	
+	nichTanyaBdD = 22
+	nichTanyaBdM = 6
+	nichTanyaBdY = 1998
+	
+	if month > nichTanyaBdM or (month = nichTanyaBdM and day > nichTanyaBdD):
+		'She is ' + (year - nichTanyaBdY) + ' years old.'
+	elseif month = nichTanyaBdM and day = nichTanyaBdD:
+		'Today is her ' + (year - nichTanyaBdY) + 'th birthday.'
+	else
+		'She is ' + (year - nichTanyaBdY-1) + ' years old.'
+	end
+	
+	if nichTanyaRelationship = 0:
+		if nichTanyaRelationshipState = 0:
+			'She seems to be pretty indifferent about you.'
+		elseif nichTanyaRelationshipState >= 1000 and nichTanyaRelationshipState < 1010:
+			'The two of you have been together before you broke up with her.'
+		elseif nichTanyaRelationshipState >= 1010 and nichTanyaRelationshipState < 1020:
+			'The two of you have been together before she broke up with you.'
+		end
+	else
+		if nichTanyaRelationshipState = 10:
+			if nichTanyaRelationshipBreakup = 0:
+				'She is your lesbian lover. You feel like she considers your relationship being casual. She probably wouldn''t mind if you had another lover. On the other hand she might have somebody else herself.'
+			else
+				'She is your lesbian lover. You told her that your relationship is a casual one. As far as you know there is at least one guy who is interested in her.'
+			end
+		elseif nichTanyaRelationshipState = 20:
+			'She is your girlfriend. She expects you to be faithful. Likewise you can expect the same from her.'
+		end
+	end
+	
+	if nichTanyaRelationship = 1:
+		if nichTanyaDominance >= 70:
+			'She acts very dominantly around you (<<nichTanyaDominance>>)'
+		elseif nichTanyaDominance >= 20:
+			'She acts dominantly around you (<<nichTanyaDominance>>)'
+		elseif nichTanyaDominance <= -70:
+			'She acts very submissively around you (<<nichTanyaDominance>>)'
+		elseif nichTanyaDominance <= -20:
+			'She acts submissively around you (<<nichTanyaDominance>>)'
+		else
+			'Her behaviour around you is neither remarkably dominant nor submissive (<<nichTanyaDominance>>)'
+		end
+	end
+	
+	$nichTemp = func('nichUtil','npcActivity','tanya')
+	
+	if $nichTemp = 'sleep':
+		'Usually Tanya is sleeping at this time.'
+	elseif $nichTemp = 'bathMorning':
+		'You assume that currently Tanya is either in her room or in the master bathroom.'
+	elseif $nichTemp = 'breakfast':
+		'It''s the time Tanya usually eats breakfast.'
+	elseif $nichTemp = 'living':
+		'Tanya seems to be in the living room.'
+	elseif $nichTemp = 'bathEvening':
+		'Tanya is likely heading for her bed now.'
+	elseif $nichTemp = 'dinner':
+		'Tanya usually eats dinner around this time.'
+	elseif $nichTemp = 'nicholas' or $nichTemp = 'tanya':
+		'Tanya seems to be in her room.'
+	elseif $nichTemp = 'leaveUni' or $nichTemp = 'uni' or $nichTemp = 'returnUni':
+		'Tanya is usually at university around this time.'
+	elseif $nichTemp = 'leaveBallet' or $nichTemp = 'ballet' or $nichTemp = 'returnBallet':
+		'Tanya usually takes ballet lessons around this time.'
+	elseif $nichTemp = 'leaveFriend' or $nichTemp = 'friend' or $nichTemp = 'returnFriend':
+		'Tanya usually visits a friend around this time.'
+	elseif $nichTemp = 'leaveShopping' or $nichTemp = 'shopping' or $nichTemp = 'returnShopping':
+		'Tanya usually goes shopping around this time.'
+	elseif $nichTemp = 'prepareClub':
+		'Tanya is likely preparing herself to go clubbing in the master bathroom.'
+	elseif $nichTemp = 'leaveClub' or $nichTemp = 'club' or $nichTemp = 'returnClub':
+		'Tanya usually goes clubbing around this time.'
+	else
+		'You have no idea where Tanya is at the moment.'
+	end
+	
+	killvar '$nichTemp'
+	
+	
+	act 'Back': gt $loc
+
+elseif $ARGS[0] = 'sexL':
+	!! lesbian sex between Tanya and PC
+	nichTempArousal = 5
+	minut += nichTempArousal
+	
+	if $ARGS[1] = '' or $ARGS[1] = 'start':
+		!! the encounter starts here
+		nichTanyaFuckLast = daystart
+		if nichTanyaFuckToday = 0: nichTanyaFuckCounter += 1
+		nichTanyaFuckToday += 1
+		nichTanyaFuckDom = 0
+		nichTanyaFuckSub = 0
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','undress')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'Tanya slowly undresses and poses seductively for you.'
+	elseif $ARGS[1] = 'repeat':
+		!! PC wants another round. Very similar to start but Tanya is already naked
+		nichTanyaFuckToday += 1
+		nichTanyaFuckDom = 0
+		nichTanyaFuckSub = 0
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','pose')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'Tanya smiles at you and poses seductively, ready to go for another round.'
+	elseif $ARGS[1] = 'kiss':
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','kiss')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		!!TODO:description
+	elseif $ARGS[1] = 'aeatout':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','aeatout')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'You begin by kissing her breasts, moving gradually down her body, lower and lower until you are facing her pussy. You start by gently caressing her swollen lips with up and down tongue lapping, up and down the swollen mound and moist slit, and getting ready to focus the tip of your tongue directly on her clitoris.  You part her outer lips with your fingers, spreading her pouty inner lips giving you full access to her puffy pink clitoris.'
+		gs 'arousal', 'cuni_give', -nichTempArousal, 'lesbian'
+		gs 'arousal', 'vaginal_finger_give', -nichTempArousal, 'lesbian'
+	elseif $ARGS[1] = 'peatout':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','peatout')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'Tanya begins by dragging her tongue up your thighs to your crotch and plants light kisses from the top of your slit down to the opening of your vagina.  Her tongue pushes into your slickened hole a few times, then slides back up your cunny to caress your tingling clitoris again.'
+		gs 'arousal', 'cuni', -nichTempArousal, 'lesbian'
+	elseif $ARGS[1] = 'arimjob':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','arimjob')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'You kiss her buttocks in ever decreasing circles, eventually getting to the center where her puckered anus is waiting.  Reaching your goal, you lick all around the tender star to get it plenty moist, then firmly push your tongue forward, penetrating her ass with just the tip.  You retract it, again licking all around her anus, and repeating your tongue invasion into that most private entrance.'
+		gs 'arousal', 'rimming_give', -nichTempArousal, 'lesbian'
+	elseif $ARGS[1] = 'primjob':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','primjob')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'Tanya kisses your buttocks in ever decreasing circles, eventually getting to the center where your puckered anus is waiting.  Reaching her goal, she licks all around the tender star to get it plenty moist, then firmly pushes her tongue forward, penetrating your ass with just the tip.  She retracts it, again licking all around your anus, and repeats her tongue invasion into that most private entrance.'
+		gs 'arousal', 'rimming', -nichTempArousal, 'lesbian'
+	elseif $ARGS[1] = 'psovaginal':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','psovaginal')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'You watch as Tanya puts on the strap-on, adjusting it to her hips and centering the fake cock, and then she moves to you and inserts it slowly into your pussy.  You moan and grind back at her while she fucks you with it.'
+		dick = nichTanyaStrapon
+		gs 'arousal', 'vaginal_strap', -nichTempArousal, 'lesbian', 'sub'
+	elseif $ARGS[1] = 'asovaginal':
+		nichTanyaFuckPositions += 1
+		$nichTempPic = func('nichUtil','tanyaPic','sexL','astrapon')
+		'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+		'You put on the strap-on, adjusting it to your hips and centering it. You let Tanya suck on it to moisten it up, then you insert it slowly into her pussy.  She moans and grinds back at you while you fuck her with it.'
+		gs 'arousal', 'vaginal_strap_give', -nichTempArousal, 'lesbian', 'dom'
+	end
+	
+	killvar 'nichTempArousal'
+	
+	nichTanyaChanceDom = 20
+	nichTanyaChanceSub = 20
+		
+	gs 'stat'
+	
+	if nichTanyaDominance >= 70:
+		nichTanyaChanceDom = 40
+		nichTanyaChanceSub = 5
+	elseif nichTanyaDominance >= 20:
+		nichTanyaChanceDom = 20
+	elseif nichTanyaDominance <= -70:
+		nichTanyaChanceDom = 5
+		nichTanyaChanceSub = 40
+	elseif nichTanyaDominance <= -30:
+		nichTanyaChanceSub = 20
+	end
+	
+	nichRand = rand(1,100)
+	
+	if nichRand <= nichTanyaChanceDom:
+		!! Tanya is dominant
+		nichRand = rand(0,2)
+		if nichRand = 0 and nichTanyaStrapon > 0:
+			!!Tanya wants to use her strapon
+			if nichTanyaDominance >= 70:
+				'Tanya takes out the strap-on the two of you bought together. Apparently she expects you to submit to her false member.'
+			else
+				'Tanya takes out the strap-on the two of you bought together.'
+			end
+			act 'Distract her':
+				gt 'nichTanya','sexL','kiss'
+			end
+			act 'Get fucked':
+				nichTanyaFuckDom += 2
+				gt 'nichTanya','sexL','psovaginal'
+			end
+		elseif nichRand <= 1:
+			!! Tanya wants her pussy to be eaten
+			if nichTanyaDominance >= 70:
+				'Tanya pushes your head in the direction of her vagina. Apparently she expects you to service her with your tongue.'
+			else
+				'Tanya softly directs your head in the direction of her vagina. Apparently she would like you to service her with your tongue.'
+			end
+			act 'Lick her':
+				nichTanyaFuckDom += 1
+				gt 'nichTanya','sexL','aeatout'
+			end
+			act 'Have her lick you instead':
+				nichTanyaFuckSub += 1
+				gt 'nichTanya','sexL','peatout'
+			end
+		else
+			if nichTanyaDominance >= 70:
+				'Tanya pushes your head in the direction of her vagina. When she turns around you realize that it''s actually a rimjob she expects from you.'
+			else
+				'Tanya softly directs your head in the direction of her ass. Apparently she would like you to service her asshole with your tongue.'
+			end
+			act 'Lick her':
+				nichTanyaFuckDom += 1
+				gt 'nichTanya','sexL','arimjob'
+			end
+			act 'Have her lick you instead':
+				nichTanyaFuckSub += 1
+				gt 'nichTanya','sexL','primjob'
+			end
+		end
+	elseif nichRand >= 100-nichTanyaChanceSub:
+		!! Tanya is submissive
+		nichRand = rand(0,1)
+		if nichRand = 0:
+			!! Tanya wants to eat your pussy
+
+			'Tanya smiles at you while she approaches your vagina with her head. Apparently she wants to eat your pussy.'
+
+			act 'Lick her instead':
+				nichTanyaFuckDom += 1
+				gt 'nichTanya','sexL','aeatout'
+			end
+			act 'Have her lick you':
+				nichTanyaFuckSub += 1
+				gt 'nichTanya','sexL','peatout'
+			end
+		!!elseif nichRand = 1:
+		else
+			'Tanya approaches you from behind, her hands gently resting on your buttcheeks. Glancing behind you you see her approaching your ass with her tongue sticked out. Apparently she want to give you a rimjob.'
+			act 'Lick her instead':
+				nichTanyaFuckDom += 1
+				gt 'nichTanya','sexL','arimjob'
+			end
+			act 'Have her lick you':
+				nichTanyaFuckSub += 1
+				gt 'nichTanya','sexL','primjob'
+			end
+		end
+		
+	else
+		!! no special event
+		act 'Kiss her':
+			gt 'nichTanya','sexL','kiss'
+		end
+		act 'Lick her':
+			nichTanyaFuckDom += 1
+			gt 'nichTanya','sexL','aeatout'
+		end
+		act 'Have her lick you':
+			nichTanyaFuckSub += 1
+			gt 'nichTanya','sexL','peatout'
+		end
+		act 'Give rimjob':
+			nichTanyaFuckDom += 1
+			gt 'nichTanya','sexL','arimjob'
+		end
+		act 'Receive rimjob':
+			nichTanyaFuckSub += 1
+			gt 'nichTanya','sexL','primjob'
+		end
+		if nichTanyaStrapon > 0:
+			act 'Get fucked (her strapon)':
+				nichTanyaFuckDom += 1
+				gt 'nichTanya','sexL','psovaginal'
+			end
+		end
+		if strapon > 0:
+			act 'Fuck her (your strapon)':
+				nichTanyaFuckSub += 1
+				gt 'nichTanya','sexL','asovaginal'
+			end
+		end
+		if nichTanyaFuckPositions >= 3:
+			act 'Finish':
+				if nichTanyaFuckSub >= nichTanyaFuckDom * 3:
+					nichTanyaDominance -= 2
+				elseif nichTanyaFuckDom >= nichTanyaFuckSub * 3:
+					nichTanyaDominance += 2
+				end
+				
+				nichTanyaDominance = min(100,max(nichTanyaDominance,-100))
+				
+				killvar 'nichTanyaFuckPositions'
+				killvar 'nichTanyaFuckDom'
+				killvar 'nichTanyaFuckSub'
+				
+				gs 'arousal','end'
+				
+				gt 'nichTanya', 'sexLAfter'
+			end
+		end
+	end
+
+
+elseif $ARGS[0] = 'sexLAfter':
+	!! Tanya will have a special after-sex-event if PC promised to take Nicholas job
+	if nichWork = 1: gt 'nichApartment', 'visitTanya'
+	if nichWork = 2 and nichGalaKnowsPT = 0:
+		!! if Gala is home she may find out that PC and Tanya are doing it
+		!! only fires if PC is employed (might change)
+		!! risk is 5% (might change)
+		nichTemp = func('nichUtil','isHome','gala')
+		if (nichTemp = 1 and rand(1,100) <= 5) or nichDebug = 1:
+			nichGalaKnowsPT = 1
+			'You here a muffled sound from outside the room. It sounded like somebody was moving just outside the door.'
+			'You turn over to Tanya. She doesn''t look as if she heard this sound.'
+			'Maybe it was only your imagination?'
+			act 'Don''t worry about it':
+				gt 'nichTanya', 'sexLAfter'
+			end
+			exit
+		end
+	elseif nichWork = 2 and nichGalaKnowsPT = 20:
+		!! if Gala is home she may find out that PC and Tanya are still doing it despite PC claimed they broke up
+		!! only fires if PC is employed (might change)
+		!! risk is 5% (might change)
+		nichTemp = func('nichUtil','isHome','gala')
+		if (nichTemp = 1 and rand(1,100) <= 5) or nichDebug = 1:
+			nichGalaKnowsPT = 25
+			'You here a muffled sound from outside the room. It sounded like somebody was moving just outside the door.'
+			'You turn over to Tanya. She doesn''t look as if she heard this sound.'
+			'Maybe it was only your imagination?'
+			act 'Don''t worry about it':
+				gt 'nichTanya', 'sexLAfter'
+			end
+			exit
+		end
+	end
+	!! after sex is finished Tanya will stay in bed for a short time and one can chat with her or go for another round
+	!! TODO: more description
+	$nichTanyaPic = func('nichUtil','tanyaPic','sexL','after')
+	'<center><img <<$set_imgh>> src="<<$nichTanyaPic>>"></center>'
+	act 'Chat':
+		gt 'nichTanya','chat'
+	end
+	act 'Cuddle':
+		gt 'nichTanya', 'cuddle'
+	end
+	act 'Another round':
+		if nichTanyaFuckToday >= 3:
+			'As you propose going for yet another round Tanya slowly shakes her head.'
+			'"I''m sorry, <<$pcs_nickname>>. I''m really exhausted. Doing it four times a day is too much for me. But we can cuddle if you''d like."'
+		else
+			gt 'nichTanya','sexL','repeat'
+		end
+	end
+	act 'Dress and leave':
+		if nichWork ! 2: gt 'down'
+		gt $loc, 'return'
+	end
+	
+elseif $ARGS[0] = 'chat':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="<<$nichTanyaPic>>"></center>'
+	if $ARGS[1] = 'relationship':
+		'"How do you feel about us, Tanya?"'
+		if nichTanyaRelationshipState = 10:
+			'"I like our special times together. I really do. Before I met you I would never have dreamt of doing it with a woman. I don''t know if it is you or me but being with you doesn''t feel wrong. It''s quite the opposite really."'
+		elseif 	nichTanyaRelationshipState = 20:
+			'"You know I love you. Just spending time with you always makes me a bit happier."'
+		end
+		
+		act 'What would your mother say?':
+			'"What do you think your mother would say if she found out about us?"'
+			'Tanya thinks about her answer for a few moments.'
+			'"I don''t think she would be very happy. She frequently mentions that she expects me to marry a rich boy just like she did. I guess she would view you as some kind of distraction from this goal."'
+		end
+		
+		act 'What would Nicholas say?':
+			'"What do you think Nicholas would say if he found out about us?"'
+			'Tanya hesitates for a second.'
+			'"I guess he would understand. It surely would be difficult for him. But I think he would want me to be happy."'
+		end
+		
+		act 'What would your friends say?':
+			'"What do you think your friends would say if they found out about us?"'
+			'"I don''t think they would mind. And if they did they wouldn''t be good friends anyways."'
+		end
+		
+		act 'Another topic':
+			gt 'nichTanya', 'chat'
+		end
+	elseif $ARGS[1] = 'family':
+		cla
+		act 'Nicholas':
+			cla
+			'"How do you feel about Nicholas?"'
+			if nichNTRelation < 10:
+				!! they are together
+				'"He is a really great man. He gives me hold and strength. I can always come to him with my ... <i>emotional needs</i>."'
+			else
+				!! either one of them broke up
+				'"He is a really great man. He gives me hold and strength. He is a great father and I am glad having him."'
+			end
+			
+			act 'His job':
+				'"Do you know exactly what Nicholas is doing as his job?"'
+				'"Of course. He is the chief executive officer of a big pharma company. He was a chemistrist before he climbed up the corporate ladder. Sometimes he says that he just wants to help people and that the shareholders and laws are hindering him."'
+			end
+			
+			act 'His marriage':
+				'"What do you think about his marriage to your mother?"'
+				if nichTanyaRelationship = 0:
+					'"I don''t think I''d feel comfortable talking about this."'
+				else
+					'"I heard some people saying that my mother only married Nicholas for his money. But I can''t believe that. They have some problems. Maybe even big ones. But don''t all couples have some of them?"'
+				end
+			end
+			
+			act 'His money':
+				'"Did Nicholas earned all of his money himself?"'
+				'"No, not all of it. His father also was a successful business man and Nicholas inherited his wealth. But for some reason he doesn''t want to spend money he didn''t earn himself."'
+			end
+			act 'Another topic':
+				gt 'nichTanya', 'chat'
+			end
+		end
+		act 'Another topic':
+			gt 'nichTanya', 'chat'
+		end
+	elseif $ARGS[1] = 'jobOffer':
+		'"About the job you offered me some time ago... you know, the one as your maid..."'
+		'Tanya looks excited "Yes? Did you change your mind? It is still available."'
+		act 'Yes':
+			xgt 'nichTanya','hire'
+		end
+		act 'No':
+			cla
+			'"Sorry, I still can''t do this right now."'
+			act 'Another topic':
+				gt 'nichTanya', 'chat'
+			end
+		end
+	elseif $ARGS[1] = 'room':
+		'"I''d like to talk about your room."'
+		if nichTanyaRoom = 1:
+			'"Okay. I cleaned it just as you asked me to."'
+		else
+			'"Really? What about it?"'
+			act 'Have Tanya clean it':
+				cla
+				'"I think you should clean it yourself from now on."'
+				if nichTanyaDominance <= -30:
+					'"Well, I guess you are right. I will try to keep the room clean from now on."'
+					nichTanyaRoom = 1
+					nichChoreState[5] = 0
+				else
+					'"Sorry, <<$pcs_nickname>>, but Nicholas pays you to clean it. Therefore you will be the one cleaning it."'
+				end
+				act 'Another topic':
+					gt 'nichTanya', 'chat'
+				end
+			end
+			act 'Never mind':
+				gt 'nichTanya', 'chat'
+			end
+		end	
+	else
+		'"What would you like to talk about?"'
+		if nichTanyaRelationship = 1:
+			act 'Our relationship':
+				gt 'nichTanya','chat', 'relationship'
+			end
+		end
+		
+		if nichJobRefused = 2:
+			act 'Job offer':
+				gt 'nichTanya','chat', 'jobOffer'
+			end
+		end
+		
+		if nichWork = 2:
+			act 'Tanyas room':
+				gt 'nichTanya','chat', 'room'
+			end
+		end
+		
+		act 'Tanyas family':
+			gt 'nichTanya','chat', 'family'
+		end
+		
+		if nichTanyaUni = 11:
+			act 'University':
+				'"I talked with Nicholas. And he really would like you to attend your courses at university."'
+				'"I know, I know!" Tanya seems to be annoyed "But I don''t know if university is the right place for me. What do you think?"'
+				cla
+				act 'You should take university seriously':
+					'"I think you should take university seriously."'
+					'"Really? And why would I listen to you?"'
+					cla
+					if nichTanyaRelationshipState = 20:
+						act 'I love you (relationship)':
+							'"I love you and I only want the best for you. And I know that going to university is the best decision for your future."'
+							'She bites down on her lip and hesitates for a few seconds.'
+							'"I love you too. You know I do. And maybe you are right. I think I will give university another shot."'
+							nichTanyaUni = 100
+							nichTanyaUniStart = daystart
+							cla
+							act 'Another topic':
+								gt 'nichTanya', 'chat'
+							end
+						end
+					end
+					if nichTanyaDominance <= -30:
+						act 'Because I tell you to (submissive Tanya)':
+							'"Because I tell you to."'
+							'She bites down on her lip and hesitates for a few seconds.'
+							'"Maybe you are right. I think I will give university another shot."'
+							nichTanyaUni = 100
+							nichTanyaUniStart = daystart
+							cla
+							act 'Another topic':
+								gt 'nichTanya', 'chat'
+							end
+						end
+					end
+					if student > 0:
+						act 'I know what I am talking about (student)':
+							'"I know what I am talking about. I am a student myself."'
+							'She bites down on her lip and hesitates for a few seconds.'
+							'"Maybe you are right. I think I will give university another shot."'
+							nichTanyaUni = 100
+							nichTanyaUniStart = daystart
+							cla
+							act 'Another topic':
+								gt 'nichTanya', 'chat'
+							end
+						end
+					end
+					if persuas_lvl >= 50:
+						act 'Just trust me (persuasion)':
+							'"Just believe me. It will be the best for you in the long run."'
+							'She bites down on her lip and hesitates for a few seconds.'
+							'"Maybe you are right. I think I will give university another shot."'
+							nichTanyaUni = 100
+							nichTanyaUniStart = daystart
+							cla
+							act 'Another topic':
+								gt 'nichTanya', 'chat'
+							end
+						end
+					end
+					act 'Another topic':
+						gt 'nichTanya', 'chat'
+					end
+				end
+				act 'You should quit university':
+					'"I agree with you. University is not for everybody. I think you will be happier without it."'
+					'Tanya beams at you. "Exactly! Thank you for your advise. I guess I will take it to heart."'
+					nichTanyaUni = 50
+					cla
+					act 'Another topic':
+						gt 'nichTanya', 'chat'
+					end
+				end
+			end
+		end
+		
+	end
+	
+	
+	
+	act 'Finish chatting':
+		if nichWork = 0: gt 'down'
+		gt $loc, 'return'
+	end
+elseif $ARGS[0] = 'cuddle':
+	*clr & cla
+	$nichTanyaPic = func('nichUtil','tanyaPic','cuddle')
+	'<center><img <<$set_imgh>> src="<<$nichTanyaPic>>"></center>'
+	'You spend a few minutes in hugging and kissing Tanya.'
+	minut += 10
+	gs 'stat'
+	act 'Chat':
+		gt 'nichTanya' , 'chat'
+	end
+	act 'Leave':
+		gt $loc
+	end
+elseif $ARGS[0] = 'hire':
+	cla
+	npc_rel['A218'] += 5
+	nichWork = 1
+	'Her offer sounds too good to be true: Living with her, here, in this huge luxury apartment, right in the city center? And big paycheck every month for basically doing nothing? You know your answer immediately: "Okay."'
+	'"Okay?", she asks, making sure she didn''t misunderstand.'
+	if work = 1 and cheatWork = 0:
+		'"Yes, I''ll take your offer... but I have to go and quit my current job first."'
+	else
+		'"Yes, I''ll take your offer. If your stepfather wants to hire m-" You are cut off by Tanya''s fierce hug and kiss.'
+	end
+	
+	'"That''s great, I''m so happy right now. Of course you will need to pass the interview of my parents."'
+	'You look at her with a questioning look.'
+	'"Don''t worry. Since I will vouch for you this will be nothing but a formality. The only thing important is that you look presentable. And that includes wearing a maid uniform."'
+	'"Where would I get a maid uniform?"'
+	'"I think they sell them at G&M. One of their shops is at the mall nearby. But make sure you don''t buy an outfit that''s too skimpy. Nicholas wouldn''t mind but my mother surely would."'
+	
+	if hour <= 21 and (work = 0 or cheatWork = 1):
+		'"Actually we could go shopping for a uniform right now. The mall is still open and we would even make it back in time to present you to my parents. What do you say?"'
+		
+		act 'Go shopping together':
+			'"Ok, that sounds like a great idea."'
+			'Tanya beams and takes her purse. "Great, lets go then."'
+			cla
+			act 'Go to the mall':
+				gt 'nichTanya','shoppingUniform'
+			end
+		end
+		act 'Turn shopping offer down':
+			'"Sorry Tanya, I can''t do that today."'
+			'"Don''t worry, that''s fine. After all this comes very sudden."'
+			'She hugs you again.'
+			'"Just come back any day between 18 and 22 o''clock while wearing your uniform. My parents should be home then."'
+			cla
+			act 'Leave the apartment':gt 'down'
+		end
+	else
+	
+		act 'Understood':
+			cla
+			'She hugs you again.'
+			'"Great! Just come back any day between 18 and 22 o''clock while wearing your uniform. My parents should be home then."'
+			act 'Leave the apartment':gt 'down'
+		end
+	end
+	
+elseif $ARGS[0] = 'shoppingUniform':
+	*clr & cla
+	if $ARGS[1] = '':
+		minut += 10
+		'The two of you enter the mall and Tanya leads you to the store where the maid uniforms are sold.'
+		'She asks you to wait for a few seconds while she looks for an appropriate uniform.'
+	else
+		minut += 1
+	end
+	
+	gs 'stat'
+	
+	:nichTanyaShopUniLoop
+	nichRand = rand(1,49)
+	if uniform[nichRand] = 1 and nichLoopAttempt < 100: nichLoopAttempt += 1 & jump 'nichTanyaShopUniLoop'
+	
+	gs 'clothing_attributes', 'uniform', nichRand
+	
+	price = (20 * ((5 * CloQuality) + 100)) * 3 / 2
+	price = price / 50 * 50
+	'<center><img <<$set_imgh>> src="images/pc/clothing/10uniform/<<nichRand>>.jpg"></center>'
+	if CloInhibit = 20:
+		'After a minute Tanya returns with an uniform. "What do you think about this one? My mother wouldn''t mind it but you would still look sexy."'
+	elseif CloInhibit > 20:	
+		'After a minute Tanya returns with an uniform. "What do you think about this one? I think you would look delicious wearing it. But my mother would surely think that you''re a slut."'
+	else
+		'After a minute Tanya returns with an uniform. "What do you think about this one? I think it''s too much cloth. But I guess you can put it off when we want to have fun."'
+	end
+	
+	'She takes a look at the pricetag. "It only costs <<price>>."'
+	
+	if CloInhibit > pcs_inhib:
+		act 'Too revealing':
+			'"I think I won''t be comfortable showing this much skin."'
+			'"Really? Given the way we met each other I would not have thought that you are a prude." she winks at you.'
+			act 'Look for another uniform':
+				*clr & cla
+				gt 'nichTanya','shoppingUniform','return'
+			end
+		end
+	elseif price > money:
+		act 'Too expensive':
+			'"I''m afraid I can''t afford that."'
+			'"Really? You obviously need a job. I would be happy to help you out. You could consider this uniform my gift for you. I know you will find a way to repay me." she winks suggestively.'
+			cla
+			act 'Accept':
+				'"Thank you, Tanya. That would be great."'
+				'Tanya smiles and hugs you. She heads to the cashier and pays your new uniform with her credit card.'
+				
+				uniform[nichRand] = 1
+				uniformH[nichRand] = 50
+				uniformB[nichRand] = pcs_hips
+				cla
+				act 'Return to her apartment':
+					gt 'nichTanya','prepareInterview'
+				end
+			end
+			act 'Choose another one':
+				'"Thank you, Tanya. But maybe we should continue looking for something else."'
+				cla
+				act 'Look for another uniform':
+					*clr & cla
+					gt 'nichTanya','shoppingUniform','return'
+				end
+			end
+		end
+	else
+		act 'Buy':
+			'"That looks great. I will take it"'
+			'Tanya smiles and hugs you.'
+			money -= price
+			uniform[nichRand] = 1
+			uniformH[nichRand] = 50
+			uniformB[nichRand] = pcs_hips
+			
+			gs 'stat'
+			
+			cla
+			act 'Return to her apartment':
+				gt 'nichTanya','prepareInterview'
+			end
+		end
+		act 'Look for another uniform':
+			*clr & cla
+			gt 'nichTanya','shoppingUniform','return'
+		end
+		
+	end
+	
+	act 'Stop looking':
+		cla
+		'"I don''t think we will find something suitable today, Tanya."'
+		'She seems to be a bit dissapointed. "Okay. You will have to buy an uniform on your own then. Just come to my place wearing it between 18 and 22 o''clock."'
+		act 'Leave':
+			gt 'down'
+		end
+	end
+elseif $ARGS[0] = 'prepareInterview':
+	$clothingworntype = 'uniform'
+	clothingwornnumber = nichRand
+	'The both of you return to Tanyas apartment. You change into your new uniform before Tanya starts to inspect you carefully.'
+	
+	if spdirty > 0 or (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or cumloc[1] = 1 or cumloc[2] = 1 or cumloc[4] = 1 or cumloc[5] = 1 or cumloc[6] = 1 or cumloc[7] = 1 or cumloc[14] = 1 or cumloc[12] = 1:
+		'"How did you manage to smell like cum? You can''t meet my parents like this."'
+		'She leads you to her bathroom where you take a quick shower.'
+		gs 'cum_cleanup'
+		minut += 5
+	end
+	
+	if lashair ! 1 and pcs_pubes > 3 or pcs_leghair > 3:
+		'"Your body hair is too long. But you can fix that later, that won''t be a reason not to hire you."'
+	end
+	
+	if pcs_hairbsh = 0:
+		'"You should brush your hair."'
+		'She hands you a brush and watches you while you do as you are told.'
+		pcs_hairbsh = 1
+	end
+	
+	if ShoHeels < 4:
+		'"Nicholas might tell you to wear other shoes for work. But I think he won''t expect you to wear them right now."'
+	end
+	
+	'Taking a final look she finally gives you a nod. "I think you look fine. Come on now. My parents are waiting in the living room."'
+	act 'Follow her': minut += 3 & gt 'nichApartment', 'hiring'
+end
+
+
+--- nichTanya ---------------------------------

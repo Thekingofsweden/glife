@@ -1,0 +1,177 @@
+# LariskaHome
+
+!{Change log
+March 25,2016
+Cleaned up the dialog
+added a few lines to the BDSM room to improve immersion
+}
+$menu_loc = 'LariskaHome'
+$menu_arg = ''
+menu_off = 0
+$location_type = 'indoors'
+CLOSE ALL
+gs'stat'
+
+if (hour >= 14 and hour < 19 and week < 6) or (hour >= 9 and hour < 19 and (week >= 6 or kanikuli > 0)):
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_1.jpg"></center>'
+	if beInLariskaHome = 0:
+		'Entering the apartment, you see that it is decorated in a Japanese style.'
+		'"You have a nice apartment, Lariska." you say while looking around with interest.'
+		'"Thank you, Mother makes a good living, although she is only home on weekends usually." Lariska says with a sad voice.'
+		'You go into Lariska''s room.'
+		beInLariskaHome = 1
+	else
+		lariskaRand = rand(1,10)
+		if lariskaRand < 3 and week >= 6 and lariskaMotherKnown = 0:
+			cls
+			minut += 5
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariskamother.jpg"></center>'
+			'You knock on the door of Lariska''s apartment and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
+			'"Hello, are you looking for Lariska?" the woman asks you with a smile.'
+			'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
+			'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately. I am glad that she has such a good friend! She needed someone to get her back on her feet. Well, go through to her room, I will not bother you."'
+			lariskaMotherKnown = 1
+		end
+		'You go to Lariska''s room.'
+	end
+	minut += 5
+	act 'Continue':gt 'LariskaHome','in'
+else
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariskamother.jpg"></center>'
+	if lariskaMotherKnown = 0:
+		minut += 5
+		gs'stat'
+		if hour >= 9:$text_home = 'I''m sorry, <<$pcs_nickname>>, Lariska is not at home.'
+		if hour < 9:$text_home = 'I''m sorry, <<$pcs_nickname>>, but Lariska is still in bed. She doesn''t get up before nine.'
+		'You knock on the dorr of Lariska''s apartment and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
+		'"Hello, are you looking for Lariska?" the woman asks you with a smile.'
+		'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
+		'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately. I am glad that she has such a good friend! She needed someone to get her back on her feet. <<$text_home>>"'
+		lariskaMotherKnown = 1
+		act 'Go back to town':gt'pavResidential'
+		exit
+	end
+	if hour >= 9:'Lariska''s mother opens the door. "Hello, <<$pcs_nickname>>. I''m sorry, but Lariska isn''t home."'
+	if hour < 9:'Lariska''s mother opens the door. "Good morning , <<$pcs_nickname>>. I''m sorry but Lariska is still in bed. She doesn''t get up before nine."'
+
+	act 'Return to town':gt'pavResidential'
+end
+
+if $ARGS[0] = 'in':
+	cls
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_1.jpg"></center>'
+	if frost > 0: frost = 0
+	if lernHome ! 0:
+		act 'Do homework':
+			cla
+			lernHome = 0
+			minut += 30
+			gs'stat'
+			if pcs_grades >= 90:
+				'You did your homework together and Lariska explained the hard parts to you.'
+			else
+				'You did your homework together and figured out the hard parts together.'
+			end
+			act 'Take a break': minut +=10 & gt 'LariskaHome','in'
+		end
+	end
+	act 'Chat':
+		cls
+		minut += 10
+		gs'stat'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big13.jpg"></center>'
+		'You talked with Lariska about whatever came to mind.'
+
+		act 'Continue':gt 'LariskaHome','in'
+	end
+	if hour = 17 and minut <= 40:
+		cla
+		'Lariska looks at her watch and says, "It''s time to go to the sports club."'
+		act 'Go with Lariska':lariskaTrain += 1 & minut += 20 & gt 'gdksport', 'start'
+		act 'Say goodbye and go home':gt'pavResidential'
+		exit
+	end
+	act 'Ask for a drink':
+		cls
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big13.jpg"></center>'
+		'Lariska casually waves towards the door, "You know where the kitchen is, help yourself"'
+		act 'Go and get a drink':
+			cls
+			minut += 5
+			pcs_energy += 40
+			pcs_hydra += 60
+			gs'stat'
+
+			if week < 6 and doorpeek = 0:
+				doorlocked = 1
+				'On your way back from the kitchen, you notice that the room next to the toilet is closed, curiosity takes over and you try to open it but it is locked.'
+				act 'Return to Lariska''s room':gt 'LariskaHome','in'
+			elseif week < 6 and doorpeek ! 0:
+				'On your way back from the kitchen, you notice that the room with the BDSM stuff is closed, you try to open it but it is locked again.'
+				act 'Return to Lariska''s room':gt 'LariskaHome','in'
+			elseif week >= 6:
+				lariskaRand = rand(1,100)
+				doorpeek = 1
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_2.jpg"></center>'
+				if doorlocked = 1 or lariskaBDSM > 0:
+					doorlocked = 0
+					'On your way back from the kitchen, you notice that the room next to the toilet is closed, curiosity takes over and you try to open it. You open the door and you see a room full of what appears to be BDSM accessories and toys.'
+				elseif lariskaRand <= 10 and lariskaBDSM < 10:
+					'You open the door and you see that the room is full of what appears to be BDSM accessories and toys. In the center of the room stands Lariska''s mother, Anna Igorevna, in a suit of leather. She is doing something with a rope. You quietly close the door, hoping she didn''t notice you.'
+					lariskaBDSM += 1
+				elseif lariskaRand >= 90 and lariskaBDSM < 10:
+					'You open the door and you see that the room is full of what appears to be BDSM accessories and toys. In the center of the room stands Lariska''s mother, Anna Igorevna, in a suit of leather. She is doing something with a rope. She obviously notices you and smiles. You quickly shut the door.'
+					lariskaBDSM += 1
+				elseif lariskaRand <= 10 and lariskaBDSM >= 10:
+					'You open the door to the room full of BDSM accessories and toys. In the center of the room stands Anna Igorevna in a suit of leather, she is doing something with a rope. She invites you to have fun.'
+					lariskaBDSM += 1
+				else
+					'You open the door to the room full of BDSM accessories and toys. Anna Igorevna is not there so you close the door.'
+				end
+
+				act 'Return to Lariska''s room':gt 'LariskaHome','in'
+			end
+		end
+
+		act 'Change Your mind':gt 'LariskaHome','in'
+	end
+!!	if lariskaMotherKnown > 0:
+!!		act 'Go to my mother Lariska':
+
+!!			act 'Return':gt 'LariskaHome','in'
+!!		end
+!!	end
+	if lariskaTrain > 5 and LariskaProfi = 0 and hour >= 14:
+		act 'Talk to Lariska about becoming a pro volleyball player':
+			cls
+			minut += 5
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big13.jpg"></center>'
+			'You decided to talk to Lariska about joining the professional volleyball team.'
+			'"Lariska, you are an excellent volleyball player. Coach Mikheil Nikolayevich has a professional team, why don''t you ask to join it?" you ask your friend.'
+			'"Well, I guess I''m afraid he''ll tell me I''m not good enough. I''ve seen him tell other good players they aren''t good enough to play for him."'
+			if pcs_vball < 100 and volleysostav < 2:
+				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 1 & minut += 15 & gt 'Voltrener', 'start'
+			elseif pcs_vball >= 100 and volleysostav = 1:
+				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 2 & minut += 15 & gt 'Voltrener', 'start'
+			elseif pcs_vball >= 100 and volleysostav = 0:
+				act 'Tell her that you should both go together and ask to be on the team.':lariskaTrenerTalk = 3 & minut += 15 & gt 'Voltrener', 'start'
+			elseif volleysostav >= 2:
+				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Tell her you''ll go with her and since you''re already on the team, you can help convince the coach.':lariskaTrenerTalk = 4 & minut += 15 & gt 'Voltrener', 'start'
+			else
+				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 1 & minut += 15 & gt 'Voltrener', 'start'
+			end
+		end
+	end
+
+	act 'Say goodbye and go home':gt'pavResidential'
+end
+
+--- LariskaHome ---------------------------------
+

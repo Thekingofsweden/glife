@@ -1,0 +1,150 @@
+# KGstart
+$KGOLklassvibor = {
+	cls
+	'You must select a character class.'
+
+	if KGOLrace = 1:
+		'For people available classes:Warrior, Thief, Mage.'
+
+		act 'Warrior':$KGOLklass = 'Warrior' & KGOLklass = 1 & dynamic $KGOLklassvibor2
+		act 'Thief':$KGOLklass = 'Thief' & KGOLklass = 2 & dynamic $KGOLklassvibor2
+		act 'Magician':$KGOLklass = 'Magician' & KGOLklass = 3 & dynamic $KGOLklassvibor2
+	elseif KGOLrace = 2:
+		'For elves available classes Priest, Archer.'
+
+		act 'Priest':$KGOLklass = 'Priest' & KGOLklass = 4 & dynamic $KGOLklassvibor2
+		act 'Archer':$KGOLklass = 'Archer' & KGOLklass = 5 & dynamic $KGOLklassvibor2
+	else
+		'Classes available for zveroidov Barbarian.'
+
+		act 'Barbarian':$KGOLklass = 'Barbarian' & KGOLklass = 6 & dynamic $KGOLklassvibor2
+	end
+}
+
+$KGOLklassvibor2 = {
+	cls
+	KGOLexp = 0
+	KGOLlvl = 1
+	KGOLbrona = 0
+	KGOLwpower = 0
+	'<<$KGOLname>> <<$KGOLrace>> <<$KGOLklass>> <<KGOLlvl>> level'
+	if KGOLklass = 1:
+		KGOLstren = 30
+		KGOLspeed = 20
+		KGOLvital = 30
+		KGOLintel = 20
+	elseif KGOLklass = 2:
+		KGOLstren = 20
+		KGOLspeed = 30
+		KGOLvital = 20
+		KGOLintel = 30
+	elseif KGOLklass = 3:
+		KGOLstren = 10
+		KGOLspeed = 20
+		KGOLvital = 20
+		KGOLintel = 50
+	elseif KGOLklass = 4:
+		KGOLstren = 10
+		KGOLspeed = 10
+		KGOLvital = 10
+		KGOLintel = 70
+	elseif KGOLklass = 5:
+		KGOLstren = 20
+		KGOLspeed = 40
+		KGOLvital = 10
+		KGOLintel = 30
+	else
+		KGOLstren = 40
+		KGOLspeed = 10
+		KGOLvital = 40
+		KGOLintel = 10
+	end
+
+	KGHP = KGOLvital * 10
+	KGMana = KGOLintel * 10
+
+	act 'Play':KGOLpers = 1 & gt 'KGOLgame'
+
+	act 'Delete a character':
+		KGOLpers = 0
+		gt $curloc
+	end
+}
+
+minut += 1
+gs 'stat'
+
+if KFOnLineReaga > 0:
+	'Welcome to the game Vertep World. You can play for <<KFOnLineReaga>> more days'
+	'At any time you can pay via online banking that would extend the duration of the account.'
+	'30 days for 1000 <b>₽</b> via online banking.'
+
+	if KGOLpers > 0:
+		'You can get in the game your character, or delete it'
+		'<<$KGOLname>> <<$KGOLrace>> <<$KGOLklass>> <<KGOLlvl>> level'
+
+		act 'Play':gt 'KGOLgame'
+
+		act 'Delete a character':
+			KGOLpers = 0
+			gt $curloc
+		end
+	else
+		'You can create a character'
+
+		act 'Create a character':
+			cls
+			$KGOLname = input("Enter your nickname")
+
+			if $KGOLname <= 0:msg 'Not valid nickname' & gt $curloc
+
+			'Your nickname <<$KGOLname>>'
+			'You must select the player race'
+
+			act 'Man':$KGOLrace = 'Man' & KGOLrace = 1 & dynamic $KGOLklassvibor
+			act 'Elf':$KGOLrace = 'Elf' & KGOLrace = 2 & dynamic $KGOLklassvibor
+			act 'Zveroid':$KGOLrace = 'Zveroid' & KGOLrace = 3 & dynamic $KGOLklassvibor
+		end
+	end
+
+	if karta + bankDebtLimit >= 1000:
+		act 'Payment akkuaunta':
+			karta -= 1000
+			KFOnLineReaga += 30
+			gt $curloc
+		end
+	end
+
+	if karta + bankDebtLimit > 0:
+		act 'Buy game coins (1 ₽ = 1 Game Coin)':
+			cla
+			KGOLdonat = input("How many coins do you wish to purchase?")
+
+			if KGOLdonat <= 0 or KGOLdonat > karta:
+				msg 'Not valid operation'
+			else
+				karta -= KGOLdonat
+				KGOLmoney += KGOLdonat
+				msg '<<KGOLdonat>> coins have been added to your account.'
+			end
+
+			gt $curloc
+		end
+	end
+else
+	'Welcome to the online game Vertep World'
+	'To play this game you have to pay 1, 000 <b>₽</b> for 30 days via online banking.'
+
+	if karta + bankDebtLimit >= 1000:
+		act 'Payment':
+			karta -= 1000
+			KFOnLineReaga += 30
+			gt $curloc
+		end
+	end
+end
+
+act 'Leave':gt 'Komp', 'start'
+
+--- KGstart ---------------------------------
+

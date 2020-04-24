@@ -1,0 +1,1264 @@
+# nichGala
+
+!! nichGalaKnowsPT: 0=Gala doesnt know PC and Tanya have a relation (maybe they actually dont), 1=Gala knows PC and Tanya have an affair, 10=Gala demanded from PC to break up with Tanya, 11=they actually broke up, 12=they agreed to stay together in secret, 13=PC decided to not tell Tanya about Galas demand and stay with her,14=PC and Tanya stay together and defy Gala, 15=PC told Gala of 14, 20=Gala thinks PC and Tanya broke up (may be a lie)
+!! nichGalaOpinion: 0- Gala has no opinion about PC, 1- Gala thinks PC is a slut and after Nicholas money, 2-same as 1 but Gala had PC intimidated bay Taras, 10- Gala thinks PC is a lesbian, 20- Gala considers PC to be her plaything, 25- she thought they broke up but caught them in the act, 30- Gala is angry at PC because PC does not break up with Tanya
+!! nichGalaOpponent: 0- Gala does not want to get rid of PC, 10- Gala wants to get rid of PC and talks badly about her with Nicholas to decrease her job performance, 20- Gala plans to hide her necklace in PCs desk, 21- Gala has mentioned her missing necklace, 22- PC has placed the necklace in Galas jewelry box, 30- Gala has ordered her bodyguard to get rid of Sveta, 31- Sveta can get abducted from now on
+!! nichGalaOpponentDay: the day Gala decided she wants to get rid of PC
+!! nichGalaTraining: 1=enabled
+!! nichGalaTrainCounter
+!! nichGalaTrainLast
+
+!! nichGalaDisabled
+
+!! nichGalaContractDay: the day the contract has been signed
+!! nichGalaContract: 
+!!						0: 	the contract has not been offered
+!!						10: the contract has been offered and not answered (Sveta aksked for time to think about it)
+!!						20: the contract has been offered and rejected
+!!						30: the contract has been offered and accepted
+!!						1000-1999: reserved for the contract being broken
+!! nichGalaContractActive:
+!!						0: no
+!!						1: yes
+!! nichGalaContractLast: the last day Gala used Sveta as her slave
+!! nichGalaContractTaras: whether Taras is enabled
+!! nichGalaContractTarasCount
+!! nichGalaContractTarasLast
+!! nichGalaDoc: whether Sveta has visited Galas doctor
+!! nichGalaImplant: whether Sveta has an implant
+!! nichGalaImplantCount: how often the implant has been triggered since last check
+!! nichGalaTattoo: whether Sveta got tattoed by Gala
+!! nichGalaTarasPlan:
+!!						0:	Sveta does not know the plan
+!!						1:	Sveta knows the plan
+!!						10: Taras and Gala left
+!!						20: Nicholas and Tanya are informed
+!!						100:Sveta told Gala about the plan
+!!						110:Gala told Sveta that Taras vanished
+
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+	
+	$nichTemp = func('nichUtil','npcActivity','gala')
+	
+	if $nichTemp = 'sleep': 
+		'Gala is sleeping. It would be a bad idea to wake her up now.'
+	elseif $nichTemp = 'snooze':
+		'Gala is still in her bed. She doesn''t seem to be in the mood to talk.'
+	elseif $nichTemp = 'prepareClub':
+		'Gala is busy applying her make-up. She doesn''t seem to be in the mood to talk.'
+	elseif $nichTemp = 'nicholas':
+		!!TODO
+	elseif $nichTemp = 'bathMorning' or $nichTemp = 'bathEvening':
+		'Gala is in the bathroom and doesn''t want to speak to you now.'
+	elseif $nichTemp = 'breakfast' or $nichTemp = 'dinner':
+		!! TODO
+	elseif $nichTemp = 'living':
+		'Gala is sitting on the couch. You could approach her now.'
+		act 'Approach':
+			gt 'nichGala','approach'
+		end
+	elseif $nichTemp = 'leaveSpa' or $nichTemp = 'leaveFriend' or $nichTemp = 'leaveClub':
+		'Gala is about to leave the apartment. She has no time to speak right now.'
+	elseif $nichTemp = 'returnSpa' or $nichTemp = 'returnFriend' or $nichTemp = 'returnClub':
+		'Gala just returned to the apartment. You should give her some time before speaking to her.'
+	elseif $nichTemp = 'club':
+		!! TODO
+	elseif $nichTemp = 'friend':
+		!! TODO
+	end
+	
+	act 'Back':
+		gt $loc, 'return'
+	end
+
+elseif $ARGS[0] = 'approach':
+	menu_off = 1 & gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+	'You wait for Gala to notice you, then you approach her and curtsy.'
+	'"<<$pcs_nickname>>, what is it?"'
+	
+	if nichGalaTraining = 1 and nichGalaContract = 0 and nichGalaTrainCounter >= 5:
+		gt 'nichGala', 'contractOffer'
+	end
+	
+	if nichGalaContractActive = 1:
+		act 'Slave entertainment':
+			gt 'nichGala','slaveGeneric'
+		end
+	else
+		if nichGalaTraining = 1 and nichGalaTrainLast ! daystart:
+			act 'Special Training':
+				'"I am here for the special maid training, Mistress Gala."'
+				'"Very well. Follow me to the attic!"'
+				cla
+				act 'Follow her':
+					nichGalaTrainStage = 0
+					gt 'nichGala', 'training'
+				end
+			end
+		end
+	end
+	
+	if nichGalaContract = 10:
+		act 'Slave offer':
+			cla
+			'"About your offer... the extended training one..."'
+			'"Yes? Did you make up your mind?"'
+			act 'Accept':
+				xgt 'nichGala', 'contractOfferAccept'
+			end
+			act 'Reject':
+				xgt 'nichGala', 'contractOfferReject'
+			end
+			act 'Not yet':
+				gt $loc, 'return'
+			end
+		end
+	end
+	
+	if nichGalaTarasPlan = 1:
+		act 'Taras Plan':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+			'Taras told you that he wants to spend some "quality time" with Gala. You assume that that''s a nice description for her abduction.'
+			''
+			'You have 3 choices:'
+			'1. Follow the plan: Taras told you that you won''t see him or Gala again after his plan succeeded.'
+			'2. Expose the plan: Tell Gala everyhting you know. Taras will be extremely annoyed and you don''t know how Gala might react.'
+			'3. Ignore the plan: Do nothing and maybe act later.'
+			act 'Follow plan': gt 'nichGala','tarasPlan', 0
+			act 'Expose plan': gt 'nichGala','tarasPlan', 100
+			act 'Ignore plan': gt $loc, 'return'
+		end
+	end
+	
+	act 'Back':
+		gt $loc, 'return'
+	end
+
+elseif $ARGS[0] = 'tarasPlan':
+	if ARGS[1] = 0:
+		!! Follow the plan
+		'<center><img <<$set_imgh>> src="images/pc/activities/maidCleaning/phone.jpg"></center>'
+		'You pretend using the phone talking to somebody who gives you a lot of information in a short amount of time.'
+		'Afterwards you act confused and walk over to Gala.'
+		'"Mistress Gala, I just talked to a policemen. He said that he will come over soon to talk with you."'
+		'"Wait, what?! What are you talking about?!"'
+		'"He said it''s about somebody... a girl named Katinka? Anyways, he said he will be over in about half an hour and that you must not leave the house."'
+		'"Okay... thank you... you have to leave now... at once!"'
+		'You leave the room. It only takes two minutes before you hear Taras storming in.'
+		'After another five minutes you hear both of them leaving the apartment. Apparently they packed some belongings of Gala in an hurry.'
+		minut += 5
+		nichGalaTarasPlan = 10
+		
+		gs 'nichUtil','disableNPC','Gala'
+		
+		gs 'stat'
+		act 'Continue': gt $loc, 'return'
+	elseif ARGS[1] = 100:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+		'You hesitate at first, but then you tell Gala everything you know about the plan of Taras.'
+		'She is clearly shocked by this reveal. But she trusts your word. Who else could have told you about Katinka than Taras?'
+		'"Thank you, <<$pcs_nickname>>. You really did me a favor here. I will tell Nicholas men to take care of our Taras-problem."'
+		nichGalaTarasPlan = 100
+		nichGalaContractTaras = 0
+		act 'Continue': gt $loc, 'return'
+	end
+elseif $ARGS[0] = 'contractOffer':
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+	'"<<$pcs_nickname>>, I have been thinking. I really enjoy our little training sessions. And I believe you do as well. What would you say if we took them a little further?"'
+	act 'Further?':
+		cla
+		'"Further, Mistress Gala?"'
+		'"Yes. You would not only be trained when you ask for it but whenever I feel like it. Are you familiar with the concept of masters and slaves? It is a BDSM thing."'
+		'"You would be my slave. Make no mistake, that''s more than a just name. You would have to give up most of your independence and follow my commands. Fullfilling my desires would be your top priority."'
+		'"Of course you would still have to work for my husband. He must not know about our arrangement."'
+		'"What do you say?"'
+		act 'Reject':
+			xgt 'nichGala', 'contractOfferReject'
+		end
+		act 'Need time to consider':
+			cla
+			'"I am sorry Mistress Gala, but I''m not sure if that''s something I want. May I have some time to consider your offer, please?"'
+			'"Of course. Just tell me when you made up your mind."'
+			nichGalaContract = 10
+			act 'Back':
+				gt $loc, 'return'
+			end
+		end
+		act 'Accept':
+			xgt 'nichGala', 'contractOfferAccept'
+		end
+	end
+elseif $ARGS[0] = 'contractOfferAccept':
+	'"It sounds like a exciting idea."'
+	'She smiles at you viciously.'
+	'"I am glad you see it this way. I have prepared some paperwork. It''s mostly annoying legal stuff. I need to need your confirmation that I am allowed to spank you for example."'
+	'She hands you a binder containing a contract and a pen.'
+	act 'Sign without reading':
+		gt 'nichGala', 'contractOfferSign'
+	end
+	act 'Read':
+		nichGalaContractRead = 0
+		gt 'nichGala', 'contractOfferRead'
+	end
+elseif $ARGS[0] = 'contractOfferRead':
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/contract.jpg"></center>'
+	
+	if nichGalaContractRead = 0:
+		'You start reading the first few lines:'
+		''
+		'Slave Contract'
+		'Contract between <<$pcs_firstname>> <<$pcs_lastname>> (the slave) and Gala Polyakov (the owner).'
+	elseif nichGalaContractRead = 1:
+		if pcs_intel >= 30:
+			'The contract states that you are not allowed to speak about your status as a slave or Galas involvement in this to anybody.'
+		else
+			'There are lots of difficult legal statements. Maybe a non-disclosure agreement? You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 2:
+		if pcs_intel >= 40:
+			'It appears as if the contract can only be ended by Gala and not by you. She can do so anytime.'
+		else
+			'There are lots of difficult legal statements. It''s something about the contracts duration. You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 3:
+		if pcs_intel >= 50:
+			'The contract also allows Gala to put you under constant surveillance.'
+		else
+			'There are lots of difficult legal statements. At some point there''s something about a webcam. You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 4:
+		if pcs_intel >= 60:
+			'The contract also allows Gala to make lasting alterations to your body, including cutting your hair, giving your piercings and tattoos and even performing plastic surgeries.'
+		else
+			'There are lots of difficult legal statements. There is something about your body. You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 5:
+		if pcs_intel >= 70:
+			'Also you are required to live wherever Gala wants you to. You are not allowed to leave your home without her permission and she can restrain you anywhere anyhow and for as long as she wants. This can''t be legal, can it?'
+		else
+			'There are lots of difficult legal statements. It sounds as if she wants to cuff you. You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 6:
+		if pcs_intel >= 80:
+			'Gala is also allowed to share you with any number of other people and even sell you to somebody else. This surely isn''t legal.'
+		else
+			'There are lots of difficult legal statements. Something about purchases. Does she want to buy something for you? You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	elseif nichGalaContractRead = 7:
+		if pcs_intel >= 20:
+			'On the last pages the responsibilities of Gala are listed.'
+			'Basically she has to make sure you stay alive and healthy.'
+		else
+			'There are lots of difficult legal statements. You struggle to make any sense of it.'
+			'<font color = red>Apparently you are not smart enough to understand this section of the contract.</font>'
+		end
+	end
+	
+	if nichGalaContractRead < 7:
+		act 'Read further':
+			nichGalaContractRead += 1
+			gt 'nichGala', 'contractOfferRead'
+		end
+	end
+	act 'Sign':
+		gt 'nichGala', 'contractOfferSign'
+	end
+	act 'Don''t sign':
+		cla
+		'You look up from the papers.'
+		'"I am sorry, Mistress Gala, but I can''t sign that."'
+		'She looks dissapointed.'
+		'"A pity. Of course I expect you never to talk about this again. And you can still come to me for our normal training sessions."'
+		nichGalaContract = 20
+		act 'Back':
+			gt $loc, 'return'
+		end
+	end
+elseif $ARGS[0] = 'contractOfferReject':
+	'"I am sorry Mistress Gala, but I can''t be your slave."'
+	'She looks dissapointed.'
+	'"A pity. But you can still come to me for our training sessions."'
+	nichGalaContract = 20
+	act 'Back':
+		gt $loc, 'return'
+	end
+elseif $ARGS[0] = 'contractOfferSign':
+	nichGalaContract = 30
+	nichGalaContractActive = 1
+	nichGalaContractDay = daystart
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/contract.jpg"></center>'
+	'You take the pen and sign the contract.'
+	'Gala smiles at you and takes the papers out of your hands once you have placed your signature.'
+	'"Well done, slave."'
+	'She leaves the room to safely lock the contract away. When she returns she holds a golden ring in her hand.'
+	'"This is my first gift to you." She hands the ring over to you.'
+	act 'Take it':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/ring.jpg"></center>'
+		'You take the ring and inspect it. It is a little heavier than you expected. You assume that it is made of stainless steel. It has a round triskelion-symbol on top of it.'
+		'You put it on your right hands ring finger. It takes quite some effort since it is a very tight fit.'
+		'"Good. Now show me your hand."'
+		'You reach over to her and she inspects the fit of the ring. Then she takes a tiny key which fits into the symbol on top of the ring. She turns it just a tiny bit. You can feel that the ring becomes even tighter. You try to bend your finger. To your relief the ring doesn''t cause any discomfort.'
+		'"Now remove the ring."'
+		'You try pulling and pushing but the ring won''t move even a tiny bit. Gala smiles while watching you.'
+		'"This ring marks you as my slave. Without the proper key it is next to impossible to remove it. Now lets go to the attic. I want to introduce you to your new life."'
+		act 'Upstairs':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro1.jpg"></center>'
+			'Gala leads you upstairs into the attic. You know what is expected of you and put off your clothes.'
+			'She then points at some restraints resting on a small table.'
+			'"Put these on!"'
+			'Gala watches you as you put a black leather collar with a big metal ring in front of it around your neck, followed by cuffs around your wrists, upper arms and finally ankles.'
+			'The last thing is a big bit which you put into your mouth. You rhen realize that there are also padlocks without the matching keys. Reluctantly you lock all your restraints in place.'
+			'"Now get to your knees."'
+			'You comply. Gala first locks your ankle cuffs together, then she connects your wrist cuffs and your collar with a sturdy metal chain. Afterwards she connects the cuffs at your upper arms with a very short chain, forcing them together and effectively rendering your amrs completely immobile.'
+			'Lastly she pulls you up by your hair hand connects the back side of your collar to a chain hanging from the ceiling.'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro1.jpg"></center>'
+				'You are forced into a very akward position. Resting on your knees is painfull and more than just a little uncomfortable since it requires tension in nearly all of your body. But if you relax the collar begins to strangle you.'
+				'"This is your first lesson, slave. Your whole purpose is to serve and entertain me now. And I enjoy watching you struggle."'
+				'She goes over to her leather chair and sits down. She drinks a glass of wine while she watches you struggle.'
+				*nl
+				gs 'pain',2,'legL','ache'
+				gs 'pain',2,'legR','ache'
+				minut += 30
+				gs 'stat'
+				if pcs_stren >= 50:
+					'You struggle for what feels at least half an hour. Your <b>high strenght</b> allows you to stay in your awkward position without being strangled too much.'
+					act 'Continue': gt 'nichGala','slaveIntro',1
+				elseif pcs_vital >= 60:
+					'You struggle for what feels at least half an hour. As your legs grow tired you get strangled more and more. Your <b>high endurance</b> allows you to stay awake anyways.'
+					act 'Continue': gt 'nichGala','slaveIntro',1
+				else
+					'You struggle for what feels like an eternity. As your legs grow tired you get strangled more and more. Finally you can''t force yourself up anymore. You start to panic as you realize that you are going to choke.'
+					'Everything goes dark. The last thing you see is that Gala slowly stands up from her seat and walks over to you.'
+					act 'Continue': gt 'nichGala','slaveIntro',2
+				end
+			end
+		end
+	end
+elseif $ARGS[0] = 'slaveIntro':
+	if ARGS[1] = 1:
+		gs 'pain',10,'nipples','pinch'
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro2.jpg"></center>'
+		'Gala slowly stands up and walks over to you.'
+		'"Well done, slave. I thought I would have to rescue you at some point."'
+		'She takes out two big nipples clamps and attaches them to your nipples. They are a little uncomfortable but don''t hurt.'
+		'"Do you like these clamps? The good thing about them is that they can be adjusted. Lets make them a little tighter. Just give me a sign when the pain is too intense."'
+		'She turns small cogwheels attached to the clamps. After two turns the pain is so intense you have to shriek and frantically shake your head no.'
+		'"Enough already? Little slave bitches like yourself always want to go the easy route."'
+		'She turns the cogwheels half a turn further and your nipples feel like they are on fire.'
+		'You can''t help but scream. She looks down at you and pets your head while smiling.'
+		'It takes a few minutes for your screams to become silent sobs. Your nipples still hurt badly but since your blood can''t flow freely there they become increasingly numb.'
+		'Gala then wraps your hands in pieces of clothes and secures them with tape, preventing you from reaching your nipples and removing the clamps.'
+		'Then she disconnects you from the chain that leads connects you to the ceiling and lets you fall on your side.'
+		act 'Continue': gt 'nichGala','slaveIntro',10
+	elseif ARGS[1] = 2:	
+		gs 'pain',10,'nipples','pinch'
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro2.jpg"></center>'
+		'You wake up to an horrible pain in your nipples. Apparently there are extremely tight clamps attached to them.'
+		'Opening your eyes you realize that you are now lying on your side, still bound the same way you were before.'
+		'Your hands are wrapped in clothes and secure with tape, preventing you from reaching your nipples and removing the clamps.'
+		'The pain in your nipples is too intense to bare. You can''t help but scream.'
+		'It takes a few minutes for your screams to become silent sobs. Your nipples still hurt badly but since your blood can''t flow freely there they become increasingly numb.'
+		'You then see Gala stepping over your body and placing. Her shoes are directly in front of your face. Apparently she was standing behind you the whole time.'
+		act 'Continue': gt 'nichGala','slaveIntro',10
+	elseif ARGS[1] = 10:		
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro3.jpg"></center>'
+		'"There is a valuable lesson for you to learn here, slave: you are here for my entertainment. And you being in discomfort is very entertaining to me. If you don''t like that you better provide another form of entertainment."'
+		'She walks behind you. From the corner of you eye you see that she kneels down at your back when she returns. Suddenly you feel a pressure against your butthole.'
+		'"Now for the last lesson of today. You are my property now. And that includes your slut-holes. I expect you to keep them in prestine condition and ready to be used. Now relax!"'
+		'There is no use resisting. Gala presses a dildo into your ass and then a second one into your vagina. She secures both of them in place with a cable running between your legs.'
+		'Just as you are starting to wonder why she chose small sizes you feel them inflating. Gala pumps them up until they are quite uncomfotable.'
+		'You try pressing them out, but they don''t move a tiny bit.'
+		'Gala stands up and steps in front of you. You can see nothing but her feet in her high heel shoes.'
+		gs 'pain',4,'vaginal','stretch'
+		gs 'pain',4,'asshole','stretch'
+		minut += 5
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveIntro',20
+	elseif ARGS[1] = 20:	
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/intro2.jpg"></center>'
+		'"I have things to do now. You will stay here and think about how much you are my property, how much you want to serve me and how bad you want to avoid punishment."'
+		'She closes the door behind her as she leaves the room. You hear the key being turned. You are alone now.'
+		'At first you try to get out of your bindings. Or at least get a little more comfort. But it is no use. Gala has tied you up expertly and there is nothing you can do but wait.'
+		''
+		'It takes a few hours until you hear the lock being opened again.'
+		'You are reliefed by the sight how Gala. Despite her being the one who locked you here you can''t really feel angry at her since you also know that she is the only person who can free you.'
+		'"Lazy slut, lying around all day."'
+		'She throws the keys to your restraints at the floor in front of you and frees your left hand. Then she leaves.'
+		'At first you free your nipples. As the blood runs back into them the pain also returns. You have to pause shortly before you are able to undo your restraints. It takes quite some effort to do so since the locks are hard to reach from your position.'
+		'Lastly you are able to remove the dildos after you deflated them.'
+		'Still a little bit unsure on your feet you stand back up and put on your clothes.'
+		minut += 120
+		gs 'stat'
+		act 'Downstairs': gt 'nichApartment'
+	end
+
+elseif $ARGS[0] = 'slaveDoc':
+	if ARGS[1] <= 1:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorExt.jpg"></center>'
+		'The two of you get into Galas car and her driver drives you in the direction of the suburbs. You wonder where you are going but you don''t dare asking.'
+		'Finally the car drives up a driveway to a big building that''s surrounded by a big park. The driver stops right in front of it and steps out to open Galas door. You step out yourself.'
+		'Taking a closer look at the building you are standing before you see a sign: "Mental Institution". All the windows have bars before them, just like a prison, and it''s impossible to see what''s going on inside.'
+		'You throw a questioning look at Gala.'
+		'"Don''t worry, this is not an actual mental asylum anymore. Although it is still about correcting behavioral flaws in some regard."'
+		''
+		'Gala walks inside and you follow her. There are two security guards right behind the door and another heavy door behind them. One of them locks the door behind you and nods at the other guard who nods back and opens the second door for you.'
+		minut += 30 & gs 'stat'
+		act 'Go inside': gt 'nichGala','slaveDoc',2
+	elseif ARGS[1] = 2:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorNur.jpg"></center>'
+		'Just behind the door you are greeted by a nurse. To your surprise she is wearing a latex outfit. Is she an actual nurse or is this a costume?'
+		'"Welcome to our institute. You are just in time for you appointment. Please follow me."'
+		'She is only talking to Gala and doesn''t pay you any attention.'
+		'The nurse leads you to a small room that looks like an examination room. There is a gynochair in on cornor of it.'
+		'"Please tell your slave to undress and get in the chair."'
+		'Gala points at the chair.'
+		'"You heard her, slave."'
+		minut += 5 & gs 'stat'
+		act 'Comply': gt 'nichGala','slaveDoc',3
+	elseif ARGS[1] = 3:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorEx.jpg"></center>'
+		'You relunctantly undress and get into the chair. Why did Gala bring you here? You could have had an examination by your regular gynecologist.'
+		'"Please tell your slave to hold still. This is for her own safety."'
+		'Gala waves her hand at you, signaling you that she expects you to follow the nurses commands.'
+		'The nurse then secures you in place using some leather straps and ropes. She then steps behind you.'
+		'"Mistress Gala, is this really nece..."'
+		'You are cut short by a ballgag being pushed into your mouth. The nurse secures it in place, then steps back.'
+		'"I will inform the doctor that you are ready for him."'
+		'She leaves the room.'
+		minut += 2 & gs 'stat'
+		act 'Wait': gt 'nichGala','slaveDoc',4
+	elseif ARGS[1] = 4:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorGre.jpg"></center>'
+		'A few minutes later a middle-aged man enters the room. He must be the doctor. The nurse follows him.'
+		'The doctor goes over to Gala and shakes her hand.'
+		'"Greetings. My name is Dr. Alexeev. And you must be Mrs. Polyakov. I am glad we finally meet in person."'
+		'Gala and the doctor exchange some courtesy. Then he directs his attention at you.'
+		'"Now let us see what we have here."'
+		'He grabs a stool and places himself right between your legs. Then he begins examining your genitals.'
+		minut += 10 & gs 'stat'
+		act 'Next': gt 'nichGala','slaveDoc',5
+	elseif ARGS[1] = 5:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorEx.jpg"></center>'
+		'The doctor probes you with various tools and also takes a blood sample.'
+		if venera = 0:
+			'"Good news. It appears as if your slave is healthy."'
+		else
+			'"I am afraid I have bad news. Your slave has a STD. I have the cure for it here. But it isn''t cheap. Buying a new slave might be cheaper."'
+			'"I don''t care about the money. Just do it."'
+			'The doctor nods and tells the nurse to prepare everything. When she returns she administers several shots to your genitals.'
+			'"This should cure her soon."'
+			gs 'medical_din','healSTDs'
+			minut += 10
+		end
+		''
+		if pcs_vag > 15:
+			'"I  noticed that your slave had her vagina stretched very much. I could shrink it a little. Maybe you might have fun training her again."'
+			'"Sure, that sounds like a wonderful idea."'
+			'The doctor takes a syringe and administers a shot into your vagina. It starts to contract painfully.'
+			'After about five minutes the pain is nearly gone. The doctor probes you again.'
+			'"Good, she is way tighter now."'
+			pcs_vag = 8
+			minut += 10
+		end
+		minut += 10 & gs 'stat'
+		act 'Next': gt 'nichGala','slaveDoc',6
+	elseif ARGS[1] = 6:
+		if preg = 0: gt 'nichGala','slaveDoc',8
+		!! Pregnency
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorEx.jpg"></center>'
+		'The doctor points at your belly.'
+		if pregchem > 4000:
+			'"You know that your slave is pregnant? Of course you do, it is fairly obvious."'
+		else
+			'"You know that your slave is pregnant?"'
+		end
+		'"Do you want me to do something about it?"'
+		if pregchem >= 1863:
+			'"Isn''t it too late for this?"'
+			'"It isn''t too late for me if it isn''t too late for you."'
+		end
+		'"Fine. I need her full attention. She can''t be distracted by a kid. She is too young for one anyways."'
+		'She comes over to you and pets your head.'
+		'"You will understand that that''s the best for you in time."'
+		
+		act 'Next': gt 'nichGala','slaveDoc',7
+		if nichCheat > 0:
+			act 'Cheat: Stay pregnant': gt 'nichGala','slaveDoc',8
+		end
+	elseif ARGS[1] = 7:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorEx.jpg"></center>'
+		if knowpreg = 1:
+			'You watch in horror as the nurse prepares everything to end your pregnancy. They are seriously going to kill your baby!'
+		else
+			'You watch the nurse prepare everything to end your pregnancy. You didn''t know that you were pregnant until know and therefore you are not quite sure what to think about this procedure.'	
+		end
+		'You get a shot to sedate your lower body. You can''t see what is going on and you can''t feel anything.'
+		'After about half an hour the doctor announces that he is finished.'
+		if pregchem > 4000:
+			'To your surprise your belly is already deflated as if you were never pregnant in the first place.'
+		end
+		gs 'medical_din','abortion'
+		minut += 30 & gs 'stat'
+		act 'Next': gt 'nichGala','slaveDoc',8
+	elseif ARGS[1] = 8:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorEx.jpg"></center>'
+		'The doctor gives you another shot, this time into your left arm.'
+		'"This will make sure she doesn''t get pregnant in the future. It''s a standard fomular which is also used at more traditional medical institutes."'
+		gs 'medical_din','birthControlShot'
+		minut += 5 & gs 'stat'
+		act 'Next': gt 'nichGala','slaveDoc',9
+	elseif ARGS[1] = 9:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorImpl.jpg"></center>'
+		'"I believe you were also interested in my little pet project?"'
+		'"Yes, that''s right. Although I am still not completely sure what it is about."'
+		'"Well, basically it is a way to teach your slave to stay chaste. Some owners prefer a chastity belt but I always found them to be quite inconvenient. They have to be cleaned regularly and you always have to mind about the key."'
+		'He takes out a tiny metal contraption and shows it to Gala.'
+		'"This little thing is a sensor I invented. I will insert it into the slaves pussy. There it will record anytime the slave has someone or something enter her. You can then easily check when and where it happened. You can use your phone for this, it can connect to the sensor wirelessly."'
+		'"Sounds like a great idea. Does it has to be recharged at some point?"'
+		'"No. It generates power by using the natural body movements of the slave. And the gold plating I used makes sure that it can stay in there forever."'
+		'Gala nods and the doctor gets down between your legs again. You feel his hand entering you and then a short stitching pain as he secures the sensor in place.'
+		'"Okay, slave. I will whitelist my apartment so I won''t get notified everytime you get fucked by me or my guests. But if the sensor triggers somewhere else wihtout my permission I will punish you severely."'
+		'You are shocked. This type of surveillance will rob you of an important part of your privacy.'
+		nichGalaImplant = 1
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		minut += 10 & gs 'stat'
+		act 'Next': gt 'nichGala','slaveDoc',10
+	elseif ARGS[1] = 10:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/doctorGre.jpg"></center>'
+		'"Could I do something else for you? Maybe breast implants for your slave?"'
+		'"No, thank you. I think that''s enough for today."'
+		'"Are you sure? We also have some psychological programs to offer."'
+		'"Thank you, but not today."'
+		'"Very well. Then I have one last thing for you."'
+		'He hands Gala a black and a red card. The black one has her face on it, the red one yours.'
+		'"Give them to the guards and they will let you pass."'
+		'He says his goodbyes and leaves the room. The nurse unties you and you put your clothes back on.'
+		'She leads Gala and you back to the entrace. Gala hands one of the guards the two cards. After a close inspection he lets you pass.'
+		'Outside Gala turns to you.'
+		'"Well done, slave. I know that it might not be easy for you to except the changes I had the doctor perform on you. But that''s your life now. Since you are such an obedient little slut I will tell my husband that you helped me with something important today, so he won''t expect you to work til tomorrow."'
+		'The two of you climb back into the car. The drive back home is rather uneventful.'
+		gs 'nichUtil','freeDay'
+		nichGalaDoc = 1
+		minut += 5 & gs 'stat'
+		act 'Back home': minut += 30 & gt 'nichApartment'		
+	end
+elseif $ARGS[0] = 'slaveImplant':
+	!! Punishment for having the implant activated
+	if ARGS[1] = 0:
+		if nichGalaImplantLevel = 0:
+			gt 'nichGala','slaveImplant',1
+		else
+			$nichGalaTxt = 'Gala pulls you by your hair. She is obviously angry with you.'
+			nichTempDayDifference = daystart - nichGalaImplantDay
+			if nichTempDayDifference <= 4:
+				$nichGalaTxt += '"Seriously, slave? Did you forget your last punishment already? I told you not to whore around."'
+				nichGalaImplantLevel = min(nichGalaImplantLevel+1,3)
+			elseif nichTempDayDifference <= 14:
+				!! don''t change punishment level
+				$nichGalaTxt += '"Stupid slave bitch. You can''t even walk around for two weeks without offering your pussy to strangers, can''t you?"'
+			else
+				$nichGalaTxt += '"You naughty little bitch. I told you not to whore around the city. At least you managed to keep your legs closed for a few weeks."'
+				nichGalaImplantLevel = max(nichGalaImplantLevel-1,1)
+			end
+			
+			if nichGalaImplantLevel = 1:
+				gt 'nichGala','slaveImplant',10
+			elseif nichGalaImplantLevel = 2:
+				gt 'nichGala','slaveImplant',50
+			elseif nichGalaImplantLevel = 3:
+				if nichGalaTattoo = 0:
+					gt 'nichGala','slaveImplant',100
+				else
+					gt 'nichGala','slaveImplant',120
+				end
+			end
+			
+		end
+	elseif ARGS[1] = 1:
+		!! The first time this happens
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/dildo2.jpg"></center>'
+		'Gala pulls you by your hair. She leads you to your room.'
+		'"You little skank. Did you forget that I monitor your sexual activity? Or do you just don''t care?"'
+		'She forces you to undress. Then she ties your wrists together and forces you to the ground.'
+		'"This will satisfy your cock-hungry pussy."'
+		'She forces a big black dildo into your vagina.'
+		'"Oh, and just to be sure..."'
+		'She pushes another big dildo into your ass. Then she starts fucking you furiously with both of them.'
+		gs 'arousal','vaginal_dildo',10,'bound','rough','lesbian'
+		gs 'arousal','anal_dildo',-10,'bound','rough','lesbian'
+		gs 'arousal','end'
+		'After she is done she pulls the dildos out roughly and throws them onto your bed.'
+		'"Let this be a warning. I went soft on you because this was your first offense. Next time you will experience a real punishment."'
+		'She unties your wrists and leaves you alone.'
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		nichGalaImplantLevel = 1
+		act 'Continue': gt 'nichBedroomServant'
+	elseif ARGS[1] = 10:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/whipped'+rand(1,2)+'.jpg"></center>'
+		'<<$nichGalaTxt>>'
+		'She leads you to your room. There she makes you undress. Once you are naked she ties you up.'
+		'"I will make sure you remember that you might carry your pussy around but that it is my property."'
+		'She starts whipping you, paying careful attention to hitting your breasts and your vagina.'
+		'After about 15 minutes she unties you and leaves you alone.'
+		gs 'pain', 7, 'breasts','hit'
+		gs 'pain', 7, 'pubic','hit'
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		minut += 15
+		gs 'stat'
+		act 'Continue': gt 'nichBedroomServant'
+	elseif ARGS[1] = 50:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/cane'+rand(1,3)+'.jpg"></center>'
+		'<<$nichGalaTxt>>'
+		'She leads you up to the attic. There she makes you undress. Once you are naked she ties you up.'
+		'"Don''t forget that you brought that onto yourself."'
+		'She starts canning your butt furiously. You are quickly reduced to a sobbing mess but she won''t stop.'
+		'Only when you are so exhausted from screaming that you can''t get out another tone she finally stops.'
+		'"You think it''s over? Guess again. I will give you time to think about your failures."'
+		'She leaves you alone. With your tight restraints and your ass still burning like hell you don''t dare moving too much.'
+		'Gala returns about two hours later. Without another word she grabs her cane again and continues hitting you. Once again you are back to screaming and begging.'
+		'Once she is finally done you doubt that you will ever be able to sit without extreme pain again.'
+		'"Don''t forget this lesson, slave."'
+		'She unties you and then leaves you alone. You have quite some troubles putting you clothes back on, since even the softes touch feels like molten metal.'
+		pain['asscheeks'] = 100
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		minut += 120
+		if pcs_makeup > 1:pcs_makeup = 0
+		gs 'stat'
+		act 'Continue': gt 'nichApartment'
+	elseif ARGS[1] = 100:
+		!! Sveta get a tattoo
+		'<<$nichGalaTxt>>'
+		'She leads you outside the house and to her car. She has her driver drive you to a tattoo studio.'
+		'"I will make sure everybody knows what you are."'
+		minut += 15
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',101
+	elseif ARGS[1] = 101:
+		nichTempOverwrite = 0
+		if tatvag = 0: 
+			tatvag = 47
+			'<center><img <<$set_imgh>> src="images/pc/body/tattoos/pubic/tatvag<<tatvag>>.jpg"></center>'
+		elseif tatass = 0:
+			tatass = 19
+			'<center><img <<$set_imgh>> src="images/pc/body/tattoos/ass/tatass<<tatass>>.jpg"></center>'	
+		elseif tatleg = 0:
+			tatleg = 37
+			'<center><img <<$set_imgh>> src="images/pc/body/tattoos/legs/tatleg<<tatleg>>.jpg"></center>'
+		elseif tatupb = 0:
+			tatupb = 13
+			'<center><img <<$set_imgh>> src="images/pc/body/tattoos/trampStamp/tatlowbck<<tatupb>>.jpg"></center>'
+		else
+			tatupb = 13
+			'<center><img <<$set_imgh>> src="images/pc/body/tattoos/trampStamp/tatlowbck<<tatupb>>.jpg"></center>'
+			nichTempOverwrite = 1
+		end
+		
+		'Gala leads you to the back of the studio. There she tells you to get naked.'
+		'Once the tattoo artist arrives Gala tells him to give a demeaning tattoo. He asks you whether you want this as well and you just nod.'
+		
+		if nichTempOverwrite = 1:
+			'He starts inspecting your body. But since you already own numerous tattoos he doesn''t find the perfect spot to add the new one.'
+			'Then Gala spins you around and points at your back.'
+			'"Just tattoo over her tramp stamp."'
+		end
+		
+		'The artist starts his work and about an hour later he is done. Gala inspects his work.'
+		'She is obviously happy with what he did and pays him a little extra before heading back home with you.'
+		
+		killvar 'nichTempOverwrite'
+		
+		nichGalaTattoo = 1
+		
+		minut += 60
+		gs 'stat'
+
+		act 'Back home': minut += 15 & gt 'nichApartment'
+	elseif ARGS[1] = 120:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x1.jpg"></center>'
+		'<<$nichGalaTxt>>'
+		'She leads you outside the house and to her car. She has her driver drive you to the bar of a biker gang outside the city.'
+		'The bar is filled with people, both men and women. Gala pushes you to the middle of the room. You feel like all eyes are set on you.'
+		'"Undress!"'
+		'You can''t believe what Gala just said. She wants you to get naked in front of all these people!'
+		'"Undress! Now!"'
+		'You reluctantly put your clothes off. Once you are done Gala grabs you by your chin and forcey you down to your knees. She starts whispering into your ear.'
+		'"You want your slut-holes filled? Then that''s what you get. Hopefully you will have enough of this once I come back and pick you up. Now you will stand up and tell these good people that you are a bad little slut and that you need to be punished."'
+		minut += 30
+		gs 'stat'
+		act 'Obey': gt 'nichGala','slaveImplant',121
+	elseif ARGS[1] = 121:	
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x2.jpg"></center>'
+		'You clear your voice. By now everybody is starring at you. With uncertain voice you tell them what Gala wanted you to say: that you are a dirty slut and that you need punishment.'
+		'Gala grins and leaves the bar.'
+		'It doesn''t take long before the first woman walks up to you, bends you over and starts whipping your ass. Clearly enjoying herself she encourages the other guests to follow her exmple.'
+		minut += 5
+		gs 'pain', 3, 'asscheeks','hit'
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',121 + rand(1,2)
+	elseif ARGS[1] = 122:	
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x3.jpg"></center>'
+		'Next in line is a couple. The guy pushes you down to your knees and forces his dick into your mouth.'
+		'The girl pushes your head from behind to force her boyfriends cock further down your throat.'
+		'"It''s so hot seeing you skullfucking this bitch. I think we should come here more often."'
+		gs 'arousal','bj',5,'exhibitionism','humiliation','deepthroat','unknown','bound','group'
+		'After some minutes the guy comes in your mouth and forces you to swallow his cum while kissing his girlfriend.'
+		'Once he is limp again he kicks you away.'
+		gs 'cum_call','mouth','',0
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',122 + rand(1,2)
+	elseif ARGS[1] = 123:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x4.jpg"></center>'
+		'Next comes a guy who bends you over without saying a word and starts ramming is dick into your ass.'
+		'His friends stand around you cheering at him.'
+		'"Hey, lets use this."'
+		'One of them pushes a bottle into your vagina while is buddy continues grinding into you.'
+		gs 'arousal','anal',5,'exhibitionism','humiliation','unknown','bound','group'
+		'Just before he is about to come the guy pulls out of you and sprays his cum at your back.'
+		gs 'cum_call','back','',0
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',123 + rand(1,2)
+	elseif ARGS[1] = 124:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x5.jpg"></center>'
+		'A girl steps right in front of you and pulls down her top.'
+		'Being pushed down by one of her friends she forces you to suck on her breasts.'
+		'"This feels amazing, you should try that as well."'
+		gs 'arousal','kiss_give',5,'exhibitionism','humiliation','unknown','bound','group','lesbian'
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',124 + rand(1,2)
+	elseif ARGS[1] = 125:	
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x6.jpg"></center>'
+		'A married couple, about 50 years old, is next. They force you down on a table.'
+		'The man forces his dick into the mouth while the woman starts fucking your pussy with a strapon provided by the barkeeper.'
+		'It doesn''t take long before a random bystander starts to use a vibrator on your clit as well.'
+		gs 'arousal','bj',5,'exhibitionism','humiliation','deepthroat','unknown','bound','group'
+		'After a few minutes the couple leaves for the bathroom, announcing that you are free for the next person to use.'
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',125 + rand(1,2)
+	elseif ARGS[1] = 126:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x7.jpg"></center>'
+		'The barkeeper is next. While his girlfriend uses a vibrator on your vagina he roughly fucks your ass.'
+		gs 'arousal','anal',5,'exhibitionism','humiliation','unknown','bound','group'
+		'He cums after a few minutes. After he is done he smacks your butt.'
+		'"Feel free to come here any time."'
+		gs 'cum_call','anus','',0
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',126 + rand(1,2)
+	elseif ARGS[1] = 127:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x8.jpg"></center>'
+		'An old rocker steps next to you. He is accompanied by a girl who is about your age.'
+		'"I know exactly what bitches like this one need."'
+		'He pushes you onto a table. Then he instructs the girl next to you to shove her whole fist into you and fuck you with it.'
+		gs 'arousal','anal_fist',5,'exhibitionism','humiliation','unknown','bound','group'
+		'After a few minutes the man and the girl start kissing, forgetting all about you.'
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',127 + rand(1,2)
+	elseif ARGS[1] = 128:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x9.jpg"></center>'
+		'There is nobody else waiting for you. Therefore the barkeepers girlfriend pushes you to the ground and ties you into a painful hogtie.'
+		'You stay on the ground for nearly an hour. Sometimes a guest spits at you or gives you a kick, but they seem to be mostly done with you.'
+		minut += 60
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveImplant',129
+	elseif ARGS[1] = 129:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/pubhum1x10.jpg"></center>'
+		'Finally Gala returns. The barkeepers girlfriend removes your restraints for her.'
+		'"If you ever have enough of your slut just tell us. She is a great entertainment for our guests."'
+		'Gala just nods. She waits for you to dress again, then the both of you drive back to the apartment.'
+		nichGalaImplantCount = 0
+		nichGalaImplantDay = daystart
+		act 'Back home': minut += 30 & gt 'nichApartment'
+	end
+	
+	
+elseif $ARGS[0] = 'slaveGeneric':
+	
+	if nichGalaContractTaras = 0 and nichGalaContractDay + 14 <= daystart:
+		gt 'nichGala','slaveTarasIntro'
+	end
+	
+	
+	nichRand = rand(1,10)
+	nichGalaContractLast = daystart
+	!! TODO: CONT
+	if nichRand = 1 and pcs_cupsize > 15:	
+		!!Hang by tits
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/bound6.jpg"></center>'
+		'Gala leads you up to the attic. There ties your ankles together and secures your hands behind your back.'
+		'Then she tightly bind your brests to a rope which she pulls up. You are hanging by your breasts only.'
+		'The pain is intense and you can''t help but scream. It feels as if your breasts are ripped off.'
+		'Gala grins and circles you from time to time, smacking your butt each time.'
+		'Finally she lets you down and orders you to put your clothes back on.'
+		gs 'pain', 8, 'breasts','bind'
+		minut += 30
+		gs 'stat'
+		act 'Downstairs': gt 'nichApartment'
+	elseif nichRand <= 6:
+		!! Being bound
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/bound'+rand(1,5)+'.jpg"></center>'
+		'Gala leads you up to the attic. There she restrains you in an incredibly uncomfortable position.'
+		'She grins as you try moving your muslces and shifting your weight only to find that you''ve gotten into an even more uncomfortable position.'
+		'After watching you for half an hour Gala leaves you alone. It takes more than an hour before she returns.'
+		'When she does she pets your head.'
+		'"See what a nice Mistress I am? I let you relax while others would make you work."'
+		'She frees you and you put your clothes back on.'
+		minut += 120
+		gs 'stat'
+		act 'Downstairs': gt 'nichApartment'
+	elseif nichRand <= 8:
+		!! Being restrained
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/whipped'+rand(1,2)+'.jpg"></center>'
+		'Gala leads you to her bedroom. There she makes you undress, ties you up and takes out her whip.'
+		gs 'pain', 3, 'tummy', 'hit'
+		minut += 15
+		gs 'stat'
+		'For about 15 minutes she whips you and calls you degrading names before finally releasing you.'
+		act 'Downstairs': gt 'nichApartment'
+	else
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/restrained'+rand(1,3)+'.jpg"></center>'
+		'Gala leads you up to the attic. There she makes you undress.'
+		'Then she ties you to some kind of metal restaints. They force you into an awkward position.'
+		'"It think you earned yourself a reward, slave."'
+		'She pushes a big vibrator into your vagina and turns it on. You feel its powerful impulses in your whole body.'
+		'"Now open your other slut hole."'
+		'She pushes a dildo gag into your mouth. It fills your mouth almost completely. She locks it in place. You try pushing it with your tongue, but it won''t move at all.'
+		'"Enjoy, slut!"'
+		act 'Downstairs': gt 'nichApartment'
+	end
+elseif $ARGS[0] = 'slaveTarasIntro':
+	if ARGS[1] = 0:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/taras/intro0.jpg"></center>'
+		'Gala leads you up to the attic. You put your clothes off, then she binds you to an old rusty bed and secures a ballgag in your mouth.'
+		'Then she leaves the room. To your surprise she returns a few minutes later with her bodyguard.'
+		'Shocked by this unexpected visitor you instinctively try to cover yourself. But of course that''s not possible.'
+		'"You know my bodyguard Taras, don''t you, slave? He is an exceptional employee and his services are constantly exceeding expectations. That''s why I decided to give him a special reward."'
+		'You are shocked. Can she be serious?'
+		'"Yes, you guessed right. From now on you will serve him as well. He can use you as he sees fit whenever I don''t require your services."'
+		'"I think it''s best if the two of you get to know each other."'
+		'You hear her leaving the room.'
+		act 'Continue': gt 'nichGala','slaveTarasIntro',1
+	elseif ARGS[1] = 1:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/taras/intro1.jpg"></center>'
+		'Without saying a word Taras grabs a crop and starts hitting your back with it.'
+		'He expertly administers his strokes to inflict the most pain without leaving any visible damage.'
+		gs 'pain',3,'back','spank'
+		minut += 10
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveTarasIntro',2
+	elseif ARGS[1] = 2:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/taras/intro2.jpg"></center>'
+		'He steps next to the bed and you feel his hand around your throat.'
+		'"Listen, slut. You better learn to enjoy this. This is your life now."'
+		'He begins squeezing your throat. It becomes hard for you to breath.'
+		'"Are you enjoying it yet?"'
+		'Not knowing what he expects of you you just look at him with a questioning look in your eyes.'
+		'"I said do you enjoy it?"'
+		'He squeezes your throat a little tighter. Not having another choice you nod your head yes.'
+		'"Do you love what is happening to you."'
+		'His grip is now so tight you will pass out soon. Starting to panic you frantically nod.'
+		'"Well, that is good."'
+		'He losens his grip a little bit?'
+		'"Do you want me to fuck you then? I have to ask. After all I am no rapist."'
+		'Knowing that he will start choking you again if you decline you can''t do anything but nod.'
+		'"Of course you do. You are nothing but a dirty slut."'
+		gs 'pain',1,'throat','bind'
+		minut += 5
+		gs 'stat'
+		act 'Continue': gt 'nichGala','slaveTarasIntro',3
+	elseif ARGS[1] = 3:
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/slave/taras/intro3.jpg"></center>'
+		'He pulls down his pants and climbs into the bed. Then he begins to fuck you.'
+		'He pushes into you while holding you tightly by your wrist.'
+		gs 'cum_call', '', 'A233', 1
+		gs 'arousal','vaginal',10,'bound','rough'
+		gs 'arousal','end'
+		'It takes about ten minutes before he finally cums.'
+		'"Well, that was fun. We will repeat that soon. Very soon."'
+		'He puts his pants back on before untieing your left wrist so you can remove your other restraints.'
+		'Once you are done removing them Taras is long gone. You put your clothes back on.'
+		
+		gs 'stat'
+		nichGalaContractTaras = 1
+		nichGalaContractTarasLast = daystart
+		act 'Downstairs': gt 'nichApartment'
+	end
+	
+elseif $ARGS[0] = 'training':
+	!!TrainStages:
+	!!0: introduction
+	!!1: beginning
+	!!10: nipple clamps
+	!!20: wax
+	!!30: spanking
+	!!40: talk
+	!!50: Gala gets pleasured
+	!!60: strapon v1
+	!!70: strapon v2
+	if nichGalaTrainStage = 0:
+		minut += 5
+		if nichGalaTrainCounter = 0:
+			'Gala leads you up to a small room in the attic featuring nothing but an old mirror, a chair and a small table with lots of candles on it.'
+			'"Since this is your first training session I will lay down the ground rules."'
+			'"1. You will talk to nobody about your training."'
+			'"2. During your training you will only speak when spoken to."'
+			'"3. You will be completely naked during your training."'
+			'"Do you understand? Then get naked now!"'
+			act 'I can''t':
+				'"Sorry, Mistress Gala, but I can''t. I won''t feel comfortable."'
+				'She seems to be dissapointed. "A pity. You can come back to me if you change your mind."'
+				cla
+				act 'Leave':
+					gt 'nichApartment'
+				end
+			end
+			act 'Undress':
+				'"Yes, Mistress Gala."'
+				'"Good girl." She points at the wall next to the door. "Wait over there while I change into something comfortable myself."'
+				cla
+				act 'Wait':
+					nichGalaTrainStage = 1
+					gt 'nichGala', 'training'
+				end
+			end
+		else
+			'Gala leads you back to the small room in the attic.'
+			'"You know the drill. Get naked!"'
+			act 'Undress and wait':
+				nichGalaTrainStage = 1
+				gt 'nichGala', 'training'
+			end
+		end
+	elseif nichGalaTrainStage = 1:
+		minut += 5
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training1.jpg"></center>'
+		'When Gala returns she wears some kind of purple fetish wear. Her legs are covered by overkness while her breasts and privates are exposed.'
+		'"Open your mouth, slut!"'
+		'You do as commanded and she pushes a black ballgag behind your lips and locks it behind your head.'
+		'"I don''t want you to make any sounds. We want this to stay a private session, don''t we?"'
+		'She also takes a small belt and locks your wrists together.'
+		act 'Further':
+			nichRand = rand (1,3)
+			if nichRand = 1:
+				nichGalaTrainStage = 10
+			else
+				nichGalaTrainStage = 20
+			end
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 10:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training36.jpg"></center>'
+		'"A maids life is often full of inconveniences and even pain."'
+		'She collects a few clothes pegs from the small table.'
+		act 'Further':
+			nichGalaTrainStage = 11
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 11:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training2.jpg"></center>'
+		'"I will help you deal with this."'
+		'Stars massaging your exposed nipples.'
+		'"I will make sure you develop a tolerance for pain."'
+		'With these words she attaches the clothes pegs to your nipples.'
+		act 'Further':
+			nichRand = rand (1,3)
+			if nichRand = 1:
+				nichGalaTrainStage = 12
+			else
+				nichGalaTrainStage = 20
+			end
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 12:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training42.jpg"></center>'
+		'"You should be glad it''s me who is training you. Other trainers would go slow on you, but I believe in quick progress."'
+		'She attaches the other two clothes pegs to your labia and pulls them a few times, making sure they rest painfully.'
+		act 'Further':
+			nichGalaTrainStage = 20
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 20:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training37.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichGalaTrainStage = 21
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 21:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training39.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichRand = rand (1,3)
+			if nichRand = 1:
+				nichGalaTrainStage = 22
+			elseif nichRand = 2:
+				nichGalaTrainStage = 23
+			else
+				nichGalaTrainStage = 30
+			end
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 22:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training45.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichGalaTrainStage = 40
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 23:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training14.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichGalaTrainStage = 40
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 30:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training46.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichRand = rand (1,3)
+			if nichRand = 1:
+				nichGalaTrainStage = 31
+			else
+				nichGalaTrainStage = 40
+			end
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 31:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training47.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichRand = rand (1,3)
+			if nichRand = 1:
+				nichGalaTrainStage = 32
+			else
+				nichGalaTrainStage = 40
+			end
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 32:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training13.jpg"></center>'
+		!!TODO: Text
+		act 'Further':
+			nichGalaTrainStage = 40
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 40:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training38.jpg"></center>'
+		nichRand = rand(1,5)
+		if nichGalaTrainCounter < 4 or nichRand = 1:
+			'"I think this was enough for today."'
+			'She removes your restraints.'
+			'"You can get back to work now."'
+			nichEvalGala = 1
+			xgt 'nichGala','trainingEnd'
+		elseif nichRand = 2:
+			'"You are a good little girl. I think you earned yourself a reward."'
+			nichGalaTrainStage = 50
+		elseif nichRand = 3:
+			'"You are a good little girl. I think you earned yourself a reward."'
+			nichGalaTrainStage = 51
+		elseif nichRand = 4:
+			'"You are a good little girl. I think you earned yourself a reward."'
+			nichGalaTrainStage = 60
+		elseif nichRand = 5:
+			'"You are a good little girl. I think you earned yourself a reward."'
+			nichGalaTrainStage = 70
+		end
+		act 'Further':
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 50:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training12.jpg"></center>'
+		'She grabs your head and pulls it towards her vagina. You can smell her sex. From the amount of juice running down Galas inner thighs she is very turned on.'
+		'She clearly expects you to start licking. And from your current position there is nothing you can do than obey.'
+		'You start licking and before long you hear Galas moans getting louder. As she nears an orgams she grabs your head and pulls it closer.'
+		'It because difficult to breathe. You begin to worry about suffocation when Gala finally cums with a loud unintelligible cry.'
+		'"Well done." She says out of breath as she removes your restraint. "You can return to your work now."'
+		nichEvalGala = 2
+		xgt 'nichGala','trainingEnd'
+	elseif nichGalaTrainStage = 51:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training11.jpg"></center>'
+		!!TODO: Text
+		nichEvalGala = 2
+		xgt 'nichGala','trainingEnd'
+	elseif nichGalaTrainStage = 60:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training20.jpg"></center>'
+		'She puts on a strapon.'
+		'Then she grabs your hair, pulls you from the chair and forces you to your knees.'
+		'"I know you are a cock-hungry slut. I am sure you will enjoy this."'
+		act 'Further':
+			nichGalaTrainStage = 61
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 61:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training18.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 62
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 62:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training19.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 63
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 63:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training21.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 64
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 64:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training30.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 65
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 65:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training57.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 66
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 66:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training32.jpg"></center>'
+		nichEvalGala = 2
+		xgt 'nichGala','trainingEnd'
+	elseif nichGalaTrainStage = 70:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training62.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 71
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 71:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training28.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 72
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 72:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training54.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 73
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 73:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training26.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 74
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 74:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training25.jpg"></center>'
+		act 'Further':
+			nichGalaTrainStage = 75
+			gt 'nichGala', 'training'
+		end
+	elseif nichGalaTrainStage = 75:
+		minut += 1
+		'<center><img <<$set_imgh>> src="images/characters/city/gala/training/training56.jpg"></center>'
+		nichEvalGala = 2
+		xgt 'nichGala','trainingEnd'
+	end
+	gs 'stat'
+elseif $ARGS[0] = 'trainingEnd':
+	nichGalaTrainCounter += 1
+	nichGalaTrainLast = daystart
+	killvar 'nichGalaTrainStage'
+	act 'Leave':
+		gt 'nichApartment'
+	end
+elseif $ARGS[0] = 'desc':
+	'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+	'Gala is the wife of Nicholas and the mother of Tanya.'
+	if nichGalaOpinion = 0:
+		'She seems to be pretty indifferent about you.'
+	elseif nichGalaOpinion >= 1 and nichGalaOpinion < 10:
+		'You have the feeling that she doesn''t like you. She seems to think that you are a slut.'
+	elseif nichGalaOpinion = 10:
+		'She knows that you are interested in women and doesn''t seem to mind.'
+	elseif nichGalaOpinion = 20:
+		!!TODO
+	elseif nichGalaOpinion = 30:
+		'She is angry with you because you don''t want to break up with Tanya.'
+	end
+	
+	$nichTemp = func('nichUtil','npcActivity','gala')
+	
+	if $nichTemp = 'sleep':
+		'Usually Gala is sleeping at this time.'
+	elseif $nichTemp = 'bathMorning' or $nichTemp = 'snooze':
+		'You assume that currently Gala is either in her bedroom or in the master bathroom.'
+	elseif $nichTemp = 'breakfast':
+		'It''s the time Gala usually eats breakfast.'
+	elseif $nichTemp = 'leaveSpa' or $nichTemp = 'spa' or $nichTemp = 'returnSpa':
+		'Gala usually goes to a spa around this time.'
+	elseif $nichTemp = 'leaveFriend' or $nichTemp = 'friend' or $nichTemp = 'returnFriend':
+		'Gala usually visits a friend around this time.'
+	elseif $nichTemp = 'living':
+		'Gala seems to be in the living room.'
+	elseif $nichTemp = 'bathEvening':
+		'Gala is likely heading for her bed now.'
+	elseif $nichTemp = 'dinner':
+		'Gala usually eats dinner around this time.'
+	elseif $nichTemp = 'nicholas':
+		'Gala seems to be in her bedroom.'
+	elseif $nichTemp = 'leaveClub' or $nichTemp = 'club' or $nichTemp = 'returnClub' or $nichTemp = 'prepareClub':
+		'Usually Gala accompanies Nicholas to his club around this time.'
+	else
+		'You have no idea where Gala is at the moment.'
+	end
+	
+	killvar '$nichTemp'
+	
+	act 'Back': gt $loc
+end
+
+--- nichGala ---------------------------------

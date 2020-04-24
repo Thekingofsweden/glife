@@ -1,0 +1,248 @@
+# gadprostitutes
+
+if $ARGS[0] = 'start':
+	$loc = 'gadprostitutes'
+	$metka = 'start'
+	$location_type = 'public_outdoors'
+
+	$menu_loc = 'gadprostitutes'
+	$menu_arg = 'start'
+	menu_off = 0
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	*clr & cla
+
+	'<center><h4>Main Road near Gadukino</h4></center>'
+	if month >= 11 or month <= 3:
+		'<center><img <<$set_imgh>> src="images/locations/highway/roadwinter.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/highway/road.jpg"></center>'
+	end
+
+	if MiraLoc ! 8 and npc_QW['A60'] > 15 and hour >= 16 and hour <= 19: MiraLoc = 8
+	if MiraLoc ! 8 and npc_QW['A60'] > 15: 'You look around for Mira but don''t see her here. She must be doing something else right now.'
+	!if gadriver_gang = 2 and (mirapimp = 0 or mirapimp = 2):
+	!	if PCloStyle <> 4:
+	!		'You are not wearing the right clothes to prostitute yourself.'
+	!	elseif pcs_sleep <= 0:
+	!		'You are too tired to prostitute yourself.'
+	!	end
+	!end
+	if hour >= 16 and hour <= 23:
+		! event to remove Sveta from being miras pimp if she becomes the boys slut, the village whore
+		if MiraLoc = 8 and mirapimp = 1 and (npc_QW['A63'] >= 11 or gadriver_gang = 2):
+			*clr & cla
+
+			mirapimp = 2
+			minut += 5
+			gs 'stat'
+
+			gs 'miroslava', 'miraclothes'
+
+			'Mira spots you and confidently walks up to you. You''re not sure what has gotten into her but from the look on her face you probably won''t like it.'
+			'As soon as you are face to face with Mira she winds up and smacks you across the face as hard as she can. You are stunned a bit by and stagger to the ground. You feel warm tears begin to run down your face.'
+			'Mira commands you, "Stand up bitch!"'
+			'You rise and meet her gaze, she looks very pleased with herself. "Remember that. Now you know exactly how that feels" she says.'
+			if npc_QW['A63'] >= 11:
+				'Mira continues, "Look at you, just another slut. Mitka, Kolyamba, and Vasyan told me now much they all love fucking and sharing you now. You thought you were so much better than me, well no more! I''m not working for you anymore. You have proven yourself perfectly capable of enjoying getting shared by a group of friends."'
+			elseif gadriver_gang = 2:
+				'Mira continues, "Look at you, just another whore. All the village men can talk about is how much you moaned for each and every one of them. You thought you were so much better than me, well no more! I''m not working for you anymore. You have proven yourself perfectly capable of enjoying getting gangbanged by multiple groups of strangers."'
+			end
+			'After Mira is done with her preaching, you try to think of something witty to say or raise your hand to slap her back, but you just can''t bring yourself to do it.'
+			'Mira sees the defeated look in your eyes and knows that she has won. She pulls you into an embrace and whispers, "It''s alright <<$pcs_nickname>>. We can just be friends again. And if you want to, maybe you can come work with me instead?"'
+
+			act 'Continue':gt 'gadprostitutes','start'
+		else
+			act 'Walk back to the highway': nroad = 10 & gt 'road'
+			if MiraLoc = 8:
+				'You see Mira standing below a streetlight a little ways down the road.'
+				! event to become miras pimp if not the boys slut, not the village whore
+				if mirapimp = 0 and npc_QW['A63'] < 11 and gadriver_gang = 0:
+					gs 'willpower', 'misc', 'force', 'hard'
+					if will_cost <= pcs_willpwr:
+						act 'Make Mira your prostitute (<<will_cost>> Willpower)':
+							*clr & cla
+
+							mirapimp = 1
+							minut += 5
+							gs 'willpower', 'misc', 'force', 'hard'
+							gs 'willpower', 'pay', 'force'
+							gs 'stat'
+
+							gs 'miroslava', 'miraclothes'
+
+							'You call her over to you. Mira, hurries over and looks at you with downcast eyes.  "Hi, <<$pcs_nickname>>.  You having a good night?"'
+							'You look at her angrily. "A better question, my lovely whore, is ''Are you having a good night''?  I want 200 <b>₽</b> per customer you have each night."  You tell her earnestly.'
+							'Mira looks up in shock and with a hurt look on her face.  "What are you talking about?  Do you think I am a hooker?"'
+							'You step up to her and place your hand on her face.  Mira closes her eyes and leans into your hand.  You look into her eyes once she opens them and then SLAP her hard across the face.  Mira falls to the ground and starts to cry.  "You''re my property whore.  You will do whatever I tell you.  You will never lie to me ever again, or I swear I will make you pay.  Understand me?!"'
+							'Mira nods and she wipes away tears.'
+							'You reach down and help her back to her feet.  You brush her off and help her fix her makeup.  "Good, now get that cute ass back out on that road and earn us some money."'
+							'You give Mira a little slap on the ass and smile as you watch Mira start a new chapter of her life as your prostitute.'
+
+							act 'Finish':gt'gadprostitutes','start'
+						end
+					else
+						act 'Make Mira your prostitute (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+				end
+				! events to prostitute just Mira
+				act 'Watch Mira prostitute herself': gt 'gadprostitutes', 'just_mira'
+				! can do prostitution with Mira if Sveta is the village whore - this can be achieved by doing Mitka''s questline
+				!if gadriver_gang = 2 and (mirapimp = 0 or mirapimp = 2) and PCloStyle = 4 and pcs_sleep > 0:
+					! act 'Prostitute yourself with Mira':gt 'gadprostitutes', 'with_mira'
+				!end
+			end
+			! can do prostitution without Mira if Sveta is the village whore - this can be achieved by doing Mitka''s questline
+			!if gadriver_gang = 2 and (mirapimp = 0 or mirapimp = 2) and PCloStyle = 4 and pcs_sleep > 0:
+			!	act 'Prostitute yourself':gt 'gadprostitutes', 'without_mira'
+			!end
+		end
+	else
+		'It is not a good time of day for prostitution. Try coming back later in the evening.'
+		act 'Walk back to the highway': nroad = 10 & gt 'road'
+	end
+end
+
+! Prostitution events for just Mira - SM
+if $ARGS[0] = 'just_mira':
+	gs 'miroslava', 'miraclothes'
+
+	if hour >= 16 and hour <= 23:
+		act 'Leave Mira to her work': gt 'gadprostitutes', 'start'
+		act 'Wait for Mira to attract a customer':
+			*clr & cla
+			minut += 30
+			gs 'stat'
+
+			temp_gadpro = rand(1,10)
+			if temp_gadpro > 5:
+				miraprost += 1
+				if npc_QW['A60'] < 20: npc_QW['A60'] += 1
+
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/miraprost.jpg"></center>'
+
+				'It isn''t long before a customer pulls up in a nice vehicle. Mira approaches the vehicle and starts talking to the driver.'
+				'You can''t hear what she is saying but after only a few minutes the door opens and Mira steps into the vehicle. It pulls away, but doesn''t go far. You see it pull off the main road and head down a dirt road. Smiling and wanting to see the action, you run into the woods trying to head off the vehicle.'
+
+				act 'Watch Mira and the customer':
+
+					temp_gadpro = rand(0,1)
+					if temp_gadpro = 0:
+						*clr & cla
+						gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+						gs 'stat'
+
+						'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1.mp4"></video></center>'
+
+						'You walk up and look into the car. You see Mira giving one hell of a blowjob to her customer. Her head is bobbing up and down on his cock.'
+
+						act 'Hide':
+							*clr & cla
+							gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+							gs 'stat'
+
+							'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1_1.mp4"></video></center>'
+
+							'You duck for cover as the guy suddenly gets out of the car and opens the passenger door, grabs Mira''s head and starts forcing his cock deep into her throat.'
+
+							act 'Keep watching':
+								*clr & cla
+								gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+								gs 'stat'
+
+								'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1_2.mp4"></video></center>'
+								'Eventually, the guy grunts and cums all over Mira''s face and into her mouth. The nicely dressed man pulls Mira out of the car, hands her a few bills and then drives off.'
+								'Mira walks back towards the road counting the money he gave her as she absentmindedly licks the cum as it drips down her face. She smiles at you and shows you the money as you join her.'
+								gs 'stat'
+
+								act 'Finish':
+									*clr & cla
+									if mirapimp = 1: money += 200
+									gs 'arousal', 'end'
+									gs 'stat'
+
+									gt 'gadprostitutes', 'just_mira'
+								end
+							end
+						end
+					elseif temp_gadpro = 1:
+						*clr & cla
+						gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+						gs 'stat'
+
+						'<center><video autoplay loop src="images/characters/village/mira/miraprost2.mp4"></video></center>'
+						'You walk up and look into the van. You see Mira showing her customer her tits and rubbing her pussy. You see a hungry gleam in the guy''s eyes, which Mira returns right back.'
+
+						act 'Keep watching':
+							*clr & cla
+							gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+							gs 'stat'
+
+							'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost2_1.mp4"></video></center>'
+
+							'Mira and the guy jump into the back of the van and you watch as he starts fucking her wet pussy. His hand covers her mouth as she screams in ecstasy. The guy pounds his 20cm cock deep into her pussy. From Mira''s grunts of partial ecstasy, partial pain, you know the guy is hitting or entering her cervix.'
+
+							act 'Hide':
+								*clr & cla
+								gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+								gs 'stat'
+
+								'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost2_2.mp4"></video></center>'
+
+								'You have to duck behind some bushes as they move outside the van. The guy continues to pound into Mira''s pussy until he cums...and cums...and cums. '
+								'After the wild sex, Mira and the guy sit in the van and talk for a bit. He gives her a nice wad of cash and she starts walking back towards the road. She smiles at you and shows you the money as you join her.'
+
+								act 'Finish':
+									*clr & cla
+									if mirapimp = 1: money += 200
+									gs 'arousal', 'end'
+									gs 'stat'
+
+									gt 'gadprostitutes', 'just_mira'
+								end
+							end
+						end
+					end
+				end
+			else
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirawish2_1.jpg"></center>'
+
+				'Mira walks along the road showing off her body to passing car and trucks, but no one stops to pick her up.'
+
+				act 'Continue' :gt 'gadprostitutes', 'just_mira'
+			end
+		end
+	else
+		'It is too late for Mira to work as a prostitute now.'
+		act 'Walk back to Gadukino together':MiraLoc = 0 & gt 'gadukino', ''
+	end
+end
+
+! Prostitution events for Sveta and Mira together - SM
+!if $ARGS[0] = 'with_mira'
+!	if pcs_sleep <= 0: 'You are too tired to prostitute yourself.'
+!	if pcs_sleep > 0:
+!		act 'Try to attract a customer with Mira':
+!
+!		end
+!	end
+!	act 'Stop looking for customers with Mira': gt 'gadprostitutes', 'start'
+!end
+
+! Prostitution events for Sveta alone - SM
+!if $ARGS[0] = 'without_mira'
+!	if pcs_sleep <= 0: 'You are too tired to prostitute yourself.'
+!	if pcs_sleep > 0:
+!		act 'Try to attract a customer':
+!
+!		end
+!	end
+!
+!	act 'Stop looking for customers': gt 'gadprostitutes', 'start'
+!end
+
+--- gadprostitutes ---------------------------------
+

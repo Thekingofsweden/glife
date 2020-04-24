@@ -1,0 +1,1822 @@
+# street_event
+
+!{$arg[0]='down','street','Nord' for trigger position.  if call this with gs, $curloc work the same.
+1. location indepent events, list: rape, rob, hijack, ask phonenumber, no pantie&skirt, $street_cum, $mobile_check
+ all events were only in [street], except shantpopala duplicate in [street][down].
+ original event chance in [street]:
+		streetev_rape=10
+		streetev_rob=1
+		streetev_hijack=1
+		streetev_bf=90
+		shantpopala: 100% if shantpopala>0
+2. home-related events: check if player live here (workDolgDay, vladimirday, pcs_magik >= 1 and mainQW = 0, hour = meethour).
+[street]: home_owned[1] > 0 for korr
+[down]:tanwork = 1 for house, student > 0 for dorm
+[Nord]:none for now. use (train station) as position, if no home in city.
+Known issue: boyfriend/vladimir may wait you in both place, if you rent house in [street] and study in university/work in Tanya
+
+
+ie. gt'street_event','home'
+}
+
+streetevent_hour = hour
+streetev_home = 0
+
+!!not sure what all this if and elseif below is for, but the images need to be changed to our new images for if it is day, night, winter etc. If they are going to be used. Since it has image calls.
+if $ARGS[0] = 'street':
+	$streetev_title = '<center><b>Residential Area</b></center>'
+	streetev_rob = 1
+	streetev_hijack = 1
+	streetev_bf = 50
+	streetev_mistmeet = 15
+	if home_owned[1] > 0:
+		streetev_home = 1
+		$streetev_home = 'near the entrance to your apartment block'
+	end
+elseif $ARGS[0] = 'down':
+	$streetev_title = '<center><b>City center</b></center>'
+	streetev_rob = 0
+	streetev_hijack = 2
+	streetev_bf = 90
+	streetev_mistmeet = 20
+	if tanwork = 1:
+		streetev_home = 1
+		$streetev_home = 'near the entrance to your home'
+	end
+elseif $ARGS[0] = 'Nord':
+	$streetev_title = '<center><b>City industrial region</b></center>'
+	streetev_rob = 2
+	streetev_hijack = 0
+	streetev_bf = 30
+	streetev_mistmeet = 5
+	if home_owned[1] = 0 and tanwork = 0 and student = 0:
+		streetev_home = 0
+		$streetev_home = 'by the train station'
+	end
+elseif $ARGS[0] = 'pavResidential':
+	$streetev_title = '<center><b>Pavlovsk residential area</b></center>'
+	streetev_rob = 1
+	streetev_hijack = 1
+	streetev_bf = 50
+	streetev_mistmeet = 15
+	if home_owned[2] = 1:
+		streetev_home = 1
+		$streetev_home = 'outside your apartment block'
+	end
+elseif $ARGS[0] = 'pavCommercial':
+	$streetev_title = '<center><b>Pavlovsk high street</b></center>'
+	streetev_rob = 0
+	streetev_hijack = 2
+	streetev_bf = 90
+	streetev_mistmeet = 20
+	if home_owned[1] = 0 and tanwork = 0 and student = 0:
+		streetev_home = 0
+		$streetev_home = 'on the high street'
+	end
+elseif $ARGS[0] = 'pavIndustrial':
+	$streetev_title = '<center><b>Pavlovsk Industrial District</b></center>'
+	streetev_rob = 2
+	streetev_hijack = 0
+	streetev_bf = 30
+	streetev_mistmeet = 5
+elseif $ARGS[0] = 'island':
+	$streetev_title = '<center><b>Island</b></center>'
+	streetev_rob = 0
+	streetev_hijack = 2
+	streetev_bf = 90
+	streetev_mistmeet = 20
+	if student > 0:
+		streetev_home = 1
+		$streetev_home = 'near the entrance to your dorm'
+	end
+else
+	$streetev_title = '<center><b>in dark</b></center>'
+	streetev_rape = 10
+	streetev_rob = 1
+	streetev_hijack = 1
+	streetev_bf = 90
+end
+
+if $currentpursetype = 'dolls' or $currentpursetype = 'kats':
+	if streetev_rob > streetev_hijack:
+		streetev_rob += 1
+	else
+		streetev_hijack += 1
+	end
+elseif $currentpursetype = 'fashionista':
+	if streetev_rob > streetev_hijack:
+		streetev_rob += 2
+	else
+		streetev_hijack += 2
+	end
+elseif $currentpursetype = 'boutique':
+	if streetev_rob > streetev_hijack:
+		streetev_rob += 3
+	else
+		streetev_hijack += 3
+	end
+end
+
+if money >= 2500:
+	if streetev_rob > streetev_hijack:
+		streetev_rob += money / 2500
+	else
+		streetev_hijack += money / 2500
+	end
+end
+
+!!The chance to get robbed is capped at 10%
+if streetev_rob > 10: streetev_rob = 10
+if streetev_hijack > 10: streetev_hijack = 10
+
+if $ARGS[1] = 'extras':
+	if rand(0, 100) < streetev_bf and pcs_lover < 3 and streetbfhour ! hour and random_bf_gf_cheat = 0:
+		streetbfhour = hour
+		vnerand = rand(0, 1200)
+		lesbian_lover = (rand(1,100) <= 25 - (20/(lesbian + 1)))
+		if vnerand <= pcs_apprnc and lesbian_lover:
+			gt 'dateF', 'start'
+		elseif vnerand <= pcs_apprnc:
+			gt 'dateM', 'start'
+		end
+	end
+
+	if streetev_home = 1:
+		if vladimirday = daystart and vladimirQW = 30 and hour >= 16 and week = 6:'<a href="exec:gt ''qwmeet'',''2''">There''s an Audi parked in front of your building and standing beside it you notice Vladimir</a>.'
+		if vladimirday = daystart and vladimirQW = 40 and hour >= 16 and week = 6:'<a href="exec:gt ''qwmeet'',''3''">There''s an Audi parked in front of your building and standing beside it you notice Vladimir</a>.'
+
+		if hour = meethour[0]:
+			if svidanie[0] = 1:'<b><a href="exec:lover_number = 0 & gt ''lover_meet'', ''start''"><<$loverdesc[0]>></a> is waiting <<$streetev_home>>.</b>'
+		end
+		if hour = meethour[1]:
+			if svidanie[1] = 1:'<b><a href="exec:lover_number = 1 & gt ''lover_meet'', ''start''"><<$loverdesc[1]>></a> is waiting <<$streetev_home>>.</b>'
+		end
+		if hour = meethour[2]:
+			if svidanie[2] = 1:'<b><a href="exec:lover_number = 2 & gt ''lover_meet'', ''start''"><<$loverdesc[2]>></a> is waiting <<$streetev_home>>.</b>'
+		end
+	end
+
+	!! Divorce Party
+	if (hour > 9 or hour < 3) and $loc ! 'pavIndustrial' and divorce_party < 2 and hotcat > 4 and rand(1,100) > 95: gt 'street_event', 'divorce_party'
+end
+
+if $ARGS[1] = 'main':
+	if lesbiday + 21 <= daystart and RAND(0,100) < streetev_mistmeet and lesbiQW >= 11 and hour >= 8 and hour < 21 and $pantyworntype ! 'none' and month > 2 and month ! 12:gt 'lesbimistress', 'mistmeet'
+
+	!! Getting abducted by Taras
+	!! Locked until expanded
+	if nichGalaTarasPlan >= 110 and nichGalaTarasPlan < 120 and rand(1,2) = 1 and nichDebug = 1: gt 'nichTaras','van'
+
+	streetrand = rand(0, 100)
+	!!start of old random street events that can always happen.
+
+	!!Changing this event some and rewriting parts of it. I also want to change how often and when it can happen, based on clothes, time and if drunk. If drunk double the odds and for time it can happen from 24:00 to 04:00. This gets checked last after any other events could happen.
+	!!town(pav or pushkin) normal clothes 1 in 50, if drunk 1 in 25. slutty clothes(clothes that cover everything but very short skirts revealing tops etc) 1 in 30, if drunk 1 in 15. bimbo/exhibitionist clothes 1 in 20, if drunk 1 in 10. naked 1 in 5, if drunk 1 in 2
+	!!city normal clothes 1 in 40, if drunk 1 in 20. slutty clothes(clothes that cover everything but short skirts revealing tops etc) 1 in 20, if drunk 1 in 10, bimbo/exhibitionist clothes 1 in 10, if drunk 1 in 5. naked 1 in 2, if drunk always
+	if $loc = 'pavResidential' or $loc = 'pavCommercial':
+		if $clothingworntype = 'nude':
+			if alko >= 6:
+				streetev_rape = 50
+			else
+				streetev_rape = 20
+			end
+		elseif $clothingworntype = 'exhibit' or PCloBimbo = 1:
+			if alko >= 6:
+				streetev_rape = 10
+			else
+				streetev_rape = 5
+			end
+		elseif PCloInhibit > 30:
+			if alko >= 6:
+				streetev_rape = 6
+			else
+				streetev_rape = 3
+			end
+		else
+			if alko >= 6:
+				streetev_rape = 4
+			else
+				streetev_rape = 2
+			end
+		end
+	else
+		if $clothingworntype = 'nude':
+			if alko >= 6:
+				streetev_rape = 50
+			else
+				streetev_rape = 20
+			end
+		elseif $clothingworntype = 'exhibit' or PCloBimbo = 1:
+			if alko >= 6:
+				streetev_rape = 20
+			else
+				streetev_rape = 10
+			end
+		elseif PCloInhibit > 30:
+			if alko >= 6:
+				streetev_rape = 10
+			else
+				streetev_rape = 5
+			end
+		else
+			if alko >= 6:
+				streetev_rape = 5
+			else
+				streetev_rape = 2
+			end
+		end
+	end
+
+	if streetrand < streetev_rape and hour <= 3 and streetev_day ! daystart and cheat_street_events = 0:
+		*clr & cla
+		menu_off = 1
+		streetev_day = daystart
+		'<<$streetev_title>>'
+		'<center><img src="images/locations/shared/street/rapist.jpg"></center>'
+		'As you walk down the street, a man jumps out of the shadows and suddenly grabs you, as you''re caught off-guard he manages to drag you into a nearby alleyway. You try to scream but his strong hand covers your mouth. You attempt to get free but his other arm wraps around your waist and lifts you off the grounds, as he drags you further down the alleyway.'
+		gs 'npcgeneratec', 0, 'Rapist', rand(18,45)
+		gs 'boyStat', $npclastgenerated
+		gs 'stat'
+		act 'Attempt to escape':
+!!should likely add willpower here to increase the odds of escaping but I never did understand how to add willpower to increase a skill check, but it would make sense here.
+			if pcs_run < 10:
+				peshimraperand = rand(0, 11)
+			elseif pcs_run < 30:
+				peshimraperand = rand(0, 20)
+			elseif pcs_run < 50:
+				peshimraperand = rand(0, 30)
+			elseif pcs_run < 70:
+				peshimraperand = rand(0, 40)
+			elseif pcs_run < 90:
+				peshimraperand = rand(0, 50)
+			elseif pcs_run < 110:
+				peshimraperand = rand(0, 60)
+			elseif pcs_run < 130:
+				peshimraperand = rand(0, 70)
+			elseif pcs_run < 150:
+				peshimraperand = rand(0, 80)
+			elseif pcs_run < 170:
+				peshimraperand = rand(0, 90)
+			else
+				peshimraperand = 11
+			end
+
+			if peshimraperand <= 10:
+				*clr & cla
+				'<center><img src="images/locations/shared/street/rapist.jpg"></center>'
+				'You try to run away, but you''re not quick enough and he catches you, before you even get close to the end of the alleyway. He places a hand over your mouth so you can''t scream and drags you back into an alley.'
+				act 'Submit to the rape': gt 'street_event', 'rape'
+				act 'Fight': gt 'street_event', 'fight_rape'
+			else
+				*clr & cla
+				'<center><img src="images/locations/shared/street/alleynight.jpg"></center>'
+				'You manage to lose him and get to a safer well lit area.'
+				act 'Continue':gt $loc
+			end
+		end
+		if succubusQW = 5:
+			!!Used if this was a random encounter instead of active hunting
+			act 'Lure him in and feed (this can take a lot of time)':
+				cla
+				'You wait until he has dragged you into the alley before turning on him.'
+				act 'Continue': gt 'succubus', 'RapistFight'
+			end
+		end
+		act 'Submit to the rape': gt 'street_event', 'rape'
+		act 'Fight': gt 'street_event', 'fight_rape'
+		exit
+	end
+
+	streetrand = rand(0, 100)
+	if streetrand < streetev_rob and daystart >= 10 and (hour < 6 or hour >= 20) and streetev_day ! daystart and bag = 1 and streetev_rob_day ! daystart and cheat_street_events = 0:
+		*clr & cla
+		menu_off = 1
+		streetev_day = daystart
+		gs 'stat'
+		'<<$streetev_title>>'
+		'<center><img src="images/locations/shared/street/mugger.jpg"></center>'
+		'Suddenly a man wearing a hoodie steps out from a darkened doorway in your path. He has one hand in his pocket and the other he extends towards you. You can''t see his face as he says. "Give me all your money bitch and you won''t get hurt."'
+		act 'Attempt to escape':
+			'<center><img src="images/locations/shared/street/alleynight.jpg"></center>'
+
+			if pcs_run < 10:
+				peshimraperand = rand(0, 11)
+			elseif pcs_run < 30:
+				peshimraperand = rand(0, 20)
+			elseif pcs_run < 50:
+				peshimraperand = rand(0, 30)
+			elseif pcs_run < 70:
+				peshimraperand = rand(0, 40)
+			elseif pcs_run < 90:
+				peshimraperand = rand(0, 50)
+			elseif pcs_run < 110:
+				peshimraperand = rand(0, 60)
+			elseif pcs_run < 130:
+				peshimraperand = rand(0, 70)
+			elseif pcs_run < 150:
+				peshimraperand = rand(0, 80)
+			elseif pcs_run < 170:
+				peshimraperand = rand(0, 90)
+			else
+				peshimraperand = 11
+			end
+			if peshimraperand <= 10:
+				*clr & cla
+				'He drags you back into an alley.'
+				money = 0
+				gs 'stat'
+				'You try to run away, but you''re not quick enough and he catches you. He grabs your purse and rummages in it. Knocking most of the contents out on the ground. Once he has your money he throws the purse back at you and then takes off running. You try to calm yourself down as you squat to gather your stuff back up and put them back in your purse.'
+				act 'Leave':gt $loc
+			else
+				*clr & cla
+				'You manage to lose him and get to a safer well lit area.'
+				act 'Continue':gt $loc
+			end
+		end
+		act 'Don''t fight, just give him your money':
+			cla
+			money = 0
+			gs 'stat'
+			'You quickly open your purse, as you do he grabs it from you and rummages in it. Knocking most of the contents out on the ground. Once he has your money he throws the purse back at you and then takes off running. You try to calm yourself down as you squat to gather your stuff back up and put them back in your purse.'
+			act 'Leave':gt $loc
+		end
+		act 'Fight':
+			cla
+			'You clutch your purse to your body and tell him. "Fuck you asshole!" He snarls and lunges at you.'
+			act 'Defend yourself':
+				cla
+				gs 'npcgeneratec', 0, 'Robber', rand(18,45)
+				gs 'boyStat', $npclastgenerated
+
+				gs 'fight','initFight'
+
+				gs 'fight_npcdata', 'robber'
+
+				gt 'fight', 'start'
+			end
+		end
+		exit
+	elseif streetrand >= streetev_rob and daystart >= 10 and (hour < 6 or hour >= 20) and streetev_day ! daystart and bag = 1 and streetev_rob_day ! daystart:
+		streetev_rob_day = daystart
+	end
+
+	streetrand = rand(0, 100)
+
+	if streetrand < streetev_hijack and daystart >= 10 and hour >= 6 and hour < 20 and streetev_day ! daystart and bag = 1 and streetev_hijack_day ! daystart and cheat_street_events = 0:
+		*clr & cla
+		menu_off = 1
+		gs'stat'
+		streetev_day = daystart
+		'<<$streetev_title>>'
+		'<center><img src="images/locations/shared/street/pursesnatch.jpg"></center>'
+		if rand(0,300) < (pcs_agil + pcs_stren):
+			'As you are walking down the street minding your own business, you are suddenly jerked sideways and nearly pulled off your feet. You quickly regain your balance and instinctively your fingers hold your purse tighter as you feel something tugging on it. A man is trying to snatch your purse, but he runs away, when you don''t let go of it immediately.'
+			act 'Continue': gt $loc
+		else
+			'As you are walking down the street minding your own business, you are suddenly jerked sideways and nearly pulled off your feet. As you stumble to regain your balance you realize a man has just snatched your purse from you and is running away with it.'
+			act 'It''s only money': money = 0 & gt $loc
+			act 'Chase him':
+				*clr & cla
+				if (pcs_run + pcs_stam) < rand(120,250):
+					money = 0
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img src="images/locations/shared/street/purselose.jpg"></center>'
+					'You chase after him, screaming at him to stop or anyone to stop him. But he quickly out paces you and soon you lose sight of him. After a couple of blocks of not seeing him anymore you stop and lean against the wall to catch your breath.'
+					act 'Continue': gt $loc
+				else
+					gs 'npcgeneratec', 0, 'Purse Snatcher', rand(18,45)
+					gs 'boyStat', $npclastgenerated
+					'<<$streetev_title>>'
+					'<center><img src="images/locations/shared/street/pursechase.jpg"></center>'
+					'You chase after him, screaming at him to stop or anyone to stop him. All that working out is paying off, you are gaining on him. He keeps glancing back as you get closer, he turns and ducks down an alley when you are nearly on top of him. He leaps over an overturned trash can, obviously still hoping to get away from you. You easily leap over it as well and a few steps later you tackle him, sending both of you rolling on the ground. You both get back to your feet at the same time, realising he can''t escape he lunges at you.'
+					gs 'fight','initFight'
+
+					gs 'fight_npcdata', 'snatcher'
+
+					act 'Fight':gt 'fight', 'start'
+				end
+			end
+		end
+		exit
+	elseif streetrand >= streetev_hijack and daystart >= 10 and (hour < 6 or hour >= 20) and streetev_day ! daystart and bag = 1 and streetev_hijack_day ! daystart:
+		streetev_hijack_day = daystart
+	end
+
+	!!end of old random street events that can always happen
+
+	!!start of story street events that happen only if other events have happened.
+	if shantpopala > 0:
+		*clr & cla
+		menu_off = 1
+		minut += 480
+		spafinloc = 14
+		gs 'cum_manage'
+		spafinloc = 4
+		gs 'cum_manage'
+		spafinloc = 12
+		gs 'cum_manage'
+		spafinloc = 11
+		gs 'cum_manage'
+		spafinloc = 7
+		gs 'cum_manage'
+		spafinloc = 3
+		gs 'cum_manage'
+		fingal += 1
+		guy += 2
+		rape += 1
+		shantpopala -= 1
+		'<center><img src="images/locations/shared/street/kidnap.jpg"></center>'
+		'As you walk down the sidewalk, you hear the screeching of tires, you quickly move to the far side of the sidewalk afraid a car is about to hit you. As you turn your head to the noise, you see a black jeep sliding to a stop next to you. Before the jeep even comes to a complete stop two large men jump out and start running towards you. You are stunned for a moment unsure what''s going on, then you turn to run, but before you make it five steps one of them grabs you, calling out to the other man to help out as well. They quickly drag you over to the jeep and throw you in the back.'
+		'"You''re doing this for a living? Taking pictures of naked people in the park?", one of them shouts, holding one of the pictures to your face you took a while back, trying to blackmail them.'
+		'"No... what? What the hell is going on? I don''t know what you''re talking about!", you try to feign innocence.'
+		'"Don''t lie you stupid bitch, we know it was you." He says just before he hits you with something in the head, knocking you out.'
+
+		'You wake up somewhere out of town, you''re tied up and naked. You look down on yourself and notice traces of cum on your body, it also seems like that cum is flowing from your ass and your pussy.'
+		'You notice that the blokes, who captured you sit next to you and seem to have a break, some of them are smoking.'
+		'"Oh, she is finally awake, then the next fuck-cycle will be far more fun.", one of the men said, as he noticed you moving. Some of them start getting an evil grin on their face.'
+		'They got up and came back at you, barely a minute later you wished your were still knocked out, as these jackasses had their ways with you. You try to resist, but the tape hindered you from moving. Not long after, everything faded to black and you lost your consciousness again.'
+		'You feel groggy as you wake up, but it feels like someone is grapping you by the hair and shouts at you. "Let this be a lesson for you, bitch.", he shouts, then kicks you into the stomach and leaves. As you collapse on the ground holding your stomach in pain, you take a glimpse at the street and see the assholes speed away in their black jeep. The main road is about 200m away, you crawl most of the way there, but soon you can walk again and eventually you find your way back to one of the mainstreets.'
+
+		gs 'arousal', 'bj', -40, 'group', 'rough', 'sub'
+		gs 'arousal', 'vaginal', -40, 'group', 'rough', 'sub'
+		gs 'arousal', 'anal', -40, 'group', 'rough', 'sub'
+		gs 'arousal', 'end'
+		gs 'stat'
+
+		act 'Leave':gt $loc
+
+		exit
+	end
+	!!end of old street events that start from other stories.
+
+	!!start of old street events outside of home only, chained from other story events.
+	if streetev_home = 1:
+		if workDolgDay <= 0 and workDolg > 0:
+			cls
+			menu_off = 1
+			gs 'stat'
+			workDisk = 0
+			'<center><img src="images/locations/city/residential/street/bug.jpg"></center>'
+			'As you approach the entrance to your apartment you see two large guys approaching you, they seem to be carrying guns. As they get closer to you, one of them says. "It''s time for you to pay back your debts."'
+			if money >= workDolg:
+				money -= workDolg
+				workDolg = 0
+				'You quickly dig into your purse and pull out the money handing it over. One of them grabs if from you and starts counting it. Once he sees it is all there he just grunts and they both turn around and leave.'
+				act 'Leave':gt $loc
+				exit
+			else
+				if money + stolmoney + karta >= workDolg:
+					money += stolmoney + karta
+					stolmoney = 0
+					karta = 0
+					money -= workDolg
+					workDolg = 0
+					'"I have the money up in my apartment. Follow me.", you say, going up to your apartment. You quickly rush inside, take the money out of the drawer and go back to pay them. They take the money and count it, then look at each other nod and leave.'
+					act 'Leave':gt $loc
+					exit
+				else
+					money += stolmoney + karta
+					stolmoney = 0
+					karta = 0
+					workDolg -= money
+					money = 0
+					workDolg += 10000
+					'You tell them that you don''t have enough money. They smack you, push you into your apartment, rummaging through your stuff. They find your stash and take it.'
+					'The brutes take everything that you have. Then explain your situation. In short, you have a debt of <<workDolg>>. Your debt has grown by 10k, and since you cannot pay it off, as your job obviously doesn''t pay well enough, they decide they''ll help you out with that. The brutes drag you out of the apartment and down to the street and throw you into the back seat of the car. They get in and one of them sits next to you and the other in the drivers seat. He starts the car and drive away. They refuse to answer any of your questions, you have no choice but to sit quietly and see where they take you.'
+					act 'Out of the car':
+						cls
+						minut += 30
+						gs 'stat'
+						'You are at the sauna. The brutes drag you into a room and start to explain. "You''re going to live here and work until you have cleared your debt. Got it? Try to contact the authorities or escape, we''ll put a bullet in your head and bury you in the woods, understand?"'
+						'You become frightened as they''re convincing, so you just nod.'
+						act 'Look around':gt 'sauna', 'saunaroom'
+					end
+				end
+			end
+			exit
+		end
+
+		if workDiskAtkPlayer = 1:
+			menu_off = 1
+			workDisk = 1
+			workDiskAtkPlayer = 0
+			gs 'stat'
+			'<center><img src="images/locations/city/residential/street/car.jpg"></center>'
+			'You are grabbed and thrown into the back seat of the car. Right and left of you there are two angry Indian men sitting. In the front seat, the porn studio manager turns around, "Where is the envelope?" he demands.'
+			if konvert = 0:
+				workDolg = 200000
+				workDolgDay = 7
+				'"It''s stolen."'
+				'"WHAT! But how could this happen! Do you realize, what you have done?! You own me 200,000 <b>₽</b>, bring it to my office, you have until next Friday. If you fail to do so, prepare yourself for a world of hurt."'
+			else
+				konvert = 0
+				money += 5000
+				'You give the envelope. He warns you that such delays in the future may be harmful to your business relationships.'
+			end
+			act 'Leave':gt $loc
+			exit
+		end
+
+		if pcs_magik >= 1 and mainQW = 0 and StoryLine = 0:
+			*clr & cla
+			menu_off = 1
+			mainQW = 1
+			gs 'stat'
+			'<center><img src="images/locations/city/citycenter/lab/event/main.jpg"></center>'
+			'In front of your building you see Tatiana and Gustav. Tatiana adjusts her glasses and looks around, while Gustav seems to be distracted looking around with a strange look on his face as his tattoos are not visible.'
+			'Tatiana looks at you closely, "I felt a burst of energy. Were you attacked by a magician?"'
+			act 'No':gt 'mainQW'
+			exit
+		end
+	end
+	!!end home-related events
+
+	!!street incidental events
+!!Can this be changed. How it is coded now it is really hard to add new random street events with how the code is done. How it was meant to be is the first group can happen anywhere, second group in the city only and thirds group in Pav. Perhaps doing it like you did the school breaks would be a better way than it currently is so we can add new events easily in the future. 
+	if streetrand > 90:
+		streetrand = rand(0,100)
+		if streetrand > 98:
+			if hour >= 8 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/guitarb'+ rand(1,2) +'.jpg"></center>'
+				'As you walk down the sidewalk, you notice a man playing a guitar, he has his guitar case open and you can see some money in it already. Several other people have stopped to listen to him play, he isn''t half bad.'
+				act 'Ignore':gt $loc
+				act 'Listen':
+					cla
+					minut += 5
+					minut += 10
+					pcs_mood += 10
+					gs 'stat'
+					*nl
+					'You stop and listen to him play several songs, he really is pretty good. You wonder why he is playing on the street, perhaps the old adage about starving artist applies to musicians as well.'
+					act 'Leave':gt $loc
+					if money > 50:
+						act 'Give him money':
+							cla
+							minut += 5
+							money -= 50
+							pcs_mood += 10
+							gs 'stat'
+							*nl
+							'You reach into your purse and pull out some money, you drop it into his case. He looks up at you and smiles and nods his head, but keeps playing. With your good deed done you go on your way.'
+							act 'Leave':gt $loc
+						end
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 96:
+			if hour >= 8 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/guitarg1.jpg"></center>'
+				'As you walk down the sidewalk, you notice a girl playing a guitar, she has her guitar case open and you can see some money in it already. Several other people have stopped to listen to her play, she isn''t half bad.'
+				act 'Leave':gt $loc
+				act 'Listen':
+					*clr & cla
+					minut += 10
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/guitarg1.jpg"></center>'
+					'You stop and listen to her play several songs, she really is pretty good. You wonder why she is playing on the street, perhaps the old adage about starving artist applies to musicians as well.'
+					act 'Leave':gt $loc
+					if money > 50:
+						act 'Give her money':
+							*clr & cla
+							minut += 5
+							money -= 50
+							pcs_mood += 10
+							gs 'stat'
+							'<<$streetev_title>>'
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/guitarg1.jpg"></center>'
+							'You reach into your purse and pull out some money, you drop it into her case. She looks up at you and smiles and nods her head, but keeps playing. With your good deed done you go on your way.'
+							act 'Leave':gt $loc
+						end
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 94:
+			if hour >= 8 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/violinb1.jpg"></center>'
+				'As you walk down the sidewalk, you notice a man playing a violin, he has his violin case open and you can see some money in it already. Several other people have stopped to listen to him play, he isn''t half bad.'
+				act 'Leave':gt $loc
+				act 'Listen':
+					*clr & cla
+					minut += 10
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/violinb1.jpg"></center>'
+					'You stop and listen to him play several songs, he really is pretty good. You wonder why he is playing on the street, perhaps the old adage about starving artist applies to musicians as well.'
+					act 'Leave':gt $loc
+					if money > 50:
+						act 'Give him money':
+							*clr & cla
+							minut += 5
+							money -= 50
+							pcs_mood += 10
+							gs 'stat'
+							'<<$streetev_title>>'
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/violinb1.jpg"></center>'
+							'You reach into your purse and pull out some money, you drop it into his case. He looks up at you and smiles and nods his head, but keeps playing. With your good deed done you go on your way.'
+							act 'Leave':gt $loc
+						end
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 92:
+			if hour >= 8 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/violing1.jpg"></center>'
+				'As you walk down the sidewalk, you notice a girl playing a violin, she has her violin case open and you can see some money in it already. Several other people have stopped to listen to her play, she isn''t half bad.'
+				act 'Leave':gt $loc
+				act 'Listen':
+					*clr & cla
+					minut += 10
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/violing1.jpg"></center>'
+					'You stop and listen to her play several songs, she really is pretty good. You wonder why she is playing on the street, perhaps the old adage about starving artist applies to musicians as well.'
+					act 'Leave':gt $loc
+					if money > 50:
+						act 'Give her money':
+							*clr & cla
+							minut += 5
+							money -= 50
+							pcs_mood += 10
+							gs 'stat'
+							'<<$streetev_title>>'
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/violing1.jpg"></center>'
+							'You reach into your purse and pull out some money, you drop it into her case. She looks up at you and smiles and nods her head, but keeps playing. With your good deed done you go on your way.'
+							act 'Leave':gt $loc
+						end
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 90:
+			minut += 5
+			if hour >= 8 and hour < 18:
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/artist.jpg"></center>'
+				'As you walk down the street you see a woman sitting in a chair with a sign saying "Will draw portrait for 50 <b>₽</b>"'
+				act 'Leave':gt $loc
+				act 'Get your portrait done':
+					*clr & cla
+					minut += 30
+					money -= 50
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/artist.jpg"></center>'
+					'You stop next to her and smile. "I would like you to draw me please." She gives you a friendly smile in return pointing towards the other chair. "Please take a seat." Which she follows with a glance to the can sitting next to the chair, you understand and pull out the money and put it in the can. You sit for a while as she draws your portrait, after some time she is finished and shows it to you. It is really very good and might make a good gift to give someone. You thank her for it and go on your way.'
+					act 'Leave':gt $loc
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 88:
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<<$streetev_title>>'
+			'<center><img <<$set_imgh>> src="images/locations/shared/street/assgrab.jpg"></center>'
+			'As you walk down the street you feel a hand grab your ass and squeeze it hard. You jerk away and look over your shoulder and you see a guy grinning at you.'
+			act 'Ignore':gt $loc
+			act 'Slap him':
+				*clr & cla
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/slapb.jpg"></center>'
+				'You turn around and as you do, you swing your hand palm open and deliver a hard smack to his face. The pop is loud enough to draw attention and the guy recoils from it rubbing his face, seemingly surprised you smacked him. "Don''t touch me asshole." With that you turn and continue on your way.'
+				act 'Leave':gt $loc
+			end
+		elseif streetrand > 86:
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<<$streetev_title>>'
+			'<center><img <<$set_imgh>> src="images/locations/shared/street/beatup.jpg"></center>'
+			'As you walk down the street you pass a man that is badly beaten lying unconscious on the sidewalk. You stop a moment unsure what to do, but everyone else just ignores it. Not being sure what you could do to help, you continue on your way and wonder what happened to him.'
+			act 'Continue':gt $loc
+		elseif streetrand > 84:
+			if hour >= 9:
+				menu_off = 1
+		!!first one is dress with panties
+				if PCloSkirt > 0 and $pantyworntype ! 'none' and PCloOnePiece = 1:
+			!!all the getting partially stripped ones from 09:00 till 24:00
+					*clr & cla
+					minut += 5
+					'<<$streetev_title>>'
+					'<center><video autoplay loop src="images/locations/shared/street/bottomed1.mp4"></video></center>'
+					'As you walk down the street you are suddenly pushed forward hard. You nearly lose your balance and only barely catch yourself. While you are half bent over and trying to recover you feel someone yank up your dress and yank down your panties, exposing your ass and pussy for everyone to see. You quickly regain your balance, as you do. You pull up your panties and smooth your dress back in place, by that time whoever did it is long gone.'
+					if exhibitionist_lvl = 1:
+						gs 'exhibitionism', 2
+						pcs_mood += 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You can''t help but smile, loving the attention even if it wasn''t your idea, you casually continue on your way, but with an extra bit of sway in your hips.'
+					elseif exhibitionist_lvl > 1:
+						pcs_mood -= 2
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You''re annoyed with the prankster, worrying that the elastic on your panties might have been stretched in the act but otherwise feel unembarrassed and continue on your way.'
+					else
+						pcs_mood -= 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You blush bright red and hurry on your way.'
+					end
+					gs 'stat'
+					act 'Continue':gt $loc
+			!!dress without panties
+				elseif PCloSkirt > 0 and $pantyworntype = 'none' and PCloOnePiece = 1:
+					*clr & cla
+					minut += 5
+					'<<$streetev_title>>'
+					'<center><video autoplay loop src="images/locations/shared/street/sharkdress.mp4"></video></center>'
+					'As you walk down the street someone comes up behind you and grabs the top of your dress and yanks it down around your ankles. Which leaves you standing stark naked with only your dress around your ankles. You quickly squat down and grab your dress, pulling it back up and into place, by that time who ever did it is long gone.'
+					if exhibitionist_lvl = 1:
+						gs 'exhibitionism', 3
+						pcs_mood += 10
+						'You look around and notice several people staring at you, you are sure they''ve seen seen. You can''t help but smile, loving the attention even if it wasn''t your idea, you casually continue on your way, but with an extra bit of sway in your hips.'
+					elseif exhibitionist_lvl > 1:
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You swear loudly, worrying less about how you were just exposed in the street and more about whether the prankster might have damaged your clothing. Satisfied that it appears to be unharmed, you continue on your way, albeit a little more annoyed than you were before.'
+					else
+						pcs_mood -= 10
+						'You look around and notice several people staring at you, you are sure they seen. You blush bright red and hurry on your way.'
+					end
+					gs 'stat'
+					act 'Continue':gt $loc
+			!!skirt with panties
+				elseif PCloSkirt > 0 and $pantyworntype ! 'none':
+					*clr & cla
+					minut += 5
+					'<<$streetev_title>>'
+					'<center><video autoplay loop src="images/locations/shared/street/bottomeds'+ rand(1,2) +'.mp4"></video></center>'
+					'As you walk down the street someone comes up behind you and grabs your skirt and panties, yanking them down. Your skirt ends up around your ankles and your panties half way down your thighs. Which leaves your ass and pussy on fully display to everyone around. You quickly pull up your panties and then squat down and grab your skirt, pulling it back up and into place, by that time whoever did it is long gone.'
+					if exhibitionist_lvl = 1:
+						gs 'exhibitionism', 2
+						pcs_mood += 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You can''t help but smile, loving the attention even if it wasn''t your idea, you casually continue on your way, but with an extra bit of sway in your hips.'
+					elseif exhibitionist_lvl > 1:
+						pcs_mood -= 2
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You swear loudly, worrying less about how your pussy was just exposed in the street and more about whether the prankster might have damaged your panties and skirt. Satisfied that they appear to be unharmed, you continue on your way, albeit a little more annoyed than you were before.'
+					else
+						pcs_mood -= 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You blush bright red and hurry on your way.'
+					end
+					gs 'stat'
+					act 'Continue':gt $loc
+			!!if one of the above isn''t true then this is what happens
+				else
+					*clr & cla
+					minut += 5
+					'<<$streetev_title>>'
+					'<center><video autoplay loop src="images/locations/shared/street/topped'+ rand(1,2) +'.mp4"></video></center>'
+					'As you walk down the street someone comes up behind you and grabs your top, yanking it down. Which leaves your tits on full display to everyone around. You quickly pull up your top backup, by that time whoever did it is long gone.'
+					if exhibitionist_lvl = 1:
+						gs 'exhibitionism', 2
+						pcs_mood += 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You can''t help but smile, loving the attention even if it wasn''t your idea, you casually continue on your way, but with an extra bit of sway in your hips.'
+					elseif exhibitionist_lvl > 1:
+						pcs_mood -= 2
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You swear loudly, worrying less about how your tits were just flashed to everyone in the street and more about whether the prankster might have damaged your top. Satisfied that it appears to be unharmed, you continue on your way, albeit a little more annoyed than you were before.'
+					else
+						pcs_mood -= 10
+						'You look around and notice several people staring at you, you are sure they''ve seen everything. You blush bright red and hurry on your way.'
+					end
+					gs 'stat'
+					act 'Continue':gt $loc
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 82:
+			if PCloSkirt > 0 and $pantyworntype ! 'none':
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><video autoplay loop src="images/locations/shared/street/breeze.mp4"></video></center>'
+				'As you walk down the street a strong breeze suddenly blows down the street, which causes your skirt to blow up. Which exposes your panty clad ass to everyone on the street. You quickly push it back down, but as soon as you let go the breeze blows it right back up, you fight against the breeze for almost a minute before it finally stops.'
+				if exhibitionist_lvl = 1:
+					gs 'exhibitionism', 1
+					pcs_mood += 10
+					'You look around and notice several people staring at you, you are sure they''ve seen everything. You can''t help but smile, loving the attention even if it wasn''t your idea, you casually continue on your way, but with an extra bit of sway in your hips.'
+				elseif exhibitionist_lvl > 1:
+					pcs_mood -= 2
+					'You look around and notice several people staring at you. <i>What''re they staring for? It''s just underwear...</i> you think to yourself and continue on your way.'
+				else
+					pcs_mood -= 10
+					'You look around and notice several people staring at you, you are sure they''ve seen everything. You blush bright red and hurry on your way.'
+				end
+				gs 'stat'
+				act 'Continue':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 80:
+			cla
+			if hour >= 9 or hour < 2:
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><video autoplay loop src="images/locations/shared/street/couple1.mp4"></video></center>'
+				'As you walk down the street you see a couple making out passionately the guy reaches around and starts squeezing the girls ass. You can''t help but watch them as you walk by, feeling your own arousal growing.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Continue':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 78:
+			cla
+			if hour >= 9 or hour < 2:
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/lesbians.jpg"></center>'
+				'As you walk down the street you see a couple of girls making out passionately. You can''t help but watch them as you walk by, feeling your own arousal growing.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Continue':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 76:
+			if hour >= 7 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				pcs_horny += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/lostkey.jpg"></center>'
+				'As you pass by an alleyway you glance down and see a woman wearing a very nice dress with nice high heels trying to jimmy a window. A few moments later she slides the window open and then crawls through the window, giving a nice view of her ass as she does. Once inside she quickly shuts the window, as you continue on, you wonder if maybe she lost her keys. Or maybe she was just a very well dressed burglar.'
+				act 'Continue':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 74:
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<<$streetev_title>>'
+			'<center><img <<$set_imgh>> src="images/locations/shared/street/fightb.jpg"></center>'
+			'As you walk down the street two guys just ahead of you start pushing each other, seconds later they are throwing punches. The fight escalates quickly.'
+			act 'Ignore it':gt $loc
+			act 'Stop and watch':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/fightb.jpg"></center>'
+				'You love a good fight, so you like many others stop and watch them fight it out, it goes on for a while as they trade blows. One of them finally gets the upper hand and gets the other one down and starts beating him, he doesn''t stop until one of his friends pull him off. With the fight over, everyone leaves. You can hear police sirens and decide it is time to leave yourself.'
+				act 'Leave':gt $loc
+			end
+		elseif streetrand > 72:
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<<$streetev_title>>'
+			if $loc = 'pavCommercial' or $loc = 'pavResidential':
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/town/fightg1.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/city/fightg1.jpg"></center>'
+			end
+			'As you walk down the street two girls just ahead of you start pushing each other, one of them slaps the other. The fight escalates quickly, with hair pulling, scratching and even some kicks and punches, along with a slew of verbal insults hurled at each other.'
+			act 'Ignore it':gt $loc
+			act 'Stop and watch':
+				*clr & cla
+				minut += 5
+				'<<$streetev_title>>'
+				if $loc = 'pavCommercial' or $loc = 'pavResidential':
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/town/fightg1.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/city/fightg1.jpg"></center>'
+				end
+				'You love a good fight, so you like many others you stop and watch them fight it out, it goes on for a while as they trade blows. One of them finally gets the upper hand and gets the other one down and starts beating her, once the girl on bottom stops fighting back the winner starts ripping her clothes off, once she has the bottom girl completely naked she gets up and hurls a few more insults before walking away. With the fight over, everyone leaves. The girl that lost tries to gather up her torn clothes and put them back on as she loudly weeps.'
+				act 'Leave':gt $loc
+				act 'Help her':
+					cla
+					minut += 5
+					*nl
+					'You help her up and try help her the best you can to get her clothes back in place. She wipes her eyes thanking you, then gives you a quick hug before she hurries away.'
+					act 'Leave':gt $loc
+				end
+			end
+		elseif streetrand > 70:
+			if hour >= 9 and hour < 22:
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				'<<$streetev_title>>'
+				if month >= 11 or month <= 3:
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/girlflashw'+ rand(1,2) +'.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/girlfash1.jpg"></center>'
+				end
+				'As you walk down the street you pass a woman wearing a long coat. All of a sudden she flashes you with a huge grin on her face. She flashes several other people as well, she seems to be enjoying the attention she is getting.'
+				gs 'arousal', 'voyeur', 5
+				act 'Continue':gt $loc
+				if exhibitionist_lvl > 0:
+					act 'Flash her back':
+						*clr & cla
+						gs 'exhibitionism', 1
+						'<<$streetev_title>>'
+						if PCloSkirt > 0:
+							'<center><img <<$set_imgh>> src="images/pc/flashing/dress/outside/tits/' + rand(1,12) + '.jpg"></center>'
+							'You grin at her as she flashes you and you lift your shirt flashing your tits back at her, which makes her laugh.'
+						else
+							'<center><img <<$set_imgh>> src="images/pc/flashing/pants/outside/tits/' + rand(1,14) + '.jpg"></center>'
+							'You grin at her as she flashes you and you lift your shirt flashing your tits back at her, which makes her laugh.'
+						end
+						gs 'stat'
+						act 'Continue':gt $loc
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 68:
+			if hour >= 12 or hour < 2:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/girls1.jpg"></center>'
+				if hotcat > 5:
+					pcs_mood += 20
+					'As you walk down the street you pass a group of girls. You hear them start talking about you as you pass by. "I love her outfit, she really knows how to dress." "I know, look at her shoes, they are just perfect." "What about her makeup? I wish I could do mine that good." They keep talking about you until they are out of earshot. You can''t help but smile and feel great after that.'
+					act 'Continue':gt $loc
+				else
+					pcs_mood -= 20
+					'As you walk down the street you pass a group of girls. You hear them start talking about you as you pass by. "Oh my god, look at her outfit. Does she really think that she can pull that off with a body like that?" "I know and look at her hair, has she even heard of a brush?" You feel your cheeks burning as they continue to make fun of you.'
+					act 'Ignore them':gt $loc
+					act 'Tell them off':
+						*clr & cla
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girls1.jpg"></center>'
+						'You spin around to face them. "Just what''s your problem bitches?" One of the girls steps up to you. "You best back yourself up bitch before I smack the shit out of you."'
+						act 'Hurry away in shame':gt $loc
+						act 'Bring it Bitch!':
+							*clr & cla
+							'<<$streetev_title>>'
+							$boydesc = 'The group of girls'
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/girlgang.jpg"></center>'
+							'You give her a small shove, to force her to step back. "Bring it on then, bitch." The words barely leave your mouth before she jumps you, soon all of her friends join in, leaving you to fight them all.'
+
+							gs 'fight','initFight'
+
+							gs 'fight_npcdata', 'girls'
+
+							gt 'fight', 'start'
+						end
+					end
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 66:
+			if hour >= 9 and hour <= 20:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/flyerman.jpg"></center>'
+				'As you walk down the street you run across a man handing out flyers, as you get near him. He waves you over, "Hello there young lady, would you like to earn a little extra money? All you have to do is take some of these flyers and hand them out for half an hour and I will pay you 75 <b>₽</b>. What do you say?"'
+				act 'No thanks':gt $loc
+				act 'Distribute flyers to earn money (75 <b>₽</b>)':
+					*clr & cla
+					minut += 30
+					money += 75
+					pcs_mood -= 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					if month >= 11 or month <= 3:
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/flyerw.jpg"></center>'
+					else
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/flyer.jpg"></center>'
+					end
+					'For thirty minutes you stand on the street, chatting up random people, trying to give them one of your flyers. After that you are paid 75 <b>₽</b> for your effort by the man and he offers you the same deal to hand out more.'
+					act 'Distribute flyers to earn money (75 <b>₽</b>)':
+						*clr & cla
+						minut += 30
+						money += 75
+						pcs_mood -= 5
+						gs 'stat'
+						'<<$streetev_title>>'
+						if month >= 11 or month <= 3:
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/flyerw.jpg"></center>'
+						else
+							'<center><img <<$set_imgh>> src="images/locations/shared/street/flyer.jpg"></center>'
+						end
+						'For thirty minutes you stand on the street, chatting up random people, trying to give them one of your flyers. After that you are paid 75 <b>₽</b> for your effort by the man and he offers you the same deal to hand out more.'
+						act 'Leave':gt $loc
+					end
+					act 'Leave':gt $loc
+				end
+			else
+				gt $loc
+			end
+		elseif streetrand > 64:
+			clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<<$streetev_title>>'
+			'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+			'As you walk down the street you pass a girl sitting on a barrel just inside of an alleyway, holding up a sign saying that she is homeless, pleading for help.'
+			act 'Ignore her':gt $loc
+			if money >= 50:
+				act 'Give her 50':
+					*clr & cla
+					money -= 50
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+					'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heart warming smile.'
+					act 'Leave':gt $loc
+				end
+			end
+			if money >= 100:
+				act 'Give her 100':
+					*clr & cla
+					money -= 100
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+					'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heart warming smile.'
+					act 'Leave':gt $loc
+				end
+			end
+			if money >= 250:
+				act 'Give her 250':
+					*clr & cla
+					money -= 250
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+					'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heart warming smile.'
+					act 'Leave':gt $loc
+				end
+			end
+			if money >= 500:
+				act 'Give her 500':
+					*clr & cla
+					money -= 500
+					pcs_mood += 10
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+					'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heart warming smile.'
+					act 'Leave':gt $loc
+				end
+			end
+			if money >= 1000:
+				act 'Give her 1000':
+					*clr & cla
+					money -= 1000
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/homelessg.jpg"></center>'
+					pcs_mood += 10
+					'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heart warming smile.'
+					act 'Leave':gt $loc
+				end
+			end
+		elseif streetrand > 62:
+			if hour >= 8 and hour < 20:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				if month >= 11 or month <= 3:
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/nakedgw1.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/nakedg'+ rand(1,3) +'.jpg"></center>'
+				end
+				'As you walk down the street you pass a naked young woman, she seems to be loving the attention she is getting. Otherwise she is acting like any other person on the street.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Leave':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 60:
+			if hour >= 8 and hour < 20:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/nakedgmbike.jpg"></center>'
+				'As you walk down the street a motorcycle drives by slowly, several people are taking pictures. The man driving waves at them, while behind him sits a naked girl only wearing a motorcycle helmet. A few moments later the traffic clears up a bit and they zoom off.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				act 'Leave':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 58:
+			if hour >= 9:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/nopanties.jpg"></center>'
+				'As you walk down the street you pass a young girl sitting on the sidewalk with some friends next to her. You throw a glance at her and surprisingly see her spread the legs revealing her bare pussy to you, all while smiling.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				act 'Leave':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 56:
+			if hour >= 8 and hour < 18:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/splitsread.jpg"></center>'
+				'As you walk down the street you pass a young girl reading a magazine, all of a sudden she lifts her foot, doing a standing split. You look at her in confusement, wondering why she''s behaving oddly. As you''re about to step up to her, it''s like she woke up from a daze, she blushes and quickly runs away from you.'
+				act 'Leave':gt $loc
+			else
+				gt $loc
+			end
+		elseif streetrand > 54:
+			if hour >= 12 or hour < 3:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/teens.jpg"></center>'
+				'As you walk down the street you pass a group of teens. Just as you are about to pass them, one of the boys calls out. "Hey! Want a beer?" He says as he offers you a beer.'
+				act 'Decline':
+					*clr & cla
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/teens.jpg"></center>'
+					'You shake your head no and mumble thanks but no thanks and continue on your way.'
+					act 'Leave':gt $loc
+				end
+				act 'Join them':
+					*clr & cla
+					minut += 30
+					gs 'drugs', 'alcohol', 'beer'
+					gs'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/teens.jpg"></center>'
+					'You stop a moment and consider it then walk over and take the offered beer. You sit and talk with them for a while and drink the beer. After a bit you decide you should be on your way, you thank them for the beer and say goodbye as you head out.'
+					act 'Leave':gt $loc
+				end
+			else
+				gt $loc
+			end
+		elseif $loc ! 'pavResidential' and $loc ! 'pavCommercial':
+		!!City only scenes, these can only happen in the city
+			if streetrand > 52:
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+				'As you walk down the street you pass a young girl sitting on the sidewalk with some bags next to her, with a cat in her lap and a sign saying that she is homeless, pleading for help.'
+				act 'Ignore her':gt $loc
+				if money >= 50:
+					act 'Give her 50':
+						*clr & cla
+						money -= 50
+						pcs_mood += 20
+						gs 'stat'
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+						'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heartwarming smile, as she hugs her cat close to her and whispers to him that they will get to eat tonight.'
+						act 'Leave':gt $loc
+						if money >= 5000:
+							act 'Give her another 5000':
+								*clr & cla
+								money -= 5000
+								pcs_mood += 50
+								gs 'stat'
+								'<<$streetev_title>>'
+								'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+								'You open your purse up and pull out the money you can spare and hand it to her. She breaks down and cries when she see''s how much money you gave her. She gets up and hugs you tightly with one arm, while holding her cat with the other, thanking you over and over. She smells like she hasn''t bathed for a while, but you don''t mind. She finally lets go of you and as you walk away, she hugs her cat and you hear her tall him that tonight they will sleep indoors and eat.'
+								act 'Leave':gt $loc
+							end
+						end
+					end
+				end
+				if money >= 100:
+					act 'Give her 100':
+						*clr & cla
+						money -= 100
+						pcs_mood += 20
+						gs 'stat'
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+						'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heartwarming smile, as she hugs her cat close to her and whispers to him that they will get to eat tonight.'
+						act 'Leave':gt $loc
+						if money >= 5000:
+							act 'Give her another 5000':
+								*clr & cla
+								money -= 5000
+								pcs_mood += 50
+								gs 'stat'
+								'<<$streetev_title>>'
+								'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+								'You open your purse up and pull out the money you can spare and hand it to her. She breaks down and cries when she see''s how much money you gave her. She gets up and hugs you tightly with one arm, while holding her cat with the other, thanking you over and over. She smells like she hasn''t bathed for a while, but you don''t mind. She finally lets go of you and as you walk away, she hugs her cat and you hear her tall him that tonight they will sleep indoors and eat.'
+								act 'Leave':gt $loc
+							end
+						end
+					end
+				end
+				if money >= 250:
+					act 'Give her 250':
+						*clr & cla
+						money -= 250
+						pcs_mood += 20
+						gs 'stat'
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+						'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heartwarming smile, as she hugs her cat close to her and whispers to him that they will get to eat tonight.'
+						act 'Leave':gt $loc
+						if money >= 5000:
+							act 'Give her another 5000':
+								*clr & cla
+								'<<$streetev_title>>'
+								'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+								money -= 5000
+								pcs_mood += 50
+								gs 'stat'
+								'You open your purse up and pull out the money you can spare and hand it to her. She breaks down and cries when she see''s how much money you gave her. She gets up and hugs you tightly with one arm, while holding her cat with the other, thanking you over and over. She smells like she hasn''t bathed for a while, but you don''t mind. She finally lets go of you and as you walk away, she hugs her cat and you hear her tall him that tonight they will sleep indoors and eat.'
+								act 'Leave':gt $loc
+							end
+						end
+					end
+				end
+				if money >= 500:
+					act 'Give her 500':
+						*clr & cla
+						money -= 500
+						pcs_mood += 20
+						gs 'stat'
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+						'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heartwarming smile, as she hugs her cat close to her and whispers to him that they will get to eat tonight.'
+						act 'Leave':gt $loc
+						if money >= 5000:
+							act 'Give her another 5000':
+								*clr & cla
+								money -= 5000
+								pcs_mood += 50
+								gs 'stat'
+								'<<$streetev_title>>'
+								'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+								'You open your purse up and pull out the money you can spare and hand it to her. She breaks down and cries when she see''s how much money you gave her. She gets up and hugs you tightly with one arm, while holding her cat with the other, thanking you over and over. She smells like she hasn''t bathed for a while, but you don''t mind. She finally lets go of you and as you walk away, she hugs her cat and you hear her tall him that tonight they will sleep indoors and eat.'
+								act 'Leave':gt $loc
+							end
+						end
+					end
+				end
+				if money >= 1000:
+					act 'Give her 1000':
+						*clr & cla
+						money -= 1000
+						pcs_mood += 20
+						gs 'stat'
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+						'You open your purse up and pull out the money you can spare and hand it to her. She thanks you profusely and gives you a heartwarming smile, as she hugs her cat close to her and whispers to him that they will get to eat tonight.'
+						act 'Leave':gt $loc
+						if money >= 5000:
+							act 'Give her another 5000':
+								*clr & cla
+								money -= 5000
+								pcs_mood += 50
+								gs 'stat'
+								'<<$streetev_title>>'
+								'<center><img <<$set_imgh>> src="images/locations/shared/street/girlcat.jpg"></center>'
+								'You open your purse up and pull out the money you can spare and hand it to her. She breaks down and cries when she see''s how much money you gave her. She gets up and hugs you tightly with one arm, while holding her cat with the other, thanking you over and over. She smells like she hasn''t bathed for a while, but you don''t mind. She finally lets go of you and as you walk away, she hugs her cat and you hear her tall him that tonight they will sleep indoors and eat.'
+								act 'Leave':gt $loc
+							end
+						end
+					end
+				end
+			elseif streetrand > 50:
+				if month >= 11 or month <= 3:
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/city/homeless.jpg"></center>'
+					'As you walk down the street you pass a couple of homeless men laying on a metro gate, using it for warmth in the freezing conditions.'
+					act 'Ignore them':gt $loc
+				else
+					gt $loc
+				end
+			elseif streetrand > 48:
+				if hour >= 8 or hour < 2:
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/city/gay.jpg"></center>'
+					'As you walk down the street you pass a couple of boys holding hands and occasionally kissing, soon a few other guys come over and start harassing them, calling them all sorts of names.'
+					act 'Leave':gt $loc
+				else
+					gt $loc
+				end
+			elseif streetrand > 46:
+				if (month >= 11 or month <= 3) and hour >= 6 and hour < 18:
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/city/sell.jpg"></center>'
+					'As you walk down the street you pass an old couple all bundled up again the cold, they have several jars and other homemade food items, along with a couple of household items and jewelry, they are trying to sell.'
+					act 'Leave':gt $loc
+				else
+					gt $loc
+				end
+			else
+				gt $loc
+			end
+		else
+		!!these can only happen in Pav or old town.
+			if streetrand > 52:
+				if hour >= 12 or hour < 4:
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/town/hookers.jpg"></center>'
+					'As you walk down the street you see a couple of half-naked women standing on a corner, they approach cars that slow down or men that walk by. It is clear they are prostitutes trying to find customers.'
+					act 'Leave':gt $loc
+				else
+					gt $loc
+				end
+			elseif streetrand > 50:
+				if (month >= 11 or month <= 3) and hour >= 8 and hour < 18:
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/town/nakedmarket.jpg"></center>'
+					'As you walk down the street you pass a young girl standing in front of a table, covered in varies items, in front of a house. Despite the cold she is completely naked, other than her boots and hat. She is calling for people to come over and take a look at the items for sale. You must admit her technique seems to be working, she and her items are getting a lot of attention.'
+					act 'Ignore her':gt $loc
+					act 'Browse her wares':
+						*clr & cla
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/town/nakedmarket.jpg"></center>'
+						'You walk over and look over several of the items she has for sale.'
+
+						tovpay1 = rand(3, 8) * 100
+						'She has some cosmetics for <<tovpay1>> <b>₽</b>.'
+						if money >= tovpay1:
+							act 'Buy the cosmetics (<<tovpay1>> <b>₽</b>)':
+								cls
+								minut += 15
+								money -= tovpay1
+								kosmetica += rand(10, 40)
+								gs 'stat'
+								gt $loc
+							end
+						end
+
+						tovpay2 = rand(3, 9) * 10
+						'She has lip balm for <<tovpay2>> <b>₽</b>.'
+						if money >= tovpay2:
+							act 'Buy the lipbalm (<<tovpay2>> <b>₽</b>)':
+								cls
+								minut += 15
+								lipbalm += 20
+								money -= tovpay2
+								gt $loc
+							end
+						end
+
+						tovpay3 = rand(2, 5) * 100
+						'She has some vitamins for <<tovpay3>> <b>₽</b>.'
+						if money >= tovpay3:
+							act 'Buy the vitamins for (<<tovpay3>> <b>₽</b>)':
+								cls
+								minut += 15
+								vitamin += 20
+								money -= tovpay3
+								gt $loc
+							end
+						end
+
+						'She has a romance novel (300 <b>₽</b>)'
+						if money >= 300:
+							act 'Buy the romance novel (300 <b>₽</b>)':
+								cls
+								minut += 15
+								money -= 300
+								w_book += 1
+								gt $loc
+							end
+						end
+						act 'Leave':gt $loc
+					end
+				else
+					gt $loc
+				end
+			elseif streetrand > 48:
+				if hour >= 8 and hour < 18:
+					*clr
+					cla
+					menu_off = 1
+					minut += 5
+					gs 'stat'
+					'<<$streetev_title>>'
+					'<center><img <<$set_imgh>> src="images/locations/shared/street/town/yardsale.jpg"></center>'
+					'As you walk down the street you pass several tables full of varies items, it seems several people have got together and set up an impromptu market here.'
+					act 'Ignore it':gt $loc
+					act 'Browse the wares':
+						*clr & cla
+						'<<$streetev_title>>'
+						'<center><img <<$set_imgh>> src="images/locations/shared/street/town/nakedmarket.jpg"></center>'
+						'You walk over and look over several of the items they have for sale.'
+
+						tovpay1 = rand(3, 8) * 100
+						'They have some cosmetics for <<tovpay1>> <b>₽</b>.'
+						if money >= tovpay1:
+							act 'Buy the cosmetics (<<tovpay1>> <b>₽</b>)':
+								cls
+								minut += 15
+								money -= tovpay1
+								kosmetica += rand(10, 40)
+								gs 'stat'
+								gt $loc
+							end
+						end
+
+						tovpay2 = rand(3, 9) * 10
+						'They have lip balm for <<tovpay2>> <b>₽</b>.'
+						if money >= tovpay2:
+							act 'Buy the lipbalm (<<tovpay2>> <b>₽</b>)':
+								cls
+								minut += 15
+								lipbalm += 20
+								money -= tovpay2
+								gt $loc
+							end
+						end
+
+						tovpay3 = rand(2, 5) * 100
+						'They have some vitamins for <<tovpay3>> <b>₽</b>.'
+						if money >= tovpay3:
+							act 'Buy the vitamins for (<<tovpay3>> <b>₽</b>)':
+								cls
+								minut += 15
+								vitamin += 20
+								money -= tovpay3
+								gt $loc
+							end
+						end
+
+						'They have a romance novel (300 <b>₽</b>)'
+						if money >= 300:
+							act 'Buy the romance novel (300 <b>₽</b>)':
+								cls
+								minut += 15
+								money -= 300
+								w_book += 1
+								gt $loc
+							end
+						end
+						act 'Leave': gt $loc
+					end
+				else
+					gt $loc
+				end
+			elseif streetrand > 46 and $pantyworntype = 'none' and PCloSkirt > 2 and hour > 6 and hour <= 20:
+				if exhibitionist_lvl = 0: pcs_mood -= 2
+				pcs_horny += pcs_exhib/5
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<<$streetev_title>>'
+				'<center><img src="images/locations/shared/street/oldladies.jpg"></center>'
+				'As you walk by a group of old women sitting on a bench next to one of the buildings, you overhear them talking loudly in your direction. "Look at that whore! She is walking around in a short skirt and no panties, everyone can see her ass!" Another one responds to the first. "She should be ashamed of herself, even whores have more decency than her."'
+				if $loc ! 'pavResidential' and $loc ! 'pavCommercial':
+					'Then a third joins in. "Her mother is the one that should be ashamed, what kind of mother raises a daughter that acts like that?"'
+				else
+					'Then a third joins in. "Well what would you expect from a daughter of Natasha, the apple doesn''t fall far from the tree." The other murmur in agreement.'
+				end
+				if pcs_inhib >= 50:
+					'<i>What? So now it''s a crime to prefer going commando now?</i> you think to yourself in annoyance as you continue passing by.'
+				elseif exhibitionist_lvl = 0:
+					'You blush in shame from the old ladies caustic remarks and hurry on your way.'
+				end
+				act 'Continue':gt $loc
+			else
+				gt $loc
+			end
+		end
+	else
+		gt $loc
+	end
+end
+
+if $ARGS[0] = 'divorce_party':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/limo.jpg"></center>'
+	'You''re walking down the street when a car speeds past you. It''s nothing to be particularly interested in until it suddenly comes to a squealing stop ahead. You slow your pace and watch it idle for a few moments, only just now noticing the muffled music coming from inside it as you near it. The window rolls down and the sound of an obnoxious pop song spills out, followed by a woman. Her whole top half is leaning out the car window which almost leads to her falling out, but a pair of hands from inside the car steady her. "Ah fucking shit tits...<i>fuck</i>," she curses as she spills the drink in her hand onto the sidewalk. "Hey...hey you! Come here for a s-sec," she calls to you with a beckoning wave of her free hand.'
+	act '"Uhm..."':
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/limo.jpg"></center>'
+		'Understandably you hesitate but she picks up on that and shakes her head wildly, "Don''t worry, I''m not gonna, like, shnatch you up or a-anything, I just gotta queshtion!" If it wasn''t obvious before, it''s clear now that the woman is drunk. But that doesn''t mean she''s a bad person, and judging from the limo chauffeuring her and her friends around, you could think of worse people to kidnap you. You walk over to her and she welcomes you with an excited giggle. "I''m Marta," she introduces herself. "And you see my friend here?" She moves to give you a peek into the limo filled with two other women and points out the one in red before continuing.'
+		*nl
+		'"That''s Eva and her lying, whore of a husband had been cheating on her with some...some cheap, loose pussy, dog faced CUNT!" she shouts angrily before taking a deep breath. "So she divorced his sorry ass and now she''s a free who deserves ONLY the best things in life! And you know what one of those things is?" she asks and you awkwardly shake your head.'
+		'"It''s to make out with a pretty little thing like you," Marta grins and gives you (a very poor attempt at) a wink. "So? What do you say? Wanna give her a little kiss?"'
+		gs 'willpower', 'kiss', 'resist', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Keep Walking (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				divorce_party += 1
+				gt $loc, $metka
+			end
+		else
+			act 'Keep walking (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Agree':
+			*clr & cla
+			divorce_party = 2
+			gs 'arousal', 'kiss', 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/makeout.jpg"></center>'
+			'You look behind her and see Eva blushing, trying to hide behind the rim of her cup as she takes a drink. She''s actually really pretty and younger than you thought. You''re not sure why her husband would cheat on her, but you''re not going to pass up the opportunity to have some fun with her. "You''re right, she does deserve the <i>best</i> and I can give her just that," you purr with a knowing smile.'
+			*nl
+			'In an instant, the other women are cheering and giggling as they lead Eva to the window. She tries to reluctantly argue against this, but she makes no real effort to stop them. "Uhm...hi?" she says sheepishly, her eyes avoiding yours as she bites her lip nervously. "My name is Eva..."'
+			'"Oh, I know..." Your hand cups her cheek gently and you guide her head back, her gaze now meeting yours. "I''m <<$pcs_nickname>>," you say before leaning in to kiss her. As soon as your lips meet, any resistance she had before melts away. Her lips part and your tongues intertwine. You can taste the sweet alcohol she had been drinking as she eagerly presses against you with a soft moan. When you finally pull away, Eva is breathless with a dazed yet satisfied look.'
+			*nl
+			'"Holy shit that was <i>amazing</i>!" Marta laughs as Eva collapses back into the car seat. Marta is back at the window with a wide grin, "Look, I even caught it on camera!" She holds up her phone and you see a shaky but still rather clear video of the two of you making out. "Hey, you know what, why don''t you come out with us? I know Eva would love to have you come!" Marta winks again, obviously hinting at the double meaning there.'
+			gs 'willpower', 'drink', 'resist', 'medium'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse and leave (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					gs 'arousal', 'end'
+					gt $loc, $metka
+				end
+			else
+				act 'Refuse and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+			act 'Join them':
+				*clr & cla
+				gs 'drugs', 'alcohol', 'vodka'
+				pcs_horny += 5
+				minut += 15
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/drinks.jpg"></center>'
+				'As soon as you enter the limo, Marta is shoving a red cup filled with a strong, yet sweet mixed drink into your hands. "C''mon, have a drink!" You have a feeling she won''t take no for an answer, so you start drinking with everyone else. You spend your time getting to know everyone, learning that the other woman is called Alla. Marta often leads the conversation so you just sit back and enjoy her antics, and while you do, you sometimes catch Eva eying you hungrily. It isn''t long before you arrive at the club.'
+				*nl
+				'You don''t recognize the area and you start to wonder where you are exactly, but you''re given no time to dwell on it as you''re ushered past the long line of people waiting and led through the club to a private room upstairs.'
+				'Just outside the door, Marta stops everyone. "And now, what you''ve all been waiting for..."'
+				'"You''re the only one that knows what''s going on, you didn''t tell us anything!" Alla points out.'
+				'"Okay, what <i>I''ve</i> been waiting for," Marta teases before slowly opening the door.'
+				act 'Go inside':
+					*clr & cla
+					minut += 5
+					pcs_horny += 10
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d3.jpg"></center>'
+					'"Oh my God, Marta!" Eva exclaims as her and Alla squeal with delight at the sight of a tall, dark and handsome man standing in the middle of the room, proudly displaying his bulging erection as it presses against his briefs. "A male stripper? Really?!"'
+					'"That''s right! This is Yefim and he''s gonna make sure you forget you were ever married," Marta tells Eva before sitting her down in front of the man who begins to straddle her. The three of you surround the two of them, clapping and cheering as he dances and grinds against Eva, his erection just a few inches from her face. While Eva is being coy about it, you can''t help but think about just what he''s packing in those briefs.'
+					*nl
+					'"Look at him, he''s hard just for you!"'
+					'"Why not give him a <i>hand</i>, Eva!"'
+					'"Don''t just leave him like that!"'
+					'You end up so distracted by your thoughts that you almost don''t feel Marta nudging you. "We gotta get her in the mood, <<$pcs_nickname>>."'
+						act 'Help Eva relax':
+						*clr & cla
+						minut += 5
+						pcs_horny += 10
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d4.jpg"></center>'
+						'You place your hands on Eva''s shoulders, "Don''t worry, just relax..." you whisper against her ear as your hands slide down to her chest. You massage her tits gently through her top, smiling when you hear her let out a breathy moan. Feeling her nipples start to poke through the thin fabric, you lightly trace your finger around each one until they''re stiff and hard. "See, isn''t this fun?" Slowly, you pull open Eva''s dress to expose her bare chest. A quick hard pinch to her nipples causes her to whimper and squirm as you continue to play with her tits.'
+						*nl
+						'Marta and Alla are quick to catch on. Following your lead, they start to pull and tug not just on her clothes, but also on Yefim''s red briefs until his cock is freed and twitching eagerly in Eva''s face.'
+						*nl
+						'"Don''t you want to have a little taste?" Yefim asks while stroking his dick teasingly. Eva doesn''t need any more convincing. She leans forward and runs her tongue along the underside of his shaft before her lips wrap around the tip. Bobbing her head, she swallows every inch of this stranger''s cock with ease as you and the others watch. "Hey babe, don''t get too carried away, we just started," Marta giggles as she gently pushes Yefim away from her friend, his cock coming free from Eva''s mouth with a wet pop. Marta leads him to the couch where she has him lay down before kneeling beside him and calling Eva over.'
+						act 'Watch':
+							*clr & cla
+							gs 'arousal', 'masturbate', 10
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d5.jpg"></center>'
+							'The two of them wrap their lips around each side of Yefim''s throbbing cock, sliding up and down, nibbling and sucking on every veiny inch. You feel the heat between your legs growing as you watch one focus on the reddened tip while the other kisses a trail down to his balls. He throws his head back and lets out a grunt, one of his hands gripping the back of Eva''s head as she laps up the leaking precum.'
+							*nl
+							'Overwhelmed by your lust, you rub your legs together, itching to touch yourself. You look around the room and are relieved to see Alla had the same idea as you as she''s sitting down with her legs spread, playing with herself while watching her friends. Without hesitation, you slide your own hand between your legs and shiver as your fingers glide along your slick folds, spreading them to find your clit. You follow the same pace as Eva and Marta, when they slowly kiss along his length, flicking the tips of their tongue along his glans, you take your time with long, hard against your clit. As soon as you see he''s had enough of their teasing and forces Marta to deep throat him fast and hard, fucking her mouth while Eva watches, you begin fingering yourself frantically. You''re edging closer and closer but you get an amazing idea when you see him throw his head back and groan loudly.'
+								act 'Sit on his face':
+								*clr & cla
+								minut += 15
+								'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d6.jpg"></center>'
+								'"Want to put that mouth to better use?" You tease with a smile as you present your dripping wet pussy to Yefim. Licking his lips, he pulls you over and helps you straddle his face. He grips your thighs and holds you in place as his tongue delves between your swollen pussy lips. You tremble and gasp, his tongue expertly flicking and massaging your clit when he isn''t playing with your labia. You grind your hips down as the pleasure builds, crying out as you cum on his tongue. Your pussy clenches and your body tenses as you ride out the bliss.'
+								*nl
+								'"Alright, that''s enough," You hear Marta say. She watches you slide off his face with a smirk, taking a moment to admire how wet his lips are with your juices before turning her attention to Eva. "I don''t think he can hold out much longer, so why don''t we end this with a <i>bang</i>!" You don''t know when Alla finished, but she''s here pulling Eva aside to undress her. When they''re done, Yefim switches spots with Eva, with her now on her back. "Now keep those legs spread, babe," Marta says as Yefim positions himself between her legs.'
+								$orgasm_or = 'yes'
+								gs 'arousal', 'end'
+								gs 'stat'
+									act 'Enjoy the show':
+									*clr & cla
+									minut += 15
+									gs 'stat'
+									'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d7.jpg"></center>'
+									'"Fuck, you''re tight..." Yefim growls as he slides the first few inches of his cock inside her.'
+									'Eva inhales sharply as he slowly fills her. "Oh <i>fuck</i>!" she pants heavily as he sets a rhythm of steady, shallow thrusts.'
+									'Marta can''t keep from smiling as she watches her dear friend enjoying herself. "I know, it''s been awhile since you''ve been properly fucked..." she coos. "But like I said earlier...he''s going to fuck you until you can''t remember that bastard''s name."'
+									*nl
+									'Hearing this, Yefim pulls Eva''s hips down hard to slam into his, burying balls deep inside her in one stroke. She lets out a strangled moan as he pulls out to slam back into her again and again. Eva can barely manage a word out as she gasps and moans beneath him. You and the girls watch excitedly as he continues to pound into her with renewed vigor, having angled his hips to hit her sweet spot until her walls clench around him and she cums hard with a strained cry. Yefim thrusts a few more times before pulling out and shooting his load all over her flushed and sweaty body.'
+									*nl
+									'"Wow, you even managed to reach her tits," Marta amazes while pointing out the cum splattered across Eva''s chest. Yefim just chuckles and collapses back against the couch in exhaustion much like how Eva lay breathless and limp next to him, basking in the aftermath. "Well I think we need something to remember this night forever," Marta suggests before pulling out her phone. Carefully, you all help Eva to sit up and gather around her. "Say ''Jizz''!"'
+									act 'Pose':
+										*clr & cla
+										minut += 15
+										gs 'stat'
+										'<center><img <<$set_imgh>> src="images/locations/shared/divorcee/d8.jpg"></center>'
+										'You all take a few to catch your breath and relax before cleaning yourselves up. "Hey, you were great tonight! I''m so glad we met you," Marta grins as she gives you a quick hug. "If you''re ready, I can drop you back home."'
+										'You nod and say your thanks and goodbyes to Yefim before heading back to the limo. The ride back is a lot quieter than earlier, with Eva and Marta sleeping against each other while Alla makes small talk with you until you arrive back home. With a small, tired smile, Alla hugs you goodbye and you take one last look at Marta and Eva before getting out.'
+										act 'Leave': gt $loc, $metka
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'fight_rape':
+	*clr & cla
+	menu_off = 1
+	guy += 1
+	gs 'stat'
+	gs 'fight','initFight'
+
+	gs 'fight_npcdata', 'rapist'
+
+	gt 'fight', 'start'
+end
+		
+if $ARGS[0] = 'rape':
+	*clr & cla
+	menu_off = 1
+	guy += 1
+	gs 'stat'
+	'<center><img src="images/locations/shared/street/sex/rape1.jpg"></center>'
+	if $clothingworntype ! 'nude':
+		'Once he drags your far enough down into the alley he throws you violently against the wall, knocking the wind out of you, stunning you for a moment. He grabs you by the hair and pushes your face against the stone wall pinning it in place. He leans in and you can feel his hot breath on your cheek as he whispers to you. "You better not scream bitch or I will make this a lot worse."'
+	else
+		'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "Yeah I knew you wanted this, walking around naked, you were hoping some man would take you. Well you''re going to get your wish bitch." He says as he unbuttons his pants and pulls out his rock hard dick. Without another word he grabs you and drags you to your feet, he turns you around, so your face is against the wall.'
+	end
+	act 'Stay silent':
+		*clr & cla
+		gs 'stat'
+		'<center><img src="images/locations/shared/street/sex/rape2.jpg"></center>'
+		'You meekly don''t move or cry out. In the faint light you can see him grin as you obey him. "That''s right be a good little bitch and I''ll take it easy on you. As long as you do what I say." He says as pulls your clothes away until your butt and pussy is exposed. Then he unbuttons his pants and pulls out his rock hard cock. Without another word he shoves his dick painfully into your pussy, not caring that you are not remotely wet.'
+		gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+		gs 'stat'
+		act 'Submit':
+			*clr & cla
+			gs 'stat'
+			'<center><img src="images/locations/shared/street/sex/rape4.jpg"></center>'
+			'He pins you between himself and the wall, with you facing the wall. He roughly fucks your twat, grunting with each one of his balls deep thrust into you. "Yeah you like this don''t you slut, all you sluts love getting fucked." You do your best to endure the pain as he roughly fucks your pussy.'
+			gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+			gs 'stat'
+			act 'Do nothing':
+				*clr & cla
+				gs 'stat'
+				'<center><img src="images/locations/shared/street/sex/rape5.jpg"></center>'
+				'As he roughly fucks your twat, grunting with each one of his balls deep thrust into you, he says. "Don''t worry slut, I don''t any bastards either, lucky for us both you have another hole." Just as he says that he pulls out of your pussy and then shoves it up your asshole, causing you to hiss in pain again.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+				gs 'stat'
+				act 'To much pain':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/shared/street/sex/rape6.jpg"></center>'
+					'He forces his prick balls deep into your ass and starts hammering away, just as roughly as he was fucking your pussy. He starts grunting a bit louder and faster, at least it sounds like he is nearly finished and this nightmare can finally be over. You think to yourself as tears stream down your face, from the pain and violation happening to you.'
+					gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+					gs 'stat'
+					act 'To much pain':
+						*clr & cla
+						minut +=3
+						gs 'stat'
+						'<center><img src="images/locations/shared/street/sex/rape7.jpg"></center>'
+						'He thrusts once, twice more balls deep into your butt before he groans loudly. You can feel his cum squirting inside of your ass, finally he finishes and pulls away. He presses your face against the wall with one hand. "Don''t move bitch!" With the other hand he puts his dick away, once he is fully dressed he lets go of you and jogs out of the alleyway, leaving you standing there half dressed and cum leaking out of your ass, with tears streaming down your face.'
+						gs 'arousal', 'anal', 2, 'sub', 'rough', 'rape'
+						gs 'cum_call','anus',$boy,1
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Leave':gt $loc
+					end
+				end
+			end
+		end
+	end
+	act 'Please don''t get me pregnant':
+		*clr & cla
+		gs 'stat'
+		'<center><img src="images/locations/shared/street/sex/rape3.jpg"></center>'
+		'You can''t help it, you don''t want to get pregnant or some disease from her. "Please don''t get my pregnant, at least use a condom." You beg him.'
+		'He laughs. "Oh is that all your worried about? Don''t worry I won''t get you pregnant." He says as pulls your clothes away until your butt is exposed. Then he unbuttons his pants and pulls out his rock hard cock. With one hand on your neck he holds your head in place against the wall. Suddenly he pulls you away from the wall and shoves you face first down onto the dirty alleyway ground.'
+		gs 'arousal', 'vaginal', 5, 'sub', 'rough', 'rape'
+		gs 'stat'
+		act 'Flung to the ground':
+			*clr & cla
+			gs 'stat'
+			'<center><img src="images/locations/shared/street/sex/rape8.jpg"></center>'
+			'He pins you between himself and the wall the ground. You hear him spit and then his other fingers slightly wet from his spit work there way into your ass, just getting it a little wet. Without another word he shoves his dick painfully into your asshole, you hiss in pain, as his cock rips it''s way into your mostly unlubricated ass. He roughly fucks your asshole, grunting with each one of his balls deep thrust into you. "Yeah you like this don''t you slut, all you sluts love getting fucked." You do your best to endure the pain as he roughly fucks your butt.'
+			gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+			gs 'stat'
+			act 'Submit':
+				*clr & cla
+				gs 'stat'
+				'<center><img src="images/locations/shared/street/sex/rape9.jpg"></center>'
+				'As he roughly fucks your asshole, grunting with each one of his balls deep thrust into you, he says. "yeah you was right slut, this is better than that nasty pussy of yours." He keeps hammers himself into your ass.'
+				gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+				gs 'stat'
+				act 'Do nothing':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/shared/street/sex/rape10.jpg"></center>'
+					'He starts grunting a bit louder and faster, at least it sounds like he is nearly finished and this nightmare can finally be over. You think to yourself as tears stream down your face, from the pain and violation happening to you.'
+					gs 'arousal', 'anal', 5, 'sub', 'rough', 'rape'
+					gs 'stat'
+					act 'To much pain':
+						*clr & cla
+						minut +=3
+						gs 'stat'
+						'<center><img src="images/locations/shared/street/sex/rape11.jpg"></center>'
+						'He thrusts once, twice more balls deep into your butt before he groans loudly. You can feel his cum squirting inside of your ass, finally he finishes and pulls away. He presses your face against the ground with one hand. "Don''t move bitch!" With the other hand he puts his dick away, once he is fully dressed he lets go of you, getting up off of you, next you can hear him jogging away. You turn and look up just in time to see him jog out of the alleyway. You slowly stand up, still half dressed, with cum leaking out of your ass, with tears streaming down your face.'
+						gs 'arousal', 'anal', 2, 'sub', 'rough', 'rape'
+						gs 'cum_call','anus',$boy,1
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Leave':gt $loc
+					end
+				end
+			end
+		end
+	end
+end
+
+--- street_event ---------------------------------
+

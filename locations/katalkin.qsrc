@@ -1,0 +1,298 @@
+# katalkin
+
+gs 'stat'
+
+if hour >= 8 and hour < 22:
+	'Captain Katalkin is currently handling some cases.'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+	
+	if katalkinSexOnce = 0:
+		if schtraf = 0:
+			'Captain Katalkin looks at you with some interest. He gives you a smile and says: "Hello miss. I was just about to have a break, would you like to join me for a cup of tea?"'
+
+			act 'Drink tea':
+				*clr & cla
+				minut += 5
+				katalkinNoexit = 0
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You agree and sit down at a table near his desk, while captain Katalkin pours two cups of tea. He puts the two cups on the table and sits down next to you. While you chat about Pavlovsk, you can tell he''s practically undressing you with his eyes. Suddenly, you feel his hand resting on your thigh, gently squeezing it. You quietly begin to sputter some objections just as he moves his face closer to yours and cuts you off: "You''re cute, miss. You have to forgive me, us police officers are just people too..."'
+
+				gs 'willpower', 'sex', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Leave (<<will_cost>> Willpower)':
+						minut += 1 
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt $curloc
+					end
+				else
+					act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end	
+
+				act 'Do not move':gt 'katalkinSex','sex'
+			end
+		elseif schtraf > 0:
+			'Captain Katalkin eyes you up with an uninterested look in his eyes: "You have to pay a fine of <<schtraf>> <b>₽</b>, miss. Once you pay, you can go."'
+
+			if money >= schtraf:
+				act 'Pay the fine':
+					*clr & cla
+					money -= schtraf
+					schtraf = 0
+					katalkinNoexit = 0
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+					'You agree to pay the fine, and put the money on his desk after counting it. He swipes the money away, putting it in a box before he returns to his duties. As far as he''s concerned, you''re no longer there.'
+
+					act 'Leave the police station':minut += 1 & gt 'pavtrainhall'
+				end
+			else
+				act 'You can''t pay the fine':
+					*clr & cla
+					money = 0
+					schtraf = 0
+					katalkinNoexit = 0
+					kutime = 24
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+					'You shake your head sadly: "I''m sorry officer, I can''t afford that."'
+					'He looks at you indifferently and says in a matter-of-factly tone: "In that case, you spend the next 24 hours in jail."'
+					'He collects your possessions, and counts out the money you do have. You lose that money, but because you can''t pay the full amount you have to spend the next 24 hours in jail. He tells you to follow him and guides you to a prison cell.'
+
+					act 'Enter the prison cell':gt 'kutuzka'
+				end
+			end
+
+			act 'Beg':
+				*clr & cla
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You can''t go to jail! You try to look cute and innocent for him when you say: "Please sir, I can''t go to jail! Can''t you let me go just this once?"'
+				'He checks to make sure the room is empty, and turns his face to you. His eyes are exploring your body while he puts his sweaty hand on your knee: "Well, we might be able to arrange something..."'
+
+				'You think to yourself: "Do I really have to sex with him, just to avoid a fine? '+iif(money >= schtraf,'I do have the money, so I could just pay..."','I can''t afford to pay the fine. If I have to have sex with him to avoid going to jail, I guess that''s something I might be willing to do..."')
+				if money >= schtraf:
+					act 'Pay the fine after all':
+						*clr & cla
+						money -= schtraf
+						schtraf = 0
+						katalkinNoexit = 0
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+						'You tell him you will pay the fine after all, and put the money on his desk after counting it. He disappointedly swipes the money away, putting it in a box before he returns to his duties. As far as he''s concerned, you''re no longer there.'
+
+						act 'Leave the police station':minut += 1 & gt 'pavtrainhall'
+					end
+				else
+					act 'Spend the night in jail':
+						*clr & cla
+						money = 0
+						schtraf = 0
+						katalkinNoexit = 0
+						kutime = 24
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+						'You shake your head sadly: "I''m sorry officer, I can''t afford that."'
+						'He looks at you indifferently and says in a matter-of-factly tone: "In that case, you spend the next 24 hours in jail."'
+						'He collects your possessions, and counts out the money you do have. You lose that money, but because you can''t pay the full amount you have to spend the next 24 hours in jail. He tells you to follow him and guides you to a prison cell.'
+
+						act 'Enter the prison cell':gt 'kutuzka'
+					end
+				end
+
+				gs 'willpower', 'sex', 'self', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Accept his offer (<<will_cost>> Willpower)':
+						gs 'willpower', 'pay', 'self'
+						gs 'stat'
+						gt 'katalkinSex','sex'
+					end
+				else
+					act 'Accept his offer (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+		end
+	elseif katalkinSexDay < daystart:
+		if schtraf = 0:
+			'Captain Katalkin looks at you with some interest. He gives you a smile and says: "Hi there <<$pcs_nickname>>. I was just about to have a break, would you like to join me for a cup of tea?"'
+			'From your previous experience with him, you know he''s probably not just talking about tea.'
+
+			act 'Drink tea':
+				*clr & cla
+				minut += 5
+				katalkinNoexit = 0
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You agree and sit down at a table near his desk, while captain Katalkin pours two cups of tea. He puts the two cups on the table and sits down next to you. While you chat about Pavlovsk, you can tell he''s practically undressing you with his eyes. After a few minutes Katalkin moves closer to you and cups your boobs through your clothing, and whispers: "Let''s cut the crap, <<$pcs_nickname>>... did you come here, just so you could have some fun with me again?"'
+
+				act 'Put your hand on his groin':gt 'katalkinSex','sexgo'
+				act 'Do not move':gt 'katalkinSex','sex'
+			end
+		elseif schtraf > 0:
+			'Captain Katalkin has a greedy smile on his face when he asks: "Well <<$pcs_nickname>>, I see you have to pay a fine. Do you have the money, or are you going to entertain me to make it go away?"'
+
+			if money >= schtraf:
+				gs 'willpower', 'sex', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Give him the money (<<will_cost>> Willpower)':
+						*clr & cla
+						money -= schtraf
+						schtraf = 0
+						katalkinNoexit = 0
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+						'You see a tinge of regret in his face when you give him the money. "Oh. Very well then, miss <<$pcs_lastname>>. You''re free to go."'
+
+						act 'Leave the police station':minut += 1 & gt 'pavtrainhall'
+					end
+				else
+					act 'Give him the money (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			else
+				act 'Spend the night in jail':
+					*clr & cla
+					money = 0
+					schtraf = 0
+					katalkinNoexit = 0
+					kutime = 24
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+					'You shake your head sadly: "I''m sorry officer, I can''t afford that."'
+					'He looks at you with regret and says: "In that case, you spend the next 24 hours in jail."'
+					'He collects your possessions, and counts out the money you do have. You lose that money, but because you can''t pay the full amount you have to spend the next 24 hours in jail. He tells you to follow him and guides you to a prison cell.'
+
+					act 'Enter the prison cell':gt 'kutuzka'
+				end
+			end
+
+			act 'Entertain him':gt 'katalkinSex','sex'
+		end
+	else
+		if schtraf = 0:
+			'Captain Katalkin is sitting in his chair, working on some documents. He gives you a friendly nod but keeps working, indicating that he doesn''t want to be disturbed right now.'
+		elseif schtraf > 0:
+			'Captain Katalkin pretends he''s looking through some files, and then rips up a piece of paper while he grins at you: "Good news! It seems like your fine has been paid in full, miss <<$pcs_lastname>>."'
+
+			act 'Say goodbye':
+				*clr & cla
+				schtraf = 0
+				katalkinNoexit = 0
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You give him a weak smile and say: "Thank you officer, have a nice day."'
+				'Captain Katalkin nods as he shoos you away: "Same to you, miss. Now if you don''t mind... I have a lot of work to do."'
+
+				act 'Leave':minut += 1 & gt $curloc
+			end
+		end
+	end
+elseif hour >= 22:
+	'Captain Katalkin is sitting at a table with two of his colleagues. The table has a nice assortment of snacks, and vodka. The policemen look like they have been drinking.'
+
+	if katalkinSexOnce = 1:
+		if katGangMeet = 0:
+			'When Katalkin sees you walk by, he waves you over and drunkenly says: "<<$pcs_nickname>>! Come here, let me fuckin'' introduce you to my boys!"'
+
+			act 'Sit down with them':
+				*clr & cla
+				minut += 5
+				katalkinNoexit = 0
+				katGangMeet = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You join the officers at the table, who have clearly been drinking for a while already. They immediately pour you a glass of vodka. Katalkin says: "This is Pasha, and the other guy is Sergei. They''re good officers, the best Pavlovsk has to offer. Let''s have a toast, to meeting new friends!"'
+
+				act 'Raise your glass with them and drink': gs 'drugs', 'alcohol', 'vodka' & minut += 5 & gt 'katalkinAlko'
+			end
+		else
+			'When Katalkin sees you walk by, he waves you over and drunkenly says: <<$pcs_nickname>>! Come here, have a drink with me and my boys!"'
+
+			act 'Sit down with them':
+				*clr & cla
+				minut += 5
+				katalkinNoexit = 0
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You join the officers at the table, who clearly have been drinking for a while already. They immediately pour you a glass of vodka and have a swig from their own.'
+
+				act 'Drink the vodka':pcs_hydra -= 10 & gs 'drugs', 'alcohol', 'vodka' & minut += 5 & gt 'katalkinAlko'
+			end
+		end
+	elseif katalkinSexOnce = 0:
+		if schtraf = 0:
+			'When Katalkin sees you walk by, he waves you over and drunkenly says: <<$pcs_nickname>>! Come here, join me for a drink!"'
+
+			act 'Sit down with him':
+				*clr & cla
+				minut += 5
+				katalkinNoexit = 0
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+				'You decline the drink, but don''t mind joining him for a chat so you take a seat next to him. Almost immediately, he scoots his chair close to yours and puts his hand on your thigh, slowly rubbing and squeezing his way upwards. He clearly didn''t invite you over to just have a chat.'
+
+				gs 'willpower', 'sex', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Leave (<<will_cost>> Willpower)':
+						minut += 1 
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt $curloc
+					end
+				else
+					act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+
+				act 'Do not move':gt 'katalkinSex','sex'
+			end
+		elseif schtraf > 0:
+			'Captain Katalkin looks at you with an uninterested look in his eyes. Even though he''s drunk, he won''t let you off the hook: "You have to pay a fine of <<schtraf>> <b>₽</b>. Once you pay, you can go."'
+			'He checks to make sure the room is empty, and turns his face to you. His eyes are exploring your body while he puts his sweaty hand on your knee: "Even if you don''t have the money, well, we might be able to arrange something..."'
+
+			if money >= schtraf:
+				act 'Pay the fine':
+					*clr & cla
+					money -= schtraf
+					schtraf = 0
+					katalkinNoexit = 0
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+					'You agree to pay the fine, and put the money on his desk after counting it. He swipes the money away, putting it in a box before he returns to his duties. As far as he''s concerned, you''re no longer there.'
+
+					act 'Leave the police station':minut += 1 & gt 'pavtrainhall'
+				end
+			else
+				act 'You can''t pay the fine':
+					*clr & cla
+					money = 0
+					schtraf = 0
+					katalkinNoexit = 0
+					kutime = 24
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/katalkin/katalkin.jpg"></center>'
+					'You shake your head sadly: "I''m sorry captain, I can''t afford that."'
+					'He looks at you indifferently and says in a matter-of-factly tone: "In that case, you spend the next 24 hours in jail."'
+					'He collects your possessions and does an extra thorough frisk search, the alcohol giving him courage to touch you in places and in a way that would normally be considered widely inappropriate. Still, there''s no one you can complain to... it''s just you and him here. He nods contently and gives you a hard slap on the ass before he counts out the money you do have. You lose that money, but because you can''t pay the full amount you have to spend the next 24 hours in jail. He tells you to follow him and guides you to a prison cell.'
+
+					act 'Enter the prison cell':gt 'kutuzka'
+				end
+			end
+
+			gs 'willpower', 'sex', 'self', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'Accept his offer (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'katalkinSex','sex'
+				end
+			else
+				act 'Accept his offer (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+	end
+end
+
+if katalkinNoexit = 0:act 'Leave his office': minut += 1 & gt 'pavstation', 'station_inside'
+
+--- katalkin ---------------------------------
+

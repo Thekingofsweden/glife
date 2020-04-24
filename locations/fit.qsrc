@@ -1,0 +1,855 @@
+# fit
+
+CLOSE ALL
+if $ARGS[0] = 'start':
+	*clr & cla
+	$menu_loc = 'fit'
+	$menu_arg = 'start'
+	menu_off = 0
+	minut += 5
+	frost = 0
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Fitness Center</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/fit.jpg"></center>'
+	*nl
+	'This modern and well staffed fitness center provides all the latest equipment and trainers to help you make the most of them.'
+	*nl
+	'At the reception you may buy '+iif(abonement > 0, 'a subscription package', 'an additional subscription package')+' for access to all available facilities.'
+	*nl
+	if abonement > 0:'Your existing subscription package is valid for <<abonement>> more classes.'
+	*nl
+	'<b>Classes included in subscription:</b>'
+	'Running'
+	'Crossfit'
+	'Aerobics'
+	'Weights'
+	'Cross Trainer'
+	'Tennis'
+	'Kickboxing'
+	'Swimming pool.'
+	*nl
+	'Sportswear is required for all available classes.'
+
+	act 'Leave': minut += 5 & gt 'down'
+
+	if abonement > 0:
+		act 'Go to the dressing room': gt 'fit', 'dressing room'
+	elseif money > 100:
+		act 'Use the pool (100 <b>₽</b>)':
+			money -= 100
+			gs 'stat'
+			gt 'fit', 'dressing room'
+		end
+	end
+
+	if money >= 3000:
+		act ''+iif(abonement > 0, 'Buy an extra','Buy')+' 30 classes (3,000 <b>₽</b>)':
+			cla
+			menu_off = 1
+			money -= 3000
+			abonement += 30
+			'You bought a subscription for 30 classes, and access to all facilities.'
+
+			act 'Move away from cashier':gt 'fit', 'start'
+		end
+	end
+
+	if money >= 2250:
+		act ''+iif(abonement > 0, 'Buy an extra','Buy ')+' 20 classes (2,250 <b>₽</b>)':
+			cla
+			menu_off = 1
+			money -= 2250
+			abonement += 20
+			'You bought a subscription for 20 classes, and access to all facilities.'
+
+			act 'Move away from cashier':gt 'fit', 'start'
+		end
+	end
+
+	if money >= 1500:
+		act ''+iif(abonement > 0, 'Buy an extra','Buy ')+' 10 classes (1,500 <b>₽</b>)':
+			cla
+			menu_off = 1
+			money -= 1500
+			abonement += 10
+			'You bought a subscription for 10 classes, and access to all facilities.'
+
+			act 'Move away from cashier':gt 'fit', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'dressing room':
+	$locM = 'fit'
+	$metkaM = 'dressing room'
+	$sexloc = 'fit'
+	$loc = 'fit'
+	$metka = 'dressing room'
+	$menu_loc = 'fit'
+	$menu_arg = 'dressing room'
+	menu_off = 0
+	$location_type = 'private'
+	*clr & cla
+	gs 'stat'
+	'<center><b><font color="maroon">Dressing</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/razd.jpg"></center>'
+	'Recruiting girls for local track team, the winners will receive cash prizes.'
+	'Attention, visitors to the sports section must wear sports outfits and shoes when using the facilities.'
+	*nl
+	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+
+	if nichTanyaKnown = 0 and (rand(1,100) <= 20 or nichDebug = 1):
+		'In the locker room you notice <a href="exec:gt ''fit'', ''fitgirl''">a cute girl</a>.'
+	end
+
+	act 'Exit the locker room':
+		if $clothingworntype ! 'nude' and $clothingworntype ! 'swimwear':
+			gt 'fit', 'start'
+		else
+			cla
+			msg'<b><font color = red>You need to get dressed.</font></b>'
+			act 'Return': gt 'fit', 'dressing room'
+		end
+	end
+
+	if shampoo > 0:
+		act 'Take a shower (0:15)':
+			cla
+			*clr
+			menu_off = 1
+			minut += 15
+			pcs_horny += 1
+			pcs_hairbsh = 0
+			pcs_makeup = 1
+			if pcs_inhib < 15:inhib_exp += rand(1,2)
+			dynamic $showerdin
+			'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+			'You go into the bathroom and turn on the shower. You lather your body and wash in the shower.'
+			if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+
+			act 'Get out of the shower':gt 'fit', 'dressing room'
+		end
+	else
+		'<font color="red">You''ve run out of shampoo and will have to buy some more before you can wash yourself.</font>'
+	end
+
+	act 'Use mirror':
+		cla
+		gt 'mirror', 'start'
+	end
+
+	act 'Change outfit':
+		cla
+		gt 'wardrobe', 'start'
+	end
+
+	if $clothingworntype = 'swimwear':
+		act 'Use the pool': gt 'bass', 'start'
+	else
+		act 'Change into swimwear': gt 'changingroom', 'view_swim_list'
+	end
+
+	gs 'wardrobe', 'sports_outfit'
+
+	if abonement > 0:
+		if $clothingworntype = 'exercise' and $shoeworntype = 'trainers' and pcs_stam >= 40:
+			act 'Go to the gym':
+				cla
+				gt 'fit', 'gym'
+			end
+
+			act 'Go to the dance studio':
+				cla
+				gt 'danceclass'
+			end
+
+			act 'Go do a crossfit workout':
+				cla
+				gt 'crossfit_north_box', 'box'
+			end
+		end
+
+		if begsec = 0:
+			act 'Join track team':
+				cla
+				*clr
+				minut += 5
+				begsec = 1
+				'You signed up for the track team.'
+
+				act 'Leave':gt 'fit', 'dressing room'
+			end
+		elseif $clothingworntype = 'exercise' and $shoeworntype = 'trainers' and pcs_stam >= 40:
+			act 'Go to team practice':gt 'beg', 'start'
+			if week = 6 and pcs_run >= 20 and run_comp_day ! daystart:
+				act '<b>Enter competition race</b>':run_comp_day = daystart & gt 'beg1', 'start'
+			end
+		end
+	end
+	
+	if deodorant > 0 and deodorant_on = 0:
+		'Your deodorant will last you for <b><<deodorant>></b> more '+iif(deodorant = 1, 'application.', 'applications.')
+		act 'Apply deodorant (0:01)':
+			*clr & cla
+			menu_off = 1
+			minut += 1
+			deodorant -= 1
+			gs 'sweat', 'deo'
+			iif(func('body_din','pregnancyVisibility') = 1, '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant_preg.jpg"></center>', '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant.jpg"></center>')
+			'You apply deodorant to your armpits. It will keep you feeling fresh and clean for longer.'
+			act 'Continue': menu_off = 0 & gt $loc, $metka
+		end
+	end
+end
+
+if $ARGS[0] = 'fitgirl':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/idle0.jpg"></center>'
+	'The girl notices you looking and returns the smile. She undresses and taking some toiletries goes into the shower.'
+
+	act 'Turn away':gt 'fit', 'dressing room'
+
+	act 'Follow her':
+		*clr & cla
+		pcs_hairbsh = 0
+		pcs_makeup = 1
+		noShampoo = 1
+		dynamic $showerdin
+		shovertania += 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower0.jpg"></center>'
+		'There''s no one in the shower, except this girl. The girl looks around and seeing you smiles again then turns away.'
+
+		act 'Leave the shower':gt 'fit', 'dressing room'
+
+		gs 'willpower', 'misc', 'force'
+		if will_cost <= pcs_willpwr:
+			act 'Molest her (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol0.jpg"></center>'
+				'You walk up to the girl and gently place one hand on her right breast. She turns to face you.'
+
+				gs 'arousal', 'foreplay', 5, 'dom', 'lesbian'
+				gs 'stat'
+
+				if pcs_apprnc < 80:
+					'The girl pushes you off, and shouts something very rude about you and each and everyone of your relatives, you run out to the locker room.'
+
+					act 'Go':gt 'fit', 'dressing room'
+				elseif pcs_apprnc >= 80:
+					'The girl quickly turns around. She looks a little bit puzzled as she realizes that it was you who grabbed her. She probably expected to see a guy and isn''t sure what to do.'
+
+					act 'Take advantage of the confusion':
+						cla
+						*clr
+						gs 'underwear', 'remove'
+						gs 'clothing', 'strip'
+
+						'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol1.jpg"></center>'
+						'While she is trying to understand what is happening you begin fondling her sex with your fingers, and then her hand strokes your ass.'
+
+						gs 'arousal', 'foreplay', 10, 'dom', 'lesbian'
+						gs 'stat'
+
+						act 'Further': gt 'fit', 'tanyaIntroduction'
+					end
+
+					act 'Wait for her reaction':
+						*clr & cla
+						gs 'stat'
+
+						if pcs_apprnc < 100:
+							'The girl smiles at you, but removes your hand and leaves, blowing you a kiss.'
+
+							act 'Continue':gt 'fit', 'dressing room'
+						elseif pcs_apprnc >= 100:
+							cla
+							*clr
+							gs 'underwear', 'remove'
+							gs 'clothing', 'strip'
+							'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower_mol2.jpg"></center>'
+							'The girl presses up to you even stronger and kisses your lips.'
+
+							gs 'arousal', 'kiss', 5, 'dom', 'lesbian'
+							gs 'stat'
+
+							act 'Further':
+								gt 'fit', 'tanyaIntroduction'
+							end
+						end
+					end
+				end
+			end
+		else
+			act 'Molest her (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+
+if $ARGS[0] = 'tanyaIntroduction':
+	'<center><img <<$set_imgh>> src="images/characters/city/tanya/gym/shower1.jpg"></center>'
+	'Just as the both of you are about to get more intimate a group of middleaged women enters the showers. They haven''t noticed you yet. The girl next to you is clearly afraid of being spotted in the shower with you and takes her first opportunity to quietely escape to the dressing room.'
+	'You follow her only a few seconds later. She has already begun to dress herself.'
+
+	if $pantyworntype = 'none': gs 'underwear', 'wear'
+	gs 'panties', 'dispose'
+	gs 'clothing', 'wear_last_worn'
+	nichTanyaRelationship = 1
+	nichTanyaRelationshipState = 10
+	nichTanyaKnown = 1
+	npc_rel['A218'] += 5
+	nichTanyaFuckLast = daystart
+	'"You can at least tell me your name, seeing as you did not even have the decency to do so before you assaulted me." The girl says, catching her breath. Despite her words she doesn''t seem to be angry with you.'
+	'"I am <<$pcs_nickname>>, and how can I assault someone so keen?" You ask trying to find your panties.'
+	'"Looking for this?" asks the girl twirling your panties on her finger.'
+	'"Yes, can I have them back, please?" you ask, while holding out your hand.'
+	'"Nope. You seduced me. I have never been with a girl before and I think I earned this as a memento." With these words, Tanya slips your panties in her pocket.'
+	'"My name is Tanya by the way. I live only a short distance from here with my parents. You might come over if you like. Usually I''m home in the late afternoon. We could continue were we left off." she winks at you and leaves.'
+	'<i>You can now visit Tanya at her parents home in the Downtown area once a day after 16:00.</i>'
+	act 'Back':gt 'fit', 'dressing room'
+end
+
+if $ARGS[0] = 'gym':
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	sportzalrand = RAND(0,20)
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Fitness Center</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/fit.jpg"></center>'
+	'In the fitness center there are a lot of different classes and clubs, designed to improve physical development.'
+
+	if StoryLine = 1:
+		if hour >= 10 and hour < 12 and week = 7 and centr = 1: 'In the hall you see <a href="exec:gt ''VolleyTrenCentr''">Mikhail Nikolaevich</a> talking with a strange man.'
+		if hour >= 10 and hour < 12 and week = 7 and centr = 2 and ricewine < 2: 'In the hall you see <a href="exec:gt ''VolleyTrenCentr''">Guang</a>'
+	end
+
+	gs 'fit', 'exercise end'
+
+	act 'Aerobics (Burn fat)':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop1
+		gs 'exercise', 'tier3', 0, 'vital_exp', 'react_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop1'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+
+		'<center><img <<$set_imgh>> src="images/locations/shared/gym/fit1.jpg"></center>'
+		'You do very vigorous exercises to the music, and burn some fat.'
+
+		if pcs_stam < 30:
+			*nl
+			'You are too tired to do any more exercise and will have to rest and regain some stamina.'
+			gs 'fit', 'exercise end'
+		else
+			act'Continue': gt 'fit', 'gym'
+		end
+	end
+
+	act 'Free weights (Build muscle)':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop2
+		gs 'exercise', 'tier3', 0, 'stren_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop2'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit2.jpg"></center>'
+		'You pump iron, building strength.'
+
+		if pcs_stam < 30:
+			*nl
+			'You are too tired to do any more exercise and will have to rest and regain some stamina.'
+			gs 'fit', 'exercise end'
+		else
+			act'Continue': gt 'fit', 'gym'
+		end
+	end
+
+	act 'Cross trainer (endurance)':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop3
+		gs 'exercise', 'tier3', 0, 'vital_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop3'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit3.jpg"></center>'
+		'You spend a half hour doing reps on the cross trainer developing your endurance.'
+
+		if pcs_stam < 30:
+			*nl
+			'You are too tired to do any more exercise and will have to rest and regain some stamina.'
+			gs 'fit', 'exercise end'
+		else
+			act'Continue': gt 'fit', 'gym'
+		end
+	end
+
+	act 'Tennis practice (agility)':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop4
+		gs 'exercise', 'tier3', 0, 'agil_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop4'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit4.jpg"></center>'
+		'You run tennis exercises, concentrating on defensive drills.'
+
+		if pcs_stam < 30:
+			*nl
+			'You are too tired to do any more exercise and will have to rest and regain some stamina.'
+			gs 'fit', 'exercise end'
+		else
+			act'Continue': gt 'fit', 'gym'
+		end
+	end
+
+	act 'Tennis practice (reactions)':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop5
+		gs 'exercise', 'tier3', 0, 'react_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop5'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit4.jpg"></center>'
+		'You run tennis exercises, concentrating on court reactions.'
+
+		if pcs_stam < 30:
+			*nl
+			'You are too tired to do any more exercise and will have to rest and regain some stamina.'
+			gs 'fit', 'exercise end'
+		else
+			act'Continue': gt 'fit', 'gym'
+		end
+	end
+
+	act 'Go to the kickboxing gym':gt 'fit', 'kickboxing'
+end
+
+if $ARGS[0] = 'exercise end':
+	menu_off = 1
+	RESULT = rand(0, 19)
+
+	act 'Leave':
+		if RESULT = 0:
+			cla
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal1.jpg"></center>'
+			'You see a nice guy on the weight machine.'
+
+			act 'Continue':gt 'fit', 'dressing room'
+			act 'Flirt':
+				cla
+				*clr
+				guy += 1
+				gs 'npcgeneratec', 0, 'guy from the gym', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				samecount = 1
+				picrand = 17
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal2.jpg"></center>'
+				'You go up to the guy lying on the machine, squat and start stroking his cock through his pants. The man rises and kisses you on the lips, then lowers his pants releasing his impressive size dick.'
+
+				gs 'arousal', 'foreplay', 10, 'dom'
+				gs 'stat'
+
+				act 'Suck':gt 'sex', 'minet'
+			end
+		elseif RESULT = 1:
+			cla
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal3.jpg"></center>'
+			'As you finish training, a guy sits behind, caresses your breasts and kisses your ear, sucking the lobe.'
+			gs 'willpower', 'misc', 'self', 'medium'
+			if will_cost <= pcs_willpwr:
+				act 'Hit him in the balls (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'fit', 'dressing room'
+					
+					'Event text'
+					
+					act 'Next action': gt 'farawayistan'
+				end
+			else
+				act 'Hit him in the balls (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+
+			act 'Enjoy':
+				cla
+				*clr
+				guy += 1
+				gs 'npcgeneratec', 0, 'guy from the gym', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				picrand = 18
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal4.jpg"></center>'
+				'Guy gets up and moves around to face you, he pulls out his cock and lays it on your chest, eventually moving the head to your mouth.'
+
+				gs 'arousal', 'foreplay', 15, 'sub'
+				gs 'stat'
+
+				act 'Suck':gt 'sex', 'minet'
+			end
+		elseif RESULT = 2:
+			cla
+			'As you finish training, a fit girl offers to play a little squash with her as she waits for her boyfriend to came.'
+
+			act 'Refuse':gt 'fit', 'dressing room'
+
+			act 'Agree':
+				cla
+				*clr
+				picrand = 15
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal5.jpg"></center>'
+				'You have fun playing with the girl, neither of you are any good, but it just amuses you. After some time, it appears as a man and looking at your clumsy attempts and offers to show you how to play correctly.'
+				'He stands just behind you and puts one hand on your hand, guiding your racket and showing you how to strike the ball. The other hand starts stroking your hips gradually approaching your crotch.'
+				'You feel his cock resting against your back and looking at the girl, you know that she understands what is going on and that the man is her boyfriend.'
+
+				act 'Escape from these perverts':gt 'fit', 'dressing room'
+
+				act 'Enjoy':
+					guy += 1
+					girl += 1
+					gs 'npcgeneratec', 0, 'guy from the gym', rand(19,45)
+					gs 'boyStat', $npclastgenerated
+					gt 'podrsex', 'suck'
+					gs 'arousal', 'foreplay', 15, 'group', 'lesbian'
+					gs 'stat'
+				end
+			end
+		elseif RESULT = 3:
+			cla
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal6.jpg"></center>'
+			'You train near to a girl and engage in conversation, two guys obviously take you for girlfriends and try to chat you up.'
+
+			act 'Continue':gt 'fit', 'dressing room'
+
+			act 'Flirt back':
+				cla
+				*clr
+				picrand = 12
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/sex/zal7.jpg"></center>'
+				'You flirt with a guy, and notice that he is getting very excited and constantly glancing behind you. Turning, you see that the girl is already on her haunches and sucking the second guy with gusto.'
+
+				act 'Leave':gt 'fit', 'dressing room'
+
+				act 'Suck':
+					guy += 2
+					girl += 1
+					gang += 1
+					gs 'npcgeneratec', 0, 'guy from the gym', rand(19,45)
+					gs 'boyStat', $npclastgenerated
+					gs 'npcgeneratec', 0, 'guy from the gym', rand(19,45)
+					gs 'boyStat', $npclastgenerated, 'a'
+					gs 'arousal', 'bj', 15, 'group', 'lesbian'
+					gs 'stat'
+					gt 'sexdvanadva', 'var'
+
+				end
+			end
+		else
+			gt 'fit', 'dressing room'
+		end
+	end
+end
+
+if $ARGS[0] = 'kickboxing':
+	cla
+	*clr
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	gs 'razrKik'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Kickboxing Gym</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik.jpg"></center>'
+	'This section is dominated by the ring itself, square like a boxing ring and the only equipment that can''t be easily moved.'
+	'Around it there are various punching bags of different sizes and weights and a couple of coaches with practice pads.'
+	'You can try your luck in a fight here on Saturdays but safety concerns limit everyone to a maximum of 1 bout per week.'
+
+	act 'Work on your jabs':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop6
+		gs 'exercise', 'tier3', 0, 'jab_exp', 'react_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop6'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik1.jpg"></center>'
+		'You practice your jabs on the speed bag and double-end bag, straight punches with a step forward. These strikes are not so powerful, but they are fast.'
+
+		act 'Leave':gt 'fit', 'dressing room'
+	end
+
+	act 'Work on your heavy punches':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop7
+		gs 'exercise', 'tier3', 0, 'stren_exp', 'punch_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop7'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik1.jpg"></center>'
+		'You practice your power punches on the heavy bag. These are high impact and powerful, but they are hard to get to their target.'
+
+		act 'Leave':gt 'fit', 'dressing room'
+	end
+
+	act 'Work on your kicking':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop8
+		gs 'exercise', 'tier3', 0, 'stren_exp', 'kick_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop8'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik1.jpg"></center>'
+		'You practice your powerful kicks on a kickboxing bag. These impacts are very powerful and able to cut down an opponant, but are very difficult to hit with.'
+
+		act 'Leave':gt 'fit', 'dressing room'
+	end
+
+	act 'Work on defence':
+		cla
+		*clr
+		abonement -= 1
+		timemult = 2
+		loopcount = 1
+		:timeloop9
+		gs 'exercise', 'tier3', 0, 'def_exp', 'agil_exp'
+		if loopcount < timemult: loopcount += 1 & jump 'timeloop9'
+		loopcount = 0
+		timemult = 0
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik1.jpg"></center>'
+		'You practice your defense movements.'
+
+		act 'Leave':gt 'fit', 'dressing room'
+	end
+
+	act 'Sparing (training bout in the ring)':
+		cla
+		*clr
+		'You need to choose a partner for sparring'
+		if pcs_inhib < 30:inhib_exp += rand(1,2)
+		act 'Pick a random partner':
+			abonement -= 1
+			pcs_mood += 2
+			timemult = 2
+			loopcount = 1
+			:timeloop10
+			gs 'exercise', 'tier3', 0, 'jab_exp', 'punch_exp', 'kick_exp', 'def_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop10'
+			loopcount = 0
+			timemult = 0
+			pointKik = 0
+			pointKikV = 0
+			round = 1
+			minround = 0
+
+			gs 'npcgeneratec', 0, 'sparring partner', rand(19,45)
+			gs 'boyStat', $npclastgenerated
+			strenV = rand(10, 20)
+			speedV = rand(10, 20)
+			agilV = rand(10, 20)
+			reactV = rand(10, 20)
+			vitalV = rand(10, 20)
+			intelV = 10
+			willV = 10
+			!!skills
+			JabV = rand(5, 20)
+			PunchV = rand(5, 20)
+			KikV = rand(5, 20)
+			KikDefV = rand(5, 20)
+			!!parameters
+			healthV = vitalV * 10 + strenV * 5
+			formula = 3
+			sparing = 1
+			gt 'kikbox', 'start'
+		end
+	end
+
+	if week >= 5 and amateur_fight_day ! daystart:
+		'You can take part in an amateur fight.'
+
+		act 'Amateur fight':
+			amateur_fight_day = daystart
+			pcs_mood += 2
+			timemult = 2
+			loopcount = 1
+			:timeloop11
+			gs 'exercise', 'tier3', 0, 'jab_exp', 'punch_exp', 'kick_exp', 'def_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop11'
+			loopcount = 0
+			timemult = 0
+			pointKik = 0
+			pointKikV = 0
+			round = 1
+			minround = 0
+
+			razrand = rand(0, 1)
+
+			if razradKik + razrand = 0:
+				gs 'npcgeneratec', 0, 'Useless rival', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(10, 20)
+				speedV = rand(10, 20)
+				agilV = rand(10, 20)
+				reactV = rand(10, 20)
+				vitalV = rand(10, 20)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(10, 30)
+				PunchV = rand(10, 30)
+				KikV = rand(10, 30)
+				KikDefV = rand(10, 30)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			elseif razradKik + razrand = 1:
+				gs 'npcgeneratec', 0, '3rd class rival', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(15, 25)
+				speedV = rand(15, 25)
+				agilV = rand(15, 25)
+				reactV = rand(15, 25)
+				vitalV = rand(15, 25)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(15, 35)
+				PunchV = rand(15, 35)
+				KikV = rand(15, 35)
+				KikDefV = rand(15, 35)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			elseif razradKik + razrand = 2:
+				gs 'npcgeneratec', 0, '2rd class rival', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(20, 30)
+				speedV = rand(20, 30)
+				agilV = rand(20, 30)
+				reactV = rand(20, 30)
+				vitalV = rand(20, 30)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(30, 50)
+				PunchV = rand(30, 50)
+				KikV = rand(30, 50)
+				KikDefV = rand(30, 50)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			elseif razradKik + razrand = 3:
+				gs 'npcgeneratec', 0, '1st class rival', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(30, 40)
+				speedV = rand(30, 40)
+				agilV = rand(30, 40)
+				reactV = rand(30, 40)
+				vitalV = rand(30, 40)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(40, 60)
+				PunchV = rand(40, 60)
+				KikV = rand(40, 60)
+				KikDefV = rand(40, 60)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			elseif razradKik + razrand = 4:
+				gs 'npcgeneratec', 0, 'Excellent rival', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(40, 60)
+				speedV = rand(40, 60)
+				agilV = rand(40, 60)
+				reactV = rand(40, 60)
+				vitalV = rand(40, 60)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(60, 80)
+				PunchV = rand(60, 80)
+				KikV = rand(60, 80)
+				KikDefV = rand(60, 80)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			elseif razradKik + razrand >= 5:
+				gs 'npcgeneratec', 0, 'Best rival in the gym', rand(19,45)
+				gs 'boyStat', $npclastgenerated
+				strenV = rand(60, 100)
+				speedV = rand(60, 100)
+				agilV = rand(60, 100)
+				reactV = rand(60, 100)
+				vitalV = rand(60, 100)
+				intelV = 10
+				willV = 10
+				!!skills
+				JabV = rand(80, 110)
+				PunchV = rand(80, 110)
+				KikV = rand(80, 110)
+				KikDefV = rand(80, 110)
+				!!parameters
+				healthV = vitalV * 10 + strenV * 5
+				formula = 3
+				amateur = 1
+			end
+
+			gt 'kikbox', 'start'
+		end
+	end
+end
+
+--- fit ---------------------------------
+

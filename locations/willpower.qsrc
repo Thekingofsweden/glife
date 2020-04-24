@@ -1,0 +1,935 @@
+# willpower
+
+!!To use it call it with gs 'willpower', 'action', 'type'
+!!Action: Determines what action sveta is resisting, forcing somebody to do or forcing herself to do
+!!List of actions: 
+!!		'voyeur', 'flash', 'mast', 'hj', 'bj', 'cuni', 'sex', 'anal', 'group', 'gangbang', 'prostitution', 'swallow', 'cum_inside', 'cum_inside_anal', 'rape',
+!!		'kiss', 'humiliation', 'footjob', 'titjob', 'trib', 'rimming', 'BDSM', 'pee', 'cum_outside', 'drink', 'drugs', 'crime', 'exhib', 'sleep'
+!!		there is also 'foreplay' for things like touching and fondling
+!!		and two special cases 'misc' and 'skill' 
+!!Type: Determines what kind of willpower check sveta needs to do ('resist', 'force', 'self'). 
+!!		-'resist' is used if sveta is resisting to do the 'action' somebody else wants her to do. 
+!!		-'force' is used if sveta forces somebody else to do the 'action'. 
+!!		-'self' should be used if sveta forces herself to do the 'action' (this should be used only in rare occasions)
+
+!!Example 1: Sveta is forcing somebody to perform a blowjob: gs 'willpower', 'bj', 'force'
+!!Example 2: Sveta is resisting doing drugs: gs 'willpower', 'drugs', 'resist'
+
+!!You can modify the difficulty of the check with adding an additional argument at the end. You can either add an 'easy' or a 'hard' to modify the difficulty.
+!!Example 1: Sveta is resisting doing drugs, a weak outcast is pressuring her to use them: gs 'willpower', 'drugs', 'resist', 'easy'
+!!Example 2: Sveta is resisting doing drugs, a group of gopniks are pressuring her to use them: gs 'willpower', 'drugs', 'resist', 'hard'
+
+!!There are two special cases: 'misc' and 'skill'
+
+!!'skill': Bridging a gap in skill for doing something, for succeeding when not quite meeting the required skill/attribute: gs 'willpower', '<skill>_lvl'
+!!Example for 'skill': gs 'willpower', 'skill', 'resist', 'pcs_makupskl_lvl' for a willpower check regarding something with pcs_makupskl_lvl (you can also apply 'easy' or 'hard' difficulty to a skill check)
+
+!!'misc': Use this 'action' if no other 'action' fits the scene. You can set three difficulty levels for this check 'easy', 'medium', 'hard' (Difficulty is only for 'misc' checks)
+!!To call 'misc' do the following: gs 'willpower', 'misc', 'type', 'difficulty'
+!!Example 1 for 'misc': Sveta wants to bring herself to slap a weak looking nerd: gs 'willpower', 'misc', 'self', 'easy'
+!!Example 2 for 'misc': Sveta wants to force Artem to go to Vitek and call him an asshole: gs 'willpower', 'misc', 'force', 'hard'
+
+!!After Sveta has taken the willpower action the cost must be paid with: gs 'willpower', 'pay', 'type'
+!!Example: Sveta has to pay for resisting to do a blowjob: gs 'willpower', 'pay', 'resist'
+
+!!WARNING: When adding new options include gs 'willpower', 'difficulty', '<<$ARGS[2]>>' at the end of the ARGS to apply easy or hard.
+!!WARNING: If you have two or more actions that need willpower at the same time, you have to recalculate the willpower cost before the costs are payed (see Code Example 2)
+
+!{ Code Example 1 (one action needs willpower)
+
+	gs 'willpower', 'misc', 'self', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Kick him in the balls (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+			
+			'Event text'
+			
+			act 'Next action': gt 'farawayistan'
+		end
+	else
+		act 'Kick him in the balls (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+}
+
+!{ Code Example 2 (several actions need willpower)
+
+	gs 'willpower', 'misc', 'self', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Kick him in the balls (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'misc', 'self', 'hard' <-- recalculate the willpower cost here
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+			
+			'Event text'
+			
+			act 'Next action': gt 'farawayistan'
+		end
+	else
+		act 'Kick him in the balls (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	
+	gs 'willpower', 'misc', 'self', 'medium'
+	if will_cost <= pcs_willpwr:
+		act 'Slap him across the face (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'misc', 'self', 'medium' <-- recalculate the willpower cost here
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+			
+			'Event text'
+			
+			act 'Next action': gt 'farawayistan'
+		end
+	else
+		act 'Slap him across the face (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+}
+
+if $ARGS[0] = 'calc':
+	gs 'willpower', 'dnd'
+	will_calc = will_dnd
+!!fatigue
+	if pcs_sleep < 5:
+		will_calc += 50
+	elseif pcs_sleep < 10:
+		will_calc += 25
+	elseif pcs_sleep < 20:
+		will_calc += 10
+	elseif pcs_sleep < 30:
+		will_calc += 5
+	end
+!!hunger
+	if pcs_energy < 5:
+		will_calc += 50
+	elseif pcs_energy < 10:
+		will_calc += 25
+	elseif pcs_energy < 20:
+		will_calc += 10
+	elseif pcs_energy < 30:
+		will_calc += 5
+	end
+!!thirst
+	if pcs_hydra < 5:
+		will_calc += 50
+	elseif pcs_hydra < 10:
+		will_calc += 25
+	elseif pcs_hydra < 20:
+		will_calc += 10
+	elseif pcs_hydra < 30:
+		will_calc += 5
+	end
+!!Very horny
+	if pcs_horny >= 90: will_calc += 10
+!!Bad syphilis, you is mental
+	if Sifilis >= 50: will_calc += 100
+!!feeling sick
+	if sick > 72:
+		will_calc += 35
+	elseif sick > 48:
+		will_calc += 20
+	elseif sick > 24:
+		will_calc += 10
+	elseif sick > 1:
+		will_calc += 5
+	end
+	
+	will_calc += pain['total']
+end
+
+if $ARGS[0] = 'voyeur':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['voyeur'] + stat['voyeur_sex'] <= 90:
+			will_cost = (100 - stat['voyeur'] - stat['voyeur_sex'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['voyeur'] + stat['voyeur_sex'] <= 40:
+			will_cost = (110 - will_enforced - stat['voyeur'] - stat['voyeur_sex'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['voyeur'] + stat['voyeur_sex'] <= 90:
+			will_cost = (10 + stat['voyeur'] + stat['voyeur_sex'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'flash':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['flash'] + (stat['flashlite'] / 2) <= 90:
+			will_cost = (100 - stat['flash'] - (stat['flashlite'] / 2) + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['flash'] + (stat['flashlite'] / 2) <= 40:
+			will_cost = (110 - will_enforced - stat['flash'] - (stat['flashlite'] / 2) + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['flash'] + (stat['flashlite'] / 2) <= 90:
+			will_cost = (10 + stat['flash'] + (stat['flashlite'] / 2) + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'mast':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['mast'] <= 90:
+			will_cost = (100 - stat['mast'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['mast'] <= 40:
+			will_cost = (110 - will_enforced - stat['mast'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['mast'] <= 90:
+			will_cost = (10 + stat['mast'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'hj':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if stat['hj'] <= 90:
+			will_cost = (100 - stat['hj'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['hj'] <= 40:
+			will_cost = (110 - will_enforced - stat['hj'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if stat['hj'] <= 90:
+			will_cost = (10 + stat['hj'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'bj':
+	gs 'willpower', 'calc'
+		
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if stat['bj'] <= 90:
+			will_cost = (100 - stat['bj'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['bj'] <= 40:
+			will_cost = (110 - will_enforced - stat['bj'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if stat['bj'] <= 90:
+			will_cost = (10 + stat['bj'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'cuni':
+	gs 'willpower', 'calc'
+
+	cuni_check = (stat['cuni'] + stat['cuni_give']) / 2
+		
+	if $ARGS[1] = 'self':
+		if cuni_check <= 90:
+			will_cost = (100 - cuni_check + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if cuni_check <= 40:
+			will_cost = (110 - will_enforced - cuni_check + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if cuni_check <= 90:
+			will_cost = (10 + cuni_check + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end	
+	
+	killvar 'cuni_check'
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+	
+if $ARGS[0] = 'sex' or $ARGS[0] = 'vaginal':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if stat['vaginal'] <= 90:
+			will_cost = (100 - stat['vaginal'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['vaginal'] <= 40:
+			will_cost = (110 - will_enforced - stat['vaginal'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if stat['vaginal'] <= 90:
+			will_cost = (10 + stat['vaginal'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+	
+if $ARGS[0] = 'anal':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if stat['anal'] <= 90:
+			will_cost = (100 - stat['anal'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if stat['anal'] <= 40:
+			will_cost = (160 - will_enforced * 2 - stat['anal'] + will_calc)/10
+		else
+			will_cost = (120 - will_enforced * 2 + will_calc)/10
+		end
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if stat['anal'] <= 90:
+			will_cost = (10 + stat['anal'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+	
+if $ARGS[0] = 'gangbang' or $ARGS[0] = 'group':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if gang <= 90:
+			will_cost = (100 - gang + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':		
+		if gang <= 40:
+			will_cost = (160 - will_enforced * 2 - gang + will_calc)/10
+		else
+			will_cost = (120 - will_enforced * 2 + will_calc)/10
+		end
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if gang <= 90:
+			will_cost = (10 + gang + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+	
+if $ARGS[0] = 'prostitution':
+	gs 'willpower', 'calc'
+		
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if slutty <= 90:
+			will_cost = (100 - slutty + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if slutty <= 40:
+			will_cost = (160 - will_enforced * 2 - slutty + will_calc)/10
+		else
+			will_cost = (120 - will_enforced * 2 + will_calc)/10
+		end
+	else
+		if missCum >= timeTresh: will_calc += 100
+		prost_will = pav_prostitute + city_prostitute + oldtown_prostitute + village_prostitute + slutty/2
+		if prost_will <= 90:
+			will_cost = (10 + prost_will + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+		killvar 'prost_will'
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'humiliation':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if stat['humiliation'] <= 90:
+			will_cost = (100 - stat['humiliation'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		will_cost = (120 - will_enforced * 2 + will_calc)/10
+	else	
+		if missCum >= timeTresh: will_calc += 100
+		if stat['humiliation'] <= 90:
+			will_cost = (10 + stat['humiliation'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'footjob':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['footjob'] <= 90:
+			will_cost = (100 - stat['footjob'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['footjob'] <= 40:
+			will_cost = (110 - will_enforced - stat['footjob'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['footjob'] <= 90:
+			will_cost = (10 + stat['footjob'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'titjob':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['titjob'] <= 90:
+			will_cost = (100 - stat['titjob'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['titjob'] <= 40:
+			will_cost = (110 - will_enforced - stat['titjob'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['titjob'] <= 90:
+			will_cost = (10 + stat['titjob'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'trib':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['trib'] <= 90:
+			will_cost = (100 - stat['trib'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['trib'] <= 40:
+			will_cost = (110 - will_enforced - stat['trib'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['trib'] <= 90:
+			will_cost = (10 + stat['trib'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'rimming':
+	gs 'willpower', 'calc'
+	
+	rimming_check = (stat['rimming'] + stat['rimming_give']) / 2
+	
+	if $ARGS[1] = 'self':
+		if rimming_check <= 90:
+			will_cost = (100 - rimming_check + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if rimming_check <= 40:
+			will_cost = (110 - will_enforced - rimming_check + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if rimming_check <= 90:
+			will_cost = (10 + rimming_check + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'BDSM':
+	gs 'willpower', 'calc'
+	! It seems to me like 'force' should strictly be BDSM_give, and resist strictly BDSM.
+	!bdsm_check = (stat['BDSM'] + stat['BDSM_give']) / 2
+	! Also, this category could benifit from sum, dom, maso, bound inclusion in some way
+	!bdsm_exp = (maso['exp'] + bound['exp'] + sub['exp'] + maso['exp'])/4
+	
+	if $ARGS[1] = 'self':
+		if (stat['BDSM'] + stat['BDSM_give']) / 2 <= 90:
+			will_cost = (100 - ((stat['BDSM'] + stat['BDSM_give']) / 2) + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['BDSM_give'] <= 40:
+			will_cost = (160 - will_enforced - stat['BDSM_give'] + will_calc)/10
+		else
+			will_cost = (120 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['BDSM'] <= 90:
+			will_cost = (10 + stat['BDSM'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+! For things like facials and other non-internal cum-receiving
+if $ARGS[0] = 'cum_outside':
+	gs 'willpower', 'calc'
+	! I''m including internal stats, since it makes sense those would influence Sveta''s willingness to being cum on
+	cum_check = facial + frot + (swallow) + (pcs_cp_safe_known + pcs_cp_notsafe_known + pcs_cp_risky_known) + (pcs_acp_known)
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if cumloc[1] + cumloc[2] + cumloc[4] + cumloc[5] + cumloc[6] + cumloc[7] + cumloc[8] + cumloc[9] + cumloc[10] + cumloc[11] + cumloc[13] + cumloc[14] + cumloc[15] + cumloc[16] > 0 or cum_check > 90:
+			will_cost = (10 + cum_check + will_calc)/10	
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		will_cost = (120 - will_enforced * 2 + will_calc)/10
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if cumloc[1] + cumloc[2] + cumloc[4] + cumloc[5] + cumloc[6] + cumloc[7] + cumloc[8] + cumloc[9] + cumloc[10] + cumloc[11] + cumloc[13] + cumloc[14] + cumloc[15] + cumloc[16] > 0 or cum_check > 90:
+			will_cost = (100 + will_calc)/10
+		else
+			will_cost = (10 + cum_check + will_calc)/10	
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'swallow':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if trt_cumeater = 1 or cumloc[12] > 0:
+			will_cost = (10 + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		will_cost = (80 - will_enforced - trt_cumeater * 10 + will_calc)/10
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if trt_cumeater = 1 or cumloc[12] > 0:
+			will_cost = (100 + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'cum_inside':
+	gs 'willpower', 'calc'
+	
+	creampie_count = pcs_cp_safe_known + pcs_cp_notsafe_known + pcs_cp_risky_known
+		
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if cumloc[0] > 0 or creampie_count > 90:
+			will_cost = (10 + creampie_count + will_calc)/10	
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		will_cost = (120 - will_enforced * 2 + will_calc)/10
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if cumloc[0] > 0 or creampie_count > 90:
+			will_cost = (100 + will_calc)/10
+		else
+			will_cost = (10 + creampie_count + will_calc)/10	
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'cum_inside_anal':
+	gs 'willpower', 'calc'
+		
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		if cumloc[3] > 0 or pcs_acp_known > 90:
+			will_cost = (10 + pcs_acp_known + will_calc)/10	
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		will_cost = (120 - will_enforced * 2 + will_calc)/10
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if cumloc[3] > 0 or pcs_acp_known > 90:
+			will_cost = (100 + will_calc)/10
+		else
+			will_cost = (10 + pcs_acp_known + will_calc)/10	
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'kiss':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if stat['kiss'] <= 90:
+			will_cost = (100 - stat['kiss'] + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['kiss'] <= 40:
+			will_cost = (110 - will_enforced - stat['kiss'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['kiss'] <= 90:
+			will_cost = (10 + stat['kiss'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'foreplay':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if (stat['foreplay'] + stat['foreplay_give']) / 2 <= 90:
+			will_cost = (100 - ((stat['foreplay'] + stat['foreplay_give']) / 2) + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['foreplay_give'] <= 40:
+			will_cost = (110 - will_enforced - stat['foreplay_give'] + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['foreplay'] <= 90:
+			will_cost = (10 + stat['foreplay'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'pee':
+	gs 'willpower', 'calc'
+	! Same as with BDSM concerning 'force' and 'resist'
+	!pee_check = (stat['pee'] + stat['pee_give']) / 2
+	
+	if $ARGS[1] = 'self':
+		if (stat['pee'] + stat['pee_give']) / 2 <= 90:
+			will_cost = (100 - ((stat['pee'] + stat['pee_give']) / 2) + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	elseif $ARGS[1] = 'force':
+		if stat['pee_give'] <= 40:
+			will_cost = (160 - will_enforced - stat['pee_give'] + will_calc)/10
+		else
+			will_cost = (120 - will_enforced + will_calc)/10
+		end	
+	else
+		if stat['pee'] <= 90:
+			will_cost = (10 + stat['pee'] + will_calc)/10
+		else
+			will_cost = (100 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+!! requires the skill to be named with the _lvl postfix
+if $ARGS[0] = 'skill':
+	gs 'willpower', 'calc'
+
+	if $ARGS[1] = 'resist' or $ARGS[1] = 'force' or $ARGS[1] = 'self':
+		if $ARGS[2] = 'inhib_lvl':
+			will_cost = (100 - pcs_inhib + will_calc)/10
+		else
+			dynamic 'will_cost = (100 - <<$ARGS[2]>> + will_calc)/10'
+		end
+		gs 'willpower', 'difficulty', '<<$ARGS[3]>>'
+	else
+		if $ARGS[1] = 'inhib_lvl':
+			will_cost = (100 - pcs_inhib + will_calc)/10
+		else
+			dynamic 'will_cost = (100 - <<$ARGS[1]>> + will_calc)/10'
+		end
+		gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+	end
+end
+
+if $ARGS[0] = 'rape':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		if missCum >= timeTresh: will_calc = 0
+		will_cost = (100 + will_calc)/10
+	elseif $ARGS[1] = 'force':
+		will_cost = (200 - will_enforced * 2 + will_calc)/10
+	else
+		if missCum >= timeTresh: will_calc += 100
+		if rape = 0:
+			will_cost = (10 + will_calc)/10
+		else
+			will_cost = (100 + rape + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'drink':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		will_cost = (60 - alcohol_exp * 40 + will_calc)/10
+	elseif $ARGS[1] = 'force':
+		will_cost = (100 - will_enforced - alcohol_exp * 30 + will_calc)/10
+	else
+		if alko > 10:
+			will_cost = (20 + alcohol_exp * 10 + will_calc)/10
+		elseif alko > 6:
+			will_cost = (80 + alcohol_exp * 40 + will_calc)/10
+		elseif alko > 3:
+			will_cost = (60 + alcohol_exp * 30 + will_calc)/10
+		else
+			will_cost = (10 + alcohol_exp * 20 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+!!Drug needs already included in the will_calc so just a small base cost here
+if $ARGS[0] = 'drugs':
+	gs 'willpower', 'calc'
+	
+	if $ARGS[1] = 'self':
+		will_cost = (100 - addictive_trait_lvl * 30 + will_calc)/10
+	elseif $ARGS[1] = 'force':
+		will_cost = (100 - will_enforced - addictive_trait_lvl * 10 + will_calc)/10
+	else
+		if addictive_trait_lvl > 0:
+			will_cost = (addictive_trait_lvl * 30 + will_calc)/10
+		else
+			will_cost = (10 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'crime':
+	gs 'willpower', 'calc'
+
+	if $ARGS[0] = 'force':
+		will_cost = (80 - will_enforced + will_calc)/10
+	else
+		will_cost = (60 + will_calc)/10
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+if $ARGS[0] = 'exhib':
+	gs 'willpower', 'calc'
+		
+	if $ARGS[1] = 'self':
+		will_cost = (100 - Exhibitionist_lvl * 20 - pcs_inhib/5 + will_calc)/10
+	elseif $ARGS[1] = 'force':
+		will_cost = (100 - will_enforced - Exhibitionist_lvl * 10 + will_calc)/10
+	else
+		will_cost = (Exhibitionist_lvl * 25 + pcs_inhib/4 + will_calc)/10
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+!!this is to force you to stay wake so will cost nothing if you have more than 5 sleep, it has no base cost as there will always be a sleep cost in calc
+if $ARGS[0] = 'sleep':
+	gs 'willpower', 'calc'
+	will_cost = 0
+	if pcs_sleep <= 5: will_cost = will_calc/10
+!! Not sure if this one belongs. It doesn''t look like it''s used anywhere.
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+!!Choose this if nothing else fits
+if $ARGS[0] = 'misc':
+	gs 'willpower', 'calc'
+
+	if $ARGS[1] = 'force':
+		if $ARGS[2] = 'easy':
+			will_cost = (60 - will_enforced + will_calc)/10
+		elseif $ARGS[2] = 'hard':
+			will_cost = (90 - will_enforced + will_calc)/10
+		else
+			will_cost = (70 - will_enforced + will_calc)/10
+		end
+	else
+		if $ARGS[2] = 'easy':
+			will_cost = (10 + will_calc)/10
+		elseif $ARGS[2] = 'hard':
+			will_cost = (40 + will_calc)/10
+		else
+			will_cost = (20 + will_calc)/10
+		end
+	end
+	gs 'willpower', 'difficulty', '<<$ARGS[2]>>'
+end
+
+!!modifiers for drink an drugs
+if $ARGS[0] = 'dnd':
+	will_dnd = 0
+	if alko > 10:
+		will_dnd += 160
+	elseif alko > 6:
+		will_dnd += 80
+	elseif alko > 3:
+		will_dnd += 30
+	end
+
+	!!cigarettes
+	if smokerNeed > 10: will_dnd += 10
+	!!weed
+	if jointhigh > 0: will_dnd -= 10
+	!!amphetamines
+	if amphWithdrawl > 2:
+		will_dnd += 40
+	elseif amphHigh > 0:
+		will_dnd += 80
+	end
+	!!heroine
+	if SLomka > 0:
+		will_dnd += 100
+	elseif StrongNarkota > 0:
+		will_dnd += 60
+	end
+	!!cocaine
+	if narkoman = 1:
+		will_dnd += 60
+	elseif nark < 0:
+		will_dnd -= 20
+	end
+end
+
+if $ARGS[0] = 'difficulty':
+!!Multiplier to make willpower cost more. Use if all total costs need adjusting.
+	will_cost = will_cost * 3 / 2
+
+	if $ARGS[1] = 'easy':
+		will_cost = will_cost * 2/3
+		if will_cost < 5: will_cost = 5
+	elseif $ARGS[1] = 'hard':
+		will_cost = will_cost * 3/2
+		if will_cost < 7: will_cost = 7
+	else
+		if will_cost < 6: will_cost = 6
+	end
+end
+
+if $ARGS[0] = 'pay':
+	if will_cost < 1: will_cost = 1
+	pcs_willpwr -= will_cost
+	if $ARGS[1] = 'force':
+		will_counter += 1
+		if will_counter >= 2: will_counter = 0 & willpowermax += 1
+		if will_enforced < 20: will_enforced += 1
+	end
+end
+
+--- willpower ---------------------------------
+

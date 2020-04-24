@@ -1,0 +1,247 @@
+# nordtrain
+
+if $ARGS[0] = 'inside':
+	$metka = 'inside'
+	$loc = 'nordtrain'
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'inside'
+	menu_off = 0
+	$location_type = 'public_indoors'
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/vokzal.mp3',30
+	*clr & cla
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/vokzalholle.jpg" ></center>'
+	'There is a <a href="exec:gt ''dort''">path</a> leading off in to the distance, in the direction of the lake.'
+	act 'Leave the station': minut += 2 & gt 'nordtrain', 'outside'
+	*nl
+	if Trainpass_day > daystart:
+		'You have <<Trainpass_day - daystart>> days left on your train pass.'
+		act 'Go to the platforms': gt 'nordtrain', 'platform'
+	else
+		act 'Go to the ticket office': minut += 1 & gt 'nordtrain', 'ticket'
+	end
+	act 'Go to the restrooms': minut += 1 & gt 'nordtrain', 'toilet'
+end
+
+if $ARGS[0] = 'outside':
+	$metka = 'outside'
+	$loc = 'nordtrain'
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'outside'
+	menu_off = 0
+	$location_type = 'public_outdoors'
+	*clr & cla
+	gs'stat'
+	'<center><B>Railway station</B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/vokzalg.jpg"></center>'
+
+	if car > 0 and cardrive = 19:
+		cardrive = 19
+		'In the parking lot is <a href="exec:GS ''carF'',''start''">your <<$car>></a>.'
+	end
+
+	if rand(1,100) > 70:
+		'You see a <a href="exec:gt ''etoexhib'',''pos54''">suspicious character</a>.'
+		!fakes use 2 for aware of need for, 1 for have, otherwise 0
+		if fakepassport = 2 or fakediplom = 2: 'When you pass by the suspicious character, he whispers to you: "I have what you want, miss"'
+	end
+
+	act 'Go to the city industrial region': minut += 15 & gt'nord'
+	act 'Enter the station building': minut += 2 & gt'nordtrain', 'inside'
+end
+
+if $ARGS[0] = 'platform':
+	$metka = 'platform'
+	$loc = 'nordtrain'
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'inside'
+	menu_off = 0
+	$location_type = 'public_outdoors'
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/trainstation/vokzalper.jpg" ></center>'
+	'When you arrive at the platform, you can''t help but notice it bustling with activity. Lots of passengers are coming and going, all carrying large bags. It feels like it is always busy here, no matter at what time of the day you are here.'
+
+	act 'Return to the station': minut += 5 & gt 'nordtrain', 'inside'
+	
+	if Trainpass_day > daystart:
+		act 'Take a train to the city center': gt 'nordtrain', 'centre'
+		
+		act 'Take a train to the old platform by the communal village': gt 'nordtrain', 'communal'
+		
+		act 'Take a train to the village of Gadukino': gt 'nordtrain', 'village'
+		
+		act 'Take a train to Pavlovsk': gt 'nordtrain', 'pavlovsk'
+	end
+end
+
+if $ARGS[0] = 'toilet':
+	$metkaM = 'toilet'
+	$locM = 'nordtrain'
+	$metka = 'toilet'
+	$loc = 'nordtrain'
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'inside'
+	menu_off = 0
+	$location_type = 'bathroom'
+	
+	*clr & cla
+	gs'stat'
+
+	gs 'themes', 'indoors'
+
+	'<center><img <<$set_imgh>> src="images/locations/shared/bathroom/publictoilet.jpg"></center>'
+
+	act 'Return to the station': minut += 1 & gt 'nordtrain', 'inside'
+
+	act 'Look in the mirror': gt 'mirror', 'start'
+	if pcs_hairbsh = 0: act 'Brush your hair': gt 'mirror', 'brush'
+
+	dynamic $tampon
+	dynamic $quickwash
+	dynamic $basin
+	dynamic $publicpan
+end
+
+if $ARGS[0] = 'ticket':
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'ticket'
+	menu_off = 0
+	*clr & cla
+	gs 'stat'
+	'<center><h4>Ticket office</h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/kassa.jpg"></center>'
+
+	act 'Leave the ticket office':minut += 1 & gt 'nordtrain', 'inside'
+	
+	if money >= 50:
+		act 'Buy a ticket':
+			cla
+			gs 'nordtrain', 'buy_ticket'
+		end
+	end
+
+	if money >= 1500 and Trainpass_day <= daystart:
+		act 'Buy a weekly pass  (7 days - 1500 <b>₽</b>) ':
+			cla
+			money -= 1500
+			Trainpass_day = daystart + 7
+			act 'Return': gt 'nordtrain', 'inside'
+		end
+	end
+
+	if money >= 5500 and Trainpass_day <= daystart:
+		act 'Buy a monthly pass (30day -  5500 <b>₽</b>)':
+			cla
+			money -= 5500
+			Trainpass_day = daystart + 30
+			act 'Return': gt 'nordtrain', 'inside'
+		end
+	end
+end
+
+if $ARGS[0] = 'buy_ticket':	
+	$menu_loc = 'nordtrain'
+	$menu_arg = 'buy_ticket'
+	menu_off = 0
+	
+	act 'Leave the ticket office': gt 'nordtrain', 'inside'
+	
+	if money >= 50:
+		act 'Buy a ticket to the city center (50 <b>₽</b>)':
+			money -= 50
+			gt 'nordtrain', 'centre'
+		end
+	end
+
+	if money >= 50:
+		act 'Buy a ticket to the old platform by the communal village (50 <b>₽</b>)':
+			money -= 100
+			gt 'nordtrain', 'communal'
+		end
+	end
+
+	if money >= 75:
+		act 'Buy a ticket to the village of Gadukino (75 <b>₽</b>)':
+			money -= 75
+			gt 'nordtrain', 'village'
+		end
+	end
+
+	if money >= 125:
+		act 'Buy a ticket to Pavlovsk (125 <b>₽</b>)':
+			money -= 125
+			gt 'nordtrain', 'pavlovsk'
+		end
+	end
+end
+
+if $ARGS[0] = 'centre':
+	$loc = 'cityTrain'
+	$metka = 'inside'
+	menu_off = 1
+	*clr & cla
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/electri' + rand(1,5) + '.jpg"></center>'
+	'You pay for the ticket and board the next train going to the city center.'
+	'After 5 minutes, you see the office blocks and shops at the heart of the city. The train stops at its final destination, the busy station in the city center.'
+
+	act 'Get off the train at this station':
+		if train_event = 0 and rand(1, 100) <= 5: gt 'train_incidental', 'end'
+		gt 'cityTrain', 'inside'
+	end
+end
+
+if $ARGS[0] = 'communal':
+	$loc = 'train'
+	$metka = 'communal'
+	menu_off = 1
+	minut += 10
+	if rand(1, 100) < 20: gt 'train', 'events'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/oldplat.jpg" ></center>'
+	'After 10 minutes you arrive at an old railway platform near the communal village.'
+	act 'Get off the train':
+		if train_event = 0 and rand(1, 100) <= 5: gt 'train_incidental', 'end'
+		gt 'train', 'communal'
+	end
+end
+
+if $ARGS[0] = 'village':
+	$loc = 'train'
+	$metka = 'village'
+	menu_off = 1
+	minut += 20
+	if rand(1, 100) <= 10: gt 'train_incidental', 'events'
+	if rand(1, 100) < 20: gt 'train', 'events'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/gadplat.jpg" ></center>'
+	'After 20 minutes, the train stops at the small station near the village of Gadukino.'
+	act 'Get off the train':
+		if train_event = 0 and rand(1, 100) <= 5: gt 'train_incidental', 'end'
+		gt 'train', 'village'
+	end
+end
+
+if $ARGS[0] = 'pavlovsk':
+	$loc = 'pavtrainhall'
+	$metka = 'platform'
+	menu_off = 1
+	minut += 35
+	if rand(1, 100) < 15: gt 'train', 'private'
+	if rand(1, 100) < 30: gt 'train', 'Gopnik'
+	if rand(1, 100) <= 10: gt 'train_incidental', 'events'
+	if rand(1, 100) <= 20: gt 'train', 'events'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/train/pavplat.jpg" ></center>'
+	'After 35 minutes, you see the town of Pavlovsk approaching. Pavlovsk Castle is an impressive sight, even from a long distance. The train stops at its final destination, a platform in Pavlovsk station.'
+	act 'Get off the train':
+		if train_event = 0 and rand(1, 100) <= 5: gt 'train_incidental', 'end'
+		gt 'pavtrainhall', 'platform'
+	end
+end
+
+--- nordtrain ---------------------------------
+

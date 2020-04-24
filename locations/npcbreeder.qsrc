@@ -1,0 +1,92 @@
+# npcbreeder
+
+!! This expects you to do a boystat a call for the receiver, and a boystat b call for the giver. example--- gs 'boystat', 'A14', 'a' & gs 'boystat' 'A34', 'b'
+
+if $ARGS[0] = '':
+	gs 'npcbreeder', 'insert'
+	gs 'npcbreeder', 'cum'
+end
+
+if $ARGS[0] = 'insert':
+	npcbrokehymen = 0
+	if npc_hymen[$boy1] < 3:
+		npcbrokehymen = 1
+		if $dick_girth2 = 'skinny' or $dick_girth2 = 'slim':
+			npc_hymen[$boy1] = 3
+		elseif $dick_girth2 = 'thick' or $dick_girth2 = 'massive':
+			npc_hymen[$boy1] = 5
+		elseif $dick_girth2 = 'monstrous':
+			npc_hymen[$boy1] = 6
+		else
+			npc_hymen[$boy1] = 4
+		end
+	elseif npc_hymen[boy1] = 3:
+		if $dick_girth2 = 'thick' or $dick_girth2 = 'massive' or $dick_girth2 = 'monstrous':
+			npc_hymen[$boy1] = 5
+		elseif rand(1,3) = 3:
+			npc_hymen[$boy1] += 1
+		end
+	elseif npc_hymen[boy1] < 6:	
+		if dick > npc_vag[$boy1] + 5 and rand(1,40) = 1:
+			npc_hymen[$boy1] += 1
+		elseif rand(1,500) = 1:
+			npc_hymen[$boy1] += 1
+		end
+	end
+end
+
+if $ARGS[0] = 'cum':
+	!! {Identifying the male potency.}
+	breedtemp[0] = npc_spermpot[$boy2]
+	
+	!! {Exiting for impotent or different species.}
+	if mid($boy1,1,1) = 'd': exit
+	if breedtemp[0] <= 0: exit
+
+	!! {Identifying the female fertility.}
+	if npc_fert[$boy1] ! 1: exit
+	breedtemp[1] = npc_cyc[$boy1]
+	breedtemp[4] = year - ((npc_dob[$boy1] - (npc_dob[$boy1] mod 10000)) / 10000)
+
+	!! {Culling the very young}
+	if breedtemp[4] < 9: exit
+
+	!! {Setting Risk of pregnancy. Roughly 1/3 at 300, 1/900 at 1.}
+	!! {Initial risk is determined by cycle status. 15-16 is "ovulated" and therefore perfect chance.}
+	if breedtemp[1] > 24 or breedtemp[1] < 7:
+		breedtemp[2] = 1
+	elseif breedtemp[1] > 17 or breedtemp[1] < 9:
+		breedtemp[2] = 5
+	elseif breedtemp[1] = 9:
+		breedtemp[2] = 10
+	elseif breedtemp[1] = 10:
+		breedtemp[2] = 50
+	elseif breedtemp[1] = 11 or breedtemp[1] > 16:
+		breedtemp[2] = 100
+	elseif breedtemp[1] = 12:
+		breedtemp[2] = 200
+	elseif breedtemp[1] = 13:
+		breedtemp[2] = 250
+	elseif breedtemp[1] = 14:
+		breedtemp[2] = 280
+	else
+		breedtemp[2] = 300
+	end
+	!! {Adjusting risk of pregnancy based on age. 1% change for each year, with a mean of 26.}
+	breedtemp[4] = 26 - breedtemp[4]
+	breedtemp[4] = (breedtemp[2] / 100) * breedtemp[4]
+	!! {Final chance calcuation}
+	breedtemp[3] = breedtemp[0] * (breedtemp[2] + breedtemp[4])
+
+	!! {Checking if she got knocked up, and setting the stats if she did.}
+	if rand(0,9000000) < breedtemp[3]:
+		npc_fert[$boy1] = 5
+		npc_cyc[$boy1] = 1
+		$npc_kidpater[$boy1] = $ARGS[0]
+	end
+	killvar 'breedtemp'
+end
+
+
+--- npcbreeder ---------------------------------
+

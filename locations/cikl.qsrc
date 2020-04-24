@@ -1,0 +1,1859 @@
+# cikl
+
+!!----------------------------------------------------------------------------
+!! Time calculations
+
+day += 1
+week += 1
+hour -= 24
+
+if day > monthsEnd[month]:
+	day -= monthsEnd[month]
+	month += 1
+
+	if month > 12: month = 1 & year += 1
+
+	!!MJ: Dont think that one is needed. But it was in the original loop.
+	if month < 1: month = 1
+
+	$month = $monthName[month]
+
+	!! new years party calculation
+	temp = func('shortgs','dow',year,12,31)
+	if temp < 6:
+		nyp_day = 31
+	elseif temp = 6:
+		nyp_day = 30
+	else
+		nyp_day = 29
+	end
+
+end
+
+!!MJ: Dont think that one is needed. But it was here already.
+if day <= 0:day = 1
+
+ciklNewWeek = 0
+if week > 7:
+	ciklNewWeek = 1
+	:loopweek
+	week -= 7
+	husbandrink = 0
+
+	if military = 1:military = 0
+
+	if week > 7:jump 'loopweek'
+end
+
+gs 'daystart'
+
+!!----------------------------------------------------------------------------
+
+!!Fame call to update all the fame variables
+gs 'fame'
+
+!!Cycle stats for Contacts
+gs 'telefon', 'DailyStatRefresh', ciklNewWeek
+
+!!moving the porn schedule ahead a day, flaffing for missed shootings, if it even matters
+if (film > 0 or pornstack = 1) and pfilmNO = 0 and pfilmSTOP = 0:
+	if pfilmday[0] > 0: gs 'pornschedule', 'pornmiss'
+	gs 'pornschedule', 'schedule'
+end
+
+!!modelling job check
+if model_week ! (daystart - week) / 7:model_job_week = 0
+
+!!acting strings to set available jobs
+if casting = 1:
+	acting_string1 = rand(10000000000,199999999999)
+	acting_string2 = rand(10000000000,199999999999)
+end
+
+dynamic $hypnoDaychange
+
+!!phone reset for bf
+ringA = 0
+ringB = 0
+ringC = 0
+
+!!Appearance Age
+vidageday -= 1
+if vidageday <= 0:
+	vidageday = 360
+	vidage += 1
+end
+!!Birthday
+age = year - ((pcs_dob - (pcs_dob mod 10000)) / 10000)
+if ((month * 100) + day) <= pcs_dob mod 10000: age -= 1
+
+if workDolgDay > 0: workDolgDay -= 1
+if QWdogreiqTimer > 0: QWdogreiqTimer -= 1
+if husband > 0: husbanday += 1
+if husband > 10 and husbanday > 0: husband -= 15
+if fingal > 0: fingal -= 1
+
+if husbandMark = 1 and husband <= 10:
+	husbizvradd = 0
+	husbharmin = 0
+	husbandMark = 0
+	husband = 0
+	divorced += 1
+
+	if KFOnLineReaga > 0:KFOnLineReaga -= 1
+
+	'<b><font color="red">Your husband has filed for a divorce.</font></b>'
+end
+
+if katjaPreg = 0 and month >= 2:
+	if school_year = 2001 and year > 2016:
+		katjaPreg = 1
+	elseif school_year = 2000 and year > 2017:
+		katjaPreg = 1
+	end
+end
+
+!! after having surgery you will be in recuperation for a few days
+
+if surgeryday ! '':
+	if daystart - 7 <= surgeryday:
+		dailyhealthimprov = (daystart - surgeryday) * 50
+		pcs_health = dailyhealthimprov
+		recuperation = 1
+	else
+		killvar 'recuperation'
+		killvar 'dailyhealthimprov'
+	end
+end
+
+!!Street events daily reset
+streetevent_hour = -2
+
+!!Clothing stock and price randomizers
+Clothingstock = rand (0,23)
+i = 1
+:loopprice
+Clothingstock[i] = rand (0,500)
+i += 1
+if i <= 147:jump 'loopprice'
+
+if coatH[defaultcoat] <= 0: defaultcoat = 0
+
+!! Abortion and pregnancy recovery resets if finished
+
+if abortionbirthdate ! 0 and daystart - abortionbirthdate > 24: abortionbirthdate = 0
+if pregbirthdate ! 0 and daystart - pregbirthdate > 73: pregbirthdate = 0
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Bimbo
+!!------------------------------------------------------------------------------------------------------------
+
+!!Bonus from clothing and shoes
+if succubusflag = 0 and cheatBimbo = 0:
+	if bimbocl = 1:
+		snapshotY += 2
+	end
+	if bimbosh = 1:
+		snapshotY += 1
+	end
+else
+	bimbocl = 0
+end
+
+if cheatBimbo = 0: bimbo += snapshotY
+
+!!Once bimbolevel is set to 1, must use the withdrawal in stat to return to 0
+if bimbo > 0 or bimbolevel > 0:
+	if bimbo < 10:
+		bimbo -= 1
+	elseif bimbo < 20:
+		bimbolevel = 1
+	elseif bimbo < 30:
+		bimbolevel = 2
+	else
+		bimbolevel = 3
+	end
+end
+
+if bimbo >= 40: bimbo = 40
+
+!!Bimbo levels. They use custom variables so they won''t permanently change character stats
+if bimbolevel = 0: supnatvnesh = 0 & bimbostupidity = 0
+if bimbolevel = 1: supnatvnesh = 2 & bimbostupidity = (pcs_intel / 6)
+if bimbolevel = 2: supnatvnesh = 4 & bimbostupidity = (pcs_intel / 4)
+if bimbolevel = 3: supnatvnesh = 8 & bimbostupidity = (pcs_intel / 3)
+
+!!A Succubus cannot be a Bimbo
+if succubusflag = 1:
+	if bimbolevel > 0 and bimbo > 0: bimbowithdrawal = 40
+elseif bimbolevel >= 1:
+!!Checks how often sex has occured in the last 24 hours and for drops in bimbo score, for calculating withdrawal
+	if 4 > snapshotY + (stat['vaginal'] + stat['bj'] + stat['anal']) - snapshotX:
+		bimbowithdrawal += 1
+	else
+		bimbowithdrawal = 0
+	end
+end
+
+if bimbo < 0: bimbo = 0
+snapshotX = (stat['vaginal'] + stat['bj'] + stat['anal'])
+snapshotY = 0
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Exhibitionism
+!!------------------------------------------------------------------------------------------------------------
+
+if pcs_exhib > 0 or exhibitionist_lvl > 0:
+	if pcs_exhib < 10:
+		pcs_exhib -= 1
+	elseif pcs_exhib < 50:
+		exhibitionist_lvl = 1
+	elseif pcs_exhib < 100 or exhibitionQW < 3:
+		exhibitionist_lvl = 2
+	elseif exhibitionQW > 2:
+		exhibitionist_lvl = 3
+	end
+end
+
+!!Inhibition increases from wearing revealing clothing
+
+if exhibition_outdoors > 0:
+	if pcs_inhib > 90:
+		exhibition_outdoors = exhibition_outdoors * 3
+	elseif pcs_inhib > 75:
+		exhibition_outdoors = exhibition_outdoors * 5 / 2
+	elseif pcs_inhib > 60:
+		exhibition_outdoors = exhibition_outdoors * 2
+	elseif pcs_inhib > 30:
+		exhibition_outdoors = exhibition_outdoors * 3 / 2
+	end
+
+	if exhibition_outdoors <= 5:
+		inhib_exp += rand(3,6)
+	elseif exhibition_outdoors <= 10:
+		inhib_exp += rand(5,9)
+	elseif exhibition_outdoors <= 15:
+		inhib_exp += rand(7,12)
+	elseif exhibition_outdoors <= 20:
+		inhib_exp += rand(9,15)
+	elseif exhibition_outdoors <= 25:
+		inhib_exp += rand(12,20)
+	elseif exhibition_outdoors <= 30:
+		inhib_exp += rand(16,25)
+	elseif exhibition_outdoors <= 35:
+		inhib_exp += rand(20,30)
+	elseif exhibition_outdoors <= 40:
+		inhib_exp += rand(25,40)
+	elseif exhibition_outdoors <= 50:
+		inhib_exp += rand(35,50)
+	elseif exhibition_outdoors <= 65:
+		inhib_exp += rand(50,75)
+	else
+		inhib_exp += rand(70,100)
+	end
+end
+
+exhibition_outdoors = 0
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Succubus
+!!------------------------------------------------------------------------------------------------------------
+
+!!Succubus Level & hunger calcs
+if succubusflag = 1:
+
+	cheatHealth = 1
+	dynamic $cheatmenu['std_cure']
+
+!!	Hunger handling
+	if sucxpsnapshot >= succubxp: succhungry += 1
+	sucxpsnapshot = succubxp
+	if succubxp < 0: succubxp = 0
+
+!!	Level handling
+	if succubxp < 60:
+		succublvl = 1
+		$sucself1 = 'that feeling'
+		sucstorecap = 0
+		if bimbolevel <= 0: supnatvnesh = 1
+	elseif succubxp < 150:
+		succublvl = 2
+		$sucself1 = 'the power'
+		sucstorecap = 0
+		if bimbolevel <= 0: supnatvnesh = 3
+	elseif succubxp < 270:
+		succublvl = 3
+		$sucself1 = 'your other self'
+		sucstorecap = 100
+		if bimbolevel <= 0: supnatvnesh = 6
+	else
+		succublvl = 4
+		$sucself1 = 'your true self'
+		sucstorecap = 200
+		if bimbolevel <= 0: supnatvnesh = 10
+	end
+
+	if sucskill >= 2 and succublvl >= 2: sucstorecap += 100
+	if sucskill >= 3 and succublvl >= 2: sucstorecap += (sucstorecap * 2) / 10
+
+	if stren_muta < (succublvl - 1): stren_muta = (succublvl - 1)
+	if agil_muta < (succublvl - 1): agil_muta = (succublvl - 1)
+	if vital_muta < (succublvl - 1): vital_muta = (succublvl - 1)
+	if intel_muta < (succublvl - 1): intel_muta = (succublvl - 1)
+	if react_muta < (succublvl - 1): react_muta = (succublvl - 1)
+	if sprt_muta < (succublvl - 1): sprt_muta = (succublvl - 1)
+	if chrsm_muta < (succublvl - 1): chrsm_muta = (succublvl - 1)
+	if prcptn_muta < (succublvl - 1): prcptn_muta = (succublvl - 1)
+
+	if (sucexcess >= 100 and (sucskill < 2 or succhungry > -2)) or (sucexcess >= 100 + sucstorecap and sucskill >= 2):
+		if pcs_stren < 250: stren_exp += 20 & sucexcess -= 10
+		if pcs_agil < 250: agil_exp += 20 & sucexcess -= 10
+		if pcs_vital < 250: vital_exp += 20 & sucexcess -= 10
+		if pcs_intel < 250: intel_exp += 20 & sucexcess -= 10
+		if pcs_react < 250: react_exp += 20 & sucexcess -= 10
+		if pcs_sprt < 250: sprt_exp += 20 & sucexcess -= 10
+		if pcs_chrsm < 250: chrsm_exp += 20 & sucexcess -= 10
+		if pcs_prcptn < 250: prcptn_exp += 20 & sucexcess -= 10
+		if succhungry > (0 - 2 - succublvl): succhungry -= 1 & sucexcess -= 10
+		if pcs_skin < 100: pcs_skin += 1 & sucexcess -= 2
+!!		This is to drive the Succubus vidage into the max appearance range
+		if vidageday < 720 and vidage >= 28: vidageday += 4 & sucexcess -= 4
+		if vidageday > 0 and vidage <= 20: vidageday -= 4 & sucexcess -= 4
+		if vidageday >= 720 and vidage > 28:
+			vidageday -= 360
+			vidage -= 1
+		end
+		if sucexcess > sucstorecap: sucexcess = sucstorecap
+	elseif sucexcess < 0 and succhungry < 0:
+		succhungry += 1
+		if (0 - sucexcess) < (10 * succublvl):
+			sucexcess = 0
+		else
+			sucexcess += (10 * succublvl)
+		end
+	end
+	if sucexcess < 0: sucpowzeroed += 1
+	if sucexcess >= 0 and sucpowzeroed > 0: sucpowzeroed -= 1
+
+!!	This is so a Succubus always moves toward a default vaginal and anal size when she has the accomadation ability
+	if sucskill >= 4:
+		if pcs_vag - 2 >= 13:
+			pcs_vag -= 2
+		elseif pcs_vag + 2 <= 13:
+			pcs_vag += 2
+		end
+		if pcs_ass - 2 >= 8:
+			pcs_ass -= 2
+		elseif pcs_ass + 2 <= 8:
+			pcs_ass += 2
+		end
+	end
+end
+
+!!------------------------------------------------------------------------------------------------------------
+
+if defcurly = 0 and curly > 0:curly -= 1
+if defcurly = 1:
+	if straight > 0: straight -= 1
+	if straight = 0: curly = 2147483647
+end
+
+! WD: Added daily reduction of braids for Maruda Hair Mod
+if hbraids > 0: hbraids -= 1
+
+
+gs 'sweat', 'add', 2
+
+if pcs_tan > 0: pcs_tan -= 1
+
+if prezikmsg = 2: prezikmsg = 3
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Birth control
+!!------------------------------------------------------------------------------------------------------------
+!!	Birth Control Management variables
+!!
+!!	tabletkimm		: The modifier for the current mood of the MC.
+!!	tabletkiap		: Autopill factor affecting the liklihood you took your pill as you should have
+!!	tabletkipt		: Pill Dicipline Take increase
+!!	tabletkipi		: Pill Dicipline Dont take increase
+!!	tabletkicpd		: Current MC Pill Dicipline
+!!	tabletkichday	: Current day that the Birth Control is being evaluated for
+!!	tabletkicheck	: If the birth control from shot (2) or pill (1)
+!!	tabletki		: How many packages of Birth Control Pills there are
+!!	tabletkiold		: Total number packages of expired pills
+!!	tabletkifake	: Total number packages of fake/counterfeit pills
+!!	tabletkirej		: Total number packages of factory rejected pills
+!!	tabletkifert	: Total number packages of subsituted fertility pills
+!!	tabletkisug		: Total number packages of sugar pills
+!!	pillsleft		: Total number packages of pills in current package
+!!	tabletkishot	: The flag for being on the Birth Control shot.
+!!	pillcon			: The number for the current birth control chemical level.
+!!	pilldays		: The number of consecutive days (you believe) you have taken your pill
+
+if Luth > (LutH_Max-75) and placebopart <= 0: placebopart = 8
+placebopart -= 1
+
+if tabletkishot <= 0: pillcon -= 1000 & pillcon2 -= 1000
+if pillcon < 0:	pillcon = 0
+if pillcon2 < 0: pillcon2 = 0
+
+if tabletkicheck = 2:
+	if tabletkishot ! 0:
+		!!cycle = 1
+		mesec = 0
+		if rand(0,1000) = 1000:
+			EggRH = rand(20,80)
+		else
+			EggRH = 0
+		end
+		FocH = EggRH
+	end
+	if tabletkishot <= 0:
+		pillcon -= 29000
+		pillcon2 -= 29000
+		if tabletkishot < 0: tabletkishot = 0
+	end
+	if shotdays = -8:
+		tabletkicheck = 0
+		shotdue = 0
+		'Your birth control shot is no longer protecting you.'
+	elseif shotdays <= 0:
+		if shotdays = 0:
+			shotdue = 7
+		else
+			shotdue -= 1
+		end
+		'The chemicals regulating your fertility cycle are wearing off, you need to get your shot in <<shotdue>> days.'
+	elseif shotdays > 1 and shotdays < 5:
+		'You are due for a birth control shot soon if you do not get one, you might get pregnant.'
+	elseif shotdays = 1:
+		'Your birth control shot is due for renewal tomorrow.'
+	end
+
+	if shotdays > -100:shotdays -=1
+	if tabletkishot > 0:tabletkishot -= 1
+end
+
+!! birth_control['implant_status']
+!! 0: No implant
+!! 3: Implant (more than 30 days left)
+!! 2: Implant (less than 30 days left)
+!! 1: Empty implant
+
+if birth_control['implant_status'] > 1:
+	pcs_skin += rand(0,1)
+	
+	pillcon += ((pillcon + 15000) / 25) + 4000
+	if pillcon > 40000: pillcon = 40000
+	
+	pillcon2 += ((pillcon2 + 15000) / 25) + 4000
+	if pillcon2 > 40000: pillcon2 = 40000
+		
+	birth_control['implant_timer'] -= 1
+	if (birth_control['implant_timer'] - 1090) > 0:
+		gs 'pain', '<<(birth_control[''implant_timer''] - 1090)*2>>', 'armL', 'ache'
+	elseif birth_control['implant_timer'] > 0 and birth_control['implant_timer'] < 30:
+		birth_control['implant_status'] = 2
+		'Your birth control implant is only good for <<birth_control[''implant_timer'']>> more'+iif(birth_control['implant_timer'] = 1, 'day.', 'days.')
+	elseif birth_control['implant_timer'] < 0:
+		birth_control['implant_status'] = 1
+		'You should renew or remove your birth control implant.'
+	end
+elseif birth_control['implant_status'] = 1:
+	'You should renew or remove your birth control implant.'
+end
+
+tabletkipd += tabletkipi
+tabletkipi = 0
+tabletkipt = 0
+if tabletkicheck = 1:
+	if tabletki = 0 and pillsleft[ptype] = 0:
+		tabletkicheck = 0
+		'You are out of birth control pills.'
+		tabletkipi = -5
+	elseif tabletki = 0 and pillsleft[ptype] = 28:
+		'You have just opened your last package of birth control pills. You need to buy more.'
+	elseif tabletki = 0 and pillsleft[ptype] <= 5:
+		'You are running out of birth control pills, you only have a few left.'
+	end
+end
+
+if tabletkicheck = 1 and tabletkichday < daystart:
+	tabletkichday = daystart
+	tabletkimm = (100*(pcs_willpwr / willpowermax)) + pcs_mood
+	if pcs_sleep < 10:
+		tabletkimm -= (100- (pcs_sleep * 10))
+	end
+	if pcs_willpwr < willpowermax / 4:
+		tabletkimm = tabletkimm / 4
+	elseif pcs_mood < 10:
+		tabletkimm = tabletkimm / 2
+	end
+	tabletkiap = tabletkimm
+	tabletkiap += (pcs_intel * 4) + (pcs_sprt * 2) + (age * 3)
+	tabletkiap -= ((kid * 30) + (abort * 2) - (tabletkipd * ((60 - age) / 10)))
+	temprand = rand(0,(200 + (tabletkimm - ((100 - pcs_sprt) * 3))))
+	tabletkiap += temprand
+	if tabletkiap < 300:
+		if tabletkipd > -10:
+			if pcs_willpwr < willpowermax / 4:
+				pilldaychk = 0
+				'You stare at your package of birth control pills, you know you should take one but you can''t quite work up enough effort to care.'
+			elseif pcs_mood < 10:
+				pilldaychk = 0
+				'You stare at your package of birth control pills, but you don''t open it.'
+			elseif pcs_sleep < 10:
+				pilldaychk = 0
+				'You fumble with your birth control pills, trying to get a pill out. You finally give up too tired to manage it.'
+			else
+				pilldaychk = 0
+				'You just realized you forgot to take your birth control pill today.'
+			end
+		end
+		tabletkipt = 2
+		tabletkipi = -4
+	else
+		if tabletkiap < 350:
+			temprand = rand(0,5)
+		else
+			temprand = rand(0,1000)
+		end
+		if temprand = 0:
+			temprand = rand(0,1)
+			if temprand = 0:
+				gs 'din_bad','takepill'
+				tabletkipt = -2
+				tabletkipi = 1
+			else
+				tabletkipt = 3
+				tabletkipi = -3
+			end
+
+			if tabletkipd > -10:
+				pilldaychk = 0
+				'You find yourself holding the bottle of birth control pills, you cannot remember if you took one or not.'
+			end
+			if tabletkipd > 0:
+				if rand(0,9) = 0:
+					if tabletkipt < 0:
+						pilldaychk = 0
+						'You don''t think you have taken your pill today.'
+					else
+						pilldaychk = 1
+						'You think you have taken your pill today.'
+					end
+				else
+					if tabletkipt > 0:
+						pilldaychk = 0
+						'You don''t think you have taken your pill today.'
+					else
+						pilldaychk = 1
+						'You think you have taken your pill today.'
+					end
+				end
+			end
+		else
+			'You take your birth control pill for the day.'
+			pilldaychk = 1
+			gs 'din_bad','takepill'
+			if rand(0,7) = 0 and tabletkiday >= (daystart - 1): tabletkipd += 1
+			tabletkiday = daystart
+			tabletkipt = 0
+			tabletkipi = 0
+		end
+	end
+elseif tabletkicheck = 0:
+	if tabletkiday >= (daystart - 1) and tabletkipt = 0 and rand(0,7) = 0: tabletkipt = 1
+	if pillcon > 0 and tabletkipi = 0 and rand(0,3) = 0 and (tabletkiday + 15) > daystart = 0: tabletkipi = -1
+end
+
+if pilldaychk = 1:
+	pilldays += 1
+else
+	pilldays -= 1
+end
+
+pilldaychk = 0
+if pilldays > 18: pilldays = 18
+if pilldays < 0: pilldays = 0
+
+if pillcon > 38000:
+	birth_control['safe'] = 1
+else
+	birth_control['safe'] = 0
+end
+
+if pillcon2 > 38000:
+	birth_control['think_safe'] = 1
+else
+	birth_control['think_safe'] = 0
+end
+
+$MenCal[] = $str(cycle)
+if ArrSize('$MenCal') = 60: killvar '$MenCal',0
+
+
+!!------------------------------------------------------------------------------------------------------------
+
+if lashair ! 1:
+	pcs_leghair += 1
+	!!Pubic hair growth at 1/2 per night
+	if pcs_pubes['growth'] > 1:
+		pcs_pubes['growth'] = 0
+		pcs_pubes += 1
+	end
+	pcs_pubes['growth'] += 1
+end
+
+if age < 18 and rand (0,2) = 0 and pcs_leghair > 0: pcs_leghair -= 1
+
+if pcs_breath = 1:pcs_breath = 0
+
+if cheatNoEat = 1 and dounspell = 1:fat += 15
+
+!!STD check
+if SifacOnce = 1:Sifilis += 1
+if GerpesOnce = 1:Gerpes += 1
+if TriperOnce = 1:
+	if Triper > 0:
+		Triper += 1
+	end
+	if TriperOral > 0:
+		TriperOral += 1
+	end
+	If TriperOral > 14 and TriperNapr = 0:
+		if rand(TriperOral,100) > 80:
+		TriperOral = 0
+		if Triper = 0:TriperOnce = 0
+		TriperOralSigns = 0
+		end
+	end
+end
+if KandidozOnce = 1:Kandidoz += 1
+
+Venera = 0
+if SifacOnce = 1: Venera += 1
+if GerpesOnce = 1: Venera += 1
+if TriperOnce = 1: Venera += 1
+
+
+if pcs_ass > 1 and ashrink > 0 and analplugIN = 0:
+	if anusK < 0:anusK = 0
+	if anusK < ashrinkdays:anusK += 1
+	if anusK >= ashrinkdays:pcs_ass -= ashrink & anusK = 0
+	if pcs_ass < 0: pcs_ass = 0
+end
+if pcs_vag > 10 and vshrink > 0:
+	if vaginaK < 0:vaginaK = 0
+	if vaginaK < vshrinkdays:vaginaK += 1
+	if vaginaK >= vshrinkdays:vaginaK = 0 & pcs_vag -= vshrink
+end
+
+lipkoef -= rand(0,1)
+if lipkoef <= 0: lipkoef = 0
+
+if isprok = 1 or isprokp = 1:
+	isprok_lastday = 1
+else
+	isprok_lastday = 0
+end
+
+if Enable_autotampon = 0 and isprok = 1: isprok = 0 & 'You threw away your used tampon.'
+if Enable_autotampon = 0 and isprokp = 1:isprokp = 0 & 'You threw away your used sanitary pad.'
+
+if preg = 1:
+	pregtime = pregchem / 24
+
+	if pregtimes = 0:pregtimes = 1
+
+elseif preg = 2 and pregminut < totminut:
+	if Enable_nogameover = 0 :
+		cla
+		*clr
+		over = 4
+		MSG '<center><b>A horrible pain shoots through your body.</b></center>'
+		xgt 'gameover'
+		exit
+	else
+		MSG'<font color=red><B>You should die for giving birth unprepared, but Cheat Mode keeps you Alive.</B></font>'
+		pregminut = totminut + 1440
+	end
+elseif preg = 0:
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A14'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A16'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A23'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A28'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A29'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A33'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A34'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A69'
+	gs 'shortgs', 'remove_array_element', 'npc_pregtalk','A131'
+
+	!{killvar 'pregTalkFamily' -- Do not kill this (Abortion talk).}
+
+	killvar 'pcs_pregtalk'
+	killvar 'pregTalk'
+	killvar 'pregtime'
+	killvar 'knowpreg'
+	killvar 'denypreg'
+	killvar '$wombthfath'
+end
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Arousal
+!!------------------------------------------------------------------------------------------------------------
+
+if magikDostup = 0:
+	if pcs_horny < 100:pcs_horny += pcs_vag
+else
+	if pcs_vag = 0:
+		razeba = 0
+
+		if pcs_horny > 0 and pcs_horny <= 50:pcs_horny -= 10
+		if pcs_horny > 50:pcs_horny -= 25
+	elseif pcs_vag > 0:
+		if pregtimes = 0:
+			if age < 18:
+				razeba = 1
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny -= 5
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny -= 10
+				if pcs_horny >= 80:pcs_horny -= 20
+			elseif age >= 18 and age < 21:
+				razeba = 2
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny -= 1
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny -= 5
+				if pcs_horny >= 80:pcs_horny -= 10
+			elseif age >= 21 and age < 25:
+				razeba = 3
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny += 1
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny -= 1
+				if pcs_horny >= 80:pcs_horny -= 5
+			elseif age >= 25 and age < 30:
+				razeba = 4
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny += 5
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny += 1
+				if pcs_horny >= 80:pcs_horny -= 5
+			elseif age >= 30:
+				razeba = 5
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny += 10
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny += 5
+				if pcs_horny >= 80:pcs_horny += 1
+			end
+		elseif pregtimes > 0:
+			if preg = 0:
+				razeba = 5
+
+				if pcs_horny > 0 and pcs_horny <= 50:pcs_horny += 10
+				if pcs_horny > 50 and pcs_horny < 80:pcs_horny += 5
+				if pcs_horny >= 80:pcs_horny += 1
+			elseif preg > 0:
+				razeba = 6
+
+				if pcs_horny < 100:pcs_horny += pregchem / 240
+			end
+		end
+	end
+end
+
+if pcs_horny < 0:pcs_horny = 0
+
+!!------------------------------------------------------------------------------------------------------------
+
+!reset Natasha Belova''s clothes
+if NatbelQW['seethroughwearing'] = 1: NatbelQW['seethroughwearing'] = 0
+
+!!------------------------------------------------------------------------------------------------------------
+
+!counter for Dimka avoidance
+if dimaFilm = 1 and dimaRudeBlock = 0:
+	nodimkaK += 1
+	DimkaWarnedToday = 0
+end
+
+!!------------------------------------------------------------------------------------------------------------
+
+!!Fame degradation
+gs 'fame', 'deg'
+
+!!Traits
+gs 'traits', 'overnight'
+
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Maruda hair mod
+!!------------------------------------------------------------------------------------------------------------
+!! Max. Hair length 600mm, or 60cm, which should be somewhere in the lower back area.
+!! Hair grows 1mm each day, it takes 20 months (1 month = 30 days) to regrow the hair from 0.
+if pcs_hairlng < 1001 and hairgrowcht = 0:pcs_hairlng += 1
+
+if pcs_haircol ! nathcol:
+	dyefade -=1
+	if dyefade < 0: dyefade = 0
+	if dyefade > 0 and dyefade < 7: dyevmod = 5
+	if dyefade = 0: dyevmod = 15
+end
+
+!!pubic hair colouring
+!! pcs_pubecol = natural colour
+!! pcs_pubecol[1] = flag for saveupdate
+!! pcs_pubecol[2] = actual colour
+!! pcs_pubecol[3] = countdown timer for dye
+
+if pcs_pubecol[2] ! pcs_pubecol:
+	pcs_pubecol[3] -=1
+	if pcs_pubecol[3] < 0: pcs_pubecol[3] = 0
+	if pcs_pubecol[3] = 0: pcs_pubecol[2] = pcs_pubecol
+end
+
+if pcs_pubes < 2: pcs_pubecol[2] = pcs_pubecol
+
+if hscrunch > 0:
+	hscrunchrand = rand(1, 100)
+
+	if hscrunchrand <= 8:hscrunch -= 1
+end
+
+!!------------------------------------------------------------------------------------------------------------
+
+!! Clothing wear and tear
+gs 'starenie'
+
+!!cocaine reduction
+if nark > 60:
+	nark = 60
+elseif nark > 30:
+	nark -= 3
+elseif nark > 0:
+	nark -= 1
+end
+
+if pregchem > 240:fat += 1
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Pain
+!!------------------------------------------------------------------------------------------------------------
+
+if pain['head'] > 0:pain['head'] -= rand(1,3)
+if pain['hair'] > 0:pain['hair'] -= rand(1,3)
+if pain['ears'] > 0:pain['ears'] -= rand(1,3)
+if pain['eyebrows'] > 0:pain['eyebrows'] -= rand(1,3)
+if pain['eyes'] > 0:pain['eyes'] -= rand(1,3)
+if pain['cheeks'] > 0:pain['cheeks'] -= rand(1,3)
+if pain['nose'] > 0:pain['nose'] -= rand(1,3)
+if pain['mouth'] > 0:pain['mouth'] -= rand(1,3)
+if pain['lips'] > 0:pain['lips'] -= rand(1,3)
+if pain['tongue'] > 0:pain['tongue'] -= rand(1,3)
+if pain['throat'] > 0:pain['throat'] -= rand(1,3)
+if pain['neck'] > 0:pain['neck'] -= rand(1,3)
+if pain['back'] > 0:pain['back'] -= rand(1,3)
+if pain['asscheeks'] > 0:pain['asscheeks'] -= rand(1,3)
+if pain['asshole'] > 0:pain['asshole'] -= rand(1,3)
+if pain['hips'] > 0:pain['hips'] -= rand(1,3)
+if pain['thighs'] > 0:pain['thighs'] -= rand(1,3)
+if pain['legL'] > 0:pain['legL'] -= rand(1,3)
+if pain['legR'] > 0:pain['legR'] -= rand(1,3)
+if pain['feet'] > 0:pain['feet'] -= rand(1,3)
+if pain['toes'] > 0:pain['toes'] -= rand(1,3)
+if pain['shoulders'] > 0:pain['shoulders'] -= rand(1,3)
+if pain['armL'] > 0:pain['armL'] -= rand(1,3)
+if pain['armR'] > 0:pain['armR'] -= rand(1,3)
+if pain['hands'] > 0:pain['hands'] -= rand(1,3)
+if pain['fingers'] > 0:pain['fingers'] -= rand(1,3)
+if pain['chest'] > 0:pain['chest'] -= rand(1,3)
+if pain['breasts'] > 0:pain['breasts'] -= rand(1,3)
+if pain['nipples'] > 0:pain['nipples'] -= rand(1,3)
+if pain['ribs'] > 0:pain['ribs'] -= rand(1,3)
+if pain['tummy'] > 0:pain['tummy'] -= rand(1,3)
+if pain['pubic'] > 0:pain['pubic'] -= rand(1,3)
+if pain['vaginal'] > 0:pain['vaginal'] -= rand(1,3)
+if pain['labia'] > 0:pain['labia'] -= rand(1,3)
+if pain['clitoris'] > 0:pain['clitoris'] -= rand(1,3)
+if pain['urethra'] > 0:pain['urethra'] -= rand(1,3)
+if pain['cervix'] > 0:pain['cervix'] -= rand(1,3)
+
+if painpub = 2:
+	if painpubday + 5 < daystart:
+		$painpub = 'Your vulva is painfully sore.'
+		painpub = 1
+		painpubday = daystart
+	elseif painpubday + 5 >= daystart:
+		$painpub = 'Your vulva is painfully sore.'
+	end
+elseif painpub = 1:
+	if painpubday + 5 < daystart:
+		$painpub = ''
+		painpub = 0
+		painpubday = daystart
+	elseif painpubday + 5 >= daystart:
+		$painpub = 'Your vulva is a little sore.'
+	end
+end
+
+!!---- Calculation of lash extension degradation and false lash removal
+if pcs_lashes > 2:
+	if lashextensionstyle >= 1:
+		lashextensionduration -= 1
+		if lashextensionduration >= 1 and lashextensionduration <= 4:
+			'It''s time for you to do your maintenance on your lash extensions; you should go to the salon or you risk growing them all out.'
+		end
+		if lashextensionduration <= 0:
+			'You waited too long to do maintenance on your lash extensions; there''s too little there to notice or work with at this point.'
+			pcs_lashes = pcs_naturallashes
+			killvar 'lashextensionstyle'
+			killvar 'lashextensionduration'
+			killvar 'lashextensionnew'
+		end
+	end
+	if false_lashes > 0:
+		false_lashes -= 1
+		if false_lashes = 0:
+			'Your false lashes came off in the night; there''s no recovering them now.'
+			pcs_lashes = pcs_naturallashes
+		else
+			'Somehow, your lashes managed to stay attached throughout the night. You might be able to get away with wearing them another day straight.'
+		end
+	end
+end
+
+
+prezikProver += 1
+if pirs_pain_ton > 0:pirs_pain_ton -= 1
+if shorthair = 1:
+	shorthairday += 1
+	if shorthairday >= 45:shorthairday = 0 & shorthair = 0
+end
+!!------------------------------------------------------------------------------------------------------------
+
+if KatjaOTN > 0:
+	if KatjaHorny > 0 and KatjaLust < 40:KatjaHorny -= rand(1, 3)
+	if KatjaLust >= 40:KatjaHorny += rand(1, 3)
+	if KatjaHorny < 0:KatjaHorny = 0
+	if KatjaHorny >= 100:KatjaHorny = 0 & KatjaMastr += 1 & KatjaLust += 1
+end
+
+if npc_rel['A69'] > 60 and rand(0,3) = 0:npc_rel['A69'] -= 1
+
+!!Counter for dimka/igor date
+if igor_DimaNos = 2 or igor_DimaNos = 3: $igor_DimaNos_day += 1
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Generation
+!!------------------------------------------------------------------------------------------------------------
+if NPCnum < 290:
+	NPCnow = NPCnum
+	NPCnum += rand(1, 3)
+	gs 'npc'
+elseif NPCnum < 300:
+	NPCnow = NPCnum
+	NPCnum += 1
+	gs 'npc'
+end
+
+!!------------------------------------------------------------------------------------------------------------
+
+if kanikuli = 0:pcs_grades -= 1
+dmishaevent = 0
+
+if Gspravka <= 0 and GspravkaT = 1:GspravkaT = 0 & Gspravka = 0
+if GspravkaT = 1:Gspravka -= 1
+if IvanPodstavaQW = 2 and PodpiskaNeviezd = 30:IvanPodstavaQW = 3
+if IvanPodstavaQW = 2 and PodpiskaNeviezd > 0 and PodpiskaNeviezd < 30:PodpiskaNeviezd += 1
+
+!!remove degradation for inhibition
+inhib_flr = inhib_lvl
+
+gs 'stat_sklattrib', 'daycall'
+
+if dounspell = 1:
+	if strenbuf > 90:
+		strenbuf -= 2
+	elseif strenbuf > 80:
+		strenbuf -= 1
+	end
+
+	if vitalbuf > 90:
+		vitalbuf -= 2
+	elseif vitalbuf > 80:
+		vitalbuf -= 1
+	end
+
+	if strenbuf > pcs_stren: strenbuf -= 1
+	if strenbuf < pcs_stren: strenbuf += 1
+	if vitalbuf > pcs_vital: vitalbuf -= 1
+	if vitalbuf < pcs_vital: vitalbuf += 1
+	if agilbuf > pcs_agil: agilbuf -= 1
+	if agilbuf < pcs_agil: agilbuf += 1
+else
+	gs 'body_shape'
+end
+
+
+if husband > 0 and husbandrink ! 11:husbandrink = rand(0, 10)
+
+!!Pussy_Kats job settings
+inWorkYoungShop = 0
+if week = 1 and young_shop_work = 100: young_shop_work = 1
+if week = 5 and young_shop_work1 = 100: young_shop_work1 = 1
+if week = 1 and young_shop_work2 = 100: young_shop_work2 = 1
+
+husbandsexday = 0
+borsexkol = 0
+givisexday = 0
+
+if shantsr > 0:
+	pay = shantsr * 5000
+	karta += pay
+	shantsr = 0
+end
+
+if shantbog > 0:
+	:shantftb
+	shantftbgrand = rand(0, 10)
+	if shantftbgrand > 2:
+		shantpopala += 1
+		shantbog -= 1
+		if shantbog > 0:jump 'shantftb'
+	elseif shantftbgrand <= 2:
+		karta += 30000
+		shantbog -= 1
+		if shantbog > 0:jump 'shantftb'
+	end
+end
+
+petersexday = 0
+klismaday1 = 0
+
+!! Resetting relationships that go over the max
+
+:toptemprel
+if temprel < aarraynumber:
+	temprel +=1
+	if npc_rel['A'+'<<temprel>>'] > 100:npc_rel['A'+'<<temprel>>'] = 100
+	jump 'toptemprel'
+end
+killvar 'temprel'
+!!------------------------------------------------------------------------------------------------------------
+!!	Banking
+!!------------------------------------------------------------------------------------------------------------
+
+!!MJ: Add some (daily) interest to the bank account.
+!!Not very realistic but won''t make anyone too rich.
+
+if bankAccount = 1:
+	kartatotal = karta
+	:kartaloop
+	if kartatotal > 20000000:
+		kartacount += 1
+		largekarta[kartacount] = 20000000
+		kartatotal -= 20000000
+		jump 'kartaloop'
+	else
+		largekarta[0] = kartatotal
+	end
+	if karta >= 2000000:
+		!! yearly interest of 2.3% recalculated into daily interest = 0.006% daily
+		intrate = 60
+	elseif karta >= 0:
+		!! yearly interest of 1.15% recalculated into daily interest = 0.003% daily
+		intrate = 30
+	else
+		!! yearly overdraft interest of 20% recalculated into daily interest = 0.055% daily
+		intrate = 550
+	end
+	:intloop
+	if kartacount > 0:
+		smallmoneypos += (largekarta[kartacount] * intrate)
+		if smallmoneypos >= 1000000 or smallmoneypos <= -1000000: karta += smallmoneypos / 1000000 & smallmoneypos = smallmoneypos mod 1000000
+		largekarta[kartacount] = 0
+		kartacount -= 1
+		jump 'intloop'
+	else
+		smallmoneypos += (largekarta[0] * intrate)
+		largekarta[0] = 0
+		if kartacount ! 0: kartacount = 0
+	end
+
+	if smallmoneypos >= 1000000 or smallmoneypos <= -1000000:
+		karta += smallmoneypos / 1000000
+		smallmoneypos = smallmoneypos mod 1000000
+	end
+
+	if atmDeposit > 0 and atmDepositDate <= daystart:
+		karta += atmDeposit
+		atmDeposit = 0
+	end
+end
+
+!!------------------------------------------------------------------------------------------------------------
+!!	Payments
+!!------------------------------------------------------------------------------------------------------------
+
+if day = 25:
+	!! meynold payment
+	if	mey_vika['mey_vika_qw'] >= 35 and mey_tamara['help_count'] < 10 and mey_tamara['qw_end'] = 0:
+		karta += 10000
+		'<b><font color=green>For your efforts aunt Tamara gave you 10,000 rubles</font></b>'
+		mey_tamara['help_count'] = 0
+	elseif mey_vika['mey_vika_qw'] >= 35 and mey_tamara['help_count'] >= 10 and mey_tamara['qw_end'] = 0:
+		karta += 15000
+		'<b><font color=green>For your efforts aunt Tamara gave you 15,000 rubles</font></b>'
+		mey_tamara['help_count'] = 0
+	end
+
+	if PersSecWork = 1 and PersSecWorkTimes > 0 and paydaybistrosec = 0:
+		Pay = PersSecWorkTimes * 1250
+		PersSecWorkTimes = 0
+		karta += Pay
+		paydaybistrosec = 1
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your job as a secretary.</font></b>'
+	end
+
+	if workKafe = 1 and paydayKafe = 0:
+		paydayKafe = 1
+		pay = smenaKafe * 600
+		karta += pay
+		smenaKafe = 0
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your job as a waitress in a cafe.</font></b>'
+	end
+
+	if workhosp = 1 and nopaypoly = 0:
+		pay = smena * 1000
+		karta += pay
+		smena = 0
+		nopaypoly = 1
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your work in the clinic.</font></b>'
+	end
+
+	if worksalon = 1 and nopaysalon = 0:
+		pay = smenaSalon * 1560
+		karta += pay
+		smenaSalon = 0
+		nopaysalon = 1
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your work in a beauty salon.</font></b>'
+	end
+
+	if tanwork = 1 and nopaytanwork = 0:
+		nopaytanwork = 1
+		karta += 10000
+		'<b><font color="green">Your salary of 10,000 <b>₽</b> has been paid into your bank account for your work as a house maid.</font></b>'
+	end
+
+	if workSec = 1 and paydaySec = 0:
+		paydaySec = 1
+		pay = sekDay * 800
+
+		if officebestslut >= 3:pay += 10000
+		karta += pay
+		sekDay = 0
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your job as a secretary.</font></b>'
+	end
+
+	if workFabrika = 1:
+		pay = smenaFabrika * 600
+		smenaFabrika = 0
+		karta += pay
+		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your job at the garment factory.</font></b>'
+	end
+
+	if husband > 0 and paydayHusb = 0:
+		paydayHusb = 1
+
+		if husbFin = 0:huspay = 20000
+		if husbFin = 1:huspay = 30000
+		if husbFin = 2:huspay = 40000
+
+		karta += huspay
+		'<b><font color="green">Your husband has paid <<huspay>> <b>₽</b> into your bank account.</font></b>'
+	end
+
+	if stipuha = 1 and stipuhaday = 0:stipuhaday = 1 & karta += 1200 & '<b><font color="green">You have received 1,200 <b>₽</b> scholarship.</font></b>'
+
+	! Utilities for all apartments.
+	if (home_owned[1] = 1 or home_owned[1] = 2 or home_owned[4] > 0 or home_owned[5] = 2) and electroday = 0:
+		gs 'housing', 'util'
+		if bankAccount = 1 and karta >= elektro:
+			'<b><font color="green"><<elektro>> <b>₽</b> for utilities, has been automatically deducted from your bank account.</font></b>'
+			electroday = 1
+			if elektro >= 2000:
+				elektro = 2000 + rand(0, 100)
+				karta -= elektro * hcount_util
+			end
+		elseif bankAccount = 1 and karta + bankDebtLimit >= elektro:
+			'<b><font color="green"><<elektro>> <b>₽</b> for utilities, has been automatically deducted from your bank account and overdraw facility. Please contact your bank.</font></b>'
+			electroday = 1
+			if elektro >= 2000:
+				elektro = 2000 + rand(0, 100)
+				karta -= elektro * hcount_util
+			end
+		elseif bankAccount = 0 and money >= elektro:
+			'<b><font color="red">You currently do not have a bank account setup for automatic utilities payments. <<elektro>> <b>₽</b> has been deducted from your cash holdings.</font></b>'
+			electroday = 1
+			if elektro >= 2000:
+				elektro = 2000 + rand(0, 100)
+				money -= elektro * hcount_util
+			end
+		else
+			'<b><font color="red">Your card was declined during automatic debit of <<elektro>> <b>₽</b>, for automatic utilities payment.</font></b>'
+		end
+	end
+
+	! Cable for all apartments
+	if kabel > 0 and kabelday = 0:
+		gs 'housing', 'cable'
+		if bankAccount = 1 and karta >= (300 * hcount_cable):
+			'<b><font color="green">300 <b>₽</b> has been deducted from your bank account, for you cable TV subscription.</font></b>'
+			kabelday = 1
+			karta -= 300 * hcount_cable
+		elseif bankAccount = 1 and karta + bankDebtLimit >= (300 * hcount_cable):
+			'<b><font color="green">300 <b>₽</b> has been deducted from your bank account and overdraw facility, for you cable TV subscription.</font></b>'
+			kabelday = 1
+			karta -= 300 * hcount_cable
+		elseif bankAccount = 0 and money >= (300 * hcount_cable):
+			'<b><font color="red">You currently do not have a bank account setup for automatic payment of your cable TV subscription. 300 <b>₽</b> has been deducted from your cash holdings.</font></b>'
+			kabelday = 1
+			money -= 300 * hcount_cable
+		else
+			'<b><font color="red">Your card was declined during automatic debit of 300 <b>₽</b> for cable TV subscription.</font></b>'
+		end
+	end
+end
+
+if day ! 25:
+	if paydayHusb = 1:paydayHusb = 0
+	if workKafe = 1 and paydayKafe = 1:paydayKafe = 0
+	if workSec = 1 and paydaySec = 1:paydaySec = 0
+	if (home_owned[1] = 1 or home_owned[4] > 0) and haday = 1:haday = 0
+	if (home_owned[1] > 0 or home_owned[4] > 0 or home_owned[5] = 2) and electroday = 1:electroday = 0
+	if (home_owned[1] > 0 or home_owned[4] > 0 or home_owned[5] = 3) and kabel > 0 and kabelday = 1:kabelday = 0
+	if stipuhaday = 1:stipuhaday = 0
+	if nopaytanwork = 1:nopaytanwork = 0
+	if nopaypoly = 1:nopaypoly = 0
+	if nopaysalon = 1:nopaysalon = 0
+	if paydaybistrosec = 1:paydaybistrosec = 0
+end
+
+if sdaday = day and sdamonth = month and home_owned[1] = 3:
+	home_owned[1] = 2
+	'<b><font color="red">Your tenants have moved out and your apartment is now vacant.</font></b>'
+	!msg 'Your tenants have moved out and your apartment is now vacant.'
+end
+
+!!----------------------------------------
+!! Rent
+!!----------------------------------------
+
+if home_owned[1] = 1 or home_owned[4] > 0:
+	gs 'housing', 'rent'
+	! Rent for the city apartment
+	if home_owned[1] = 1:
+		if ArendHouseSL <= 2:
+			!From bank
+			if bankAccount = 1 and karta >= home_rent[1]:
+				'<b><font color="green">Your rent payment of <<home_rent[1]>> <b>₽</b> for your city apartment, has automatically been deducted from your bank account.</font></b>'
+				karta -= home_rent[1]
+				ArendHouseSL += ArendHouseSL_due
+			elseif bankAccount = 1 and karta + bankDebtLimit >= home_rent[1]:
+				'<b><font color="green">Your rent payment of <<home_rent[1]>> <b>₽</b> for your city apartment, has automatically been deducted from your bank account and overdraw facility. Please contact your bank regarding your overdraw repayment.</font></b>'
+				karta -= home_rent[1]
+				ArendHouseSL += ArendHouseSL_due
+			elseif bankAccount = 0:
+				'<b><font color="red">You currently do not have a bank account setup for automatic rent deduction of <<home_rent[1]>> <b>₽</b> for your city apartment. To avoid eviction, please make manual payment as soon as possible.</font></b>'
+			else
+				nl
+				'<b><b><font color="red">Your card was declined during automatic rent deduction of <<home_rent[1]>> <b>₽</b> for your city apartment. To avoid eviction, please rectify as soon as possible.</font></b>'
+			end
+		end
+	end
+
+	! Rent for the Pushkin apartment
+	if home_owned[4] > 0:
+		if ArendHouseSL4 <= 2:
+			!From bank
+			if bankAccount = 1 and karta >= home_rent[4]:
+				'<b><font color="green">Your rent payment of <<home_rent[4]>> <b>₽</b> for your Pushkin apartment, has automatically been deducted from your bank account.</font></b>'
+				karta -= home_rent[4]
+				ArendHouseSL4 += ArendHouseSL4_due
+			elseif bankAccount = 1 and karta + bankDebtLimit >= home_rent[4]:
+				'<b><font color="green">Your rent payment of <<home_rent[4]>> <b>₽</b> for your Pushkin apartment, has automatically been deducted from your bank account and overdraw facility. Please contact your bank regarding your overdraw repayment.</font></b>'
+				karta -= home_rent[4]
+				ArendHouseSL4 += ArendHouseSL4_due
+			elseif bankAccount = 0:
+				'<b><font color="red">You currently do not have a bank account setup for automatic rent deduction of <<home_rent[4]>> <b>₽</b> for your Pushkin apartment. To avoid eviction, please make manual payment as soon as possible.</font></b>'
+			else
+				nl
+				'<b><b><font color="red">Your card was declined during automatic rent deduction of <<home_rent[4]>> <b>₽</b> for your Pushkin apartment. To avoid eviction, please rectify as soon as possible.</font></b>'
+			end
+		end
+	end
+end
+
+if home_owned[1] = 1 and ArendHouseSL <= 0: ArendHouseSL = 0 & home_owned[1] = 0
+if home_owned[4] > 0 and ArendHouseSL4 <= 0: ArendHouseSL4 = 0 & home_owned[4] = 0
+
+if home_owned[1] = 1: ArendHouseSL -= 1
+if home_owned[4] > 0: ArendHouseSL4 -= 1
+
+!!------------------------------------------------------------------------------------------------------------
+
+killvar 'holyday'
+killvar 'kanikuli'
+killvar 'pcs_ate'
+killvar 'pcs_drank'
+
+!! THIS IS THE OLD SYSTEM. Only keeping this in while it''s still in use as reference for the old variables, otherwise THESE VALUES ARE NOT THE CORRECT ONES FOR NEW VARIABLES
+!!sisboyparty
+!!-1 - don''t go to the party
+!!0 - don''t know about parties
+!!1 - knows about the parties
+!!2 - agreed to go to the party
+!!3 - Missed the party
+
+if storyline = 1:
+!!Party refresh if you didn''t see sis
+	if week = 1 and sisboyparty ! 2:
+		if sisterQW['party'] = -1: sisterQW['party'] = 0
+
+		if sisboypartyQW >= 2 and sisboyparty > 0:
+			sisboyparty_day = daystart + rand(3,5)
+		end
+	end
+
+	if sisboyparty = 2 and sisboyparty_day + 1 < daystart: sisboyparty = 3
+
+
+	if SchoolAtestat = 0:
+		if month = 12 and day > 25:
+			if day < 31:
+				$holyday = '<b>Winter Break in <<32-day>> days.</b>'
+			else
+				$holyday = '<b>Winter Break starts tomorrow.</b>'
+			end
+		elseif month = 1 and day <= 15:
+			kanikuli = 2
+			if day < 13:
+				$holyday = '<b>Winter Break.</b>'
+			elseif day < 15:
+				$holyday = '<b>Winter Break ends in <<16-day>> days.</b>'
+			else
+				$holyday = '<b>Last day of Winter Break.</b>'
+			end
+		elseif month = 3 and day > 13:
+			if day < 19:
+				$holyday = '<b>Spring Break starts in <<20-day>> days.</b>'
+			elseif day = 19:
+				$holyday = '<b>Spring Break starts tomorrow.</b>'
+			elseif day >= 20 and day <= 26:
+				kanikuli = 3
+				if day < 24:
+					$holyday = '<b>Spring Break.</b>'
+				elseif day < 26:
+					$holyday = '<b>Spring Break ends in <<27-day>> days.</b>'
+				else
+					$holyday = '<b>Last day of Spring Break.</b>'
+				end
+			end
+		elseif month = 5:
+			if (school_year = 2000 and year = 2017) or (school_year = 2001 and year = 2018):
+				if day = 25:
+					kanikuli = 6
+					SchoolAtestat = -1
+					$holyday = '<b>Your graduation is today. Be there by 8:00.</b>'
+				elseif day = 24:
+					$holyday = '<b>Your graduation is tomorrow. Be there by 8:00.</b>'
+				elseif day >= 19:
+					$holyday = '<b>Your graduation is in <<26-day>> days.</b>'
+				end
+			elseif day >= 25:
+				if day = 31:
+					$holyday = '<b>Summer Break starts tomorrow.</b>'
+				else
+					$holyday = '<b>Summer Break starts in <<32-day>> days.</b>'
+				end
+			end
+		elseif month = 6 or month = 7 or month = 8:
+			kanikuli = 4
+			if month = 8 and day >= 25:
+				if day = 31:
+					$holyday = '<b>Last day of Summer Break.</b>'
+				else
+					$holyday = '<b>Summer Break ends in <<32-day>> days.</b>'
+				end
+			else
+				$holyday = '<b>Summer Break.</b>'
+			end
+		elseif month = 10 and day >= 29:
+			$holyday = '<b>Autumn Break starts in <<35-day>> days.</b>'
+		elseif month = 11:
+			if day < 3:
+				$holyday = '<b>Autumn Break starts in <<4-day>> days.</b>'
+			elseif day = 3:
+				$holyday = '<b>Autumn Break starts tomorrow.</b>'
+			elseif day < 6:
+				kanikuli = 1
+				$holyday = '<b>Autumn Break.</b>'
+			elseif day < 11:
+				kanikuli = 1
+				$holyday = '<b>Autumn Break ends in <<12-day>> days.</b>'
+			elseif day = 11:
+				kanikuli = 1
+				$holyday = '<b>Last day of Autumn Break.</b>'
+			end
+		end
+		if kanikuli = 0 and week < 6:
+			if week = 1:
+				!!The start and end values for i have to be changed if more female schoolgirl npcs are added to the game
+				i = 11
+				
+				:hotcat_calc_jump
+				i += 1
+				
+				if hotcat_rating['A<<i>>'] = 0: jump 'hotcat_calc_jump'
+				
+				switch_rand = rand(1,100)
+				
+				if hotcat_movement['A<<i>>'] = 0 and switch_rand < 21:
+					hotcat_rating['A<<i>>'] -= 1
+					hotcat_movement['A<<i>>'] -= 1
+				elseif hotcat_movement['A<<i>>'] = 0 and switch_rand > 80:
+					hotcat_rating['A<<i>>'] += 1
+					hotcat_movement['A<<i>>'] += 1
+				elseif hotcat_movement['A<<i>>'] = 1 and switch_rand > 40:
+					hotcat_rating['A<<i>>'] -= 1
+					hotcat_movement['A<<i>>'] -= 1
+				elseif hotcat_movement['A<<i>>'] = -1 and switch_rand > 40:
+					hotcat_rating['A<<i>>'] += 1
+					hotcat_movement['A<<i>>'] += 1
+				end
+				if i < 145: jump 'hotcat_calc_jump'
+				killvar 'i'
+				killvar 'switch_rand'
+			end
+			
+			!! Resetting the late flag
+			if late = 1: late = 0
+			
+			!!Maximum increase for grupvalues is 7/8
+			if oldgrupvalue_set = 0:
+				oldgrupvalue_set = 1
+				old_grupvalue[1] = grupvalue[1]
+				old_grupvalue[2] = grupvalue[2]
+				old_grupvalue[3] = grupvalue[3]
+				old_grupvalue[4] = grupvalue[4]
+			else
+				if old_grupvalue[1] + 8 < grupvalue[1]: grupvalue[1] = old_grupvalue[1] + 8
+				if old_grupvalue[2] + 8 < grupvalue[2]: grupvalue[2] = old_grupvalue[2] + 8
+				if old_grupvalue[3] + 8 < grupvalue[3]: grupvalue[3] = old_grupvalue[3] + 8
+				if old_grupvalue[4] + 8 < grupvalue[4]: grupvalue[4] = old_grupvalue[4] + 8
+			end
+			!!Limit to max school group values
+			if grupvalue[1] > 100: grupvalue[1] = 100
+			if grupvalue[2] > 100: grupvalue[2] = 100
+			if grupvalue[3] > 100: grupvalue[3] = 100
+			if grupvalue[4] > 100: grupvalue[4] = 100
+			!!Decay for the school groups
+			if grupvalue[1] > 0:
+				grupvalue[1] -= rand(0,1)
+			else
+				grupvalue[1] = 0
+			end
+			if grupvalue[2] > 0:
+				grupvalue[2] -= rand(0,1)
+			else
+				grupvalue[2] = 0
+			end
+			if grupvalue[3] > 0:
+				grupvalue[3] -= rand(0,1)
+			else
+				grupvalue[3] = 0
+			end
+			if grupvalue[4] > 0:
+				grupvalue[4] -= rand(0,1)
+			else
+				grupvalue[4] = 0
+			end
+
+			old_grupvalue[1] = grupvalue[1]
+			old_grupvalue[2] = grupvalue[2]
+			old_grupvalue[3] = grupvalue[3]
+			old_grupvalue[4] = grupvalue[4]
+		end
+	elseif SchoolAtestat = -1:
+		if home_owned[2] = 0:
+			$holyday = '<b>You missed your graduation. You could pick up your diploma at the school.</b>'
+		else
+			$holyday = '<b>You missed your graduation. Maybe your mother picked up your diploma.</b>'
+		end
+	end
+	!!Brother''s dick growth as he gets older
+	!Commented out till some future time
+	!if kolka_dick_day + 30 < daystart and npc_dick['A34'] < 26:
+	!	kolka_dick_day = daystart
+	!	npc_dick['A34'] += 1
+	!end
+	!if npc_dick['A34'] < 20 and npc_dick['A34'] > 16:
+	!	$npc_thdick['A34'] = 'well proportioned'
+	!elseif npc_dick['A34'] >= 20 and npc_dick['A34'] <= 26:
+	!	$npc_thdick['A34'] = 'thick'
+	!end
+end
+
+killvar 'natholi'
+if month = 1 and day >= 1 and day <= 8:
+	$natholi = 'New Year holidays'
+	natholi = 1
+	if day = 1:$natholi += ', New Year'
+	if day = 7:$natholi += ', Christmas'
+end
+if month = 2 and day = 23:$natholi = 'Defender of Fatherland Day' & natholi = 1
+if month = 3 and day = 8:$natholi = 'Women''s Day' & natholi = 1
+if month = 5 and day = 1:$natholi = 'Spring and Labor Day' & natholi = 1
+if month = 5 and day = 2:$natholi = 'National holiday' & natholi = 1
+if month = 5 and day = 9:$natholi = 'Victory Day' & natholi = 1
+if month = 6 and day = 12:$natholi = 'Russia Day' & natholi = 1
+if month = 6 and day = 13:$natholi = 'National holiday' & natholi = 1
+if month = 11 and day = 4:$natholi = 'Unity Day' & natholi = 1
+if natholi = 1:
+	if $holyday ! '': $holyday += '<br>'
+	$holiday += $natholi
+end
+
+if bcream_used >= 1:
+		bcream_used = 0
+		temp = rand(0,max(nbsize-genbsize+5,5)) / max(nbsize-genbsize,1)
+		if temp > 0: temp = 1
+		nbsize += temp
+		if temp > 0:'Feels like your breasts have grown slightly.'
+end
+if steroid_dose >= 1:
+	if lashair < 1:
+		pcs_pubes += steroid_dose
+		pcs_leghair += steroid_dose
+	end
+	steroid_dose = 0
+end
+if aphrodisiac_overdose = 1:aphrodisiac_overdose = 0
+if aphrodisiac_timer ! 0:aphrodisiac_timer	= 0
+
+if mentats_dose = 1:
+	mentats_dose = 0
+elseif mentats_dose > 1:
+	pain['head'] += 20 * mentats_dose
+	mentats_dose = 0
+end
+
+!!Appearance base calculation call
+gs 'body_shape', 'basebeautycalc'
+
+!! vovan, from 1.2.5
+hunters_check = 0
+mushroom_pickers = 0
+mira_go_river = 0
+forestpicnic = 0
+if Mira_no > 0: Mira_no -= 1
+if Mira_no < 0: Mira_no = 0
+
+!! new grandparent chore stuff, for 0.8.0
+if gadstay = 1 and lost_girl = 0:
+	if daystart > (grandmaQW['last_day_helped'] + 3) and daystart > (grandpaQW['last_day_helped'] + 3):
+		if (daystart - grandmaQW['last_day_helped']) <= (daystart - grandpaQW['last_day_helped']):
+			'You haven''t helped your grandparents with any chores in <<daystart - grandmaQW[''last_day_helped'']>> days. You should help out more regularly to stay on your grandparents'' good side.'
+		else
+			'You haven''t helped your grandparents with any chores in <<daystart - grandpaQW[''last_day_helped'']>> days. You should help out more regularly to stay on your grandparents'' good side.'
+		end
+		grandmaQW['help_amount'] -= 1
+	end
+end
+
+!! disappointing grandma
+if grandmaQW['chore_clean_floor'] = 1 or grandmaQW['chore_clean_floor'] = 2:
+	grandmaQW['chore_clean_floor'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_wash_clothes'] = 1 or grandmaQW['chore_wash_clothes'] = 2:
+	grandmaQW['chore_wash_clothes'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_milk_cow'] = 1 or grandmaQW['chore_milk_cow'] = 2:
+	grandmaQW['chore_milk_cow'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_groceries'] = 1 or grandmaQW['chore_groceries'] = 2:
+	grandmaQW['chore_groceries'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_can_mushrooms'] = 1 or grandmaQW['chore_can_mushrooms'] = 2:
+	grandmaQW['chore_can_mushrooms'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_can_berries'] = 1 or grandmaQW['chore_can_berries'] = 2:
+	grandmaQW['chore_can_berries'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_can_veggies'] = 1 or grandmaQW['chore_can_veggies'] = 2:
+	grandmaQW['chore_can_veggies'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_feed_chickens'] = 1 or grandmaQW['chore_feed_chickens'] = 2:
+	grandmaQW['chore_feed_chickens'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_work_in_garden'] = 1 or grandmaQW['chore_work_in_garden'] = 2:
+	grandmaQW['chore_work_in_garden'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_water_garden'] = 1 or grandmaQW['chore_water_garden'] = 2:
+	grandmaQW['chore_water_garden'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_collect_strawberries'] = 1 or grandmaQW['chore_collect_strawberries'] = 2:
+	grandmaQW['chore_collect_strawberries'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_collect_fruit'] = 1 or grandmaQW['chore_collect_fruit'] = 2:
+	grandmaQW['chore_collect_fruit'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_harvest_garden'] = 1 or grandmaQW['chore_harvest_garden'] = 2:
+	grandmaQW['chore_harvest_garden'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_gather_mushrooms'] = 1 or grandmaQW['chore_gather_mushrooms'] = 2:
+	grandmaQW['chore_gather_mushrooms'] = 0
+	grandmaQW['chore_mushroom_quantity'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_gather_berries'] = 1 or grandmaQW['chore_gather_berries'] = 2:
+	grandmaQW['chore_gather_berries'] = 0
+	grandmaQW['chore_berry_quantity'] = 0
+	grandmaQW['disappointment'] = 1
+elseif grandmaQW['chore_gather_both'] = 1 or grandmaQW['chore_gather_both'] = 2:
+	grandmaQW['chore_gather_both'] = 0
+	grandmaQW['chore_mushroom_quantity'] = 0
+	grandmaQW['chore_berry_quantity'] = 0
+	grandmaQW['disappointment'] = 1
+end
+
+!! disappointing grandpa
+if grandpaQW['chore_fetch_firewood'] = 1 or grandpaQW['chore_fetch_firewood'] = 2:
+	grandpaQW['chore_fetch_firewood'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_feed_horse'] = 1 or grandpaQW['chore_feed_horse'] = 2:
+	grandpaQW['chore_feed_horse'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_feed_cow'] = 1 or grandpaQW['chore_feed_cow'] = 2:
+	grandpaQW['chore_feed_cow'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_clean_yard'] = 1 or grandpaQW['chore_clean_yard'] = 2:
+	grandpaQW['chore_clean_yard'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_feed_boar'] = 1 or grandpaQW['chore_feed_boar'] = 2:
+	grandpaQW['chore_feed_boar'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_bathe_horse'] = 1 or grandpaQW['chore_bathe_horse'] = 2:
+	grandpaQW['chore_bathe_horse'] = 0
+	grandpaQW['chore_bathe_horse_prog'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_brush_horse'] = 1 or grandpaQW['chore_brush_horse'] = 2:
+	grandpaQW['chore_brush_horse'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_lead_horse_to_field'] = 1 or grandpaQW['chore_lead_horse_to_field'] = 2:
+	grandpaQW['chore_lead_horse_to_field'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_herd_cattle'] = 1 or grandpaQW['chore_herd_cattle'] = 2:
+	grandpaQW['chore_herd_cattle'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_lead_cow_to_field'] = 1 or grandpaQW['chore_lead_cow_to_field'] = 2:
+	grandpaQW['chore_lead_cow_to_field'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_gather_mushrooms'] = 1 or grandpaQW['chore_gather_mushrooms'] = 2:
+	grandpaQW['chore_gather_mushrooms'] = 0
+	grandpaQW['chore_mushroom_quantity'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_gather_berries'] = 1 or grandpaQW['chore_gather_berries'] = 2:
+	grandpaQW['chore_gather_berries'] = 0
+	grandpaQW['chore_berry_quantity'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_gather_both'] = 1 or grandpaQW['chore_gather_both'] = 2:
+	grandpaQW['chore_gather_both'] = 0
+	grandpaQW['chore_mushroom_quantity'] = 0
+	grandpaQW['chore_berry_quantity'] = 0
+	grandpaQW['disappointment'] = 1
+elseif grandpaQW['chore_bale_hay'] = 1 or grandpaQW['chore_bale_hay'] = 2:
+	grandpaQW['chore_bale_hay'] = 0
+	grandpaQW['disappointment'] = 1
+end
+
+!! grandparents use root cellar
+if boletus_stored > 0: boletus_stored -= rand(0,1)
+if bilberry_stored > 0: bilberry_stored -= rand(0,1)
+if boletus_stored < 0: boletus_stored = 0
+if bilberry_stored < 0: bilberry_stored = 0
+!! end of new grandparent chore stuff, for 0.8.0
+
+if catout ! 0: catout = 0
+if feedcat ! 0: feedcat = 0
+
+loc_count = ARRSIZE('$CloLosLoc')
+i = loc_count - 1
+:loopCloLoc
+	$CloLoc = $CloLosLoc[i]
+	CloLostOn = CloLosDay[$CloLoc]
+	if CloLostOn + RAND(7,14) < daystart :
+		gs 'clothing', 'recover_lost_clothes', $CloLoc, 2
+	end
+	i -=1
+if i > -1 :jump 'loopCloLoc'
+
+if vidageday > 1080: vidageday = 1080
+if blizoruk < 10: blizoruk -= 1
+if blizoruk < 100: blizoruk -= rand(0,1)
+if blizoruk < 0: blizoruk = 0
+
+
+!!------------------------------------------------------------------------------------------------------------------------
+!!array cleaning moving potential fathers from C to B array and cleaning C array
+
+!First look is there any cum in the womb,when womb is empty random genereted npc record are cleaningare deleted
+
+! mid($npclastgenerated[0],2,9)	 number of the last random created npcs
+norandomdads = 1
+!checking if Sveta have children or babies
+if arrsize('$ChildFath') > 0:
+		!Yes she have... cheking if random NPC is the dady
+		!'Sveta have <<$ChildFath>> children'
+
+		childtmp = 0
+		:childloop
+		if mid($ChildFath[childtmp],1,1) = 'C':
+			!yes child is from random genereted npc
+			norandomdads = 0
+		else
+			!child is not from random genereted npc
+
+			childtmp += 1
+			if childtmp < arrsize('$ChildFath'): jump 'childloop'
+		end
+end
+
+
+number = 0
+
+
+
+!checking if there is some cum in womb.
+if arrsize('$cumarrnam') > 0:
+	!there is cum in womb
+
+	:cleaning_records_cum
+	$tmp = 'C' + '<<number>>'
+
+	cum_number = 0
+	:cumloop
+	!look if cum in womb is from random created npc
+	if($tmp = $cumarrnam[cum_number]):
+		!'cum from <<$tmp>> is in the womb'
+		number +=1
+		if number < mid($npclastgenerated[0],2,9): jump 'cleaning_records_cum'
+	else
+		cum_number += 1
+		if cum_number < arrsize('$cumarrnam'):
+			jump 'cumloop'
+		else
+			!'no cum in woomb from <<$tmp>>'
+			if norandomdads = 1:
+				!no random dads
+				If npc_pers[$tmp] ! '': gs 'npccleanc',$tmp 
+			else
+				!some children are from random genereted npc
+				!checking if selected npc is a dady
+				childtmp = 0
+				:childloop3
+
+				if $ChildFath[childtmp] = $tmp:
+					!selected npc is father of the child, he will stay in record or now
+					!moving npc from C array to B array,
+					gs 'npcpreservec',$tmp
+					number += 1
+					if number < mid($npclastgenerated[0],2,9): jump 'cleaning_records_cum'
+				else
+					!child is not from random genereted npc
+					childtmp += 1
+					if childtmp < arrsize('$ChildFath'):
+						jump 'childloop3'
+					else
+						!children are not from seleted random npc, we are cleaning his redords
+						gs 'npccleanc',$tmp
+						number += 1
+						if number < mid($npclastgenerated[0],2,9): jump 'cleaning_records_cum'
+
+					end
+				end
+
+
+			end
+
+		end
+	end
+
+else
+	!there is no cum in womb, cleaning random created npc redords
+
+	if norandomdads = 0:
+
+		:cleaning_with_babies
+		$tmp = 'C' + '<<number>>'
+		!cheking if random NPC is the dady
+		childtmp2 = 0
+
+		:childloop2
+
+		if $ChildFath[childtmp2] = $tmp:
+			!selected random NPC is dady selected child
+			gs 'npcpreservec', $tmp
+			number +=1
+			if number < mid($npclastgenerated[0],2,9): jump 'cleaning_with_babies'
+
+		else
+			!selected random NPC is not dady selected child
+			childtmp2 += 1
+			if childtmp2 < arrsize('$ChildFath'):
+				jump 'childloop2'
+			else
+				!selected random npc is not any child dady
+				gs 'npccleanc',$tmp
+				number += 1
+				if number < mid($npclastgenerated[0],2,9): jump 'cleaning_with_babies'
+			end
+		end
+	else
+		!she have no children or babies, and no cum freom random npc
+		!'cleaning random NPC records'
+		:cleaning_no_babies
+		$tmp = 'C' + '<<number>>'
+		!'clining <<$tmp>>'
+		gs 'npccleanc',$tmp
+		number += 1
+		if number < mid($npclastgenerated[0],2,9): jump 'cleaning_no_babies'
+	end
+end
+
+
+killvar '$tmp'
+killvar 'number'
+killvar 'childtmp2'
+killvar 'childtmp'
+killvar 'norandomdads'
+
+!!------------------------------------------------------------------------------------------------------------
+
+!!-------------Family schedule variables----------------------------------------------------------------------
+!! 23 = kitchen
+!! 24 = Living room
+!! 25 = bathroom
+!! 26 = Svetas room
+if week = 6:
+	momclean1 = rand(23,26)
+else
+	momclean1 = rand(23,24)
+end
+if rand(0,1) = 0:
+	momclean2 = 23
+else
+	momclean2 = 25
+end
+
+
+--- cikl ---------------------------------
+

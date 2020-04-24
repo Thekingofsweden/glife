@@ -1,0 +1,295 @@
+# shulgakuh
+
+CLOSE ALL
+$loc = 'shulgakuh'
+$metka = ''
+$location_type = 'private'
+$locclass = 'kitr'
+
+if $ARGS[0] = '':
+	$menu_loc = 'shulgakuh'
+	$menu_arg = ''
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	gs 'kit_din'
+	'<center><b><font color = maroon>Kitchen</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh.jpg"></center>'
+	*nl
+	'An uninspiring kitchen, with the basic amenities for life.'
+	*nl
+
+	if hour >= 18 and hour < 21 and ARGS[0] = 0:
+		if rand(1,100) < 10:
+			'When you enter the kitchen,<<$serg_obr>> <a href="exec:gt ''Serge_kuh'',''kuh_buh''">Sergey</a> gives you a friendly nod. He''s sitting at the kitchen table, drinking vodka.'
+		else
+			'When you enter the kitchen,<<$serg_obr>> <a href="exec:gt ''Serge_kuh''">Sergey</a> is standing at the kitchen counter preparing a meal.'
+		end
+	end
+	act 'Return to the hallway': gt 'shulgahall'
+	act 'Look in the fridge': gt 'shulgakuh', 'holodil'
+	dynamic $dritea
+	dynamic $fill_bottle
+	dynamic $edasnack
+	dynamic $driwater
+
+
+!Launch Event with gopotoy kitchen
+	if RAND(0,100) <= 5 and pav_slut >= 125 and gangsexroom_count > 0 and week < 6 and hour >= 0 and hour < 3 and kotovLoveQW < 1: gt 'shulgakuh', 'gang_sex_ev1'
+
+	!===========!
+	!FRIDGE!
+	!-----------!
+
+	!filling the refrigerator:
+	!count-bottles of beer in a day
+	if beer_day ! daystart: beer_count = 2
+	!count-of glasses in a bottle of vodka
+	if vodka_day ! daystart: vodka_count = 5
+	!count-in soup plates in kostryule
+	if sup_day ! daystart: sup_count = 2
+
+	!open fridge:
+end
+
+if $ARGS[0] = 'holodil':
+	menu_off = 1
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	if beer_count = 2:
+		$r_beer = ' 2 beers,'
+	elseif beer_count = 1:
+		$r_beer = ' 1 beer,'
+	else
+		$r_beer = ''
+	end
+
+	if vodka_count = 5:
+		$r_vodka = ' a full bottle of vodka,'
+	elseif vodka_count = 3:
+		$r_vodka = ' a half-empty bottle of vodka,'
+	elseif vodka_count = 1:
+		$r_vodka = ' a nearly empty bottle of vodka,'
+	else
+		$r_vodka = ''
+	end
+
+	if sup_count >= 1:
+		$r_sup = ' a large pot of soup'
+	else
+		$r_sup = ''
+	end
+
+	if beer_count = 0 and vodka_count = 0 and sup_count = 0:$r_pusto = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/holodpusto.jpg"></center><br><font color = red>empty shelves.</font>'
+	if beer_count > 0 and vodka_count > 0 and sup_count > 0:$r_pusto = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/holod'+rand(1,3)+'.jpg"></center>'
+	*nl
+	'You open the fridge and see:<<$r_vodka>><<$r_beer>><<$r_sup>><<$r_pusto>>'
+
+	act 'Close the refrigerator': gt 'shulgakuh'
+
+	!drink beer
+	if beer_count > 0:
+		act 'Drink a beer':
+			*clr & cla
+			minut += 5
+			gs 'drugs', 'alcohol', 'beer', 1
+			beer_day = daystart
+			beer_count -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/beer'+rand(1,3)+'.jpg"></center>'
+			*nl
+			'You take a bottle of beer from the fridge and drink it, quenching your thirst.'
+
+			act 'Continue': gt 'shulgakuh', 'holodil'
+		end
+	end
+	!drink vodka
+	if vodka_count > 0:
+		act 'Drink some vodka':
+			*clr & cla
+			minut += 1
+			gs 'drugs', 'alcohol', 'vodka', 1
+			vodka_day = daystart
+			vodka_count -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/vodka'+rand(1,2)+'.jpg"></center>'
+			'You pour some vodka in a glass and drink it. You shiver as you feel the warm, burning sensation slowly slide down your gullet.'
+			*nl
+			act 'Put the bottle back in the fridge': gt 'shulgakuh', 'holodil'
+
+			act 'Drink more vodka':
+				if vodka_count = 0: '<font color = red>There''s no vodka left, you drank it all!</font><center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/vodka0.jpg"></center>'
+				if vodka_count > 0:
+					minut += 1
+					gs 'drugs', 'alcohol', 'vodka', 1
+					vodka_day = daystart
+					vodka_count -= 1
+					gs 'stat'
+					'You pour yourself another glass and drain it in one gulp. Wow, that stuff is strong!'
+				end
+			end
+		end
+	end
+	!Chava soup
+	if sup_count > 0:
+		act 'Eat a bowl of soup':
+			*clr & cla
+			minut += 5
+			sup_day = daystart
+			sup_count -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/sup.jpg"></center>'
+			*nl
+			pcs_health += 10
+			pcs_mood += 20
+			fat += 2
+			pcs_energy += 50
+			if pcs_hydra >= 100:
+				pcs_hydra += 20
+			else
+				pcs_hydra += 40
+			end
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+
+			'You happily eat a bowl of soup. It''s good soup,<<$serg_obr>> Sergey sure knows how to cook!'
+
+			act 'Further': gt 'shulgakuh', 'holodil'
+		end
+	end
+end
+
+!Event in the kitchen with gopotoy:
+if $ARGS[0] = 'gang_sex_ev1':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang1.jpg"></center>'
+	*nl
+	gs 'boyStat', 'A9','3'
+	gs 'boyStat', 'A10','1'
+	gs 'boyStat', 'A11','2'
+	gang +=1
+	npc_sex[$boy[1]] += 1
+	npc_sex[$boy[2]] += 1
+	npc_sex[$boy[3]] += 1
+	minut += 2
+	gangsexroom_day = daystart
+	gangsexroom_count -= 1
+	gs 'stat'
+	'When you enter the kitchen, you see Vasily and his friends sitting at the kitchen table there. They''ve clearly been drinking.'
+	'"<<$pcs_nickname>>, how nice of you to join us! We were just talking about you", Vitek grins, as he pulls you onto the table. The other boys immediately surround you, and the three of them begin to paw at your clothes.'
+	'"Guys, what are you doing!?" you protest, and you weakly try to get away from them. They''re too strong though, and all your struggling does is make them even more turned on.'
+
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang2.jpg"></center>'
+		*nl
+		minut += 3
+		gs 'stat'
+		'You stop protesting when Vitek firmly grabs you by the hair. Meanwhile, '+func('gopsex','hide','Shulga_var_name')+' slides his hand underneath your clothes, attempting to thrust a finger inside your snatch.'
+		'"Stop squeezing your legs together, <<$pcs_nickname>>", Dan grins, as he keeps tugging at your top. "It''s a bit late for you to start being a prude now. We all know what you''ve been up to."'
+		'You have to admit that despite yourself, you''re getting rather turned on by how helpless you are... unable to resist the boys'' rough touch. Part of why you didn''t want to spread your legs was... they''d find out how wet you are.'
+		'When you spread your legs a little, Vasily immediately snakes his finger inside your pussy and confirms their suspicions: "She''s dripping. I knew it!"'
+
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang3.jpg"></center>'
+			*nl
+			gs 'arousal', 'foreplay', 5, 'sub', 'rough', 'gangbang'
+			gs 'stat'
+			'The guys force you to squat, and surround you. They all pulled their cocks out of their pants, and Dan is slapping his cock against your cheek impatiently.'
+			'When you don''t open your mouth, the boys grow impatient. Dan orders you: "<<$pcs_nickname>>, drop the act, seriously. You know what we want from you! Don''t worry, we won''t tell anyone..."'
+
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang4.jpg"></center>'
+				*nl
+				gs 'arousal','bj',2,'dick[3]','gangbang'
+				gs 'arousal','bj',2,'dick[1]','gangbang'
+				gs 'arousal','bj',2,'dick[2]','gangbang'
+				gs 'stat'
+				'After giving it some thought, you realize: they''re not just going to let you walk away, in their current state. You can cooperate or be difficult, but you''re getting fucked no matter what. You might as well take the easy route and just go along with it...'
+				'You nod obediently and take the closest dick in your mouth; it''s Vitek''s. You run your tongue over the head and suck on it gently, feeling it swell more and more in your mouth. By the time he''s at full mast, it doesn''t fit in your mouth any more and you have to pull away.'
+				'Vasily immediately takes his place, and Dan puts his hand on the back of your head and pushes you towards Vasily''s cock, making you swallow more of his length. Fortunately Vasily is the least girthy of the lot, and you manage to take him all the way in. He grins proudly at you when your chin touches his balls.'
+				'Then Dan wants a turn, and you manage to take most of his length down your throat too.'
+
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang5.jpg"></center>'
+					*nl
+					gs 'arousal','vaginal',5,'dick[2]','gangbang'
+					gs 'arousal','bj',5,'dick[1]','gangbang'
+					gs 'arousal','hj',5,'dick[3]','gangbang'
+					gs 'stat'
+					'Gradually, the guys undress you more and more while you suckthem off in turns. Then Vasily hoists you up and the guys make you lie down on the table. Vasily guides his cock to your pussy and thrusts it inside you, while Dan and Vitek move to the other end of the table and offer their dicks to you again. You masturbate them eagerly while Vasily fucks you. It''s difficult to suck them off in this position, but you try to make the most of it.'
+					'Then Vitek says: "'+func('gopsex','hide','Shulga_var_name')+', move over. I want to fuck her ass now!"'
+
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang6.jpg"></center>'
+						*nl
+						gs 'dinsex','boy_wants_anal',$boydesc[3]
+						gs 'arousal','anal',5,'dick[3]','gangbang'
+						gs 'arousal','bj',5,'dick[1]','gangbang','sub','rough'
+						gs 'stat'
+						'The guys pull you off the table and throw you onto the ground, where Dan puts his belt around your neck.'
+						'"Keep sucking, slut", he commands, and rubs his dick against your lips while Vitek spits on your asshole a few times.'
+						'You groan around Dan''s cock when Vitek forces the head of his dick inside you, but fortunately he''s gentle and gives you some time to adjust to the feeling before he begins to thrust.'
+						'"It''s a good thing she has a dick in her mouth", Vasily laughs. "She''d definitely wake up my father with her screaming, otherwise!"'
+
+						act 'Continue':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang7.jpg"></center>'
+							'"Alright guys, let''s change holes. Vasily needs one too", Vitek grins, and he picks you up like a rag doll.'
+							'When he sees the concerned look on your face, he smirks: "Do the math, <<$pcs_nickname>>. There are three guys here, you have three holes... what did you think was going to happen? You expect one of us to just jerk off the whole time? Not gonna happen. Let''s take her to the couch, guys."'
+							'Vitek carries you to the couch in his arms as if you weigh nothing, and positions you over his cock before he lowers you. Then the other guys join in, Dan sliding his cock into your already warmed up asshole while Vasily takes your mouth again.'
+							'For the next twenty minutes, the guys take turns fucking all of your holes, swapping it up every now and then.'
+							*nl
+							gs 'arousal','vaginal',3,'dick[3]','gangbang'
+							gs 'arousal','anal',2,'dick[1]','gangbang'
+							gs 'arousal','bj',2,'dick[2]','gangbang','deepthroat'
+							gs 'arousal','vaginal',3,'dick[2]','gangbang'
+							gs 'arousal','anal',2,'dick[3]','gangbang'
+							gs 'arousal','bj',2,'dick[1]','gangbang','deepthroat'
+							if pcs_horny >=70:
+								$orgasm_or = 'yes'
+								$orgasm_txt = 'When you groan loudly and your body begins to spasm, the guys are actually kind enough to give you some respite for a minute or two to ride out your orgasm. Once they feel you''ve recovered enough, they redouble their efforts and furiously pound all of your holes, as if they''re trying to make up for lost time.'
+							end
+							gs 'arousal','vaginal',2,'dick[1]','gangbang'
+							gs 'arousal','anal',2,'dick[2]','gangbang'
+							gs 'arousal','bj',2,'dick[3]','gangbang','deepthroat'
+							*p 'You end up deepthroating the dick of whoever is in front of you at the time a lot, with the guys behind you fucking you so roughly that your head keeps bouncing forward.'
+							'Your throat feels a little sore, but for the rest it feels heavenly! You can easily take their members on by now and blissfully lie down on the chest of the guy beneath you, willingly surrendering yourself to them.'
+							gs 'stat'
+							act 'Continue':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/event/gang8.jpg"></center>'
+								*nl
+								gs 'arousal','bj',5,'dick[2]','gangbang'
+								gs 'arousal','hj',5,'gangbang'
+								gs 'cum_call','face',$boy[2],1
+								gs 'cum_call','mouth',$boy[1],1
+								gs 'cum_call','face',$boy[3],1,'','',20
+								gs 'cum_call','breasts',$boy[3],1,'','',20
+								gs 'stat'
+								'When the guys are getting close, Dan suggests they all stand around you and shoot their loads over your face. The guys happily agree and move in front of you, all pointing their cocks at your face.'
+								'"What are you waiting for, <<$pcs_nickname>>? Finish us off!" Dan orders you impatiently.'
+								'You bite your lip and begin to jerk two of them off with your hands, while sucking on the third. It doesn''t take long for the first jets of cum to fly through the air; Vasily shot his hot load all over your face, groaning loudly.'
+								'Then Dan''s cock begins to pulse in your mouth, and you feel his load being squirted into your mouth. You swallow it obediently and immediately turn your head to Vitek, who shoots his sperm all over your face and boobs.'
+								'Dan grins at your cute face, all covered in sperm: "That wasn''t so bad... was it, <<$pcs_nickname>>? Next time, how about you drop the good girl charade and just let us fuck you when we want to? You know you love it as much as we do!"'
+								gs 'dinsex','after_anal','boy',$boydesc[2]
+								gs 'arousal', 'end'
+								act 'Leave them': killvar '$boy' & gt 'shulgakuh'
+
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end &! --- gang_sex_ev1 ---
+
+--- shulgakuh ---------------------------------
+

@@ -1,0 +1,401 @@
+# outdoors
+
+weatherGrM[1] = -10
+weatherGrM[2] = -5
+weatherGrM[3] = 0
+weatherGrM[4] = 10
+weatherGrM[5] = 10
+weatherGrM[6] = 15
+weatherGrM[7] = 25
+weatherGrM[8] = 20
+weatherGrM[9] = 15
+weatherGrM[10]= 10
+weatherGrM[11]= 0
+weatherGrM[12]= -5
+
+weatherGrDelta = 5
+
+weatherFallM[1] = 50
+weatherFallM[2] = 40
+weatherFallM[3] = 30
+weatherFallM[4] = 20
+weatherFallM[5] = 20
+weatherFallM[6] = 10
+weatherFallM[7] = 10
+weatherFallM[8] = 10
+weatherFallM[9] = 20
+weatherFallM[10]= 20
+weatherFallM[11]= 30
+weatherFallM[12]= 40
+
+weatherFallDelta = 10
+
+DayLengthMin = 177 &! Minutes from dawn to noon
+DayLengthMax = 563
+
+if $ARGS[0] = 'weather':
+	if weatherDay ! DayInYear:
+		weatherTemper = rand(weatherGrM[month]-weatherGrDelta, weatherGrM[month]+weatherGrDelta)
+		weatherFall = rand(weatherFallM[month]-weatherFallDelta, weatherFallM[month]+weatherFallDelta)
+	end
+	if (weatherHour ! hour) or (weatherDay ! daystart):
+		weatherDay = DayInYear
+		weatherHour = hour
+		
+		temper = hour
+		if temper <= 2:
+			temper = temper + (6 - (temper * 2))
+		elseif temper >= 3 and temper <= 15:
+			temper = temper
+		elseif temper >= 16:
+			temper = (temper - 30) * -1
+		end
+		
+		temper = weatherTemper + (weatherGrDelta*100/6*temper)/100
+		
+		if chWeather = 0:
+			sunWeather = IIF( rand(0,100)<weatherFall, 0, 1)
+		else
+			killvar 'chWeather'
+		end
+
+		if temper < -5 :
+			if weatherFall < 30 :
+				if sunWeather = 1 :
+					$osadki = 'Clear and cloudless.'
+				else
+					$osadki = 'Clear sky, but light snow falls.'
+				end
+			elseif weatherFall < 60 :
+				if sunWeather = 1 :
+					$osadki = 'Partly cloudy and light breeze.'
+				else
+					$osadki = 'Clouds and it is snowing.'
+				end
+			else
+				if sunWeather = 1 :
+					$osadki = 'Clouds all over the sky and a sharp cold wind.'
+				else
+					$osadki = 'Strong snow with wind.'
+				end
+			end
+		elseif temper < 5 :
+			if weatherFall < 30 :
+				if sunWeather = 1 :
+					$osadki = 'Clear and cloudless.'
+				else
+					$osadki = 'Slightly wet snow.'
+				end
+			elseif weatherFall < 60 :
+				if sunWeather = 1 :
+					$osadki = 'Partly cloudy and light breeze.'
+				else
+					$osadki = 'Clouds and wet snow.'
+				end
+			else
+				if sunWeather = 1 :
+					$osadki = 'Clouds all over the sky and a sharp wind.'
+				else
+					$osadki = 'Heavy snow, sticking wet snow.'
+				end
+			end
+		else
+			if weatherFall < 30 :
+				if sunWeather = 1 :
+					$osadki = 'Clear and cloudless.'
+				else
+					$osadki = 'Light mushroom rain.'
+				end
+			elseif weatherFall < 60 :
+				if sunWeather = 1 :
+					$osadki = 'Partly cloudy skies.'
+				else
+					$osadki = 'It is raining.'
+				end
+			else
+				if sunWeather = 1 :
+					$osadki = 'Clouds all over the sky and a sharp wind.'
+				else
+					$osadki = 'Heavy rain and wind.'
+				end
+			end
+		end
+
+		gs 'outdoors', 'temp_set'
+
+		jump 'WTHR_<<month>>'
+		:WTHR_1
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>There is snow on the street.'
+			jump 'WTHR_x'
+		:WTHR_2
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>There is snow on the street.'
+			jump 'WTHR_x'
+		:WTHR_3
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>There is snow on the street.'
+			jump 'WTHR_x'
+		:WTHR_4
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>The snow melts on the street.'
+			jump 'WTHR_x'
+		:WTHR_5
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>Puddles in the street left by snow, winter has covered everything in dirt and debris, some places where new grass grows are pleasantly green.'
+			jump 'WTHR_x'
+		:WTHR_6
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>Green grass lines the streets.'
+			jump 'WTHR_x'
+		:WTHR_7
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>Green grass lines the streets.'
+			jump 'WTHR_x'
+		:WTHR_8
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>The grass is green, the leaves in the trees are already turning yellow.'
+			jump 'WTHR_x'
+		:WTHR_9
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>Streets lined with green grass, visible yellow leaves.'
+			jump 'WTHR_x'
+		:WTHR_10
+			$weather = '<<$osadki>> Temperature is <<$temperature>>.<br>The grass is fading and patchy, yellow and brown leaves fall from the trees, mud and puddles dot the street.'
+			jump 'WTHR_x'
+		:WTHR_11
+			$weather = '<<$osadki>> Temperature is <<$temperature>>.<br>The street is dirty with a thin snow cover.'
+			jump 'WTHR_x'
+		:WTHR_12
+			$weather = '<<$osadki>> The temperature is <<$temperature>>.<br>The street is covered in snow.'
+			jump 'WTHR_x'
+		:WTHR_x
+	end	
+end
+
+if $ARGS[0] = 'temp_set':
+	if temper < 0:
+		$temperature = '<font color=blue>'
+	elseif temper < 10:
+		$temperature = '<font color=green>'
+	elseif temper < 20:
+		$temperature = '<font color=orange>'
+	else
+		$temperature = '<font color=red>'
+	end
+	if TempUnit=0:$temperature +='<<temper>>°C</font>' else $temperature +='<<temper*9/5+32>>°F</font>'
+end
+
+if $ARGS[0] = 'main':
+
+	DayInYear=0
+	if month > 1:DayInYear += 31
+	if month > 2:
+		if ((year mod 4 = 0) and (year mod 100 ! 0)) or (year mod 400 = 0):
+			DayInYear += 29
+		else
+			DayInYear += 28
+		end
+	end
+	if month > 3:DayInYear += 31
+	if month > 4:DayInYear += 30
+	if month > 5:DayInYear += 31
+	if month > 6:DayInYear += 30
+	if month > 7:DayInYear += 31
+	if month > 8:DayInYear += 31
+	if month > 9:DayInYear += 30
+	if month > 10:DayInYear += 31
+	if month > 11:DayInYear += 30
+	if month > 12:DayInYear += 31
+	DayInYear += day
+
+	if DayInYear >= 171 :
+		DayInYear2 = DayInYear-171
+	else
+		DayInYear2 = 171-DayInYear
+	end
+	DayLength = DayLengthMax-((DayLengthMax-DayLengthMin)*100/182)*DayInYear2/100
+	! length/2 in minutes current day
+
+	CurTimeSun = hour*60 + minut
+	! midday in 13:00
+	! CurTimeSun (minuts) <0 - before midday; >0 - after midday
+	if CurTimeSun >= 780 :
+		CurTimeSun = CurTimeSun-780
+	else
+		CurTimeSun = -(780-CurTimeSun)
+	end
+
+	DayStage=5
+	BColorBase=0
+	! 1 - dawn
+	! 2 - midday
+	! 3 - sunset
+	! 4 - the beginning of the night
+	! 5 - night
+	! 6 - the end of the night
+	if CurTimeSun >= -(DayLength-60) and CurTimeSun <= (DayLength-60) :
+		DayStage=2
+		BColorBase=255
+	elseif CurTimeSun >= -DayLength and CurTimeSun <= -(DayLength-60) :
+		DayStage=1
+		BColorBase=128+(DayLength+CurTimeSun)*2 &! CurTimeSun - negative, result = 128+ [0-60]*2
+	elseif CurTimeSun >= (DayLength-60) and CurTimeSun <= DayLength :
+		DayStage=3
+		BColorBase=256+((DayLength-60)-CurTimeSun)*2 &! CurTimeSun - positive, result =128+ [0-60]*2
+	elseif CurTimeSun >= DayLength and CurTimeSun <= DayLength+60 :
+		DayStage=4
+		BColorBase=128-(CurTimeSun-DayLength)*2  &! CurTimeSun - positive, result =128- [0-60]*2
+	elseif CurTimeSun >= -(DayLength+60) and CurTimeSun <= -DayLength :
+		DayStage=6
+		BColorBase=128+(CurTimeSun+DayLength)*2  &! CurTimeSun - negative, result = 128- [0-60]*2
+	end
+
+!	*pl '    DayInYear=<<DayInYear>> DayLength=<<DayLength>>  CurTimeSun=<<CurTimeSun>>  DayStage=<<DayStage>>'
+
+	$weatherImage = '<img height = <<set_weatherht>> src="images/system/weather/wthr'
+	$weatherImage = $weatherImage + '<<DayStage>>'
+	if temper < -10 : 
+		$weatherImage += '1'
+	elseif temper <= 5 :
+		$weatherImage += '2'
+	elseif temper <= 19 :
+		$weatherImage += '3'
+	else
+		$weatherImage += '4'
+	end
+	if weatherFall < 30 :
+		$weatherImage += '1'
+	elseif weatherFall < 60 :
+		$weatherImage += '2'
+	else
+		$weatherImage += '3'
+	end
+	if sunWeather = 1 :
+		$weatherImage += '1'
+	else
+		$weatherImage += '2'
+	end
+	$weatherImage += '.jpg">'
+
+!	clr
+!	pl $weatherImage
+!	pl
+!	pl $weather
+!	pl $osadki
+
+	gs 'themes', 'outdoors'
+
+!!Shoe variables - cleared here and then set if in outdoors location below
+	PShoQuality = 0
+	PShoHeels = 0
+	PShoCut = 0
+	PShoStyle = 0
+
+	if $location_type = 'public_outdoors' or $location_type = 'secluded' or $location_type = 'event_outdoors':
+		if sunWeather = 0 and umbrella = 0:
+			*NL 'It is raining and you do not have an umbrella.'
+			if pcs_makeup > 1:
+				pcs_makeup = 0
+				*p ' The rain has ruined your makeup.'
+			end
+
+			if pcs_hairbsh = 1:
+				pcs_hairbsh = 0
+
+				if curly > 0:curly -= 1
+
+				*p ' Your hair is soaked.'
+			end
+			*nl
+		end
+
+		if shoeworntype ! 'none':
+			gs 'shoe_attributes', $shoeworntype, shoewornnumber
+			PShoQuality = ShoQuality
+			PShoHeels = ShoHeels
+			PShoCut = ShoCut
+			PShoStyle = ShoStyle
+		end
+
+		if temper <= 0:
+			if (totminut - Time15Minute) >= 15:
+				!reset Time15Minute
+				if frost = 0:Time15Minute = totminut
+				! begin Loop
+				:Time15MinuteLoop
+
+				if defaultcoat = 5:
+					bonusZ = -3
+				elseif defaultcoat = 0:
+					bonusZ = 0
+				else
+					bonusZ = 3
+				end
+
+				if defaultcoat = 0:
+					if temper < 0:frost += 1
+					if temper < -20:frost += 2
+					if temper < -30:frost += 5
+					if pcs_energy < 20:frost += 1
+					if pcs_hydra < 20:frost += 1
+					if $pantyworntype = 'none':frost += 1
+					if pcs_sweat > 20:frost += 1
+				elseif temper < -10 and defaultcoat_warmth = 1:
+					if temper < -30:
+						frost += 2
+					else
+						frost += 1
+					end
+					if pcs_energy < 20:frost += 1
+					if pcs_hydra < 20:frost += 1
+					if $pantyworntype = 'none':frost += 1
+					if pcs_sweat > 20:frost += 1
+				elseif temper < -20 and defaultcoat_warmth = 2:
+					frost += 1
+					if pcs_energy < 20:frost += 1
+					if pcs_hydra < 20:frost += 1
+					if pcs_sweat > 20:frost += 1
+				elseif temper < -30 and defaultcoat_warmth = 3:
+					frost += 1
+				end
+
+				if frost >= 12:sickstage = 1
+
+				Time15Minute += 15
+
+				if (totminut - Time15Minute) >= 15:jump 'Time15MinuteLoop'
+			end
+		end
+
+!!15 minute check to stop refreshes causing early gameover and cheating at exhibitionism
+		if outdoors_checks + 15 < totminut:
+			outdoors_checks = totminut
+			if isprok = 0 and isprokp = 0 and mesec > 0 and preg = 0 and $loc ! 'gaddvor' and (isprok_lastday = 0 or (hour > 4 and isprok_lastday = 1)):
+				'<b><font color="red">You have blood flowing down your legs and staining your clothes.</font></b>'
+
+				if $pantyworntype ! 'none':gs 'panties', 'dispose' & '<b><font color="red">Your panties have been ruined and you discreetly remove and dispose of them.</font></b>'
+
+				gs 'sweat', 'add', 10
+				if pcs_mood > 20: pcs_mood -= 20
+				dynamic '<<$clothingworntype>>H[<<clothingwornnumber>>] -= 1'
+			end
+
+!!Exhibitionism
+
+			if PCloInhibit >= pcs_inhib - 10 and $loc ! 'gaddvor':
+				exhibition_outdoors += 1
+				if pcs_inhib < 45 and PCloPanties = 1: exhibition_outdoors += 1
+			end
+
+			if $pantyworntype = 'none' and $loc ! 'gaddvor':
+				if PCloSkirt = 3:
+					exhibition_outdoors += 1
+				elseif PCloSkirt = 4:
+					exhibition_outdoors += 2
+				elseif PCloSkirt = 5:
+					exhibition_outdoors += 3
+				elseif PCloSkirt = 6:
+					exhibition_outdoors += 4
+				end
+			end
+		end
+	else
+		gs 'themes', 'indoors'
+	end
+end
+	
+	
+--- outdoors ---------------------------------
+

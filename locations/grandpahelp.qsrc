@@ -1,0 +1,351 @@
+# grandpahelp
+
+*clr & cla
+'<center><img <<$set_imgh>> src="images/locations/gadukino/grandparents/grandpa1.jpg"></center>'
+'You walk up to your grandfather and ask if he needs any help. Grandpa thinks for a moment and says:'
+menu_off = 1
+gs'stat'
+
+if $ARGS[0] = 'start':
+	if month <= 4 or month >= 10:
+		grandpaQW['chore_type'] = rand(0,5)
+	elseif month = 5:
+		grandpaQW['chore_type'] = rand(3,8)
+	elseif month >= 6 and month <= 9:
+		grandpaQW['chore_type'] = rand(3,14)
+	end
+
+	if grandpaQW['chore_type'] = 0:
+		'"<<$pcs_nickname>>, could you run out to the barn and bring some firewood for the stove?"'
+
+		grandpaQW['chore_fetch_firewood'] = 1
+		act 'Tell him you will go get some in just a bit':gt 'gadhouse', 'grandpa'
+		act 'Agree and go to fetch firewood (0:20)':
+			*clr & cla
+			if month >= 4 and month <= 10:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/firewood.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/firewood_winter.jpg"></center>'
+			end
+			'You put on some warm clothes and run over to the barn to collect some firewood. '
+			'"I''ve brought some firewood grandfather," you said to your grandfather.'
+			'"You are very quick <<$pcs_nickname>>." he replies with a smile. "That''s today''s youth for ya. There is no more work today."'
+			grandpaQW['chore_fetch_firewood'] = 0
+			minut += 20
+			grandmaQW['help_amount'] += 1
+			gs'stat'
+
+			act 'Continue':gt 'gadhouse', 'start'
+		end
+	elseif grandpaQW['chore_type'] = 1:
+		'"<<$pcs_nickname>>, I need you to go to the barn and feed Desperado."'
+
+		grandpaQW['chore_feed_horse'] = 1
+		act 'Tell him that you will get to it in a little bit':gt 'gadhouse', 'grandpa'
+		act 'Agree and go to the barn (0:10)':
+			*clr & cla
+			if month >= 4 and month <= 10:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard_winter.jpg"></center>'
+			end
+			'You walk over to the barn where Desperado is kept.'
+			minut += 10
+			gs'stat'
+
+			act 'Continue':gt'gadsarai','horse'
+		end
+	elseif grandpaQW['chore_type'] = 2:
+		'"<<$pcs_nickname>>, go to the barn and feed the cow."'
+
+		grandpaQW['chore_feed_cow'] = 1
+		act 'Tell him that you will do it in a little while':gt 'gadhouse', 'grandpa'
+		act 'Agree and go to the barn (0:10)':
+			*clr & cla
+			if month >= 4 and month <= 10:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard_winter.jpg"></center>'
+			end
+			'You walk over to the barn where the cows are kept.'
+			minut += 10
+			gs'stat'
+
+			act 'Continue':gt'gadsarai','cow'
+		end
+	elseif grandpaQW['chore_type'] = 3:
+		gt 'grandpahelp', 'cleanyard'
+	elseif grandpaQW['chore_type'] = 4:
+		gt 'grandpahelp', 'groomhorse'
+	elseif grandpaQW['chore_type'] = 5:
+		gt 'grandpahelp', 'feedhogs'
+	elseif grandpaQW['chore_type'] = 6 and hour >= 6 and hour < 9:
+		gt 'grandpahelp', 'grazehorse'
+	elseif grandpaQW['chore_type'] = 7 and hour >= 6 and hour < 9:
+		gt 'grandpahelp', 'leadcows'
+	elseif grandpaQW['chore_type'] = 8 and hour >= 6 and hour < 9:
+		gt 'grandpahelp', 'grazecows'
+	elseif grandpaQW['chore_type'] = 9 and temper >= 15 and sunWeather = 1 and week > 5 and ARRSIZE('swimwear') > 0:
+		gt 'grandpahelp', 'washhorse'
+	elseif grandpaQW['chore_type'] = 10 and boletus_stored <= 18:
+		gt 'grandpahelp', 'pickforest_mushrooms'
+	elseif grandpaQW['chore_type'] = 11 and bilberry_stored <= 18:
+		gt 'grandpahelp', 'pickforest_berries'
+	elseif grandpaQW['chore_type'] = 12 and ((boletus_stored + bilberry_stored) <= 16):
+		gt 'grandpahelp', 'pickforest_both'
+	elseif grandpaQW['chore_type'] = 13 and temper >= 15 and sunWeather = 1 and hour >= 6 and hour < 9:
+		'"<<$pcs_nickname>>, we need to help out with baling hay today. We have to go to the field to meet the others."'
+		'"Okay, grandfather," you replied.'
+
+		grandpaQW['chore_bale_hay'] = 1
+		act 'Tell him you will head over there soon':gt 'gadhouse', 'grandpa'
+		act 'Grab a rake and head to the field (0:40)':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_gadfield.jpg"></center>'
+			'With the rake in your hand, you go to meet up with the other local residents at the field.'
+			minut += 40
+			gs'stat'
+
+			act 'Continue':gt'gadfield','field'
+		end
+	else
+		if hour >= 9:
+			randmsg = rand(0,5)
+			if randmsg = 0:
+				'"You can rest today <<$pcs_nickname>>, you don''t need to help me today."'
+			elseif randmsg = 1:
+				'"You can rest today child, there is nothing to do."'
+			elseif randmsg = 2:
+				'"You can rest today <<$pcs_nickname>>, there is nothing to do."'
+			elseif randmsg = 3:
+				'"There''s no work today <<$pcs_nickname>>, go and rest up."'
+			elseif randmsg = 4:
+				'"You can rest today my dear granddaughter."'
+			else
+				'"You can take the day off to rest up."'
+			end
+		else
+			randmsg = rand(0,1)
+			if randmsg = 0:
+				'"You don''t need to help out today <<$pcs_nickname>>."'
+			else
+				'"You can take the day off."'
+			end
+		end
+		act 'Continue':gt 'gadhouse', 'grandpa'
+	end
+end
+
+if $ARGS[0] = 'cleanyard':
+	'"Of course <<$pcs_nickname>>, I need your help in the yard. Bring a garden tool with you."'
+
+	grandpaQW['chore_clean_yard'] = 1
+	act 'Tell him that you''ll do it in a minute':gt 'gadhouse', 'grandpa'
+	act 'Agree and go clean up the yard (1:00)':
+		*clr & cla
+		if month >= 4 and month <= 10:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/clean_yard1.jpg"></center>'
+			'Armed with a rake, you begin cleaning the yard. You''re pleased, seeing the yard clean. You return the rake to the shed and continue on with your business.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/clean_yard2.jpg"></center>'
+			'Armed with a shovel, you begin clearing the yard of snow. You''re pleased with yourself, seeing the courtyard is free of snow. You return the shovel to the shed and continue on with your business.'
+		end
+		minut += 60
+		grandpaQW['chore_clean_yard'] = 2
+		if month >= 4 and month <= 10:
+			fat -= rand(1,3)
+		else
+			stren_exp += 1
+			fat -= rand(1,5)
+		end
+		gs'stat'
+
+		act 'Continue':gt'gaddvor'
+		act 'Return back to your grandfather': minut += 1 & gt 'gadhouse', 'grandpa'
+	end
+end
+
+if $ARGS[0] = 'feedhogs':
+	'"<<$pcs_nickname>>, could you go to the barn and feed the hog?"'
+
+	grandpaQW['chore_feed_boar'] = 1
+	act 'Tell him you will get to it soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the barn (0:10)':
+		*clr & cla
+		if month >= 4 and month <= 10:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard_winter.jpg"></center>'
+		end
+		'You walk over to the barn where the hogs are kept.'
+		minut += 10
+		gs'stat'
+
+		act 'Continue':gt'gadsarai','boar'
+	end
+end
+
+if $ARGS[0] = 'washhorse':
+	'"It''s good weather today. Take Desperado to the river and give him a bath."'
+
+	grandpaQW['chore_bathe_horse'] = 1
+	act 'Tell him you will do it in a little while':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the barn (0:10)':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+		'You walk over to the barn where Desperado is kept.'
+		minut += 10
+		gs'stat'
+
+		act 'Continue':gt'gadsarai','horse'
+	end
+end
+
+if $ARGS[0] = 'groomhorse':
+	'"Of course <<$pcs_nickname>>, I need your help to groom Desperado."'
+
+	grandpaQW['chore_brush_horse'] = 1
+	act 'Tell him you will do it in a bit':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the barn (0:10)':
+		*clr & cla
+		if month >= 4 and month <= 10:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard_winter.jpg"></center>'
+		end
+		'You walk over to the barn where Desperado is kept.'
+		minut += 10
+		gs'stat'
+
+		act 'Continue':gt'gadsarai','horse'
+	end
+end
+
+if $ARGS[0] = 'grazehorse':
+	'"<<$pcs_nickname>>, take Desperado to the field, my legs hurt so I need to rest for a bit. I''ll retrieve the horse up in the evening."'
+
+	grandpaQW['chore_lead_horse_to_field'] = 1
+	act 'Tell him you will do it soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the barn (0:10)':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+		'You walk over to the barn where Desperado is kept.'
+		minut += 10
+		gs'stat'
+
+		act 'Continue':& gt'gadsarai','horse'
+	end
+end
+
+if $ARGS[0] = 'grazecows':
+	if grandpaQW['chore_herd_cattle_experience'] = 0:
+		'"<<$pcs_nickname>>, we need to let the cows graze on the field today. Grab something to eat and lead the herd to the field. I''ll meet you there."'
+	else
+		'"<<$pcs_nickname>>, it''s our turn to look out for the cows grazing on the field today. So grab something to eat quickly, and stop by the field where the herd is. I''ll bring them back home."'
+	end
+
+	grandpaQW['chore_herd_cattle'] = 1
+	act 'Tell him you will meet him there':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the field (0:40)':
+		*clr & cla
+		if grandpaQW['chore_herd_cattle_experience'] = 0:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+			'You take a little nibble of a sandwich and go to the shed where the herd is. Your grandmother put a sandwich and a bottle of water in the bag for lunch.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_go_field.jpg"></center>'
+			'You have a quick bite and go to the field where the village herd is. Your grandmother put a sandwich and a bottle of water in the bag for lunch.'
+		end
+		pcs_mood += 20
+		pcs_health += 10
+		minut += 40
+		if bottle = 0: bottle = 1
+		if buterbrod = 0: buterbrod = 1
+		gs'stat'
+
+		act 'Continue':gt'gadfield','cow'
+	end
+end
+
+if $ARGS[0] = 'leadcows':
+	'"I have sore feet today, <<$pcs_nickname>>. My dear granddaughter, could you lead the cow to the field and tell the herders to drive her home at the end of the day?"'
+
+	grandpaQW['chore_lead_cow_to_field'] = 1
+	act 'Tell him you will soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the barn (0:10)':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/go_yard.jpg"></center>'
+		'You walk over to the barn where the cows are kept.'
+		minut += 10
+		gs'stat'
+
+		act 'Continue':gt'gadsarai','cow'
+	end
+end
+
+if $ARGS[0] = 'pickforest_mushrooms':
+	grandpaQW['chore_gather_mushrooms'] = 1
+	grandpaQW['chore_mushroom_quantity'] = rand(1,2)
+	'"<<$pcs_nickname>>, could you go to the forest and pick mushrooms? I''m craving fried mushrooms."'
+	'"How much should I pick, grandpa?", you ask.'
+	'"<<grandpaQW[''chore_mushroom_quantity'']>> kilos will be enough," grandfather replies. "Be careful so you don''t get lost."'
+
+	act 'Tell him you will go get some soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the forest (1:00)':
+		*clr & cla
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_night.jpg"></center>'
+		end
+		'You agree to help your grandfather, grabbing a basket and setting out on the road to the forest.'
+		minut += 60
+		act 'Continue': gt 'gadforest', 'forest_edge'
+	end
+end
+
+if $ARGS[0] = 'pickforest_berries':
+	grandpaQW['chore_gather_berries'] = 1
+	grandpaQW['chore_berry_quantity'] = rand(1,2)
+	'"<<$pcs_nickname>>, could you go to the forest to pick some berries? Grandma wants to make homemade fruit jam."'
+	'"How much should I pick, grandpa?" you ask.'
+	'"<<grandpaQW[''chore_berry_quantity'']>> kilos will be enough," grandfather replies. "Just be careful so you don''t get lost."'
+
+	act 'Tell him you will go get some soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the forest (1:00)':
+		*clr & cla
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_night.jpg"></center>'
+		end
+		'You agree to help your grandfather, grabbing a basket and setting out on the road to the forest.'
+		minut += 60
+		act 'Continue': gt 'gadforest', 'forest_edge'
+	end
+end
+
+if $ARGS[0] = 'pickforest_both':
+	grandpaQW['chore_gather_both'] = 1
+	grandpaQW['chore_mushroom_quantity'] = rand(1,2)
+	grandpaQW['chore_berry_quantity'] = rand(1,2)
+	'"<<$pcs_nickname>>, can you go to the forest and pick some berries and mushrooms? Your grandmother wants to make a mushroom soup, and I have a craving for some fresh berries."'
+	'"How much should I pick, grandpa?"'
+	'"<<grandpaQW[''chore_mushroom_quantity'']>> kilos of mushrooms and <<grandpaQW[''chore_berry_quantity'']>> kilos of berries will be enough," grandfather replies. "Just don''t get lost."'
+
+	act 'Tell him you will go get some soon':gt 'gadhouse', 'grandpa'
+	act 'Agree and go to the forest (1:00)':
+		*clr & cla
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_night.jpg"></center>'
+		end
+		'You agree to help your grandfather, grabbing a basket and setting out on the road to the forest.'
+		minut += 60
+		act 'Continue': gt 'gadforest', 'forest_edge'
+	end
+end
+
+
+--- grandpahelp ---------------------------------
+

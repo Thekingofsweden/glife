@@ -1,0 +1,952 @@
+# gadforest
+
+if $ARGS[0] = 'forest_edge':
+	*clr & cla
+
+	! force Mira to stay here if Sveta brought Mira here by choice - temporarily overrides Miras schedule to not annoy the player
+	Mira_Stay = iif($loc ! 'Miroslava', 1 , 0)
+
+	clothesAtLocation = FUNC('lost_clothes_here','forest_edge')
+
+	$loc = 'gadforest'
+	$metka = 'forest_edge'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadforest'
+	$menu_arg = 'forest_edge'
+	menu_off = 0
+
+	$forest_args1 = 'forest_edge'
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs 'stat'
+
+	'<center><H4>Edge of the Forest</H4></center>'
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest1.jpg"></center>'
+			*nl
+			'You are at the edge of the forest. Mushrooms and berries grow here and you can often find other people picking them.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_night1.jpg"></center>'
+			*nl
+			'You are at the edge of the forest. Night in the woods is scary and uncomfortable.'
+		end
+	else
+		if hour >= 8 and hour < 20:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter1.jpg"></center>'
+			*nl
+			'You are at the edge of the forest. The forest during wintertime is very beautiful.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter_night1.jpg"></center>'
+			*nl
+			'You are at the edge of the forest. Night in the forest during wintertime is very scary and uncomfortable.'
+		end
+	end
+
+	gs 'gadforest','bushcraft','forest_edge'
+	*nl
+	if pcs_bushcraft < 10:
+		'<font color="red">You don''t know this part of the forest very well. You could get lost if you go any deeper into the woods.</font>'
+	else
+		'<font color="green">You are comfortable navigating this part of the forest, and can adventure deeper into the woods if you want.</font>'
+	end
+
+	if clothesAtLocation = 1:*nl & 'Your clothes are nearby on the ground.'
+	if forestpicnic = 1:
+		if hour < 10 or hour > 14:
+			forestpicnic = 0
+		else
+			*nl
+			'On the edge of the forest you see people. Apparently they are having a family <a href="exec:gt ''gadforest_event'',''picnic''">picnic</a>.'
+		end
+	end
+	if hour < 8 or hour > 16 and mushroom_pickers ! 0:
+		mushroom_pickers = 0
+		*nl
+		'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+	else
+		*nl
+		if mushroom_pickers = 0:
+			'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+		elseif mushroom_pickers = 1:
+			'You can see other people picking mushrooms and berries here at the forests edge.'
+		elseif mushroom_pickers = 2:
+			'You can hear people picking mushrooms and berries deeper in the forest.'
+		end
+	end
+	if MiraLoc = 3:'<a href="exec: gt ''Miroslava'' ">Mira</a> is here with you.'
+
+	foresteventrand = rand(1,20)
+	! Events with Mira
+	if MiraLoc = 3:
+		if hour >= 11 and Mira_Stay = 0:
+			*clr & cla
+
+			gs 'miroslava','miraclothes'
+			*nl
+			'"<<$pcs_nickname>>, I''m going to head home now, but we can hang out again more later." Mira said to you as she began to walk out of the forest.'
+
+			! Allow the player to override Mira schedule to get events done with her, also so Mira cannot appear and disappear before the player can interact with her
+			act 'Convince her to stay with you':
+				Mira_Stay = 1
+				gt 'gadforest', 'forest_edge'
+			end
+			! Allow the player to let Mira continue on her schedule if they want to get events done on their own
+			act 'Say goodbye':
+				MiraLoc = 0
+				gt 'gadforest', 'forest_edge'
+			end
+		end
+		if mirapickingtalk = 0 and miratalkday ! daystart: gt 'gadforest_event', 'mira_picking_talk'
+		if miranudetalk = 0 and miratalkday ! daystart: gt 'gadforest_event', 'mira_nude_talk'
+		! stripping requires there to be no picnic going on, to have clothes on, for there to be no clothes already abandoned at the forest_edge, between april and october and already talked to Mira about being naked in the forest
+		if forestpicnic = 0 and $clothingworntype ! 'nude' and clothesAtLocation = 0 and month >= 4 and month <= 10 and hour >= 8 and hour <= 20 and miranudetalk = 1 and miratalkday ! daystart: gt 'gadforest_event', 'mira_nude_event'
+	! Events without Mira
+	else
+		if metmira = 1 and MiraLoc ! 3 and hour >= 8 and hour <= 10:
+			mirarand = rand(1,10)
+			if mirarand >= 6: MiraLoc = 3 & gt 'gadforest_event', 'mira_morning_walk'
+		end
+		if foresteventrand <= 2 and month >= 6 and month <= 9 and hour >= 8 and hour <= 16 and mushroom_pickersday ! daystart: mushroom_pickers = 1 & gt 'gadforest_event', 'mushroom_pickers1'
+		if foresteventrand <= 4 and month >= 6 and month <= 9 and hour >= 8 and hour <= 16 and mushroom_pickersday ! daystart: mushroom_pickers = 2 & gt 'gadforest_event', 'mushroom_pickers2'
+		if foresteventrand = 5 and month >= 6 and month <= 9 and hour >= 10 and hour <= 14 and temper >= 10 and sunWeather = 1 and week > 5 and forestpicnic = 0: forestpicnic = 1 & gt 'gadforest_event', 'picnic'
+	end
+	! Events with or without Mira
+	if foresteventrand <= 8 and hour >= 8 and hour <= 20 and month >= 4 and month <= 10 and gadboyday ! daystart:
+		if mitkaday ! daystart:
+			if MiraLoc = 3: gt 'gadforest_event', 'mitka_temporary_event'
+		!	gt 'mitka_forest_1', 'mitka'
+		!elseif kolyambaday ! daystart:
+		!	gt 'mitka_forest_1', 'kolyamba'
+		!elseif vasyanday ! daystart:
+		!	gt 'mitka_forest_1', 'vasyan'
+		end
+	end
+	!if foresteventrand = 9 and hour >= 8 and hour <= 20 and month >= 4 and month <= 10 and gadboyday ! daystart:
+	!	if mitkaday ! daystart and kolyambaday ! daystart:
+	!		gt 'mitka_forest_2', '1'
+	!	elseif mitkaday ! daystart and vasyanday ! daystart:
+	!		gt 'mitka_forest_2', '2'
+	!	elseif kolyambaday ! daystart and vasyanday ! daystart:
+	!		gt 'mitka_forest_2', '3'
+	!	elseif mitkaday ! daystart:
+	!		gt 'mitka_forest_1', 'mitka'
+	!	elseif kolyambaday ! daystart:
+	!		gt 'mitka_forest_1', 'kolyamba'
+	!	elseif vasyanday ! daystart:
+	!		gt 'mitka_forest_1', 'vasyan'
+	!	end
+	!end
+	!if forest_eventrand = 10 and hour >= 8 and hour <= 20 and month >= 4 and month <= 10 and gadboyday ! daystart:
+	!	if mitkaday ! daystart and kolyambaday ! daystart and vasyanday ! daystart:
+	!		gt 'mitka_forest_3'
+	!	elseif mitkaday ! daystart and kolyambaday ! daystart:
+	!		gt 'mitka_forest_2', '1'
+	!	elseif mitkaday ! daystart and vasyanday ! daystart:
+	!		gt 'mitka_forest_2', '2'
+	!	elseif kolyambaday ! daystart and vasyanday ! daystart:
+	!		gt 'mitka_forest_2', '3'
+	!	elseif mitkaday ! daystart:
+	!		gt 'mitka_forest_1', 'mitka'
+	!	elseif kolyambaday ! daystart:
+	!		gt 'mitka_forest_1', 'kolyamba'
+	!	elseif vasyanday ! daystart:
+	!		gt 'mitka_forest_1', 'vasyan'
+	!	end
+	!end
+
+	act 'Leave the woods (0:15)':
+		! Allow Mira to continue on her schedule as normal if the player was keeping her here for events
+		if MiraLoc = 3:
+			Mira_Stay = 0
+			MiraLoc = 0
+		end
+		! Naked event when leaving forest
+		if $clothingworntype = 'nude':
+			*clr & cla
+			menu_off = 1
+
+			if hour >= 6 and hour < 22:
+				if rand(0,10) > 5:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_nude.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_back.jpg"></center>'
+				end
+			else
+				if rand(0,10) > 5:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_nude_night.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_back_night.jpg"></center>'
+				end
+			end
+			*nl
+			! clothes ripped apart in the woods or swamp
+			if gadforest_clothestorn = 1:
+				gadforest_clothestorn = 0
+				'Your clothes were torn to shreds in the woods, leaving you with no choice but to head back home naked.'
+				'You try your best to stay in the shadows as you move towards '+iif(StoryLine=1,'your grandparents house ','the village ')+'as stealthily as possible.'
+			! clothes are here
+			elseif clothesAtLocation = 1:
+				'You decide to leave your clothes behind and sneak home naked, purely for the thrill of it.'
+				'You try your best to stay in the shadows as you move towards '+iif(StoryLine=1,'your grandparents house ','the village ')+'as stealthily as possible.'
+			! no clothes here
+			elseif clothesAtLocation = 0:
+				'You seem to have misplaced your clothes, leaving you with no choice but to head back home naked. You wonder where you might have left your clothes.'
+				'You try your best to stay in the shadows as you move towards '+iif(StoryLine=1,'your grandparents house ','the village ')+'as stealthily as possible.'
+			end
+			! Allow schoolgirl player to leave naked but go straight back home
+			! Non-schoolgirls will just find a random sweatshirt to put on - it is the same everytime but walking around naked in the village is not implemented yet
+			act 'Go back to Gadukino naked':
+				*clr & cla
+				inhib_exp += rand(1,3)
+				gs 'exhibitionism', 3
+				gs 'stat'
+
+				if StoryLine = 1 and grandaQW['block'] = 0:
+					if hour >= 10 and hour < 16 and month >= 4 and month <= 10:
+						forestcaughtrand = rand(4,10)
+					elseif hour >= 6 and hour < 20 and month >= 4 and month <= 10:
+						forestcaughtrand = rand(2,8)
+					else
+						forestcaughtrand = rand(0,6)
+					end
+					if forestcaughtrand >= 9:
+						grandmaQW['nudity_trouble'] += rand(7,10)
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_old_woman.jpg"></center>'
+						*nl
+						'You''ve been spotted walking home naked by all the women of the village. They scold you as you walk by. Your grandparents are definitely going to find out about this.'
+					elseif forestcaughtrand >= 7:
+						grandmaQW['nudity_trouble'] += rand(4,6)
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_old_woman'+rand(1,5)+'.jpg"></center>'
+						*nl
+						'You''ve been spotted walking home naked by a woman from the village. You hope she doesn''t tell your grandmother.'
+					elseif forestcaughtrand >= 5:
+						grandmaQW['nudity_trouble'] += rand(1,3)
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadukino_old_man'+rand(1,5)+'.jpg"></center>'
+						*nl
+						'You''ve been spotted walking home naked by a man from the village. You hope he doesn''t tell your grandfather.'
+					else
+						grandmaQW['nudity_trouble'] += rand(0,1)
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/grandparents/gaddvor_nude.jpg"></center>'
+						*nl
+						'No one saw you outside naked, but there''s a thrill in almost getting caught.'
+					end
+
+					act 'Continue home to your grandparents (0:30)':
+						minut += 30
+						gs 'stat'
+
+						gt'gaddvor'
+					end
+				else
+					average[520] = 1
+					averageS[520] = 0
+					averageH[520] = 100
+					averageB[520] = pcs_hips
+					gs 'clothing', 'wear', 'average', 520
+
+					if CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest.jpg"></center>'
+					if CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.'+rand(1,2)+'.jpg"></center>'
+					*nl
+					'You begin to panic a little. You have no where to go and no one to help you can you are stuck naked in the woods.'
+					'As you look around frantically, you spot a sweatshirt someone must have lost. You quickly put it on, thinking about how lucky you are.'
+
+					act 'Leave (0:15)':
+						minut += 15
+						gs 'stat'
+
+						gt 'gadroad'
+					end
+				end
+			end
+			! last chance for player to choose to get dressed
+			if clothesAtLocation = 1:
+				act 'Get dressed instead':
+					*clr & cla
+					minut += 5
+					gs 'clothing', 'swamp_clothes', 0
+					gs 'underwear', 'wear'
+					gs 'clothing', 'recover_lost_clothes', 'forest_edge', 1
+					gs 'stat'
+
+					if CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest.jpg"></center>'
+					if CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.'+rand(1,2)+'.jpg"></center>'
+					*nl
+					'You decide to change back into your clothes rather than try to get home through the village naked.'
+
+					act 'Leave (0:15)':
+						minut += 15
+						gs 'stat'
+
+						gt 'gadroad'
+					end
+				end
+			end
+		! hessian sack from hunters is not allowed to leave the woods it is only supposed to be a temporary item
+		elseif swamp_clothes = 1:
+			*nl
+			'You cannot leave the woods wearing your current clothing. You should pickup your clothes and get dressed before you leave or just risk leaving naked.'
+		else
+			minut += 15
+			gs 'stat'
+
+			gt 'gadroad'
+		end
+	end
+
+	! Sveta cannot travel further into the forest if Mira is here at the forest with Sveta
+	if MiraLoc ! 3:
+		act 'Go further into the forest (0:15)': minut += 15 & gt 'gadforest','forest_outskirts'
+	end
+
+	gs 'bicycle', 'gadforest'
+
+	! Sveta can go to the Meadow if she has discovered it and bring Mira too if she is allowed
+	if (meadow > 0 and MiraLoc ! 3):
+		act 'Go to the meadow (0:20)': minut += 20 & gt 'meadow'
+	elseif ((meadow = 3 or (meadow = 6 and npc_QW['A60'] >= 3)) and MiraLoc = 3):
+		act 'Go to the meadow with Mira': minut += 20 & MiraLoc = 2 & gt 'meadow'
+	end
+
+	! Can travel directly to the hunters cabin if Sveta has been there before, knows the hunters, and Mira is not here at the forest with Sveta
+	if hunterscabin = 1 and huntersKnow = 1 and MiraLoc ! 3:
+		act 'Go to the hunters cabin(1:00)':
+			! daytime chance to get stuck in swamp - use bike to get there 100% of the time
+			if hour >= 6 and hour <= 22:
+				gt 'swamp', 'stuck'
+			! nighttime chased by wolves - Sveta probably should not be roaming the forest at this time
+			else
+				gt 'gadforestlost','wolves','forest_edge'
+			end
+		end
+	end
+
+	! tree circle teleportation for magic users - only found at the edge of the forest
+	gs 'treeCircEntry', 'GadForest'
+
+	! the generic actions for the different parts of the forest are so similar that they are all stored in their own gosubs so the code is not duplicated
+	gs 'gadforest', 'stripping'
+
+	gs 'gadforest', 'dressing'
+
+	gs 'gadforest', 'walking'
+
+	gs 'gadforest', 'picking'
+end
+
+if $ARGS[0] = 'forest_outskirts':
+	*clr & cla
+
+	clothesAtLocation = FUNC('lost_clothes_here','forest_outskirts')
+
+	$loc = 'gadforest'
+	$metka = 'forest_outskirts'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadforest'
+	$menu_arg = 'forest_outskirts'
+	menu_off = 0
+
+	$forest_args1 = 'forest_outskirts'
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs 'stat'
+
+	'<center><H4>Forest Outskirts</H4></center>'
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest2.jpg"></center>'
+			'You are in the forest. The fresh air and singing birds light up your soul with joy.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_night2.jpg"></center>'
+			'You are in the forest. Night in the woods is scary and uncomfortable.'
+		end
+	else
+		if hour >= 8 and hour < 20:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter2.jpg"></center>'
+			'You are in the forest. The forest in the winter is very beautiful, the fresh air makes you happy.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter_night2.jpg"></center>'
+			'You are in the forest. Night in the forest during wintertime is very scary and uncomfortable.'
+		end
+	end
+
+	gs 'gadforest','bushcraft','forest_outskirts'
+	*nl
+	if pcs_bushcraft < 20:
+		'<font color="red">You don''t know this part of the forest very well. You could get lost if you go any deeper into the woods.</font>'
+	else
+		'<font color="green">You are comfortable navigating this part of the forest, and can adventure deeper into the woods if you want.</font>'
+	end
+	if clothesAtLocation = 1:*nl & 'Your clothes are nearby on the ground.'
+	if hour < 8 or hour > 16:
+		mushroom_pickers = 0
+		*nl
+		'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+	else
+		*nl
+		if mushroom_pickers = 0:
+			'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+		elseif mushroom_pickers = 1:
+			'You can hear other people picking mushrooms and berries at the forests edge.'
+		elseif mushroom_pickers = 2:
+			'You can see people picking mushrooms and berries here on the outskirts of the forest.'
+		end
+	end
+
+	foresteventrand = rand(1,20)
+	if foresteventrand <= 2 and month >= 6 and month <= 9 and hour >= 8 and hour <= 16 and mushroom_pickersday ! daystart:mushroom_pickers = 2 & gt 'gadforest_event', 'mushroom_pickers1'
+	if foresteventrand <= 4 and month >= 6 and month <= 9 and hour >= 8 and hour <= 16 and mushroom_pickersday ! daystart: mushroom_pickers = 2 & gt 'gadforest_event', 'mushroom_pickers3'
+	if foresteventrand = 5 and month >= 4 and month <= 10 and ((hour >= 6 and hour < 12) or (hour >= 14 and hour < 18)) and foresteventday ! daystart: gt 'gadforest_event', 'forest_hunters', 'forest_outskirts'
+
+	act 'Head back out of the forest (0:15)': minut += 15 & gt 'gadforest', 'forest_edge'
+
+	act 'Go further into the forest (0:15)': minut += 15 & gt 'gadforest','forest_center'
+
+	! the generic actions for the different parts of the forest are so similar that they are all stored in their own gosubs so the code is not duplicated
+	gs 'gadforest', 'stripping'
+
+	gs 'gadforest', 'dressing'
+
+	gs 'gadforest', 'walking'
+
+	gs 'gadforest', 'picking'
+end
+
+if $ARGS[0] = 'forest_center':
+	*clr & cla
+
+	clothesAtLocation = FUNC('lost_clothes_here','forest_center')
+
+	$loc = 'gadforest'
+	$metka = 'forest_center'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadforest'
+	$menu_arg = 'forest_center'
+	menu_off = 0
+
+	$forest_args1 = 'forest_center'
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs 'stat'
+
+	'<center><H4>Deep Forest</H4></center>'
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest3.jpg"></center>'
+			'You are deep in the forest. The fresh air and singing birds light up your soul with joy.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_night3.jpg"></center>'
+			'You are deep in the forest. Night in the woods is scary and uncomfortable.'
+		end
+	else
+		if hour >= 8 and hour < 20:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter3.jpg"></center>'
+			'You are deep in the forest. The forest in the winter is very beautiful, the fresh air makes you happy.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gadforest_winter_night3.jpg"></center>'
+			'You are deep in the forest. Night in the forest during wintertime is very scary and uncomfortable.'
+		end
+	end
+
+	gs 'gadforest','bushcraft','forest_center'
+	*nl
+	if pcs_bushcraft < 30:
+		'<font color="red">You don''t know this part of the forest very well. You could get lost if you go any deeper into the woods.</font>'
+	else
+		'<font color="green">You are comfortable navigating this part of the forest, and can adventure deeper into the woods if you want.</font>'
+	end
+	if clothesAtLocation = 1:*nl & 'Your clothes are nearby on the ground.'
+	if hour < 8 or hour > 16:
+		mushroom_pickers = 0
+		*nl
+		'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+	else
+		*nl
+		if mushroom_pickers = 0:
+			'You don''t see or hear any other people picking mushrooms or berries in the forest right now.'
+		elseif mushroom_pickers = 1:
+			'You can hear people picking mushrooms and berries at the forests edge.'
+		elseif mushroom_pickers = 2:
+			'You can hear people picking mushrooms and berries at the outskirts of the forest.'
+		end
+	end
+
+	foresteventrand = rand(1,20)
+	if foresteventrand <= 2 and month >= 6 and month <= 9 and foresteventday ! daystart: gt 'gadforest_event', 'basket'
+	if foresteventrand <= 3 and month >= 6 and month <= 9 and foresteventday ! daystart: gt 'gadforest_event', 'bilberry'
+	if foresteventrand <= 4 and month >= 6 and month <= 9 and foresteventday ! daystart: gt 'gadforest_event', 'mushroom'
+	if foresteventrand = 5 and month >= 4 and month <= 10 and ((hour >= 6 and hour < 12) or (hour >= 14 and hour < 18)) and foresteventday ! daystart: gt 'gadforest_event', 'forest_hunters', 'forest_center'
+
+	act 'Head back out of the forest (0:15)': minut += 15 & gt 'gadforest', 'forest_outskirts'
+
+	act 'Go further into the swamp (0:15)': minut += 15 & gt 'swamp', 'start'
+
+	! the generic actions for the different parts of the forest are so similar that they are all stored in their own gosubs so the code is not duplicated
+	gs 'gadforest', 'stripping'
+
+	gs 'gadforest', 'dressing'
+
+	gs 'gadforest', 'walking'
+
+	gs 'gadforest', 'picking'
+end
+
+
+! this gs handles the bushcraft increases, clothing degradation, and getting lost in the forest
+! $ARGS[1] - location of forest where this is called from
+! Example: gs 'gadforest', 'bushcraft', 'forest_edge'
+if $ARGS[0] = 'bushcraft':
+	! bushcraft_rand - the max amount of bushcraft exp that can be gained from an action in an area of the forest
+	! bushcraft_limit - the max amount bushcraft can be naturally raised to by visiting an area of the forest
+	! bushcraft_lost - bushcraft needed to no longer get lost when visiting an area of the forest
+	! torncloth_high_bushcraft - chance of tearing clothes with high bushcraft when visiting an area of the forest
+	! torncloth_low_bushcraft - chance of tearing clothes with low bushcraft when visiting an area of the forest
+	! Make sure Sveta always has at least 1 pcs_bushcraft
+	if pcs_bushcraft <= 0:pcs_bushcraft = 1
+	if $ARGS[1] = 'forest_edge':
+		bushcraft_rand = 1
+		bushcraft_limit = 10
+		! Sveta cannot get lost at the forest_edge part of the forest anymore
+		bushcraft_lost = 1
+		torncloth_high_bushcraft = 10
+		torncloth_low_bushcraft = 9
+	elseif $ARGS[1] = 'forest_outskirts':
+		bushcraft_rand = 2
+		bushcraft_limit = 20
+		bushcraft_lost = 10
+		torncloth_high_bushcraft = 9
+		torncloth_low_bushcraft = 7
+	elseif $ARGS[1] = 'forest_center':
+		bushcraft_rand = 3
+		bushcraft_limit = 30
+		bushcraft_lost = 20
+		torncloth_high_bushcraft = 8
+		torncloth_low_bushcraft = 5
+	elseif $ARGS[1] = 'swamp_woods':
+		bushcraft_rand = 4
+		bushcraft_limit = 40
+		! Sveta cannot get lost at the swamp_woods part of the forest either
+		bushcraft_lost = 1
+		torncloth_high_bushcraft = 7
+		torncloth_low_bushcraft = 3
+	end
+	! most annoying part of the old forest code was how difficult it was to do anything without getting lost and having your clothes destroyed quickly
+	! the new pcs_bushcraft stat will now help Sveta keep her clothes intact longer and it is much less grindy than the old goforest variable for navigating the forest
+	! also if Sveta meets the hunters they can help her raise this stat as well but it will go up naturally too from just visiting the forest every day
+	! if Sveta raises bushcraft with the hunters then she will get to a point where she no longer get lost in the forest since there is no cap on bushcraft when learning from them
+	ripclothesrand = rand(1,10)
+	if pcs_bushcraft < bushcraft_limit:
+		! use the higher chance of ripping clothes when Sveta has lower bushcraft
+		if ripclothesrand >= torncloth_low_bushcraft: gs 'gadforest', 'torncloth'
+
+		! bushcraft exp gained is random to keep it from increasing too fast
+		if rand(0,1) = 0:
+			bushcraft_exp += rand(1,bushcraft_rand)
+		end
+	else
+		! use the lower chance of ripping clothes when Sveta has higher bushcraft
+		if ripclothesrand >= torncloth_high_bushcraft: gs 'gadforest', 'torncloth'
+	end
+
+	! decide if Sveta is now lost as Sveta raises her bushcraft her chances of getting lost decreases
+	if pcs_bushcraft < bushcraft_lost:
+		lostrand = rand(1,bushcraft_lost)
+		if pcs_bushcraft < lostrand: lost_girl = 1 & forest_lostday = daystart & gt 'gadforestlost', $ARGS[1]
+	end
+end
+
+! this gs handles the actual degradation and removal of clothes from Sveta in the forest
+! this should only be called from inside of gs 'gadforest', 'bushcraft'
+if $ARGS[0] = 'torncloth':
+	if $clothingworntype ! 'nude':
+		if (PCloThinness = 1 or PCloSkirt > 0) and PCloQuality < 5:
+			!skirts, not fit, and not high-class enough by illume
+			'<font color="red">Your clothes get caught on some brush and tear slightly.</font>'
+			dynamic $clothingworntype + 'H[<<clothingwornnumber>>] -= 1'
+			!add remove clothes if worn out
+			if dyneval('RESULT = <<$clothingworntype>>H[<<clothingwornnumber>>]') <= 0:
+				'<font color="red">Your clothes were barely holding together, but now they have fallen apart completely. You discard the remains and are left naked.</font>'
+				gadforest_clothestorn = 1
+				gs 'clothing', 'strip', 'gadforest'
+				gs 'stat'
+			end
+		end
+	end
+end
+
+! this gs handles stripping for Sveta in the various locations of the forest
+! $forest_args1 - location of forest where this is called from
+! Example: gs 'gadforest', 'stripping'
+if $ARGS[0] = 'stripping':
+	! stripping requires there to be no picnic going on, to have clothes on, for there to be no clothes already abandoned at the current location, between april and october and lowered inhibitions or higher exhibitionism
+	if $clothingworntype ! 'nude' and clothesAtLocation = 0 and month >= 4 and month <= 10 and hour >= 6 and hour < 22 and (pcs_inhib >= 25 or exhibitionist_lvl > 1):
+		! Mira only goes to the forest edge
+		if MiraLoc = 3 and $forest_args1 = 'forest_edge':
+			! stripping with Mira requires completing talking to her about it already and doing their nude event in the forest already
+			if miranudetalk = 2:
+				act 'Strip Naked with Mira (0:05)':
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					if pcs_inhib < 50:inhib_exp += rand(1,3)
+					gs 'underwear', 'remove'
+					if swamp_clothes = 0:
+						gs 'clothing', 'strip', $forest_args1
+					elseif swamp_clothes = 1:
+						gs 'clothing', 'strip', 'gadforest'
+						gs 'clothing', 'swamp_clothes', 0
+					end
+					gs 'exhibitionism', 3
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/miraforest6.jpg"></center>'
+
+					'You and Mira quickly get undressed, leaving your clothes in a neat pile on the ground.'
+
+					act 'Continue': gt 'gadforest', $forest_args1
+				end
+			end
+		else
+			! picnic blocks being naked at the forest edge but not other parts of the forest
+			if (forestpicnic = 0 and $forest_args1 = 'forest_edge') or $forest_args1 ! 'forest_edge':
+				act 'Strip Naked (0:05)':
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					if pcs_inhib < 50:inhib_exp += rand(1,3)
+					gs 'underwear', 'remove'
+					if swamp_clothes = 0:
+						gs 'clothing', 'strip', $forest_args1
+					elseif swamp_clothes = 1:
+						gs 'clothing', 'strip', 'gadforest'
+						gs 'clothing', 'swamp_clothes', 0
+					end
+					gs 'stat'
+
+					if CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest.jpg"></center>'
+					if CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.'+rand(1,2)+'.jpg"></center>'
+
+					'You quickly get undressed, leaving your clothes in a neat pile on the ground.'
+
+					if $forest_args1 = 'swamp_woods':
+						act 'Continue': gt 'swamp_woods', 'start'
+					else
+						act 'Continue': gt 'gadforest', $forest_args1
+					end
+				end
+			end
+		end
+	end
+end
+
+! this gs handles dressing for Sveta in the various locations of the forest
+! $forest_args1 - location of forest where this is called from
+! Example: gs 'gadforest', 'dressing'
+if $ARGS[0] = 'dressing':
+	! code for different variations of getting dressed or dealing with clothes left in the forest
+	if clothesAtLocation = 1:
+		if $clothingworntype = 'nude':
+			act 'Get dressed (0:05)':
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'clothing', 'swamp_clothes', 0
+				gs 'underwear', 'wear'
+				gs 'clothing', 'recover_lost_clothes', $forest_args1, 1
+				gs 'stat'
+
+				if CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest.jpg"></center>'
+				if CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.'+rand(1,2)+'.jpg"></center>'
+				*nl
+				'You change back into your clothes.'
+
+				if $forest_args1 = 'swamp_woods':
+					act 'Continue': gt 'swamp_woods', 'start'
+				else
+					act 'Continue': gt 'gadforest', $forest_args1
+				end
+			end
+		elseif $clothingworntype ! 'nude':
+			! hessian sack from hunters is not allowed to leave the woods it is only supposed to be a temporary item
+			if $clothingworntype = 'cheap' and clothingwornnumber = 414:
+				act 'Wear your abandoned clothing (0:05)':
+					*clr & cla
+					menu_off = 1
+					minut += 5
+					gs 'clothing', 'swamp_clothes', 0
+					gs 'underwear', 'wear'
+					gs 'clothing', 'recover_lost_clothes', $forest_args1, 1
+					gs 'stat'
+
+					if CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest.jpg"></center>'
+					if CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.'+rand(1,2)+'.jpg"></center>'
+					*nl
+					'You wear your abandoned clothing and get rid of the hessian sack the hunters gave you.'
+
+					if $forest_args1 = 'swamp_woods':
+						act 'Continue': gt 'swamp_woods', 'start'
+					else
+						act 'Continue': gt 'gadforest', $forest_args1
+					end
+				end
+			else
+				act 'Pick up your abandoned clothing (0:05)':
+					cla
+					menu_off = 1
+					minut += 5
+					gs 'clothing', 'swamp_clothes', 0
+					gs 'underwear', 'wear'
+					gs 'clothing', 'recover_lost_clothes', $forest_args1
+					gs 'stat'
+
+					*nl
+					'You pick up your abandoned clothing.'
+
+					if $forest_args1 = 'swamp_woods':
+						act 'Continue': gt 'swamp_woods', 'start'
+					else
+						act 'Continue': gt 'gadforest', $forest_args1
+					end
+				end
+			end
+		end
+	end
+end
+
+! this gs handles walking for Sveta in the various locations of the forest
+! $forest_args1 - location of forest where this is called from
+! Example: gs 'gadforest', 'walking'
+if $ARGS[0] = 'walking':
+	if hour >= 6 and hour <= 22:
+		! Mira only goes to the forest edge
+		if MiraLoc = 3 and $forest_args1 = 'forest_edge':
+			act 'Go for a walk in the woods with Mira (1:00)':
+				*clr & cla
+				menu_off = 1
+				minut += 60
+				pcs_mood += 20
+				pcs_health += healthmax/5
+				gs 'gadforest', 'bushcraft', $forest_args1
+				if $clothingworntype = 'nude':
+					if pcs_inhib < 50:inhib_exp += rand(1,5)
+					gs 'exhibitionism', 3
+				end
+				gs 'stat'
+
+				if month >= 4 and month <= 10:
+					! 10% chance of finding meadow (needed to advance Miras quest)
+					if rand(0,9) = 0 and meadow = 0 and $forest_args1 = 'forest_edge':
+						gt 'gadforest_event', 'find_meadow'
+					else
+						if $clothingworntype ! 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miraforest'+rand(1,3)+'.jpg"></center>'
+						if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miraforest_nude'+rand(1,3)+'.jpg"></center>'
+						*nl
+						'You spend an hour walking with Mira through the woods, chatting and enjoying the sounds of the forest and the fresh air.'
+					end
+				else
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/miraforestwinter.jpg"></center>'
+					*nl
+					'You spend an hour walking with Mira through the snowy woods, chatting and enjoying the sounds of the forest and the fresh air.'
+				end
+
+				act 'Continue':gt 'gadforest', $forest_args1
+			end
+		else
+			act 'Go for a walk in the woods (1:00)':
+				*clr & cla
+				menu_off = 1
+				minut += 60
+				pcs_mood += 20
+				pcs_health += healthmax/5
+				gs 'gadforest', 'bushcraft', $forest_args1
+				if $clothingworntype = 'nude' and pcs_inhib < 50:inhib_exp += rand(1,5)
+				gs 'stat'
+
+				! 10% chance of finding meadow (needed to advance Miras quest)
+				if rand(0,9) = 0 and meadow = 0 and $forest_args1 = 'forest_edge':
+					gt 'gadforest_event', 'find_meadow'
+				else
+					if month >= 4 and month <= 10:
+						if ($clothingworntype ! 'nude' and $clothingworntype ! 'swimwear') and CloSkirtShortness = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest0.'+rand(1,2)+'.jpg"></center>'
+						if ($clothingworntype ! 'nude' and $clothingworntype ! 'swimwear') and $pantyworntype ! 'none' and CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest1.'+rand(1,3)+'.jpg"></center>'
+						if ($clothingworntype ! 'nude' and $clothingworntype ! 'swimwear') and $pantyworntype = 'none' and CloSkirtShortness > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest_tanga0.'+rand(1,2)+'.jpg"></center>'
+						if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest_nude0.'+rand(1,4)+'.jpg"></center>'
+						*nl
+						'You spend an hour walking through the woods, enjoying the sounds of the forest and the fresh air.'
+					else
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforestwinter0.'+rand(1,6)+'.jpg"></center>'
+						*nl
+						'You spend an hour walking through the snowy woods, enjoying the sounds of the forest and the fresh air.'
+					end
+
+					if $forest_args1 = 'swamp_woods':
+						act 'Continue': gt 'swamp_woods', 'start'
+					else
+						act 'Continue': gt 'gadforest', $forest_args1
+					end
+				end
+			end
+		end
+	end
+end
+
+! this gs handles mushroom and berry picking for Sveta in the various locations of the forest
+! $forest_args1 - location of forest where this is called from
+! Example: gs 'gadforest', 'picking'
+if $ARGS[0] = 'picking':
+	if StoryLine = 1 or (StoryLine = 0 and mirapickingtalk = 1):
+		if hour >= 6 and hour <= 22 and month >= 6 and month <= 9 and boletus + boletus_cooked + bilberry < 5:
+			if ($forest_args1 = 'forest_edge' and edge_pickingday ! daystart) or ($forest_args1 = 'forest_outskirts' and outskirts_pickingday ! daystart) or ($forest_args1 = 'forest_center' and center_pickingday ! daystart) or ($forest_args1 = 'swamp_woods' and swamp_pickingday ! daystart):
+				act 'Look for mushrooms and berries'+iif(MiraLoc = 3 and $forest_args1 = 'forest_edge', ' with Mira (0:30)',' (0:30)'):
+					*clr & cla
+					menu_off = 1
+
+					if $forest_args1 = 'forest_edge':
+						edge_pickingday = daystart
+						mushroom_pickers_check = 1
+						max_boletus = 1
+						max_bilberry = 1
+					elseif $forest_args1 = 'forest_outskirts':
+						outskirts_pickingday = daystart
+						mushroom_pickers_check = 2
+						max_boletus = 2
+						max_bilberry = 2
+					elseif $forest_args1 = 'forest_center':
+						center_pickingday = daystart
+						mushroom_pickers_check = 3
+						max_boletus = 3
+						max_bilberry = 3
+					elseif $forest_args1 = 'swamp_woods':
+						swamp_pickingday = daystart
+						mushroom_pickers_check = 4
+						max_boletus = 4
+						max_bilberry = 4
+					end
+
+					minut += 30
+					new_boletus = 0
+					new_bilberry = 0
+					gs 'gadforest', 'bushcraft', $forest_args1
+					if $clothingworntype = 'nude':
+						if pcs_inhib < 50:inhib_exp += rand(1,5)
+						if MiraLoc = 3 and $forest_args1 = 'forest_edge': gs 'exhibitionism', 3
+					end
+					gs 'stat'
+
+					! mushroom_pickers are not at the location of the forest Sveta is in
+					if mushroom_pickers ! mushroom_pickers_check:
+						new_boletus += max_boletus
+						new_bilberry += max_bilberry
+						boletus += new_boletus
+						bilberry += new_bilberry
+						pcs_mood += 10
+						gs 'stat'
+
+						gs 'gadforest', 'picking_clothes', $forest_args1, 'berry'
+						*nl
+						'After searching for mushrooms and berries for half an hour you found <<new_boletus>> kg of mushrooms and <<new_bilberry>> kg of berries.'
+					! mushroom pickers are at the location of the forest Sveta is in
+					elseif mushroom_pickers = mushroom_pickers_check:
+						new_boletus += rand(0,max_boletus)
+						new_bilberry += rand(0,max_bilberry)
+						boletus += new_boletus
+						bilberry += new_bilberry
+						gs 'stat'
+
+						if new_boletus > 0 and new_bilberry > 0:
+							pcs_mood += 10
+							gs 'stat'
+
+							gs 'gadforest', 'picking_clothes', $forest_args1, 'berry'
+							*nl
+							'After searching for mushrooms and berries for half an hour you found <<new_boletus>> kg of mushrooms and <<new_bilberry>> kg of berries.'
+						elseif new_boletus = 0 and new_bilberry > 0:
+							pcs_mood += 5
+							gs 'stat'
+
+							gs 'gadforest', 'picking_clothes', $forest_args1, 'berry'
+							*nl
+							'After searching for mushrooms and berries for half an hour you found <<new_bilberry>> kg of berries.'
+						elseif new_boletus > 0 and new_bilberry = 0:
+							pcs_mood += 5
+							gs 'stat'
+
+							gs 'gadforest', 'picking_clothes', $forest_args1, 'mushroom'
+							*nl
+							'After searching for mushrooms and berries for half an hour you found <<new_boletus>> kg of mushrooms'
+						elseif new_boletus = 0 and new_bilberry = 0:
+							pcs_mood -= 5
+							gs 'stat'
+
+							gs 'gadforest', 'picking_clothes_empty', $forest_args1
+							*nl
+							'After searching for mushrooms and berries for half an hour you found nothing.'
+						end
+					end
+
+					if $forest_args1 = 'swamp_woods':
+						act 'Continue': gt 'swamp_woods', 'start'
+					else
+						act 'Continue': gt 'gadforest', $forest_args1
+					end
+				end
+			end
+		end
+	end
+end
+
+! this gs handles images for mushroom and berry picking for Sveta in the various locations of the forest when she finds at least 1 kg of berries or mushrooms
+! $ARGS[1] - location of forest where this is called from
+! $ARGS[2] - whether you want images for mushrooms or berries
+! Example: gs 'gadforest', 'picking_clothes', 'forest_edge', 'mushroom'
+if $ARGS[0] = 'picking_clothes':
+	if $ARGS[2] = 'mushroom':
+		if MiraLoc = 3 and $ARGS[1] = 'forest_edge':
+			if $clothingworntype ! 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom'+rand(1,2)+'.jpg"></center>'
+			if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom_nude'+rand(1,2)+'.jpg"></center>'
+		else
+			if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/mushroom4.'+rand(1,3)+'.jpg"></center>'
+			if $clothingworntype ! 'nude' and PCloSkirt = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/mushroom1.jpg"></center>'
+			if $clothingworntype ! 'nude' and $pantyworntype ! 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/mushroom2.jpg"></center>'
+			if $clothingworntype ! 'nude' and $pantyworntype = 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/mushroom3.jpg"></center>'
+		end
+	elseif $ARGS[2] = 'berry':
+		if MiraLoc = 3 and $ARGS[1] = 'forest_edge':
+			if $clothingworntype ! 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom'+rand(1,2)+'.jpg"></center>'
+			if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom_nude'+rand(1,2)+'.jpg"></center>'
+		else
+			if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/mushroom4.'+rand(1,3)+'.jpg"></center>'
+			if $clothingworntype ! 'nude' and PCloSkirt = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/blueberry_picking_'+rand(3,6)+'.jpg"></center>'
+			if $clothingworntype ! 'nude' and $pantyworntype ! 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/blueberry_picking_2.jpg"></center>'
+			if $clothingworntype ! 'nude' and $pantyworntype = 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/blueberry_picking_1.jpg"></center>'
+		end
+	end
+end
+
+! this gs handles images for mushroom and berry picking for Sveta in the various locations of the forest when she finds 0 kg of berries or mushrooms
+! $ARGS[1] - location of forest where this is called from
+! Example: gs 'gadforest', 'picking_clothes_empty', 'forest_edge'
+if $ARGS[0] = 'picking_clothes_empty':
+	if MiraLoc = 3 and $ARGS[1] = 'forest_edge':
+		if $clothingworntype ! 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom3.jpg"></center>'
+		if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/characters/village/mira/miramushroom_nude3.jpg"></center>'
+	else
+		if $clothingworntype ! 'nude' and PCloSkirt = 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest2.jpg"></center>'
+		if $clothingworntype ! 'nude' and $pantyworntype ! 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest3.jpg"></center>'
+		if $clothingworntype ! 'nude' and $pantyworntype = 'none' and PCloSkirt > 0:'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest_tanga1.'+rand(1,2)+'.jpg"></center>'
+		if $clothingworntype = 'nude':'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/gulforest_nude1.'+rand(1,4)+'.jpg"></center>'
+	end
+end
+
+--- gadforest ---------------------------------
+

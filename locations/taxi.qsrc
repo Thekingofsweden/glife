@@ -1,0 +1,383 @@
+# taxi
+
+if $ARGS[0] = '':
+	act 'Hail taxi':
+		cla & *clr
+		$menu_loc = 'taxi'
+		$menu_arg = ''
+		menu_off = 1
+		minut += 5
+		'<center><img <<$set_imgh>> src="images/locations/shared/taxi/base'+rand(1,5)+'.jpg"></center>'
+		'Seeing a taxi coming down the road you raise your arm and wave him down, as he stops you get in.'
+		'Fare 250 RUB.'
+
+		act 'Get out':gt $loc,$metka
+
+		if money >= 250:
+			gs 'taxi', 'locations'
+		else
+			gs 'willpower', 'misc', 'self', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Don''t tell him you can''t pay (<<will_cost>> Willpower)':
+					cla
+					gs 'willpower', 'misc', 'self', 'easy'
+					gs 'willpower', 'pay', 'self'
+					taxi_pay = 1
+					gs 'taxi', 'locations'
+				end
+			else
+				act 'Don''t tell him you can''t pay (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+
+		gs 'willpower', 'prostitution', 'self'
+		if will_cost <= pcs_willpwr:
+			act 'Offer to trade sex for a ride (<<will_cost>> Willpower)': gs 'willpower', 'prostitution', 'self' & gs 'willpower', 'pay', 'self' & gt 'taxi', 'ride'
+		else
+			act 'Offer to trade sex for a ride (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+
+if $ARGS[0] = 'locations':
+	if $loc ! 'street':
+		act 'Go to the city''s residential area':
+			$loc = 'street'
+			gt 'taxi', 'trip'
+		end
+	end
+
+	if $loc ! 'down':
+		act 'Go to the city center':
+			$loc = 'down'
+			gt 'taxi', 'trip'
+		end
+	end
+
+	if $loc ! 'Nord' or $metka ! 'redlight':
+		act 'Go to the city''s red light district':
+			$loc = 'Nord'
+			$metka = 'redlight'
+			gt 'taxi', 'trip'
+		end
+	end
+
+	if $loc ! 'Nord' or $metka = 'redlight':
+		act 'Go to the city''s industrial region':
+			$loc = 'Nord'
+			$metka = ''
+			gt 'taxi', 'trip'
+		end
+	end
+
+	if $loc ! 'island':
+		act 'Go to the island':
+			$loc = 'island'
+			gt 'taxi', 'trip'
+		end
+	end
+
+	if $loc ! 'BDSM_Club' and BDSMtaxi = 1:
+		act 'Go to the BDSM club':
+			$loc = 'BDSM_Club'
+			$metka = 'start'
+			gt 'taxi', 'trip'
+		end
+	end
+end
+
+if $ARGS[0] = 'ride':
+	cls
+	gs 'stat'
+	gs 'npcgeneratec', 0, 'Taxi Driver', rand(30,46)
+	gs 'boyStat', $npclastgenerated
+	temp = rand(0,2)
+	$temp = func 'sexprefrand'
+	'<center><img <<$set_imgh>> src="images/locations/shared/taxi/showtits.jpg"></center>'
+	'Once seated in the back seat you blurt out."I don''t have any money" The driver turns and glares back at you. "Why did you wave me down then, get out!" You quickly pull your top down showing him your tits. "Maybe we can work something out?" He looks you over for a moment and then nods. "Ok you give me a ride then I''ll give you a ride." He says with a leer and drives you back to his garage.'
+	
+	if stat['vaginal'] = 0:
+		$temp = 'bj' & 'When he stops in his garage, you say."I''m still a virgin." Seeing the look at his face, you hastily add with a sweet smile."We can still have fun in other ways." He grunts and nods accepting the condition.' 
+	else
+		act 'Suggest he fuck you': gt 'taxi', 'vag1'
+	end
+	act 'Suggest you blow him': gt 'taxi', 'bj'
+	act 'Suggest anal': gt 'taxi', 'anal'
+
+	
+	act 'Let him decide':
+		if $temp = 'bj': gt 'taxi', 'bj'
+		if $temp = 'vaginal': gt 'taxi', 'vag1'
+		if $temp = 'anal': gt 'taxi', 'anal'
+	end
+	act 'Chicken out':gt $loc,$metka
+end
+
+if $ARGS[0] = 'vag1':
+	cla
+	*clr
+	taxioffer = 1
+	ending = rand(0,1)
+	cumprecheck = 1
+	gs 'cum_manage'
+	'<center><img <<$set_imgh>> src="images/locations/shared/taxi/sex/taxi1,'+rand(0,5)+'.jpg"></center>'
+	'He turns off the taxi and gets out. He comes around and opens the back door, he already has his cock out stroking it, rubbing some hand lotion on it for lubrication.'
+	'He half pulls you out of the taxi and starts pulling your clothes off just enough to give him a clear path to your pussy. He rubs the tip of his <<dick>>cm <<$dick_girth>> cock against your pussy lips.'
+	'Without even checking to see if your wet, he shoves his dick in, driving himself balls deep in you. At first it hurts as he begins to furiously fuck your unprepared pussy, obviously not caring if you are enjoying it or not, luckily you find yourself getting turned on at being used and your pussy becomes soaking wet, you begin to moan in pleasure.'
+	gs 'arousal', 'vaginal', 10, 'sub', 'unknown', 'rough'
+	gs 'stat'
+	gs 'willpower', 'cum_inside', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Beg him not to come inside you (<<will_cost>> Willpower)':
+			gs 'willpower', 'cum_inside', 'resist'
+			gs 'willpower', 'pay', 'resist'
+			if ending = 0 or rand(0, 2) ! 0:
+				gs 'taxi', 'cum1'
+			else
+				gs 'taxi', 'cum2'
+			end
+		end
+	else
+		act 'Beg him not to come inside you (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	gs 'willpower', 'cum_inside', 'force', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Wrap your legs around him (<<will_cost>> Willpower)':
+			gs 'willpower', 'cum_inside', 'force', 'easy'
+			gs 'willpower', 'pay', 'force'
+			gs 'taxi', 'cum3'
+		end
+	else
+		act 'Wrap your legs around him (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Finish':
+
+		if pcs_horny > 95 and rand(0, 4) < 1:
+			ending = 2
+		end
+
+		if ending = 0: gs 'taxi', 'cum1'
+		if ending = 1: gs 'taxi', 'cum2'
+		if ending = 2: gs 'taxi', 'cum3'
+	end
+end
+
+if $ARGS[0] = 'cum1':
+	spafinloc = 14
+	gs 'cum_manage'
+	'For several minutes he pounds your pussy, as your pleasure mounts, you feel yourself close to climax, then suddenly he pulls out and starts shooting spurts of cum all over your stomach. With a final moan and spurt, he stands up, leering down at you and his handy work as he pushes you back inside the taxi and slams the door shut.'
+	gs 'arousal', 'vaginal', 5, 'sub', 'unknown', 'rough'
+	gs 'arousal', 'end'
+	gs 'stat'
+	gs 'taxi', 'end'
+end
+
+if $ARGS[0] = 'cum3':
+	spafinloc = 0
+	gs 'cum_manage'
+	'For several minutes he pounds your pussy, as your pleasure mounts, you feel yourself close to climax, and you wrap your legs around him to pull him deeper inside. Suddenly he moans and begins pumping his sperm deep inside you. '
+	gs 'cuminsidereact'
+	gs 'arousal', 'vaginal', 5, 'sub', 'unknown', 'rough'
+	gs 'arousal', 'end'
+	gs 'stat'
+	gs 'taxi', 'end'
+end
+
+if $ARGS[0] = 'cum2':
+	spafinloc = 0
+	gs 'cum_manage'
+	'For several minutes he pounds your pussy, as your pleasure mounts, you feel yourself close to climax, then suddenly he starts shooting spurts of cum deep inside you. After a final moan and spurt he stands up, leering down at you as he pushes you back inside the taxi and slams the door shut.'
+	gs 'cuminsidereact'
+	gs 'arousal', 'vaginal', 5, 'sub', 'unknown', 'rough'
+	gs 'arousal', 'end'
+	gs 'stat'
+	gs 'taxi', 'end'
+end
+
+if $ARGS[0] = 'end':
+	cla
+	killvar 'temp'
+	'He walks back to the drivers door, putting his dick away as he gets in and starts the taxi up, then takes you to where you need to go.'
+	act 'Choose destination':
+		cla
+		gs 'taxi', 'locations'
+	end
+end
+
+if $ARGS[0] = 'bj':
+	cla
+	*clr
+	taxioffer = 1
+	spafinloc = 12
+	gs 'cum_manage'
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/shared/taxi/sex/bj0,'+rand(0,2)+'.mp4"></video></center>'
+	'He turns the taxi off and tells you to come up to the front seat. You get out and crawl into the passenger seat, he already has his <<dick>>cm <<$dick_girth>> cock out of his pants stroking it. He doesn''t say a word, just gives you a look. You scurry over at once and wrap your lips around his cock. You begin sucking his cock while your hand fondles his balls.'
+	'He moans and leans back to give you more room to work. Some time later he grabs your hair with his hand and forces you head down, ramming his <<dick>>cm <<$dick_girth>> cock down your throat. "That''s a good little slut." This makes your eyes water and you gag, he doesn''t seem to care, as this causes you to almost uncontrollable slobbery.'
+	'Several minutes later, your throat begins to feel raw. He suddenly stops and holds your head still, his cock still in your mouth. "I''m cumming and you better swallow every drop of it bitch." His body spasms, almost at once you feel the spurts of cum blasting into your mouth, once he is done cumming her jerks your head away and pushes you away. You swallow his sperm like he told you as he puts his dick away.'
+	'Looking at you with irritation, "What the fuck are you still sitting there for, get in the fucking back." You quickly do as he says and he drives you to where you need to go.'
+	swallow += 1
+	gs 'arousal', 'bj', 5, 'sub', 'unknown', 'rough', 'deepthroat'
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Choose destination':
+		cla
+		gs 'taxi', 'locations'
+	end
+end
+
+if $ARGS[0] = 'anal':
+	cla
+	*clr
+	taxioffer = 1
+	spafinloc = 3
+	gs 'cum_manage'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/taxi/sex/taxi3,'+rand(0,5)+'.jpg"></center>'
+	'He turns off the taxi and gets out, walking around to the back door. He already has his cock out, rubbing some hand lotion on it for lubrication, as he strokes it.'
+	'He half pulls you out of the taxi and pulls your clothes aside and your panties down just enough to completely bare your ass, which he gives a hard slap to. He rubs the tip of his <<dick>>cm <<$dick_girth>> cock against your anus, while you start to rub your clit with your hand, as you bite your lower lip, trying to prepare yourself mentally for what is about to come.'
+	'Then with a grunt he shoves his <<dick>>cm <<$dick_girth>> cock up your ass, pushing it balls deep in your ass. You grunt in pain and bite your lip nearly hard enough to draw blood, as he begins to furiously fuck you, obviously not caring if you are enjoying it or not.'
+	'As your asshole begins to loosen a bit and the ministrations of your fingers on your clit, turn you on, it begins to hurt less and feel better, as a slight moan of pleasure escapes your lips. For several minutes he pounds your ass, until he finally stops cock buried balls deep in your ass. He grunts as you feel the spurts of cum shooting deep into your ass.'
+	'With a final moan and spurt, he stands up. Pushing you back inside he slams the door and gets back in the drivers seat, starting the taxi up and then takes you to where you need to go.'
+	pcs_acp_known += 1
+	gs 'arousal', 'anal', 5, 'sub', 'unknown', 'rough'
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Choose destination':
+		cla
+		gs 'taxi', 'locations'
+	end
+end
+
+
+if $ARGS[0] = 'trip':
+	cla
+	*clr
+	minut += rand(5,10)
+
+	if workDisk = 3 and konvert = 1:
+		badrand = rand(0, 100)
+
+		if badrand >= 98:konvert = 0
+	end
+
+	if taxi_pay = 1:
+		cla
+		*clr
+		taxi_pay = 0
+		gs 'npcgeneratec', 0, 'Taxi Driver', rand(30,46)
+		gs 'boyStat', $npclastgenerated
+		'<center><img <<$set_imgh>> src="images/locations/shared/taxi/base'+rand(1,5)+'.jpg"></center>'
+		'Having told the driver where you need to go, he chats in a friendly way as he drives. After awhile you finally break it to him that you don''t have any money. "I''m sorry but I don''t have any money."'
+		'He hits the brakes hard and pulls over, bringing the taxi to a sudden stop, he turns around and yells at you. "You fucking little cunt, I should take you to the police right now, it would serve your ass right!"'
+		'A chill runs through you at the thought of him taking you to the police. "Please, please don''t take me to the police. I''m sorry I was just desperate."'
+		'He glares at you for a few minutes. "Fine, you might not have any money but your still paying for this ride." He pulls back onto the road and drives for a bit into one of the seedier parts of the city, finally he seems to find what he is looking for as he pulls into a back alley and comes to a stop.'
+		'He turns the taxi off and gets out. "Get out bitch!" You look around a bit afraid but seeing the look on his face makes you more afraid so you do as he says and get out. Once your out of his taxi, he roughly grabs you by the arm and pulls you around to the front of his taxi and shoves you against the front of it.'
+		'"Now take off all your clothes bitch!" When you don''t do as he says at once he threatens you. "It''s either that or the police." Nodding in understanding you take off all your clothes as he instructed. Once your completely naked he turns you around and bends you over the front of his car. He is obviously planning on fucking you.'
+		if lube > 1:'Realizing he is likely to fuck you, you turn your head to look back at him and offer your lube. "Wait I have some lube in my purse it will make it better for both of us." He laughs and slaps your ass hard enough to leave an outline of his hand on your ass. "Maybe better for you, but I like to dry fuck bitches and listen to their sobs. Maybe this will teach you a lesson." He says with a cruel look in his eyes and you realize he is going to enjoy hurting you, as he gives your ass another hard smack.'
+		if stat['vaginal'] = 0:
+			gs 'willpower', 'sex', 'resist', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Tell him your a virgin (<<will_cost>> Willpower)':
+					cla
+					gs 'willpower', 'sex', 'resist', 'easy'
+					gs 'willpower', 'pay', 'resist'
+					'"Wait, I''m still a virgin. Please don''t fuck my pussy." You say in a pleading voice, hoping to change his mind. He pauses for just a moment, considering.'
+					act 'See how he reacts':
+						cls
+						if rand(1,100) > 75:
+							gs 'cum_manage'
+							gs 'stat'
+							'<center><video autoplay loop src="images/locations/shared/taxi/sex/taxialleyvag.mp4"></video></center>'
+							'You hear him spit and you look back over your shoulder at him, you see him rubbing his spit on the tip of his <<dick>>cm <<$dick_girth>> cock. He comes up behind you and rubs the tip of his dick against your pussy lips for a moment to make sure he is lined up. Then he thrusts his unlubricated <<dick>>cm <<$dick_girth>> cock into your pussy.'
+							'He struggles a bit to work his dick into you, but with your hips firmly against the side of his car you have no where to go and he finally shoves himself balls deep in you, you cry out in pain, you bite your lower lip and look back at him with a pleading look gentler. The hard cruel look in his eyes, tells you any pleas to be gentle will fall on deaf ears, but that he enjoys hurting you.'
+							'As he starts pounding your pussy hard, his stomach slamming against your ass driving your hips painfully against the metal of his car, you begin to furiously rub your clit, hoping to make yourself at least a little wet. To your surprise despite the painful pounding of your pussy, you feel yourself getting wet and starting to moan in pleasure, apparently you like being used like a whore.'
+							'He repeatedly pulls nearly all the way out and then slams violently forward, painfully banging your hips against the cold hard metal of the taxi. You''re certain he is making this as unpleasant for you as he can. Biting your lower lip as you endure his furious pounding, with a mixture of pain and pleasure soaring through you body. With what seems like an eternity he fucks you hard, your moans getting louder.'
+							'"You like getting used like a whore, don''t you slut?" You nod your head. Suddenly he stops with his dick buried balls deep in you as he grunts, you realizing he is cumming inside of you, you feel his spurts of cum filling up your pussy. He grinds himself against you as if he is trying to get even deeper, then he suddenly pulls away, making you almost stumble backwards. He puts his dick back in his pants and you start to get dressed.'
+							'Before you are fully dressed you hear the taxi start and look up just in time to see him rapidly backing away and out of the alley, you yell at him but he doesn''t even slow down "Hey wait, stop!". Leaving you alone half naked in this dirty disgusting alley full of his sperm. You hope he at least dropped you off near where you needed to go.'
+							gs 'arousal', 'vaginal', 5, 'sub', 'unknown', 'rough'
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Find a main road':gt 'taxi', 'random'
+						else
+							spafinloc = 3
+							gs 'cum_manage'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/shared/taxi/sex/taxialleyanal.jpg"></center>'
+							'You hear him spit and you look back over your shoulder at him, you see him rubbing his spit on the tip of his <<dick>>cm <<$dick_girth>> cock. He comes up behind you and rubs the tip of his dick against your anus for a moment to make sure he is lined up. Then he pushes his unlubricated <<dick>>cm <<$dick_girth>> cock in your ass, you wince in pain as it feels like your asshole just caught on fire.'
+							'He struggles a bit to work his dick into you, but with your hips firmly against the side of his car you have no where to go and he finally shoves himself balls deep in you. You cry out in pain, you turn to look at him to ask him to be gentler but the hard cruel look in his eyes stop you before you even ask. You realize he would never be gentle with you, he is enjoying hurting you.'
+							'He starts pounding your ass hard without mercy, his hips slamming against your ass driving your hips painfully against the metal of his car. You close your eyes against the pain and try to rub your clit as a distraction, but the pain is to much and you feel hot tears running down your cheeks, smearing your makeup. He repeatedly pulls nearly all the way out and then slams violently back in, slamming your hips against the metal of the car, each time leaving you to whimper in pain.'
+							'You''re certain he is making this as painful for you as he can. Biting your lower lip as you do your best to endure his furious pounding.'
+							'Once he notices your tears, he grabs you roughly by your hair and painfully twists your head to look at him as he continues to pound you in the ass. You can see an evil grin on his face, you can tell he is really enjoying hurting you. "Go ahead and cry bitch, I like it when bitches cry. Maybe this will teach you not to try and treat a mans job like a game."'
+							'In what seems like an eternity as he fucks your ass raw, even though your asshole feels looser now and rubbing your clit is helping, it still feels like your asshole is on fire. But a part of you is also loving it despite the pain, a part of you is loving being used as a whore in some dirty back alleyway. Suddenly he stops, with is dick buried balls deep in your ass as he grunts. You realizing he is cumming inside of you, you feel his spurts of cum filling up your ass.'
+							'He grinds himself against you as if he is trying to get even deeper, then he suddenly pulls away, making you almost stumble backwards. The merciful relief of his cock out of your ass is short lived, the sharp stinging sensation like your ass was on fire, is quickly replaced by a deep throbbing and burning sensation. He puts his dick back in his pants and you start to get dressed.'
+							'Before you are fully dressed you hear the taxi start and look up just in time to see him rapidly backing away and out of the alley, you yell at him but he doesn''t even slow down "Hey wait, stop!". Leaving you alone half naked in this dirty disgusting alley full of his sperm. You hope he at least dropped you off near where you needed to go.'
+							gs 'arousal', 'anal', 5, 'sub', 'unknown', 'rough'
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Find a main road':gt 'taxi', 'random'
+						end
+					end
+				end
+			else
+				act 'Tell him your a virgin (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+		act 'Accept the consequences of your actions':
+			cla
+			*clr
+			gs'stat'
+			if rand(1,100) > 50:
+				gs 'cum_manage'
+				'<center><video autoplay loop src="images/locations/shared/taxi/sex/taxialleyvag.mp4"></video></center>'
+				'You hear him spit and you look back over your shoulder at him, you see him rubbing his spit on the tip of his <<dick>>cm <<$dick_girth>> cock. He comes up behind you and rubs the tip of his dick against your pussy lips for a moment to make sure he is lined up. Then he thrusts his unlubricated <<dick>>cm <<$dick_girth>> cock into your pussy.'
+				'He struggles a bit to work his dick into you, but with your hips firmly against the side of his car you have no where to go and he finally shoves himself balls deep in you, you cry out in pain, you bite your lower lip and look back at him with a pleading look gentler. The hard cruel look in his eyes, tells you any pleas to be gentle will fall on deaf ears, but that he enjoys hurting you.'
+				'As he starts pounding your pussy hard, his stomach slamming against your ass driving your hips painfully against the metal of his car, you begin to furiously rub your clit, hoping to make yourself at least a little wet. To your surprise despite the painful pounding of your pussy, you feel yourself getting wet and starting to moan in pleasure, apparently you like being used like a whore.'
+				'He repeatedly pulls nearly all the way out and then slams violently forward, painfully banging your hips against the cold hard metal of the taxi. You''re certain he is making this as unpleasant for you as he can. Biting your lower lip as you endure his furious pounding, with a mixture of pain and pleasure soaring through you body. With what seems like an eternity he fucks you hard, your moans getting louder.'
+				'"You like getting used like a whore, don''t you slut?" You nod your head. Suddenly he stops with his dick buried balls deep in you as he grunts, you realizing he is cumming inside of you, you feel his spurts of cum filling up your pussy. He grinds himself against you as if he is trying to get even deeper, then he suddenly pulls away, making you almost stumble backwards. He puts his dick back in his pants and you start to get dressed.'
+				'Before you are fully dressed you hear the taxi start and look up just in time to see him rapidly backing away and out of the alley, you yell at him but he doesn''t even slow down "Hey wait, stop!". Leaving you alone half naked in this dirty disgusting alley full of his sperm. You hope he at least dropped you off near where you needed to go.'
+				gs 'arousal', 'vaginal', 5, 'sub', 'unknown', 'rough'
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Find a main road':gt 'taxi', 'random'
+			else
+				spafinloc = 11
+				gs 'cum_manage'
+				'<center><img <<$set_imgh>> src="images/locations/shared/taxi/sex/taxialleyanal.jpg"></center>'
+				'You hear him spit and you look back over your shoulder at him, you see him rubbing his spit on the tip of his <<dick>>cm <<$dick_girth>> cock. He comes up behind you and rubs the tip of his dick against your anus for a moment to make sure he is lined up. Then he pushes his unlubricated <<dick>>cm <<$dick_girth>> cock in your ass, you wince in pain as it feels like your asshole just caught on fire.'
+				'He struggles a bit to work his dick into you, but with your hips firmly against the side of his car you have no where to go and he finally shoves himself balls deep in you. You cry out in pain, you turn to look at him to ask him to be gentler but the hard cruel look in his eyes stop you before you even ask. You realize he would never be gentle with you, he is enjoying hurting you.'
+				'He starts pounding your ass hard without mercy, his hips slamming against your ass driving your hips painfully against the metal of his car. You close your eyes against the pain and try to rub your clit as a distraction, but the pain is to much and you feel hot tears running down your cheeks, smearing your makeup. He repeatedly pulls nearly all the way out and then slams violently back in, slamming your hips against the metal of the car, each time leaving you to whimper in pain.'
+				'You''re certain he is making this as painful for you as he can. Biting your lower lip as you do your best to endure his furious pounding.'
+				'Once he notices your tears, he grabs you roughly by your hair and painfully twists your head to look at him as he continues to pound you in the ass. You can see an evil grin on his face, you can tell he is really enjoying hurting you. "Go ahead and cry bitch, I like it when bitches cry. Maybe this will teach you not to try and treat a mans job like a game."'
+				'In what seems like an eternity as he fucks your ass raw, even though your asshole feels looser now and rubbing your clit is helping, it still feels like your asshole is on fire. But a part of you is also loving it despite the pain, a part of you is loving being used as a whore in some dirty back alleyway. Suddenly he stops, with is dick buried balls deep in your ass as he grunts. You realizing he is cumming inside of you, you feel his spurts of cum filling up your ass.'
+				'He grinds himself against you as if he is trying to get even deeper, then he suddenly pulls away, making you almost stumble backwards. The merciful relief of his cock out of your ass is short lived, the sharp stinging sensation like your ass was on fire, is quickly replaced by a deep throbbing and burning sensation. He puts his dick back in his pants and you start to get dressed.'
+				'Before you are fully dressed you hear the taxi start and look up just in time to see him rapidly backing away and out of the alley, you yell at him but he doesn''t even slow down "Hey wait, stop!". Leaving you alone half naked in this dirty disgusting alley full of his sperm. You hope he at least dropped you off near where you needed to go.'
+				gs 'arousal', 'anal', 5, 'sub', 'unknown', 'rough'
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Find a main road':gt 'taxi', 'random'
+			end
+		end
+	elseif taxioffer = 1:
+		taxioffer = 0
+		gt $loc, $metka
+	else
+		money -= 250
+		gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'random':
+	if rand(0,3) = 0:
+		gt 'street'
+	elseif rand(0,2) = 0:
+		gt 'down'
+	elseif rand(0,1) = 0:
+		gt 'island'
+	else
+		gt 'Nord'
+	end
+end
+
+--- taxi ---------------------------------
+

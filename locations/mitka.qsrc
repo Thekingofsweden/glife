@@ -1,0 +1,465 @@
+# mitka
+
+!---------------------------------------------
+! mitka_first_drink = 0 Sveta has never been invited to drink with Mitka
+! mitka_first_drink = 1 Sveta has been invited by Mitka to her first drink with him
+! mitka_first_drink = 2 Sveta has already been drinking with Mitka before
+!---------------------------------------------
+! npc_QW['A63'] = 0 Sveta has never had sex with Mitka
+! npc_QW['A63'] = 1 Sveta has either had any sex with Mitka or Mitka has seen Sveta nude multiple times in the forest
+! npc_QW['A63'] = 2 to 9 Sveta continues to have sex with Mitka by himself or when drunk with him
+! npc_QW['A63'] = 10 Mitka shares Sveta with Kolyamba and Vasyan for the first time when Sveta is too drunk
+! npc_QW['A63'] = 11 to 20 Sveta continues to have sex with Mitka and Kolyamba and Vasyan in the forest and when she is drunk with them
+! npc_QW['A63'] = 21 Sveta gangbanged by all the drunk village men
+!---------------------------------------------
+! gadriver_gang = 0 Sveta has not been gangbanged by all the village men
+! gadriver_gang = 1 Sveta has been gangbanged by all the village men
+! gadriver_gang = 2 Sveta accepted the mens money for being gangbanged - she will now be treated like a whore throughout the village and can prostitute herself by the highway in Gadukino
+! gadriver_gang = 3 Sveta refused the mens money after being gangbanged - the men/boys will no longer randomly fuck her but the hunters still will in the woods
+! gadriver_gang = 4 Sveta accepted Mitkas apology - just normal relationship between Mitka and the village boys and Sveta now
+!---------------------------------------------
+
+if $ARGS[0] = '':
+	$menu_loc = 'mitka'
+	$menu_arg = ''
+	menu_off = 1
+	
+	mitkaday = daystart
+	if mitka_first_drink = 0: mitka_first_drink = 1
+	gs 'stat'
+	
+	'<center><b><font color="maroon">Mitka Shkvoryen</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big63.jpg"></center>'
+	*nl
+	if npc_rel['A63'] < 20:
+		'You and Mitka are strangers.'
+	elseif npc_rel['A63'] < 40:
+		'You and Mitka are acquaintances.'
+	elseif npc_rel['A63'] < 60:
+		'You and Mitka are friends.'
+	elseif npc_rel['A63'] < 80:
+		'You and Mitka are good friends.'
+	else
+		'You and Mitka are best friends.'
+	end
+	! School girl Sveta already knows Mitka
+	if StoryLine = 1:
+		$mitkaInvitation = 'Listen, we have a fresh batch of our home brew. Come drink with us at eight o''clock. We meet by the forest road outside the village. We''ll hang out with some friends, and have fun. What do you say?'
+		
+		'He is barely older than you, you remember him from your childhood. You both used to swim in the local river together.'
+		if npc_QW['A63'] = 0:
+			'You blush as you recall that you used to swim naked together when you were little.'
+			if pcs_horny >= 50: 'You bite your lip and glance down at his crotch and can''t help but wonder how much he has grown since then.'
+		end
+		*nl
+		'"Hey <<$pcs_nickname>>, how are you doing?"'
+		
+		! Mitka will ask Sveta for sex once relationship gets high enough or Mitka has already had sex with Sveta or Mitka has seen Sveta naked in the woods too many times and Sveta has not chosen to no longer be the village whore after the gadriver_gang event
+		if (npc_rel['A63'] >= 60 or npc_QW['A63'] > 0) and gadriver_gang < 3:
+			act '"I''m doing fine, thanks."': xgt 'mitka', 'sex_chat'
+		else
+			act '"I''m doing fine, thanks."': xgt 'mitka', 'normal_chat'
+		end
+	else
+		! Transformation or New In Town Sveta has already met Mitka or started his quest
+		if npc_rel['A63'] ! 0 or npc_QW['A63'] ! 0: 
+			$mitkaInvitation = 'Listen, we have a fresh batch of our home brew. Come drink with us at eight o''clock. We meet by the forest road outside the village. We''ll hang out with some friends, and have fun. What do you say?'
+			
+			'He is barely older than you, and one of the first people you met in Gadukino.'
+			*nl
+			'"Hey <<$pcs_nickname>>, how are you doing?"'
+			
+			if (npc_rel['A63'] > 60 or npc_QW['A63'] > 0) and gadriver_gang < 3:
+				act '"I''m doing fine, thanks."': xgt 'mitka', 'sex_chat'
+			else
+				act '"I''m doing fine, thanks."': xgt 'mitka', 'normal_chat'
+			end
+		else
+			$mitkaInvitation = 'Listen, we have a fresh batch of our home brew. Come drink with us at eight o''clock. We meet by the forest road outside the village. I can introduce you to some of my friends, and have fun. What do you say?'
+			
+			'You see a boy about your age walking towards you.'
+			'As you are about to pass him by, he waves and greets you. He introduces himself as Mitka Shkvoryen.'			
+			
+			act 'Introduce yourself': xgt 'mitka', 'first_chat'
+		end
+	end
+end
+
+if $ARGS[0] = 'first_chat':
+	cla	
+	minut += 10
+	npc_rel['A63'] = 10
+	gs 'stat'
+	
+	*nl
+	'You introduce yourself, "I''m <<$pcs_nickname>>."'
+	'"I couldn''t help but notice, Are you new around here? I have lived my whole life in Gadukino but have never seen you before."'
+	'If you want I could show you around the village, then he offers, "<<$mitkaInvitation>>"'
+	
+	act 'Say goodbye': gt $loc
+end
+
+if $ARGS[0] = 'normal_chat':
+	cla
+	minut += 5
+	npc_rel['A63'] += 1
+	gs 'stat'
+	
+	*nl
+	'You greet him, "I''m doing fine, thanks."'
+	'Mitka smiles, "That''s great to hear, <<$pcs_nickname>>.", then he offers, "<<$mitkaInvitation>>"'
+	
+	act 'Say goodbye': gt $loc
+end
+
+if $ARGS[0] = 'sex_chat':
+	cla
+	minut += 5
+	npc_rel['A63'] += 2
+	gs 'stat'
+	
+	*nl
+	'You greet him, "I''m doing fine, thanks."'
+	'Mitka smiles, "That''s great to hear, <<$pcs_nickname>>.", then he offers, "<<$mitkaInvitation>>"'
+	
+	! Sveta has never had sex with Mitka and Mitka has not seen Sveta nude in the forest or river multiple times
+	if npc_QW['A63'] = 0:
+		*nl
+		'Mitka scratches his balls and adds with a grin: "Hey <<$pcs_nickname>>, do you want to have some fun?"'
+		if pcs_vag = 0:
+			if StoryLine = 1:
+				gs 'willpower', 'bj', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'I don''t know. My mother is obsessed with me staying a virgin. (<<will_cost>> Willpower)':
+						cla		
+						npc_rel['A63'] -= 1
+						gs 'willpower', 'bj', 'resist'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						
+						*nl
+						'You turn around and walk away from Mitka. You know it would be fun, but you promised your mother...'
+						act 'Walk away': gt $loc
+					end
+				else
+					act 'I don''t know. My mother is obsessed with me staying a virgin. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			else
+				gs 'willpower', 'bj', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'I don''t know. I''m still a virgin. (<<will_cost>> Willpower)':
+						cla
+						npc_rel['A63'] -= 1
+						gs 'willpower', 'bj', 'resist'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						
+						*nl
+						'You turn around and walk away from Mitka. You know it would be fun, but maybe another time...'
+						act 'Walk away': gt $loc
+					end
+				else
+					act 'I don''t know. I''m still a virgin. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+		end
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'No thanks (<<will_cost>> Willpower)':
+				cla
+				npc_rel['A63'] -= 1
+				gs 'willpower', 'bj', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				
+				*nl
+				'You turn around and walk away from Mitka. You know it would be fun, but maybe another time...'
+				act 'Walk away':gt $loc
+			end
+		else
+			act 'No thanks. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Sounds tempting, but only a blowjob.':
+			*clr & cla
+			
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhome.jpg"></center>'
+			*nl
+			'Mitka takes you to '+iif(mitka_first_drink > 1, 'the familiar old trailer','an old trailer')+' in the woods.'
+			'Mitka sits down on a couch as you kneel in front of him. You take his cock out of his pants and start to suck...'
+			
+			npc_rel['A63'] += 5
+			npc_QW['A63'] = 1
+			gs 'boyStat', 'A63'
+			npc_sex['A63'] += 1
+			gs 'arousal', 'bj', 10, 'sub'
+			gs 'stat'
+			
+			act 'Swallow':
+				*clr & cla
+				mitkarand = rand(0,5)
+				if mitkarand = 5:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum2.jpg"></center>'
+					*nl
+					'Mitka stands up and begins to furiously stroke his cock right in your face.'
+					'Within a minute Mitka is panting hard and suddenly you feel hot cum splattering onto your face and in your mouth.'
+					'You smile up at him and lick your lips, pleased with your efforts.'
+					
+					gs 'cum_call','face','A63',1
+				elseif mitkarand >= 3:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum3.jpg"></center>'
+					*nl
+					'You bob your head up and down on his cock, trying to cram as much of his cock deep into your mouth. Sometimes you gag as it enters your throat.'
+					'Eventually, you feel Mitka''s cock pulse and a few seconds later your mouth is filled with his salty sperm. You quickly swallow it all down.'
+					
+					gs 'arousal', 'bj', 5, 'sub', 'deepthroat'
+					gs 'cum_call','mouth','A63',1
+					swallow += 1
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum1.jpg"></center>'
+					*nl
+					'Mitka stands, places his hands on the back of your head and roughly forces you to take his cock deep into your throat.'
+					'Slowly he builds up a rhythm and finally finishes in your mouth. He makes you swallow and lick him clean before removing his cock from your mouth.'
+					
+					gs 'arousal', 'bj', 5, 'sub', 'deepthroat', 'rough'
+					gs 'cum_call','mouth','A63',1
+					swallow += 1
+				end
+				gs 'arousal', 'end'
+				gs 'stat'
+
+				act 'Leave': gt $loc
+			end
+		end
+	! Sveta is not the boys slut but has had sex with Mitka and she does not know Mira likes Mitka or Mira is the boys slut
+	elseif (npc_QW['A63'] > 0 and npc_QW['A63'] < 11) and (npc_QW['A60'] < 2 or npc_QW['A60'] >= 11):
+		*nl
+		'Mitka scratches his balls and adds with a grin: "Hey <<$pcs_nickname>>, do you want to have some fun?"'
+		mitkarand = rand(1,10)
+		if (mitkarand = 1 or (mitkarand < 5 and pcs_vag > 0)) and mesec = 0:
+			'"How about you let me fuck you today?" Mitka asks.'
+			if pcs_vag = 0: 
+				gs 'willpower', 'sex', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'No, I''m still a virgin. (<<will_cost>> Willpower)':
+						cla
+						npc_rel['A63'] -= 2
+						gs 'willpower', 'sex', 'resist'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						
+						*nl
+						'You tell Mitka you are not ready to lose your virginity yet. You know it would be fun, but maybe another time...'
+						
+						act 'Leave': gt $loc
+					end
+				else
+					act 'No, I''m still a virgin. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+			gs 'willpower', 'sex', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'No thanks, not today. (<<will_cost>> Willpower)':
+					cla
+					npc_rel['A63'] -= 2
+					gs 'willpower', 'sex', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					
+					*nl
+					'You turn around and walk away from Mitka. You know it would be fun, but maybe another time...'
+					
+					act 'Walk away': gt $loc
+				end
+			else
+				act 'No thanks, not today. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Sure, sounds like fun':
+				*clr & cla
+				
+				if pcs_vag = 0:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkafirst.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka2.jpg"></center>'
+				end
+				
+				*nl
+				'Mitka takes you to '+iif(mitka_first_drink > 1, 'the familiar old trailer','an old trailer')+' in the woods.'
+				'He has you lie down on the bed and begins removing your clothes.'
+				if pcs_vag = 0:
+					'You feel your hymen break as Mitka penetrates you. Mitka looks down at you and says, "Wow, how were you still a virgin? I should have savoured this moment longer!"'
+				else
+					'Mitka is clearly enjoying fucking you. He has a huge smile on his face as he holds you in place beneath him.'
+				end
+				'Mitka doesn''t bother to pull out and cums deep inside you. Breathing heavily, he gets off of you and says, "You''re a good fuck! We should do it again sometime."'
+				
+				npc_rel['A63'] += 1
+				if npc_QW['A63'] < 10: npc_QW['A63'] += 1
+				gs 'boyStat', 'A63'
+				npc_sex['A63'] += 1
+				gs 'cum_call','vagina','A63',1
+				gs 'arousal', 'vaginal', 10, 'sub'
+				gs 'arousal', 'end'
+				gs 'stat'
+				
+				act 'Leave': gt $loc
+			end
+		elseif mitkarand < 9:
+			'Can you give me a blowjob today?" Mitka asks.'
+			gs 'willpower', 'bj', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'No thanks, not today. (<<will_cost>> Willpower)':
+					cla
+					npc_rel['A63'] -= 2
+					gs 'willpower', 'bj', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					
+					*nl
+					'You turn around and walk away from Mitka. You know it would be fun, but maybe another time...'
+					
+					act 'Walk away': gt $loc
+				end
+			else
+				act 'No thanks, not today. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Sure, sounds like fun':
+				*clr & cla
+				
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhome.jpg"></center>'
+				*nl
+				'Mitka takes you to '+iif(mitka_first_drink > 1, 'the familiar old trailer','an old trailer')+' in the woods.'
+				'Mitka sits down on a couch as you kneel in front of him. You take his cock out of his pants and start to suck...'
+				
+				npc_rel['A63'] += 1
+				if npc_QW['A63'] < 10: npc_QW['A63'] += 1
+				gs 'boyStat', 'A63'
+				npc_sex['A63'] += 1
+				gs 'arousal', 'bj', 10, 'sub'
+				gs 'stat'
+				
+				act 'Make him cum':
+					*clr & cla
+					mitkarand = rand(0,5)
+					if mitkarand = 5:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum2.jpg"></center>'
+						*nl
+						'Mitka stands up and begins to furiously stroke his cock right in your face.'
+						'Within a minute Mitka is panting hard and suddenly you feel hot cum splattering onto your face and in your mouth.'
+						'You smile up at him and lick your lips, pleased with your efforts.'
+						
+						gs 'cum_call','face','A63',1
+						gs 'cum_call','mouth','A63',1
+					elseif mitkarand >= 3:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum3.jpg"></center>'
+						*nl
+						'You bob your head up and down on his cock, trying to cram as much of his cock deep into your mouth. Sometimes you gag as it enters your throat.'
+						'Eventually, you feel Mitka''s cock pulse and a few seconds later your mouth is filled with his salty sperm. You quickly swallow it all down.'
+						
+						gs 'arousal', 'bj', 5, 'sub', 'deepthroat'
+						gs 'cum_call','mouth','A63',1
+						swallow += 1
+					else
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkabjhomecum1.jpg"></center>'
+						*nl
+						'Mitka stands, places his hands on the back of your head and roughly forces you to take his cock deep into your throat.'
+						'Slowly he builds up a rhythm and finally finishes in your mouth. He makes you swallow and lick him clean before removing his cock from your mouth.'
+						
+						gs 'arousal', 'bj', 5, 'sub', 'deepthroat', 'rough'
+						gs 'cum_call','mouth','A63',1
+						swallow += 1
+					end
+					gs 'arousal', 'end'
+					gs 'stat'
+
+					act 'Leave': gt $loc
+				end
+			end
+		else
+			'"I want to do anal today. What do you think?" Mitka asks.'
+			if pcs_ass = 0:
+				gs 'willpower', 'anal', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'No, I''ve never done anal before (<<will_cost>> Willpower)':
+						cla
+						npc_rel['A63'] -= 2
+						gs 'willpower', 'anal', 'resist'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						
+						*nl
+						'You tell Mitka you are not ready to lose your anal virginity yet. You know it would be fun, but maybe another time...'
+						
+						act 'Leave': gt $loc
+					end
+				else
+					act 'No, I''ve never done anal before (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+			gs 'willpower', 'anal', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'No thanks, not today. (<<will_cost>> Willpower)':
+					cla
+					npc_rel['A63'] -= 2
+					gs 'willpower', 'anal', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					
+					*nl
+					'You turn around and walk away from Mitka. You know it would be fun, but maybe another time...'
+					
+					act 'Walk away': gt $loc
+				end
+			else
+				act 'No thanks, not today. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Sure, sounds like fun':
+				*clr & cla
+				
+				if pcs_ass < 10:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkaanalhome.jpg"></center>'
+				elseif pcs_ass >= 10 and pcs_ass < 25:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkaanalhome3.jpg"></center>'
+				elseif pcs_ass >= 25:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitkaanalhome2.jpg"></center>'
+				end
+				*nl
+				'Mitka takes you to '+iif(mitka_first_drink > 1, 'the familiar old trailer','an old trailer')+' in the woods.'
+				'He has you lie down on the bed and begins removing your clothes. Once undressed, he bends you over prepares to penetrate your ass.'
+				if pcs_ass = 0:
+					'"An anal virgin, huh? Well your ass will never be the same after this!" Mitka says as he pushes his cock inside your ass.'
+				else
+					'Mitka is clearly enjoying fucking your ass. He has a huge smile on his face as he holds you in place beneath him.'
+				end
+				'Mitka doesn''t bother to pull out and cums deep inside your ass. Breathing heavily, he gets off of you and says, "Still a good fuck, but I would prefer your pussy instead."'
+				
+				npc_rel['A63'] += 1
+				if npc_QW['A63'] < 10: npc_QW['A63'] += 1
+				gs 'boyStat', 'A63'
+				npc_sex['A63'] += 1
+				gs 'cum_call','anus','A63',1
+				gs 'arousal', 'anal', 15, 'sub', 'rough'
+				gs 'arousal', 'end'
+				gs 'stat'
+				
+				act 'Leave':gt 'gadukino'
+			end
+		end
+	! Sveta is not the boys slut and Sveta knows Mira likes Mitka and Mira is not the boys slut yet
+	elseif npc_QW['A63'] > 0 and npc_QW['A63'] < 11 and npc_QW['A60'] >= 2 and npc_QW['A60'] < 11:
+		*nl
+		'Mitka scratches his balls and adds with a grin: "Hey <<$pcs_nickname>>, do you want to have some fun?"'
+
+		'You hesitate for a moment then look at him sternly.'
+		'"What about Mira? Aren''t you going out with her?"'
+		'Mitka smiles sheepishly and has the decency to blush. He looks around to make sure Mira isn''t nearby then tries to explain.'
+		'"Well, I just figured since, you know, we already did stuff..." he trails off as he notices that you aren''t going for it.'
+		'"You thought wrong." you tell him coldly, "Unlike boys, girls don''t fool around with their best friend''s boyfriend."'
+		'You turn around and walk away and Mitka kicks at the ground in frustration. You decide not to mention this to Mira.'
+		act 'Walk away': gt $loc
+	else
+		act 'Walk away': gt $loc
+	end
+end
+
+--- mitka ---------------------------------
+

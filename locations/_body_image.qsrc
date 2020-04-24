@@ -1,0 +1,136 @@
+# $body_image
+!This function will return url of image, and set additional texts to $body_image_msg
+!for example, you can   VIEW FUNC('$body_image', 'body')   to view body image in popup window, and
+!pl $body_image_msg     to display extra texts
+
+$body_image_msg = ''
+if $ARGS[0] = 'body':
+!!	This displays the body image; $bodimgsets[x9] is the folder name
+	if (knowpreg = 1 or (preg = 1 and thinkpreg = 1) or (preg = 1 and PregChem > 3600)) and bodset = 3:
+                if PregChem > 6216:
+                        $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10)+9)]>>/8.jpg'
+                elseif PregChem < 2688:
+                        $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10)+9)]>>/0.jpg'
+                else
+                        $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10)+9)]>>/<<((PregChem - 2184)/504)>>.jpg'
+                end
+        elseif salocatnow >= 1 and salocatnow <= 5:
+                $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10) + 9)]>>/<<salocatnow>>.jpg'
+        elseif salocatnow <= 0:
+                $RESULT = 'images/pc/body/shape/0.jpg'
+        elseif salocatnow = 6:
+                if imgset6ovr[bodset] = 1:
+                        $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10) + 9)]>>/6.jpg'
+                else
+                        $RESULT = 'images/pc/body/shape/6.jpg'
+                end
+        else
+                if imgset7ovr[bodset] = 1:
+                        $RESULT = 'images/pc/body/shape/<<$bodimgsets[((bodset * 10) + 9)]>>/7.jpg'
+                else
+                        $RESULT = 'images/pc/body/shape/7.jpg'
+                end
+        end
+	$body_image_msg += 'You are <<pcs_hgt>>cm tall and <<$body>>'
+end
+
+if $ARGS[0] = 'coat':
+	if defaultcoat = 0:
+		$RESULT = ''
+		$body_image_msg += 'You have no default coat set.'
+
+		$body_image_msg += '<br>Your health will suffer if you don''t wear a coat in the winter.'
+	else
+		$RESULT = 'images/pc/clothing/11coat/<<defaultcoat>>.jpg'
+		$body_image_msg += 'Your current default coat is Coat<<defaultcoat>>.<br>'
+		!make sure to sync these with [outdoors]~364
+		if defaultcoat_warmth = 1:
+			$body_image_msg += 'It''ll keep you fairly warm down to -10C.'
+		elseif defaultcoat_warmth = 2:
+			$body_image_msg += 'It will handle temperatures down to -20C.'
+		elseif defaultcoat_warmth = 3:
+			$body_image_msg += 'You will be nice and warm even in the depths of winter.'
+		else
+			$body_image_msg += 'Your health will suffer if you don''t wear a coat in the winter.'
+		end
+	end
+end
+
+if $ARGS[0] = 'clothes':
+	if $clothingworntype = 'nude' and towel = 1 and $pantyworntype = 'none':
+		$RESULT = 'images/pc/clothing/towel.jpg'
+		$body_image_msg += 'You are only wearing a towel'
+	elseif $clothingworntype = 'nude' and robe = 1:
+		$RESULT = 'images/pc/clothing/robe.jpg'
+		$body_image_msg += 'You are only wearing a robe'
+	elseif $clothingworntype = 'nude' and $pantyworntype ! 'none':
+		$RESULT = 'images/pc/clothing/nude.jpg'
+		$body_image_msg += 'You are only wearing panties'
+	elseif $clothingworntype = 'nude' and $pantyworntype = 'none':
+		$RESULT = 'images/pc/clothing/nude1.jpg'
+		$body_image_msg += 'You are completely naked.'
+	elseif $clothingworntype = 'cheap' and clothingwornnumber = 414:
+		$RESULT = FUNC('$clothing_image', $clothingworntype, clothingwornnumber)
+		$body_image_msg += 'You are wearing a hessian sack the hunters gave you.'
+	else
+		$RESULT = FUNC('$clothing_image', $clothingworntype, clothingwornnumber)
+		$body_image_msg += 'You are wearing ' + FUNC('$short_description', $clothingworntype, PCloStyle2) + '<<clothingwornnumber>>.'
+		if PClobimbo = 1:$body_image_msg += '<br>You are dressed like a bimbo.'
+		if $clothingworntype ! 'coat' and $clothingworntype ! 'swimwear':
+			gs 'clothing_attributes', $clothingworntype, clothingwornnumber
+			gs 'clothing_descriptions'
+			$body_image_msg += '<br><<$description>>'
+		else
+			$body_image_msg += FUNC('$clothing_name', $clothingworntype, clothingwornnumber)
+		end
+
+		if $clothingworntype = 'uniform':
+			if PCloStyle2 = 1:
+				$body_image_msg += '<br>This outfit is considered to be a maid uniform.'
+			elseif PCloStyle2 = 3:
+				$body_image_msg += '<br>This is a stripper outfit.'
+			else
+				$body_image_msg += '<br>This outfit is a server uniform, suitable for jobs that require one.'
+			end
+		end
+
+	end
+end
+
+if $ARGS[0] = 'panties':
+	if $pantyworntype = 'none':
+		$RESULT = FUNC('$pube_image')
+		$body_image_msg += 'You are not wearing any panties.'
+	else
+		$RESULT = FUNC('$panty_image', $pantyworntype, pantywornnumber)
+		!Kevin, please edit this line. I can not find panties description
+		!$body_image_msg += 'You are wearing ' + FUNC('$shoe_description', $shoeworntype) + '<<shoewornnumber>>.'
+		$body_image_msg += 'You are wearing <<$pantyworntype>> panty <<pantywornnumber>>'
+	end
+end
+
+if $ARGS[0] = 'bra':
+	if $braworntype = 'none':
+		$RESULT = 'images/pc/body/tits/t<<tits>>.jpg'
+		$body_image_msg += 'You are not wearing a bra. Your breasts would be considered an EU <<$titsize>>'
+	else
+		$RESULT = FUNC('$bra_image', $braworntype, brawornnumber)
+		!Kevin, please edit this line. I can not find bra description
+		!$body_image_msg += 'You are wearing ' + FUNC('$shoe_description', $shoeworntype) + '<<shoewornnumber>>.'
+		$body_image_msg += 'You are wearing <<$braworntype>> bra <<brawornnumber>>. Your breasts would be considered an EU <<$titsize>>'
+	end
+end
+
+if $ARGS[0] = 'shoes':
+	if $clothingworntype = 'nude' or $shoeworntype = 'none':
+		$RESULT = 'images/pc/body/feet.jpg'
+	else
+		$RESULT = FUNC('$shoe_image', $shoeworntype, shoewornnumber)
+
+		$body_image_msg += 'You are wearing ' + FUNC('$shoe_description', $shoeworntype) + '<<shoewornnumber>>.'
+	end
+end
+
+
+--- $body_image ---------------------------------
+

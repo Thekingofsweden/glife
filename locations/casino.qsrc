@@ -1,0 +1,1087 @@
+# casino
+
+$loc = 'casino'
+$menu_loc = 'casino'
+
+if $ARGS[0] = 'outside':
+	$metka = 'outside'
+	$menu_arg = 'outside'
+	menu_off = 0
+
+	$location_type = 'public_outdoors'
+	
+	*clr & cla
+	gs 'stat'
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/zdcasino.jpg"></right>'
+	'You stand in front of the door of the huge building casinos.'
+
+	act 'Return to the city industrial area': minut += 10 & gt 'nord'
+
+	act 'Enter the casino': gt 'casino', 'foyer'
+
+	!!if tobiQW < 1000:tobiQW = 1000
+end
+
+if $ARGS[0] = 'foyer':
+	CLOSE ALL
+	$metka = $ARGS[0]
+	$menu_arg = $ARGS[0]
+	menu_off = 0
+	$location_type = 'public_indoors'
+	
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	picrand = rand(1, 3)
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/hcasino<<picrand>>.jpg"></right>'
+	'You enter the foyer of the casino, there are lots of games .'
+	*nl
+	'In the hall are various <a href="exec:gt ''casino'', ''slots''">slot machines</a>.'
+	'In the games room there is <a href="exec:gt ''casino'', ''roulette''">Roulette</a> and <a href="exec:gt ''casino'', ''cards''">card games</a>.'
+
+	act 'Go outside': gt 'casino', 'outside'
+	act 'Go to the slot machines': gt 'casino', 'slots'
+	act 'Go to the roulette table': gt 'casino', 'roulette'
+	act 'Go to the card tables': gt 'casino', 'cards'
+end
+
+!!----------
+!! Roulette
+!!----------
+
+if $ARGS[0] = 'roulette':
+	$metka = $ARGS[0]
+	$menu_arg = $ARGS[0]
+	menu_off = 0
+
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/ruletka.jpg"></right>'
+	'You came to the table with American roulette.'
+
+	act 'Go back to the foyer': gt 'casino', 'foyer'
+	act 'Play roulette': gt 'casino', 'roulette_bet1'
+	act 'Approach the croupier':
+	*clr & cla
+		menu_off = 1
+		minut += 1
+		gs 'stat'
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/crup.jpg"></right>'
+		'"Can I help you?" He asks.'
+
+		act 'Shake your head and move away': gt 'casino', 'roulette'
+
+		act 'Ask rules':
+			msg 'The rules are very simple.
+			First you choose the amount you want to bet.
+			But in our casino maximum amount is 1000 <b>₽</b>.
+			Then you choose where to put your chips. There are six different types of bets:
+			1. Red/Black (Payout: 1 to 1)
+			2. Even/Odd (Payout: 1 to 1)
+			3. Small/Large (Payout: 1 to 1)
+			4. Dozen (Payout: 1 to 3)
+			5. Series (Payout: 1 to 3)
+			6. Number (Payout: 1 to 36)
+			And the rest depends on your luck.'
+			gt 'casino', 'roulette'
+		end
+	end
+end
+
+if $ARGS[0] = 'roulette_bet1':
+	*clr & cla
+	menu_off = 1
+	minut += 1
+	kh = 0
+	chnch = 0
+	mb = 0
+	du = 0
+	series = 0
+	chi = 100
+	x_rul = 100
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/amrul.jpg"></center>'
+	'The maximum amount you can bet is 1000 <b>₽</b>.'
+	'You lean over the table.'
+
+	act 'Move away from the table':gt 'casino', 'roulette'
+
+	act 'Make a bet':
+		st_1 = input 'Enter the amount'
+
+		if money < st_1:
+			msg '<br>You don''t have enough money.'
+			gt 'casino', 'roulette_bet1'
+		elseif st_1 <= 0:
+			msg '<br>You can''t bet zero or a negative amount.'
+			gt 'casino', 'roulette_bet1'
+		elseif st_1 > 1000:
+			msg '<br>The maximum amount you can bet is 1000 <b>₽</b>'
+			gt 'casino', 'roulette_bet1'
+		else 
+			money -= st_1
+			gt 'casino', 'roulette_bet2'
+		end
+	end
+end
+
+if $ARGS[0] = 'roulette_bet2':
+	*clr & cla
+	minut += 1
+	kh = 0
+	chnch = 0
+	mb = 0
+	du = 0
+	series = 0
+	chi = 100
+	gs 'stat'
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/stavkaru.jpg"></right>'
+	'Where do you put your chips?'
+
+	act 'Don''t bet': 
+		money += st_1
+		gt 'casino', 'roulette_bet1'
+	end
+	
+	act 'Red / Black':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'Red': kh = 1 & gt 'casino', 'roulette_result'
+		act 'Black': kh = 2 & gt 'casino', 'roulette_result'
+	end
+
+	act 'Even / Odd':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'Even':	chnch = 1 & gt 'casino', 'roulette_result'
+		act 'Odd': chnch = 2 & gt 'casino', 'roulette_result'
+	end
+
+	act 'Small / Large':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'Small: 1-18': mb = 1 & gt 'casino', 'roulette_result'
+		act 'Large: 19-36':	mb = 2 & gt 'casino', 'roulette_result'
+	end
+
+	act 'Dozen':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'First dozen: 1-12': du = 1 & gt 'casino', 'roulette_result'
+		act 'Second dozen: 13-24': du = 2 & gt 'casino', 'roulette_result'
+		act 'Third dozen:25-36': du = 3 & gt 'casino', 'roulette_result'
+	end
+
+	act 'Series':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'First row: 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34': series = 1 & gt 'casino', 'roulette_result'
+		act 'Second row: 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35': series = 2 & gt 'casino', 'roulette_result'
+		act 'Third row: 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36': series = 3 & gt 'casino', 'roulette_result'
+	end
+
+	act 'Number':
+		cla
+		act 'Reconsider': gt 'casino', 'roulette_bet2'
+		act 'Choose a number':
+			chi = input 'Enter a number from 0-36'
+
+			if chi < 0 and chi > 36:
+				msg 'You need to choose a number between 0 and 36.'
+				gt 'casino', 'roulette_bet2'
+			else
+				gt 'casino', 'roulette_result'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'roulette_result':
+	cla
+	minut += 5
+	gs 'stat'
+	x_rul = 100
+	x_rul = rand(0, 36)
+
+	if x_rul = 0:
+		$color = ' '
+	else
+		if x_rul = 1 or x_rul = 3 or x_rul = 5 or x_rul = 7 or x_rul = 9 or x_rul = 12 or x_rul = 14 or x_rul = 16 or x_rul = 18 or x_rul = 19 or x_rul = 21 or x_rul = 23 or x_rul = 25 or x_rul = 27 or x_rul = 30 or x_rul = 32 or x_rul = 34 or x_rul = 36:
+			$color = 'red'
+		else
+			$color = 'black'
+		end
+	end
+
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/resul.jpg"></right>'
+	*nl
+	'The ball stopps at <<x_rul>> <<$color>>'
+
+	if kh ! 0:
+		if kh = 1:
+			if x_rul = 1 or x_rul = 3 or x_rul = 5 or x_rul = 7 or x_rul = 9 or x_rul = 12 or x_rul = 14 or x_rul = 16 or x_rul = 18 or x_rul = 19 or x_rul = 21 or x_rul = 23 or x_rul = 25 or x_rul = 27 or x_rul = 30 or x_rul = 32 or x_rul = 34 or x_rul = 36:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		elseif kh = 2:
+			if x_rul = 2 or x_rul = 4 or x_rul = 6 or x_rul = 8 or x_rul = 10 or x_rul = 11 or x_rul = 13 or x_rul = 15 or x_rul = 17 or x_rul = 20 or x_rul = 22 or x_rul = 24 or x_rul = 26 or x_rul = 28 or x_rul = 29 or x_rul = 31 or x_rul = 33 or x_rul = 35:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		end
+	elseif chnch ! 0:
+		if chnch = 1:
+			chnch = 0
+			if x_rul mod 2 = 0:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		elseif chnch = 2:
+			chnch = 0
+
+			if x_rul mod 2 = 1:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		end
+	elseif mb ! 0:
+		if mb = 1:
+			mb = 0
+			if x_rul > 0 and x_rul < 19:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		elseif mb = 2:
+			mb = 0
+			if x_rul > 18 and x_rul < 37:
+				act 'You have won <<2 * st_1>>':
+					money += 2 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		end
+	elseif du ! 0:
+		if du = 1:
+			du = 0
+
+			if x_rul > 0 and x_rul < 13:
+				act 'You have won <<3 * st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+
+		elseif du = 2:
+			du = 0
+
+			if x_rul > 12 and x_rul < 25:
+				act 'You have won <<3 * st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+
+		elseif du = 3:
+			du = 0
+			if x_rul > 24 and x_rul < 37:
+				act 'You have won <<3 * st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		end
+	elseif series ! 0:
+		if series = 1:
+			series = 0
+
+			if x_rul = 1 or x_rul = 4 or x_rul = 7 or x_rul = 10 or x_rul = 13 or x_rul = 16 or x_rul = 19 or x_rul = 22 or x_rul = 25 or x_rul = 28 or x_rul = 31 or x_rul = 34:
+				act 'You have won <<3*st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+
+		elseif series = 2:
+			series = 0
+
+			if x_rul = 2 or x_rul = 3 or x_rul = 8 or x_rul = 11 or x_rul = 14 or x_rul = 17 or x_rul = 20 or x_rul = 23 or x_rul = 26 or x_rul = 29 or x_rul = 32 or x_rul = 35:
+				act 'You have won <<3*st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+
+		elseif series = 3:
+			series = 0
+
+			if x_rul = 3 or x_rul = 4 or x_rul = 9 or x_rul = 12 or x_rul = 15 or x_rul = 18 or x_rul = 21 or x_rul = 24 or x_rul = 27 or x_rul = 30 or x_rul = 33 or x_rul = 36:
+				act 'You have won <<3*st_1>>':
+					money += 3 * st_1
+					gt 'casino', 'roulette_bet1'
+				end
+			else
+				act 'You have lost':gt 'casino', 'roulette_bet1'
+			end
+		end
+	elseif chi ! 100:
+		if chi = x_rul:
+			act 'You have won <<37 * st_1>>':
+				money += 37 * st_1
+				gt 'casino', 'roulette_bet1'
+			end
+		else
+			act 'You have lost':gt 'casino', 'roulette_bet1'
+		end
+	end
+end
+
+!!-------
+!! Slots
+!!-------
+
+if $ARGS[0] = 'slots':
+	$metka = $ARGS[0]
+	$menu_arg = $ARGS[0]
+	menu_off = 0
+	
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/zaligravt.jpg"></right>'
+	'You enter the hall and are momentarily dazzled by the multitude of ringing sounds and blinking lights coming from endless rows of slot machines. In front of them you see people of various ages, sexes and backgrounds, trying their luck or perhaps just killing time.'
+	'Every once in a while you hear the satisfying sound of coins streaming into the tray of the next lucky winner.'
+	'According to the huge animated digital display on the back wall, there is a hefty jackpot up for grabs.'
+
+	act 'Go to the foyer': gt 'casino', 'foyer'	
+	act 'Use one of the slot machines':
+		*clr & cla
+		menu_off = 1
+		minut += 1
+		gs 'stat'
+		betAmount = 10
+		slotsJackpot = betAmount * 20000
+
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/avt.jpg"></center>'
+		'Rules of the game are very simple: feed a <<betAmount>> <b>₽</b> coin into the machine and pull the lever. There are multiple winning combinations, but everyone here has their eyes on the <<slotsJackpot>> <b>₽</b> jackpot.'
+
+		act 'Go back to the foyer': gt 'casino', 'foyer'
+
+		act 'Pull the lever':
+			if money >= betAmount:
+				money -= betAmount
+
+				slotsRand = rand(1, 100000)
+
+				if slotsRand > 99990:
+					winnings = slotsJackpot
+					msg 'Jackpot! What are the odds!?'
+				elseif slotsRand >= 99900:
+					winnings = betAmount * 1500
+				elseif slotsRand >= 99000:
+					winnings = betAmount * 100
+				elseif slotsRand >= 90000:
+					winnings = betAmount * 5
+				elseif slotsRand >= 66667:
+					winnings = betAmount * 2
+				else
+					winnings = 0
+				end
+
+				if winnings > 0:
+					money += winnings
+					msg 'You have won <<winnings>> <b>₽</b>.'
+				else
+					msg 'You have lost. Try again?'
+				end
+
+				minut += 1
+				gs 'stat'
+				
+				gt 'casino', 'slots'
+			else
+				msg 'You don''t have enough money to play. Turns out there''s no such thing as a free lunch, and you need money for a chance to win more money. Life is so unfair.'
+				gt 'casino', 'slots'
+			end
+
+			killvar 'slotsRand'
+			killvar 'winnings'
+		end
+	end
+end
+
+!!-------
+!! Cards
+!!-------
+
+if $ARGS[0] = 'cards':
+	$metka = $ARGS[0]
+	$menu_arg = $ARGS[0]
+	menu_off = 0
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/zalcart.jpg"></right>'
+	'In the hall a lot of free games tables in Blackjack and Casino Wars.'
+
+	act 'Go back to the foyer': gt 'casino', 'foyer'
+	act 'Play Blackjack': gt 'casino', 'blackjack_play'
+	act 'Play Casino War': gt 'casino', 'cards_cw'
+
+	!!SYMBOLS
+	!! ♥
+	!! ♠
+	!! ♦
+	!! ♣
+	!!deck of cards
+	$suit[1] = 'Spades'
+	$symbol[1] = '♠'
+	$suit[2] = 'Clubs'
+	$symbol[2] = '♣'
+	$suit[3] = 'Hearts'
+	$symbol[3] = '♥'
+	$suit[4] = 'Diamonds'
+	$symbol[4] = '♦'
+
+	$number[1] = 'Ace '
+	points[1] = 11
+	$number[2] = 'Deuce '
+	points[2] = 2
+	$number[3] = 'Three '
+	points[3] = 3
+	$number[4] = 'Four '
+	points[4] = 4
+	$number[5] = 'Five '
+	points[5] = 5
+	$number[6] = 'Six '
+	points[6] = 6
+	$number[7] = 'Seven '
+	points[7] = 7
+	$number[8] = 'Eight '
+	points[8] = 8
+	$number[9] = 'Nine '
+	points[9] = 9
+	$number[10] = 'Ten '
+	points[10] = 10
+	$number[11] = 'Jack '
+	points[11] = 10
+	$number[12] = 'Queen '
+	points[12] = 10
+	$number[13] = 'King '
+	points[13] = 10
+	$number[14] = 'Ace '
+	points[14] = 11
+end
+
+!!--------------------
+!! Cards: Casino Wars
+!!--------------------
+
+if $ARGS[0] = 'cards_cw':
+	$metka = $ARGS[0]
+	$menu_arg = $ARGS[0]
+	menu_off = 0
+	
+	*clr & cla
+	minut += 1
+	gs 'stat'
+
+	'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/stolcw.jpg"></right>'
+	'You approach the gambling table at the casino.'
+
+	act 'Move away from the table': gt 'casino', 'cards'
+	act 'Sit down at the table': gt 'casino', 'cards_cwplay'
+	act 'Approach the croupier':
+		*clr & cla
+		menu_off = 1
+		minut += 1
+		gs 'stat'
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/crupcw.jpg"></right>'
+		'"How can I help you?"'
+
+		act 'Move away from the dealer': gt 'casino', 'cards_cw'
+
+		act 'Ask for the rules':
+			msg 'The rules are very simple.
+			First you choose how much you want to wager.
+			But note that in our casino maximum rate is 1000 <b>₽</b>.
+			After that, you can either continue with your bet, or bet on a draw (which costs your bet a second time), for a larger payout.
+
+			Regular:
+				Everyone is dealt a card. Face cards have different values.
+				Highest card wins. Payout is 1 to 1.
+				If both have the same card, choose between continuing (doubles bet), or end the round and return your bet.
+				If you win the second round you get a payout of 2 to 1. If it is another draw you get a payout of 1.5 to 1.
+
+			Bet on draw:
+				When betting on a draw and winning, you get your bet back.
+				However, if it is a draw, the payout will be 10 to 1.
+
+			That''s it. Enjoy the game.'
+			gt 'casino', 'cards_cw'
+		end
+	end	
+end
+
+if $ARGS[0] = 'cards_cwplay':
+	*clr & cla
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+
+	if turn1 = 0:
+		cla
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/stavkacw.jpg"></right>'
+		'Place your bets, ladies and gentlemen.'
+
+		act 'Leave the table': gt 'casino', 'cards_cw'
+		
+		act 'Place your bet':
+			if money < 1:
+				'You don''t have any money!'
+				act 'Leave the table': gt 'casino', 'cards_cw'
+			end
+
+			bet_amount = input 'Enter the amount to bet'
+
+			if money < bet_amount:
+				msg 'You don''t have enough money to bet that much'
+			elseif bet_amount < 1:
+				msg 'You must place a minimum bet of 1 <b>₽</b>.'
+			elseif bet_amount > 1000:
+				msg 'The maximum bet allowed is 1000 <b>₽</b>.'
+			else
+				money -= bet_amount
+				turn1 = 1
+			end
+
+			gt 'casino', 'cards_cwplay'
+		end	
+	end
+
+	if turn1 = 1:
+		cla
+		bet_draw = 0
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/stavkacw.jpg"></right>'
+		'Continue with regular bet (payout 2 to 1), or bet on a draw (payout 11 to 1)?'
+		if money < bet_amount:
+			turn1 = 2
+			gt 'casino', 'cards_cwplay'
+		else
+			act 'Continue with regular bet':
+				turn1 = 2
+				gt 'casino', 'cards_cwplay'
+			end
+
+			act 'Bet on draw (doubles bet)':
+				turn1 = 2
+				bet_draw = 1
+				money -= bet_amount
+				gt 'casino', 'cards_cwplay'
+			end
+		end
+	end
+
+	if turn1 = 2:
+		cla
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartcw.jpg"></right>'
+		' The dealer deals the cards:'
+		'...'
+		suit = rand(1, 4)
+		number = rand(1, 13)
+		$d_card[1] = $number[number] + 'of ' + $suit[suit]
+		d_points = number
+		suit = rand(1, 4)
+		!! Player draws from cards 2-14 so that they win if both they and the dealer draw an ace
+		number = rand(2, 14)
+		$p_card[1] = $number[number] + 'of ' + $suit[suit]
+		p_points = number
+		wait 1000
+		'Dealer''s Card:'
+		'  <<$d_card[1]>>'
+
+		'__________________________'
+		'Your Card:'
+		'  <<$p_card[1]>>'
+
+		if d_points > p_points:
+			' '
+			'Casino won'
+
+			act 'You lost':
+				turn1 = 0
+				gt 'casino', 'cards_cwplay'
+			end
+		elseif d_points < p_points:
+			' '
+			'You won'
+			act 'Take money (<<2 * bet_amount>> <b>₽</b>)':
+				money += 2 * bet_amount
+				turn1 = 0
+				gt 'casino', 'cards_cwplay'
+			end
+		else
+			if bet_draw = 1:
+				' '
+				'You won'
+
+				act 'Take money (<<11 * bet_amount>> <b>₽</b>)':
+					money += 11 * bet_amount
+					turn1 = 0
+					gt 'casino', 'cards_cwplay'
+				end
+			else
+				turn1 = 3
+				gt 'casino', 'cards_cwplay'
+			end
+		end
+	end
+
+	if turn1 = 3:
+		'<right><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartcw.jpg"></right>'
+		' '
+		'Draw'
+
+		if money >= bet_amount:
+			act 'Continue (bet another <<bet_amount>> <b>₽</b>)':
+				cla
+
+				money -= bet_amount
+
+				' The dealer deals the cards:'
+				'...'
+				suit = rand(1, 4)
+				number = rand(1, 13)
+				$d_card[2] = $number[number] + 'of ' + $suit[suit]
+				d_points = number
+				suit = rand(1, 4)
+				number = rand(2, 14)
+				$p_card[2] = $number[number] + 'of ' + $suit[suit]
+				p_points = number
+				'Dealer''s Cards:'
+				'  <<$d_card[1]>>'
+				'  <<$d_card[2]>>'
+				'__________________________'
+				'Your Cards:'
+				'  <<$p_card[1]>>'
+				'  <<$p_card[2]>>'
+
+				if d_points > p_points:
+					' '
+					'Casino won'
+
+					act 'You lost':
+						turn1 = 0
+						gt 'casino', 'cards_cwplay'
+					end
+				elseif d_points < p_points:
+					' '
+					'You won'
+
+					act 'Take money (<<4 * bet_amount>> <b>₽</b>)':
+						money += 4 * bet_amount
+						turn1 = 0
+						gt 'casino', 'cards_cwplay'
+					end
+				elseif d_points = p_points:
+					' '
+					'Draw'
+
+					act 'Take money (<<3 * bet_amount>> <b>₽</b>)':
+						money += 3 * bet_amount
+						turn1 = 0
+						gt 'casino', 'cards_cwplay'
+					end
+				end
+			end
+		else
+			' '
+			'You don''t have enough money to continue'
+		end
+
+		act 'Take original bet (<<bet_amount>> <b>₽</b>)':
+			money += bet_amount
+			turn1 = 0
+			gt 'casino', 'cards_cwplay'
+		end
+	end
+end
+
+!!--------------------
+!! Cards: Blackjack
+!!--------------------
+
+if $ARGS[0] = 'blackjack_play':
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+	killvar 'dealerHand'
+	killvar 'playerHand'
+	killvar 'playerBets'
+	killvar 'playerPoints'
+	dealerHand[] = 0
+	dealerHand[] = 1
+	playerHand[] = 2
+	playerHand[] = 3
+	cardsDealt = 4
+	numHands = 1
+	currentHand = 0
+	handLosses = 0
+	numAces = 0
+	dealerPoints = 0
+	insurance = 0
+	betTotal = 0
+	doubleBet = 0
+	minBet = 10
+	maxBet = 500
+	gs 'deckShuffle', 'sort'
+	*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/stolbd.jpg"></center>'
+	*pl 'You are sitting at the blackjack table.'
+	act 'Move away from the table' : gt 'casino', 'cards'
+	act 'Play blackjack' : gt 'casino', 'bet1'
+	act 'Ask for the rules' : gt 'casino', 'rules'
+end
+
+if $ARGS[0] = 'rules':
+	*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/crupbd.jpg"></center>'
+	*pl '<h2><u>Blackjack Rules:</u></h2>'
+	*p '<ol><li>The player and dealer are each dealt 2 cards after initial bets (<<minBet>> <b>₽</b> - <<maxBet>> <b>₽</b>). The dealer will have 1 face-up card and 1 face-down card.</li>'
+	*p '<li>Face cards are worth 10 points, aces can double as either 11 or 1, and all other cards are worth their numeric value.</li>'
+	*p '<li>After the player finishes drawing, the dealer must continue to draw until he has 17 points or more.</li>'
+	*p '<li>To win, the player must score more points than the dealer, have the dealer bust, or get a blackjack.</li>'
+	*p '<li>Getting over 21 points is known as a bust, and an automatic loss.</li>'
+	*p '<li>Getting an ace and a 10 point card in the first 2 cards is known as a blackjack, and is an automatic win which pays 3 : 2.</li>'
+	*p '<li>If the dealer''s face-up card is an ace, the player can make a side-bet called "insurance" that pays 2 : 1 if the dealer has a blackjack.</li>'
+	*p '<li>At any time, the player can choose to double his/her bet, which gives the player 1 more card but prevents further draws on that hand.</li>'
+	*p '<li>If the player''s hand only consists of two cards of equal value, he/she can split them into 2 hands. Each hand must be covered by an amount equal to the original bet.</li>'
+	*p '<li>The player cannot score a blackjack using a split hand.</li>'
+	act 'Return' : gt 'casino', 'blackjack_play'
+end
+
+if $ARGS[0] = 'bet1':
+	*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/stavkabd.jpg"></center>'
+	playerBets[0] = input('Place your bet.')
+	if money < playerBets[0]:
+		msg 'You don''t have enough money for that bet.'
+		gt 'casino', 'blackjack_play'
+	elseif playerBets[0] < minBet:
+		msg 'There is a minimum bet of <<minBet>> <b>₽</b>.'
+		gt 'casino', 'blackjack_play'
+	elseif playerBets[0] > maxBet:
+		msg 'There is a maximum bet of <<maxBet>> <b>₽</b>.'
+		gt 'casino', 'blackjack_play'
+	else
+		gt 'casino', 'bet2'
+	end
+end
+
+if $ARGS[0] = 'bet2':
+	betTotal = playerBets[0]
+	gs 'deckShuffle', 'shuffle'
+	if (deckFace[playerHand[0]] = 1 and deckFace[playerHand[1]] > 9) or (deckFace[playerHand[0]] > 9 and deckFace[playerHand[1]] = 1):
+		gt 'casino', 'blackjack'
+	elseif deckFace[dealerHand[0]] > 9 and deckFace[dealerHand[1]] = 1:
+		gt 'casino', 'blackjack'
+	elseif deckFace[dealerCards[0]] = 1:
+		gt 'casino', 'insurance1'
+	else
+		gt 'casino', 'player'
+	end
+end
+
+if $ARGS[0] = 'blackjack':
+	gs 'casino', 'blackjack_view', 1
+	if playerPoints[0] = 21 and dealerPoints = 21:
+		*pl 'DRAW GAME'
+		*pl 'You retrieve your bet.'
+	elseif playerPoints[0] = 21:
+		*pl 'PLAYER WINS'
+		*pl 'You receive <<playerBets[0] * 3 / 2>> <b>₽</b> in winnings.'
+		money += playerBets[0] * 3 / 2
+	else
+		*pl 'DEALER WINS'
+		*pl 'The dealer takes your <<playerBets[0]>> <b>₽</b> bet.'
+		money -= playerBets[0]
+	end
+	act 'Continue' : gt 'casino', 'blackjack_play'
+end
+
+if $ARGS[0] = 'insurance1':
+	gs 'casino', 'blackjack_view'
+	*pl 'The dealer has an ace showing.  Would you like to place a bet for insurance?'
+	insurance = 0
+	act 'Bet insurance' :
+		insurance = input('Place your bet.')
+		if money < insurance:
+			msg 'You don''t have enough money for that bet.'
+			gt 'casino', 'insurance1'
+		elseif insurance < 0:
+			msg 'You cannot bet a negative amount of money.'
+			gt 'casino', 'insurance1'
+		elseif insurance > playerBets[0] / 2:
+			msg 'Insurance cannot exceed half the original bet.'
+			gt 'casino', 'insurance1'
+		else
+			gt 'casino', 'insurance2'
+		end
+	end
+	act 'No insurance' : gt 'casino', 'insurance2'
+end
+
+if $ARGS[0] = 'insurance2':
+	if deckFace[dealerCards[1]] > 9: gs 'casino', 'blackjack_view', 1
+	if deckFace[dealerCards[1]] < 10: gs 'casino', 'blackjack_view'
+	if dealerPoints = 21:
+		*pl 'DEALER WINS'
+		*p 'The dealer takes your <<playerBets[0]>> <b>₽</b> bet'
+		if insurance > 0: *p ' but also gives you <<insurance>> <b>₽</b> for your side bet'
+		*p '.'
+		money -= playerBets[0]
+		money += insurance
+		act 'Continue' : gt 'casino', 'blackjack_play'
+	else
+		*pl 'The dealer takes a peek at his hole card; no blackjack.'
+		if insurance > 0: *p 'He relieves you of <<insurance>> <b>₽</b> for your side bet.'
+		money -= insurance
+		act 'Continue' : gt 'casino', 'player'
+	end
+end
+
+if $ARGS[0] = 'player':
+	gs 'casino', 'blackjack_view'
+	if playerPoints[currentHand] > 21: currentHand += 1 & handLosses += 1 & doubleBet = 0
+	if playerPoints[currentHand] = 21 or doubleBet = 1: currentHand += 1 & doubleBet = 0
+	if handLosses = numHands:
+		*pl 'DEALER WINS'
+		*p 'The dealer relieves you of <<betTotal>> <b>₽</b>.'
+		money -= betTotal
+		act 'Continue' : gt 'casino', 'blackjack_play'
+	elseif currentHand >= numHands:
+		*pl 'You can take no further actions.'
+		act 'Continue' : gt 'casino', 'dealer'
+	else
+		if numHands = 1:
+			*pl 'You are considering actions for your hand.'
+			$text = ''
+		else
+			*pl 'You are considering your actions for <b>hand #<<currentHand + 1>></b>.'
+			$text = 'Hand #<<currentHand + 1>>: '
+		end
+		act '<<$text>>Hit' :
+			i = currentHand * 16 + 2
+			:loop1
+			if playerHand[i] ! 0: i += 1 & jump 'loop1'
+			playerHand[i] = cardsDealt
+			cardsDealt += 1
+			*clr & cla
+			*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartbde.jpg"></center>'
+			gt 'casino', 'player'
+		end
+		if money >= betTotal + playerBets[currentHand]:
+			act '<<$text>>Double' :
+				doubleBet = 1
+				betTotal += playerBets[currentHand]
+				playerBets[currentHand] += playerBets[currentHand]
+				i = currentHand * 16 + 2
+				:loop2
+				if playerHand[i] ! 0: i += 1 & jump 'loop2'
+				playerHand[i] = cardsDealt
+				cardsDealt += 1
+				*clr & cla
+				*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartbde.jpg"></center>'
+				gt 'casino', 'player'
+			end
+			if playerHand[currentHand * 16 + 2] = 0 and ((deckFace[playerHand[currentHand * 16]] > 9 and deckFace[playerHand[currentHand * 16 + 1]] > 9) or deckFace[playerHand[currentHand * 16]] = deckFace[playerHand[currentHand * 16 + 1]]):
+				act '<<$text>>Split' :
+					betTotal += playerBets[currentHand]
+					playerBets[numHands] = playerBets[currentHand]
+					numHands += 1
+					i = (currentHand + 1) * 16
+					:loop3
+					if playerHand[i] ! 0: i += 16 & jump 'loop3'
+					playerHand[i] = playerHand[currentHand * 16 + 1]
+					playerHand[currentHand * 16 + 1] = cardsDealt
+					cardsDealt += 1
+					playerHand[i + 1] = cardsDealt
+					cardsDealt += 1
+					*clr & cla
+					*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartbde.jpg"></center>'
+					gt 'casino', 'player'
+				end
+			end
+		end
+		act '<<$text>>Stay' :
+			currentHand += 1
+			cla
+			if currentHand < numHands: gt 'casino', 'player'
+			if currentHand >= numHands: gt 'casino', 'dealer'
+		end
+	end
+end
+
+if $ARGS[0] = 'dealer':
+	gs 'casino', 'blackjack_view', 1
+	if dealerPoints < 17:
+		act 'Continue' :
+			i = 2
+			:loop4
+			if dealerHand[i] ! 0: i += 1 & jump 'loop4'
+			dealerHand[i] = cardsDealt
+			cardsDealt += 1
+			*clr & cla
+			*pl '<center><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartbde.jpg"></center>'
+			gt 'casino', 'dealer'
+		end
+	elseif dealerPoints > 21:
+		betTotal = 0
+		i = 0
+		:loop5
+		if playerPoints[i] <= 21: betTotal += playerBets[i]
+		i += 1
+		if i < numHands: jump 'loop5'
+		*pl 'PLAYER WINS'
+		*p 'You receive <<betTotal>> <b>₽</b> in winnings.'
+		money += betTotal
+		act 'Continue' : gt 'casino', 'blackjack_play'
+	else
+		betTotal = 0
+		i = 0
+		:loop6
+		if playerPoints[i] > 21:
+			betTotal -= playerBets[i]
+		elseif playerPoints[i] < dealerPoints:
+			betTotal -= playerBets[i]
+		elseif playerpoints[i] > dealerPoints:
+			betTotal += playerBets[i]
+		end
+		i += 1
+		if i < numHands: jump 'loop6'
+		if betTotal = 0:
+			*pl 'DRAW GAME'
+			if numHands = 1: *p 'You retrieve your bet.'
+			if numHands > 1: *p 'You retrieve your bets.'
+		elseif betTotal < 0:
+			*pl 'DEALER WINS'
+			if numHands > 1: *p 'After taking into account all the hands, you have lost. '
+			*p 'The dealer relieves you of <<0 - betTotal>> <b>₽</b>.'
+		else
+			*pl 'PLAYER WINS'
+			if numHands > 1: *p 'After taking into account all the hands, you have won. '
+			*p 'You receive <<betTotal>> <b>₽</b> in winnings.'
+		end
+		money += betTotal
+		act 'Continue' : gt 'casino', 'blackjack_play'
+	end
+end
+
+if $ARGS[0] = 'blackjack_view':
+	*pl '<table width="100%"><tr><td>'
+	*pl '<u>Dealer</u>'
+	if ARGS[1] = 0:
+		*p '<img <<$set_imgh>> src="<<$deckImg[dealerHand[0]]>>">'
+		*pl '<img <<$set_imgh>> src="images/locations/city/industrial/casino/cards/back.jpg">'
+	else
+		numAces = 0
+		dealerPoints = 0
+		i = 0
+		:loop7
+		*p '<img <<$set_imgh>> src="<<$deckImg[dealerHand[i]]>>">'
+		if deckFace[dealerHand[i]] = 1:
+			dealerPoints += 11
+			numAces += 1
+		elseif deckFace[dealerHand[i]] > 9:
+			dealerPoints += 10
+		else
+			dealerPoints += deckFace[dealerHand[i]]
+		end
+		i += 1
+		if dealerHand[i] ! 0: jump 'loop7'
+		:loop8
+		if dealerPoints > 21 and numAces > 0:
+			dealerPoints -= 10
+			numAces -= 1
+			jump 'loop8'
+		end
+		if dealerPoints > 21:
+			*p '<br>BUST!'
+		elseif dealerPoints = 21 and dealerHand[2] = 0:
+			*p '<br>BLACKJACK!'
+		else
+			*p '<br><<dealerPoints>> points'
+		end
+	end
+
+	*pl '<br><br><u>Player</u>'
+	i = 0
+	:loop9
+	numAces = 0
+	playerPoints[i] = 0
+	if numHands > 1: *pl 'Hand #<<i + 1>>:'
+	j = 0
+	:loop10
+	if playerHand[i * 16 + j] ! 0:
+		*p '<img <<$set_imgh>> src="<<$deckImg[playerHand[i * 16 + j]]>>">'
+		if deckFace[playerHand[i * 16 + j]] = 1:
+			playerPoints[i] += 11
+			numAces += 1
+		elseif deckFace[playerHand[i * 16 + j]] > 9:
+			playerPoints[i] += 10
+		else
+			playerPoints[i] += deckFace[playerHand[i * 16 + j]]
+		end
+		j += 1
+		jump 'loop10'
+	end
+	:loop11
+	if playerPoints[i] > 21 and numAces > 0:
+		playerPoints[i] -= 10
+		numAces -= 1
+		jump 'loop11'
+	end
+	if playerPoints[i] > 21:
+		*p '<br>BUST!'
+	elseif playerPoints[i] = 21 and playerHand[2] = 0 and numHands = 1:
+		*p '<br>BLACKJACK!'
+	else
+		*p '<br><<playerPoints[i]>> points |'
+	end
+	*p ' Bet = <<playerBets[i]>> <b>₽</b><br><br>'
+	i += 1
+	if i < numHands: jump 'loop9'
+	*pl '</td><td valign="top"><div align="right"><img <<$set_imgh>> src="images/locations/city/industrial/casino/cartbd.jpg"></div></td></tr></table>'
+end
+
+--- casino ---------------------------------
+

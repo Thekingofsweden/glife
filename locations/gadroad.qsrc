@@ -1,0 +1,175 @@
+# gadroad
+
+if $ARGS[0] = '':
+	$loc = 'gadroad'
+	$metka = ''
+	$location_type = 'public_outdoors'
+
+	$menu_loc = 'gadroad'
+	$menu_arg = ''
+	menu_off = 0
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	'<center><H4>Forest road</H4></center>'
+
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_night.jpg"></center>'
+		end
+	else
+		if hour >= 8 and hour < 18:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_winter.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadroad_winter_night.jpg"></center>'
+		end
+	end
+	*nl
+	'A dirt road leading to the outskirts of Gadukino. You are surrounded by grainfields where the grains appear reaching all the way to the heavens.'
+	'The forest '+iif(meadow > 0, 'and meadow ','')+'can be found further down the road away from the village.'
+	*nl
+	! 10% chance of meeting Mitka once per day on the road when Sveta is not the village boys slut or whole villages whore
+	mitkarand = rand(1,10)
+	if mitka_first_drink > 0 and mitkaday ! daystart and hour >= 17 and hour < 20 and mitkarand = 1 and (npc_QW['A63'] < 11 or gadriver_gang > 2):
+		'<a href="exec:gt ''mitka''">Mitka</a> is smoking near the road, he smiles at you as you walk by.'
+	! Meet the boys to drink with them at 20 if Sveta has been invited by Mitka already
+	elseif mitka_first_drink > 0 and hour = 20 and alko < 10 and mitkadrinkday ! daystart:
+		'<a href="exec:gt ''gadroad'',''drinking_invite''">Mitka, Kolyamba, and Vasyan</a> are walking down the road towards the woods, drinking moonshine and talking loudly.'
+	! If Sveta is late to go drink with the boys if she already knows where the trailer is she can still get there
+	elseif mitka_first_drink = 2 and hour > 20 and alko < 10 and mitkadrinkday ! daystart:
+		! if Sveta did not bring Mira with her and Mira has met the boys already then there is a 50% chance she will show up too
+		if MiraLoc ! 5 and npc_QW['A60'] >= 1:
+			mirarand = rand(1,10)
+			if mirarand >= 6:
+				MiraLoc = 5
+				if npc_QW['A60'] >= 16 and gadriver_gang = 2:
+					'You can go drink with Mira, Mitka, Kolyamba and Vasyan at their <a href="exec:gt ''mitkabuh_group'',''partywithMira''">trailer</a> hidden in the woods.'
+				else
+					'You can go drink with Mira, Mitka, Kolyamba and Vasyan at their <a href="exec:gt ''mitkabuh'',''partywithMira''">trailer</a> hidden in the woods.'
+				end
+			else
+				'You can go drink with Mitka, Kolyamba and Vasyan at their <a href="exec:gt ''mitkabuh'',''partyalone''">trailer</a> hidden in the woods.'
+			end
+		else
+			'You can go drink with the Mitka, Kolyamba and Vasyan at their <a href="exec:gt ''mitkabuh'',''partyalone''">trailer</a> hidden in the woods.'
+		end
+	end
+
+	act 'Go back to Gadukino (0:10)':minut += 10 & gt'gadukino'
+	act 'Walk down to the river (0:10)':minut += 10 & gt 'gadriver', 'start'
+	act 'Go into the woods (0:15)':minut += 15 & gt'gadforest','forest_edge'
+	act 'Go to the fields (0:10)':minut += 10 & gt'gadfield','field'
+	if $clothingworntype = 'exercise' and $shoeworntype = 'trainers' and hour >= 6 and hour < 22 and gadrunday ! daystart:
+		act 'Go for a run (1:00)':
+			*clr & cla
+			menu_off = 1
+			minut += 60
+			fat -= RAND(5,15)
+			run_exp += RAND(3,6)
+			gs 'sweat', 'add', 20
+			gadrunday = daystart
+			gs'stat'
+
+			if month <= 3 or month >= 11:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadbeg4.jpg"></center>'
+			elseif month=9 or month=10 or month=4 or month=5:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadbeg3.jpg"></center>'
+			else
+				if musle >= salo:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadbeg1.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadbeg2.jpg"></center>'
+				end
+			end
+			'You run for an hour enjoying the scenery.'
+
+			act 'Finish':gt'gadroad'
+		end
+	elseif ($clothingworntype ! 'exercise' or $shoeworntype ! 'trainers') and hour >= 6 and hour < 22 and gadrunday ! daystart:
+		'You could go for a run here if you were wearing sports clothes and shoes.'
+	end
+end
+
+if $ARGS[0] = 'drinking_invite':
+	$loc = 'gadroad'
+	$metka = 'drinking_invite'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadroad'
+	$menu_arg = 'drinking_invite'
+	menu_off = 1
+
+	minut += 5
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/drunk.jpg"></center>'
+	'You quickly catch up to the boys who have already started drinking.'
+	!School girl Sveta
+	if StoryLine = 1:
+		! Sveta has never been drinking with Mitka before
+		if mitka_first_drink = 1:
+			'Mitka is the first to greet you, "Hey <<$pcs_nickname>>, glad you decided to join us today!"'
+			'Kolyamba and Vasyan nod in agreement as they look you over.'
+			'"We know this great spot in the woods to hang out. No one ever bothers us there."'
+		else
+			'Mitka is the first to greet you, "Hey <<$pcs_nickname>>, glad you decided to join us today!"'
+			'Kolyamba and Vasyan nod in agreement as they look you over.'
+		end
+	! Transformation or New In Town Sveta
+	else
+		if mitka_first_drink = 1:
+			'Mitka is the first to greet you, "Hey <<$pcs_nickname>>, glad you decided to join us today!"'
+			'"These are my two best friends, Kolyamba and Vasyan. We have grown up in this village our whole lives and do just about everything together."'
+			'Kolyamba and Vasyan quickly introduce themselves and look you over.'
+			'"We know this great spot in the woods to hang out. No one ever bothers us there."'
+		else
+			'Mitka is the first to greet you, "Hey <<$pcs_nickname>>, glad you decided to join us today!"'
+			'Kolyamba and Vasyan nod in agreement as they look you over.'
+		end
+	end
+	'Mitka asks, "Are you ready to go?"'
+
+	! if Sveta came here to kick off Miras quest then she cannot leave otherwise Sveta is free to decline the offer
+	if npc_QW['A60'] > 0 or (MiraLoc ! 5 and npc_QW['A60'] = 0):
+		gs 'willpower', 'drink', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'No thanks, not tonight. (<<will_cost>> Willpower)':
+				gs 'willpower', 'drink', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+
+				gt 'gadroad'
+			end
+		else
+			act 'No thanks, not tonight. (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+
+	! if Sveta did not bring Mira with her and Mira has met the boys already then there is a 50% chance she will show up too
+	if MiraLoc ! 5 and npc_QW['A60'] >= 1:
+		mirarand = rand(1,10)
+		if mirarand >= 6: MiraLoc = 5
+		'Just as the words leave Mitka''s mouth, Mira comes bounding around the corner.'
+		'"Hey guys, thanks for the invite! <<$pcs_nickname>> is here too, awesome! Let''s go!"'
+	end
+
+	! Mira is here and both her and Sveta are the town whores
+	! mitkabuh_group has the drinking events for group sex for 2 girls and 3 boys
+	if MiraLoc = 5 and npc_QW['A60'] >= 16 and gadriver_gang = 2:
+		act 'Go with them': minut += 15 & npc_drunk['A60'] = 0 & gt 'mitkabuh_group'
+	! Mira is here and neither or only 1 out 2 of them is the town whore
+	! mitkabuh has the drinking events for group sex for 1 girl and 3 boys or no sex at all if quest is not far enough along
+	elseif MiraLoc = 5:
+		act 'Go with them': minut += 15 & npc_drunk['A60'] = 0 & gt 'mitkabuh'
+	! Mira is not here so Sveta goes by herself
+	else
+		act 'Go with them': minut += 15 & gt 'mitkabuh'
+	end
+end
+
+--- gadroad ---------------------------------
+

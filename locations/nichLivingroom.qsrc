@@ -1,0 +1,550 @@
+# nichLivingroom
+CLOSE ALL
+
+$metka = ''
+$loc = 'nichLivingroom'
+$menu_loc = 'nichLivingroom'
+$nichLoc = 'living'
+$menu_arg = ''
+menu_off = 0
+$locclass = 'livingr'
+gs 'stat'
+sexpartkno = 1
+gs 'boyStat', 'A52'
+gs 'boyStat', 'A161', 'a'
+
+if nichWork = 2:
+	if nichLastWorkDay ! daystart:
+		gs 'nichUtil', 'startWorkday'
+	end
+	gs 'nichUtil', 'checkOutfit'
+end
+
+!! Argument return: PC has been in the room before, dont perform actions meant to be executed before or as she enters the room.
+if $ARGS[0] = '' or $ARGS[0] = 'start' or $ARGS[0] = 'return':
+	
+	$nichGalaAct = func('nichUtil','npcActivity','gala')
+	$nichNichAct = func('nichUtil','npcActivity','nicholas')
+	$nichTanyAct = func('nichUtil','npcActivity','tanya')
+	
+	nichGalaPresent = FUNC('nichUtil','isPresent','gala','living')
+	nichNichPresent = FUNC('nichUtil','isPresent','nicholas','living')
+	nichTanyPresent = FUNC('nichUtil','isPresent','tanya','living')
+	if $ARGS[0] ! 'return' and nichGalaPresent = 1 and nichNichPresent = 0 and nichTanyPresent = 0 and nichEvtGalaTele1 = 0 and rand(1,3) = 1:
+		gt $loc, 'evtGalaTele1'
+	end
+
+	'<center><b>Nicholas'' Living Room</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/living.jpg"></center>'
+
+	'The living room is furnished with finest leather couches of modern design, a fireplace, a large TV on the wall, several side tables and a cabinet and fridge for various expensive alcoholic beverages.'
+	'Just like every other room in the apartment, it serves to convey to anybody who enters that Nicholas and his family are doing really well financially.'
+
+	nichCleanAppropriate = 1
+	
+	if $nichNichAct = 'breakfast':
+		!! it is assumed that there is no breakfast without Nicholas being present
+		if $nichGalaAct = 'breakfast':
+			if $nichTanyAct = 'breakfast':
+				'The family is sitting together at the dining table eating breakfast.'
+			else
+				'Nicholas and Gala are sitting together at the dining table eating breakfast.'
+			end
+		else
+			if $nichTanyAct = 'breakfast':
+				'Nicholas and Tanya are sitting together at the dining table eating breakfast.'
+			else
+				'Nicholas is sitting at the dining table eating breakfast.'
+			end
+		end
+		nichCleanAppropriate = 0
+	elseif $nichNichAct = 'dinner':
+		!! it is assumed that there is no dinner without Nicholas being present
+		if $nichGalaAct = 'dinner':
+			if $nichTanyAct = 'dinner':
+				'The family is sitting together at the dining table eating dinner.'
+			else
+				'Nicholas and Gala are sitting together at the dining table eating dinner.'
+			end
+		else
+			if $nichTanyAct = 'dinner':
+				'Nicholas and Tanya are sitting together at the dining table eating dinner.'
+			else
+				'Nicholas is sitting at the dining table eating dinner.'
+			end
+		end
+		nichCleanAppropriate = 0
+	end
+	
+	
+	if $nichNichAct = 'living':
+		if $nichGalaAct = 'living':
+			if $nichTanyAct = 'living':
+				'<a href="exec: gt ''nichNicholas''">Nicholas</a>, <a href="exec: gt ''nichGala''">Gala</a> and Tanya are sitting on the couch watching TV together.'
+			else
+				'<a href="exec: gt ''nichNicholas''">Nicholas</a> and <a href="exec: gt ''nichGala''">Gala</a> are sitting on the couch watching TV together.'
+			end
+		else
+			'<a href="exec: gt ''nichNicholas''">Nicholas</a> is sitting on the couch reading a book.'
+		end
+	else
+		if $nichGalaAct = 'living':
+			if $nichTanyAct = 'living':
+				'<a href="exec: gt ''nichGala''">Gala</a> and Tanya are sitting on the couch chatting with each other.'
+			else
+				nichRand = rand(0,2)
+				if nichRand = 0:
+					'<a href="exec: gt ''nichGala''">Gala</a> is sitting on the couch reading a book.'
+				elseif nichRand = 1:
+					'<a href="exec: gt ''nichGala''">Gala</a> is sitting on the couch reading a magazine.'
+				else
+					'<a href="exec: gt ''nichGala''">Gala</a> is sitting on the couch watching tv.'
+				end
+			end
+		else
+			if $nichTanyAct = 'living':
+				'Tanya is sitting on the couch watching TV.'
+			end
+		end
+	end
+	
+	if nichWork = 2 and nichOutfitState = 0:
+		if nichNichPresent = 1:
+			'Nicholas looks at you with a displeased expression. "<<$pcs_nickname>>, I thought I made it clear that you have to wear your uniform here. Go back to your room and put it on."'
+		elseif nichGalaPresent = 1:
+			'Gala takes a quick look at you. "<<$pcs_nickname>>, you really have to wear your maid uniform here. That''s part of your job."'
+		elseif nichTanyPresent = 1:
+			'Tanya notices that you are not wearing your uniform. "<<$pcs_nickname>>, I don''t mind if you walk around the house like this. But Nicholas does. You should better put your uniform on before he anybody else sees you."'
+		else
+			'You realize that you are not wearing your uniform. If Nicholas saw you now he would be displeased. You should better change into your maid outfit before walking around the apartment.'
+		end
+	end
+
+	act '<b>Return to the hallway</b>':
+		minut += 1
+		gt 'nichApartment'
+	end
+	
+	act 'Go to the kitchen':
+		minut += 1
+		gt 'nichKitchen'
+	end
+
+	if nichWork = 2:
+		if nichCleanAppropriate = 0:
+			'It wouldn''t be appropriate to clean this room now.'
+		else
+			gs 'nichChore','inspect','living'
+		end
+	end
+	
+	killvar 'nichGalaPresent'
+	killvar 'nichNichPresent'
+	killvar 'nichTanyPresent'
+elseif $ARGS[0] = 'evtGalaTele1':
+	menu_off = 1
+	nichEvtGalaTele1 = 1
+	'Just before you enter the living room you hear the voice of Gala. Apparently she is making a phone call. She hasn''t noticed you so far.'
+	act 'Enter': gt $loc
+	act 'Eavesdrop':
+		cla
+		minut += 10
+		'You hear Gala talking about her hobbies, the dress she bought last week and how she despises the wife of one of Nicholas'' employees. Nothing of this is of any interest to you.'
+		'Just before you are about to stop eavesdropping you hear something interesting.'
+		'"By the way: we have a new maid... Yes, another young girl."'
+		'...'
+		if nichGalaOpinion = 1:
+			'"No, it''s the same type we had before. You wouldn''t believe what kind of uniform she wears around the house. I feel like living in a brothel."'
+			'...'
+			if nichHireMode = 2:
+				'"Tanya is more than ok with that! It was actually her who brought this slut into our house. They met at the gym or something like that."'
+			else
+				'"Tanya doesn''t seem to mind at all."'
+			end
+			'...'
+			'"What am I supposed to tell her? That her step-father fucked our former maid... that I don''t want another slut who seduces him?"'
+			'...'
+			'"Yes, she vanished... she only left a letter..."'
+			'...'
+			'"Maybe you are right. But we should not discuss this now. Lets meet in private soon."'
+			'...'
+			'"Yes, that''s fine. See you then."'
+		else
+			'"I''m not sure. She looks quite nice. But so far I have no reason to assume that she is after Nicholas."'
+			'...'
+			if nichHireMode = 2:
+				'"Tanya likes her. It was actually her who introduced us to the new girl. They met at the gym or something like this."'
+				'...'
+				'"No, I don''t think so. If she wanted to steal something she would have done so already. Tanya told me that she had her over several times already."'
+				'...'
+				'"Girls stuff I guess. You are not implying that my daughter is a Lesbian, are you?"'
+				'...'
+				'She laughs out "That means nothing. Have you taken a look in the mirror lately?"'
+				'...'
+			else
+				'"Yes, our last maid vanished... she only left a letter... I won''t call it a strange affair... she was a weird girl."'
+				'...'
+			end
+			
+			'"Anyways... I have some things to do. Will I see you next week?"'
+			'...'
+			'"Great. See you then."'
+		end
+		'She ends her call. There is no reason to continue eavesdropping.'
+		act 'Enter': gt $loc
+	end
+elseif $ARGS[0] = 'breakfast':
+	!! breakfast starts at 7:45 at weekdays and 8:45 at weekends
+	!! PC will need at least 30 minutes to prepare breakfast.
+	menu_off = 1 & gs 'stat'
+	nichBreakfLast = daystart
+	nichTemp = 7
+	if week > 5:
+		nichTemp = 8
+	end
+	
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/breakfast'+rand(0,5)+'.jpg"></center>'
+	if hour < nichTemp or (hour = nichTemp and minut <= 15):
+		'You have enough time to prepare breakfast. You make coffee, collect the newspaper from the mailbox and place everything on the dinner table.'
+		'When the family members arrive one by one the breakfast table is prepared perfectly and you stand ready to fullfill additional requests.'
+		nichBreakFQual = 1
+	elseif hour = nichTemp and minut <= 30:
+		'You hastilty prepare coffee and collect the newspaper from the mailbox.'
+		'When the family members arrive one by one the breakfast table is only half-way ready.'
+		'Nicholas looks annoyed by this lack of perfection "<<$pcs_nickname>>, I expect the breakfast to be prepared in time. I won''t accept you lazing around."'
+		nichBreakFQual = 2
+	elseif hour = nichTemp and minut < 45:
+		'You hastily start prepaing breakfast. You don''t even have enough time to make coffee and collect the newspaper from the mailbox before the family members arrive.'
+		'Nicholas looks very annoyed by this lack of perfection "<<$pcs_nickname>>, one reason for having a maid is not having to wait for breakfast. If you don''t manage to prepare breakfast before I want to eat it I don''t see why I would need you."'
+		nichBreakFQual = 3
+	else
+		'The family is already sitting at the breakfast table. Apparently they have collected some of the items they want from the kitchen themselves.'
+		'Nicholas looks very annoyed by this lack of perfection "<<$pcs_nickname>>, your job is to prepare breakfast. What exactly would you say you get paid for when I have to do your chores?"'
+		nichBreakFQual = 4
+	end
+	
+	nichRand = rand(1,100)
+	
+	if nichGalaTarasPlan = 10:
+		*nl
+		'"<<$pcs_nickname>>, have you seen my wife lately? She wasn''t home this night. That''s quite unusual."'
+		'"I am sorry, Master Nicholas, but I don''t know anything about that."'
+		'Tanya looks annoyed.'
+		'"I guess she just spent the night at one of her friends. It wouldn''t be the first time, right?"'
+		'Nicholas nods slowly, but doesn''t seem convinced.'
+		nichAfterBFEvent = 5000
+	elseif nichGalaTarasPlan = 100:	
+		*nl
+		'Gala looks distressed today.'
+		'"<<$pcs_nickname>>, please talk to me after breakfast."'
+		nichAfterBFEvent = 5010
+	elseif preg > 0 and nichPregnancy = 0 and FUNC('body_din','pregnancyVisibility') = 1:
+		*nl
+		'Nicholas directs his attention at you.'
+		'"<<$pcs_nickname>>, there is something important we need to talk about after breakfast."'
+		'"Of course, Master Nicholas." You reply as is expected of you.'
+		nichPregnancy = 1
+		nichAfterBFEvent = 90
+	elseif nichTanyaUni = 0 and (nichRand <= 20 or nichDebug = 1):
+		*nl
+		'Nicholas starts to read the newspaper. After a while he puts it aside and looks at Tanya.'
+		'"Tanya, I talked to one of my friends yesterday: Dimitrij Aslanov. I think you might know him."'
+		'Tanya looks up from her smartphone and frowns while she tries to remember something.'
+		'"No, that name doesn''t ring a bell."'
+		'"It should. Dimitrij Aslanov is one of your professors. At least he would be if you attended your courses at university."'
+		'"But attendance isn''t compulsory..."'
+		'"That would be a valid argument if you passed your exams. I expect you to show more ambition, I expect your acedemic performance to improve."'
+		'Tanya doesn''t look as if she is eager about changing her lifestyle. After a few seconds she decides that agreeing is the fastest way to end this uncomfortable conversation.'
+		'"Sigh... allright."'
+		'Nicholas doesn''t look convinced by Tanyas change of heart. He drops the topic nevertheless and continues reading the newspaper.'
+		'Once he finishes he looks up and directs his next words at you. "<<$pcs_nickname>>, I would like to speak to you when you are done cleaning up the breakfast table."'
+		'"Of course, Master Nicholas." You reply as is expected of you.'
+		nichTanyaUni = 1
+		nichAfterBFEvent = 1
+	elseif nichGalaKnowsPT = 1 and (nichRand <= 75 or nichDebug = 1):
+		*nl
+		'The family members are chatting with each other about topics of little interest to you.'
+		'One of your duties is to refill empty glasses.'
+		'Just as you refill the orange juice of Gala she says to you "By the way, <<$pcs_nickname>>, I would like to speak to you when you are done cleaning up. Alone."'
+		'"Of course, Mistress Gala." You reply as is expected of you.'
+		nichAfterBFEvent = 10
+	elseif nichGalaKnowsPT > 10 and nichGalaKnowsPT < 15:
+		'The family members are chatting with each other about topics of little interest to you.'
+		'"<<$pcs_nickname>>, I would like to speak to you when you are done cleaning up. Alone."'
+		'"Of course, Mistress Gala." You reply as is expected of you.'
+		nichAfterBFEvent = 11
+	elseif nichGalaOpponent = 20:
+		*nl
+		'The family members are chatting with each other about topics of little interest to you.'
+		'"By the way, I am missing one of my necklace." Gala looks concerned but there is something else in her face, too. Is it mischief?'
+		'"Don''t tell me you lost it. You know I have to work hard for the money you spend on your jewelry." Nicholas seems to be both annoyed and not very interested.'
+		'"No, I am sure that it was in my jewelery box. Somebody must have taken it."'
+		'"<i>Somebody</i>? I''d say you take another look before suspecting <i>somebody</i>."'
+		'"But..."'
+		'"Enough of this. I am sure you just lost it somewhere in your wardrobe."'
+		'Gala looks dissapointed but drops the topic nevertheless.'
+		''
+		'<b>Maybe you should search for the missing necklace. It would be very bad if you got blamed for its disappearance.</b>'
+		nichGalaOpponent = 21
+	elseif nichGalaOpponent = 21 or nichGalaOpponent = 22:
+		*nl
+		'The family members are chatting with each other about topics of little interest to you.'
+		'"By the way, I am still missing my necklace. And I have looked everywhere."'
+		'"Very well then. What do you suggest we should do now?" Nicholas does a good job hiding his annoyance but it is still noticeable.'
+		'"Lets look into each room. It has to be somewhere, doesn''t it?"'
+		'"Okay then. We will do this after the breakfast."'
+		nichAfterBFEvent = 100
+	elseif nichGalaImplantCount > 0:
+		*nl
+		'Gala looks at you with a stern look on her face.'
+		'"<<$pcs_nickname>>, I want to talk to you after breakfast."'
+		'"Of course, Mistress Gala." You reply as is expected of you.'
+		nichAfterBFEvent = 220
+	elseif nichGalaContractActive = 1 and nichGalaDoc = 0:
+		!! First visit of the doctor
+		*nl
+		'Gala looks at you with a stern look on her face.'
+		'"<<$pcs_nickname>>, I want to talk to you after breakfast."'
+		'"Of course, Mistress Gala." You reply as is expected of you.'
+		nichAfterBFEvent = 210
+	elseif nichGalaContractActive = 1 and nichGalaContractLast + rand(5,7) <= daystart:
+		*nl
+		'Gala looks at you with a stern look on her face.'
+		'"<<$pcs_nickname>>, I want to talk to you after breakfast."'
+		'"Of course, Mistress Gala." You reply as is expected of you.'
+		nichAfterBFEvent = 200
+	elseif nichGentleclubE1 = 0 and nichPerformance >= 60 and $nichStatMsg = '' and (nichRand <= 40 or nichDebug = 1) and nichDebug = 1: 
+		!! TODO: locked until expanded further
+		'The family members are chatting with each other about topics of little interest to you.'
+		'"<<$pcs_nickname>>, I have an important guest tonight. I need you to attend us at 6 pm in my study."'
+		'"Of course, Master Nicholas." You reply as is expected of you.'
+		nichGentleclubE1 = 1
+		nichGentleclubDayE1 = daystart
+		$nichStatMsg = 'Nicholas requested your presence in his study tonight. Wear your maid uniform and arrive between 17:45 and 18:15.'
+	end
+	
+	act 'Clean up':
+		minut += (nichTemp + 1) * 60 + 40 - (hour * 60 + minut)
+		if nichAfterBFEvent = 1:
+			!! Nicholas asks PC to make Tanya go to university
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+			'After you are done cleaning up the table you go to Nicholas as requested.'
+			'"<<$pcs_nickname>>, I am sure you heard what I said to Tanya earlier. I want her to become successful in life, to accomplish something on her own. But it seems as if she lacks the ambition to do so."'
+			'"The two of you seem to get along quite well. Maybe you could speak some sense into her?"'
+			act 'Agree':
+				nichTanyaUni = 11
+				'"I will try, Master Nicholas."'
+				'He nods. "I won''t expect more from you than that."'
+				'He nods again, signalling you that you are dismissed for now.'
+				cla
+				act 'Leave':
+					gt 'nichLivingroom'
+				end
+			end
+		elseif nichAfterBFEvent = 10:
+			!! Gala demands PC to stop relationship with Tanya
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+			'After you are done cleaning up the table you go to Gala as requested.'
+			'"<<$pcs_nickname>>, don''t think you can fool me. I know what''s going on between you and my daughter."'
+			'"Don''t get me wrong. I understand the appeal of another woman."'
+			if nichGalaOpinion = 1:
+				'"As a matter of fact I am quite relieved. I thought you might be after my husband. But now that I know... never mind."'
+			end
+			'"The thing is, that I want Tanya to have an happy life. And that includes marrying a suitable husband. And now she is in the age where she has to start looking for one."'
+			if pcs_apprnc >= 120:
+				'"Sadly that means that she must not be distracted by her maid. No matter how attractive the maid might be."'
+			else
+				'"Sadly that means that she must not be distracted by her maid."'
+			end
+			'"I expect you to end your affair with my Tanya. It''s for the best... of both of you."'
+			'You stiffen. Did she just threaten you?'
+			'"Did I make myself clear?"'
+			'There is only one possible answer.'
+			act 'Yes, Mistress Gala':
+				nichGalaKnowsPT = 10
+				'"Yes, Mistress Gala."'
+				'You wonder what Tanya will say. Maybe you could just continue like before and be more careful?'
+				'"Good. You can go now."'
+				cla
+				act 'Leave':
+					gt 'nichLivingroom'
+				end 
+			end
+		elseif nichAfterBFEvent = 11:
+			!! Gala wants to know how breaking up with Tanya went
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+			'After you are done cleaning up the table you go to Gala as requested.'
+			'"<<$pcs_nickname>>, did you do what I told you to do? Regarding my little Tanya?"'
+			if nichGalaKnowsPT = 11:
+				act 'Yes':
+					nichGalaKnowsPT = 20
+					nichGalaOpinion = 20
+					nichGalaTraining = 1
+					'"Yes, Mistress Gala."'
+					'"I thought so. Tanya appeared to be upset by something. You did the right thing, it''s the best for everybody."'
+					'You just nod.'
+					'"You should look at the bright side. Now that you have some additional spare time you can focus on becomming a better maid. Just talk to me when I''m in the living room and I will teach you to become a better servant."'
+					'"I will, Mistress Gala."'
+					'"Good. You can go for now."'
+					cla
+					act 'Leave':
+						gt 'nichLivingroom'
+					end 
+				end
+			elseif nichGalaKnowsPT = 12 or nichGalaKnowsPT = 13:
+				act 'Yes (lie)':
+					nichGalaKnowsPT = 20
+					nichGalaOpinion = 20
+					nichGalaTraining = 1
+					'"Yes, Mistress Gala."'
+					'"Really? Tanya seems to be better at hiding her feelings than I thought. Or she doesn''t mind you breaking up with her."'
+					'You just nod.'
+					'"You should look at the bright side. Now that you have some additional spare time you can focus on becomming a better maid. Just talk to me when I''m in the living room and I will teach you to become a better servant."'
+					'"I will, Mistress Gala."'
+					'"Good. You can go for now."'
+					cla
+					act 'Leave':
+						gt 'nichLivingroom'
+					end 
+				end
+			elseif nichGalaKnowsPT = 14:
+				act 'No':
+					nichGalaKnowsPT = 15
+					nichGalaOpinion = 30
+					if nichGalaOpponent < 10:
+						nichGalaOpponent = 10
+						nichGalaOpponentDay = daystart
+					end
+					'"No, Mistress Gala, I did not."'
+					'She stares at you angrily. "I thought I made myself clear. I gave you a direct order."'
+					'"But I love Ta..."'
+					'"Shut up! I don''t want to hear about this nonsense! Get lost now, before I forget myself!"'
+					cla
+					act 'Leave':
+						gt 'nichLivingroom'
+					end 
+				end
+			end
+		elseif nichAfterBFEvent = 90:
+			'Nicholas figured out that Sveta is pregnant'
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+			'After you are done cleaning up the table you go to Nicholas as requested.'
+			'"<<$pcs_nickname>>, I noticed something about you lately. Something about you changed. Then I realized it. You are obviously pregnant."'
+			if thinkpreg > 0 or knowpreg > 0:
+				'You are shocked. He figured out your little secret.'
+			else
+				'You are shocked. He can''t be serious! There is no way you are pregnant.'
+			end
+			'"Of course I can''t allow you to stay my maid. A kid is an huge responsibility and it is not compatible with living here."'
+			'He waits a second before he continues.'
+			if nichPerformance <= 40:
+				'"Even though you were a less than mediocre maid I will make sure you won''t end up without shelter. I transferred your next payment and a little extra to your bank account."'
+				nichTemp = nichSalaryNext + 5000
+			elseif nichPerformance >= 80:
+				'"You were an exceptional maid and I hate to have to do this. But I see no other option. Of course I will make sure you won''t end up without shelter. I transferred your next payment and a little bit extra to your bank account."'
+				nichTemp = nichSalaryNext + 20000
+			else
+				'"You were a decent maid and I hate to have to do this. But I see no other option. Of course I will make sure you won''t end up without shelter. I transferred your next payment and a little bit extra to your bank account."'
+				nichTemp = nichSalaryNext + 10000			
+			end
+			'Nicholas leads you to the entrace. Your stuff has already been packed by one of Nicholas'' employees.'
+			'"Good luck in your future."'
+			''
+			'You got <b><<nichTemp>></b> transferred to your bank account.'
+			
+			act 'Get fired':
+				gt 'nichUtil', 'fired'
+			end
+		elseif nichAfterBFEvent = 100:
+			!! Gala has hidden her necklace in the drawer of PC
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			
+			'After you are done cleaning up the table Nicholas summons the whole family.'
+			'"Well then, lets look for this missing necklace."'
+			if nichGalaOpponent = 21:
+				!! the necklace is in PCs desk
+				'Nicholas leads the small group of you through the whole apartment, inspecting every place where a necklace could be hidden.'
+				'The last room to be inspected is you private bedroom. Nicholas opens your drawer and pulls out the missing necklace.'
+				'"<<$pcs_nickname>>... I can''t believe what I am seeing. I never took you for a thief. Under these circumstances I have to fire you. Be glad I don''t call the police!"'
+				'Gala has a triumphant smile on her face.'
+				act 'Get fired':
+					gt 'nichUtil', 'fired'
+				end
+				
+			else
+				!! the necklace is in Galas jewelry box
+				killvar 'nichAfterBFEvent'
+				*clr & cla
+				'The first place Nicholas leads is the make-up table of his personal bedroom.'
+				'He carefully opens the jewelry box of Gala and presents the missing necklace.'
+				'"Just as I thought. I hope you think twice before blaming somebody else for stealing your jewelry, dear wife."'
+				'Gala looks as if she is foaming with anger. This clearly isn''t over yet.'
+				nichGalaOpponent = 30
+				act 'Leave':
+					gt 'nichLivingroom'
+				end 
+			end
+		
+		elseif nichAfterBFEvent = 200:
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'After you are done cleaning up the table you go to Gala as requested.'
+			'"Slave, it is time you serve your owner."'
+			act 'Continue': gt 'nichGala','slaveGeneric'
+		elseif nichAfterBFEvent = 210:
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'After you are done cleaning up the table you go to Gala as requested.'
+			'"Slave, today we make a little trip. There is somebody I want you to meet."'
+			act 'Continue': gt 'nichGala','slaveDoc',1
+		elseif nichAfterBFEvent = 220:
+			killvar 'nichAfterBFEvent'
+			gt 'nichGala','slaveImplant'
+		elseif nichAfterBFEvent = 5000:	
+			!! Police investigates after Gala flew the city
+			killvar 'nichAfterBFEvent'
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/events/police.jpg"></center>'
+			'While you clean up you hear the doorbell ringing. To your surprise the police actually showed up.'
+			'The policemen tell you that they really found the girl Katinka, the previous maid of the family, and that they have proof that Gala and Taras conspired to kidnap her. She spent the last month in some basement.'
+			'You get questioned by the police but since you started your job after Katinka vanished there isn''t much they want to know from you. You truthfully tell them that Gala and Taras left the apartment in an hurry the last time you saw them.'
+			'The police also questions Nicholas and Tanya. Once they are done they politely say their goodbyes and leave.'
+			''
+			'Nicholas takes you to the side once they are gone.'
+			'"Sveta, I hope you know what this means. My wife... she is a criminal. You can''t tell anybody about this. Just keep the silence. I will use my connections with the mayor to prevent the police from further investigation. If we are lucky nobody else will find out about this. It could ruin my repuation. Of course I would have to pay the poor girl Katinka... but let me worry about that."'
+			'You wonder whether it was Taras plan all along to let Katinka surface to prevent Nicholas from searching for Gala.'
+			'"And about Tanya... this is very difficult for her. We should give her some time to process these events."'
+			'"Of course, Master Nicholas."'
+			'"Thank you. I also believe that you might need some time yourself. My wife and you had a close connection as far as I know. You can take today and tomorrow off to sort your thoughts."'
+			nichGalaTarasPlan = 20
+			minut += 180
+			gs 'nichUtil','freeDay',2
+			gs 'stat'
+			act 'Continue': gt 'nichLivingroom'
+		elseif nichAfterBFEvent = 5010:	
+			!! Sveta told Gala Taras plan
+			'<center><img <<$set_imgh>> src="images/characters/city/gala/02.jpg"></center>'
+			'After you are done cleaning up the table you go to Gala as requested.'
+			'"I have bad news, slave. The men I told to take care of Taras... well, one of them is in hospital. He got shot in the shoulder. And Taras vanished."'
+			'She hesitates for a second.'
+			'"We should both be on the lookout. He is out there somewhere. And he has nothing to lose."'
+			nichGalaTarasPlan = 110
+			act 'Continue': gt 'nichLivingroom'
+		else
+			gt 'nichLivingroom'
+		end
+	end
+end
+
+
+--- nichLivingroom ---------------------------------
+

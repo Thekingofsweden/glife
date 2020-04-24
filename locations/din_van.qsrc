@@ -1,0 +1,1743 @@
+# din_van
+
+!!pcs_leghair = leg hair 0 - 3 for smooth <= 6 for stubble <= 9 for light after that hairy
+!!pcs_pubes = pubes 0 - 3 for smooth <= 10 for stubble <= 20 for light hair after that its hairy
+!!stanok = razor
+!!$brit = shaving dynamic
+
+$showerdin = {
+	menu_off = 1
+	if hypnoAddict = 0:
+		cumspclnt = 1
+	else
+		cumspclnt = 18
+	end
+	gs 'cum_cleanup'
+	body_write = 0
+	face_write = 0
+	pcs_hairbsh = 0
+	pcs_makeup = 1
+	if frost > 0:frost = 0
+	if shampoo < 0: shampoo = 0
+	lactation['lactmess'] = 0
+	if pcs_sweat > 10: pcs_sweat = 10 + rand(0,4)
+	if noShampoo = 0:
+		shampoo -= 1
+	else
+		killvar 'noShampoo'
+	end
+	if false_lashes >= 1:
+		if rand(0,4) <= 2:
+			'You''re careful enough that your false lashes make it through relatively unscathed.'
+		else
+			'Unfortunately, your false lashes don''t make it through the shower.'
+			false_lashes = 0
+			pcs_lashes = pcs_naturallashes
+			gs 'body_shape', 'basebeautycalc', 1
+		end
+	end
+}
+
+$bteeth = {
+	if pcs_breath ! 1 or cumloc[12] = 1:
+		act 'Brush your teeth (0:03)':
+		menu_off = 1
+			*clr & cla
+			minut += 3
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 1
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/brushteeth.jpg"></center>'
+			*nl
+			'You brush your teeth and now they are clean and minty fresh.'
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+}
+
+$dryOff = {
+	act 'Get out and dry off': mirror_steam = hour & gt $loc, $metka
+}
+
+$shower = {
+	act 'Take a shower (0:15)':
+		menu_off = 1
+		*clr & cla
+		minut += 15
+		if $loc = 'vanrPar' or $loc = 'tanvanr' or hotelShampoo = 1: noShampoo = 1
+		noShampoo_tmp = noShampoo
+		dynamic $showerdin
+
+		'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></center>'
+		*nl
+		'You undress and turn on the water in the shower. When it hits the right temperature you enter the shower and let the warm water rain down on you.'
+		if daystart < 10 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:
+			pcs_horny += rand(6,10)
+			'It''s really arousing to see your new body with all its smooth curves, breasts with large nipples, wide hips, and smooth legs. You begin to lather your body noticing how soft and tender it feels. Once you''re sure you didn''t miss a single spot on your feminine body you begin to wash yourself off, continuing to experience new and strange sensations.'
+		elseif daystart < 30 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:
+			pcs_horny += rand(2,6)
+			'You have already gotten used to your feminine body and its softness doesn''t surprise you very much anymore. But you still let your hands wander a bit over your soft curves before you begin to wash yourself in earnest.'
+		else
+			pcs_horny += rand(0,2)
+			''+iif(noShampoo_tmp = 1, 'It''s not your shampoo, so you use a little more than you normally would; with a tinge of guilt you ', 'Using your own shampoo, you carefully ')+'soap yourself trying not to miss any spot and then wash off.'
+		end
+
+		if shampoo = 0 and noShampoo_tmp = 1:
+			'When you get a chance, you should stop by the supermarket and buy some shampoo.'
+		elseif shampoo <= 5:
+			'You are getting low on shampoo, with only <<shampoo>> remaining. When you get a chance, you should stop by the supermarket and buy some more.'
+		end
+
+		if hypnoAddict > 0:'You have no reason to, but you carefully avoid cleaning out your pussy and ass.'
+
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & 'Your deodorant gets washed away in the shower.'
+
+		if btwarn > 0:
+			if btwarn = 1: $weightwarn = 'losing'
+			if btwarn = 2: $weightwarn = 'gaining'
+			'<font color="red"><b>You seem to be <<$weightwarn>> weight.</b></font>'
+			killvar '$weightwarn' & btwarn = 0
+		end
+		if normbuffpick = 1:
+			*nl
+			'<b>You notice that your muscles are starting to show through your skin.</b>'
+			act 'Examine yourself closer while drying off and getting dressed...': gt 'din_van', 'buffpick'
+		end
+
+		if lactation['active'] > 0 and pain['nipples'] < 60 and lactation['pc_aware'] <= 0:
+			if pcs_usedbreastpumponherself > 0 and pcs_massagedherbreasts <= 0:
+				'During showering you clean your breasts and something catches your eye. White drops come from your nipples. It is milk.<br>Using the breast pump regularly probably made you lactate!'
+				lactation['induced'] = 1
+			elseif pcs_usedbreastpumponherself <= 0 and pcs_massagedherbreasts > 0:
+				'During showering you clean your breasts and something catches your eye. White drops come from your nipples. It is milk. Regularly massaging your breasts probably made you lactate!<br>'
+				lactation['induced'] = 1
+			elseif pcs_usedbreastpumponherself > 0 and pcs_massagedherbreasts > 0:
+				'During showering you clean your breasts and something catches your eye. White drops come from your nipples. It is milk. All that pumping and massaging your breasts probably caused you to lactate!<br>'
+				lactation['induced'] = 1
+			else
+				'During showering you clean your breasts and something catches your eye. White drops come from your nipples. To your surprise it is milk. You started lactating!<br>'
+				if thinkpreg = 1 or knowpreg = 1:
+					'This is probably happening because you are pregnant.'
+				else
+					'You should have this checked out by a doctor. You could be pregnant.'
+				end
+				lactation['induced'] = 0
+			end
+			pcs_usedbreastpumponherself = 0
+			pcs_massagedherbreasts = 0
+			lactation['pc_aware'] = 1
+		end
+
+		dynamic $dryOff
+
+		if pcs_horny >= 40:
+			act 'Use the shower head on your pussy':
+				menu_off = 1
+				*clr & cla
+				if rand(0, 5) = 0 and obdysh = 1:gt 'vann', 'v4'
+				'<center><video autoplay loop src="images/shared/home/bathroom/wash2.mp4"></center>'
+				*nl
+				'You place the shower head onto your pussy and a powerful jet of warm water begins to caress you.'
+
+				if pcs_inhib < 30:inhib_exp += rand(1,3)
+				pcs_mood += 15
+				$orgasm_or = 'yes'
+				gs 'arousal', 'masturbate', 10
+				gs 'arousal', 'end'
+
+				if hypnoAddict ! 0:
+					'You unconsciously avoid spraying water into your vagina.'
+				else
+					cumspclnt = 8
+					gs 'cum_cleanup'
+				end
+
+				dynamic $dryOff
+			end
+		end
+
+		act 'Take a selfie':
+			gs 'telefon', 'Phone_selfie_image_bathing', 'shower'
+		end
+		dynamic $brit
+
+		if vanr_lock = 0 and $loc = 'vanrPar':
+			*nl
+			'In your absentmindedness you forgot to close the door.'
+			'The idea that the door is open occupies your mind while you are showering. It would be very embarrassing if your brother or stepfather looked in at the wrong time.'
+			if indorf = 0: gs 'vanrPar', 'peek'
+		end
+	end
+	killvar 'noShampoo_tmp'
+}
+
+$bath = {
+	act 'Soak in the bath (0:30)':
+		menu_off = 1
+		*clr & cla
+
+		minut += 30
+		pcs_sweat = 7 + rand(0,4)
+		pcs_mood += 20
+		if $loc = 'vanrPar' or $loc = 'tanvanr' or hotelShampoo = 1: noShampoo = 1
+		noShampoo_tmp = noShampoo
+		dynamic $showerdin
+
+		if bath_daystart ! daystart:
+			bath_daystart = daystart
+			pcs_skin += rand(1,2)
+			pcs_willpwr += 1
+		end
+
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/shared/home/bathroom/wash4.jpg"></center>'
+		*nl
+		'While the bathtub fills up you get undressed and then dip a toe into the water. It has just the right temperature so you climb in and let yourself sink into the warm water.'
+
+		if daystart < 10 and StoryLine = 0 and ntstart = 0:
+			pcs_horny += rand(6,10)
+			'You stare at those smooth, soft legs sticking out of the water. You''re still not used to this new body and the look of all this roundness.'
+			'Starting to soap yourself you unwittingly turn your attention to your breasts. They''re so soft and big, and when you touch them you feel an unfamiliar but pleasant sensation. You take your time getting familiar with your new body, then you begin to wash yourself in earnest.'
+		elseif daystart < 30 and StoryLine = 0 and ntstart = 0:
+			pcs_horny += rand(2,6)
+			'You have become a little accustomed to your female body and casually soap up all these soft curves and rinse yourself off, rubbing your hands all over your feminine body to make sure you didn''t miss a spot.'
+		else
+			pcs_horny += rand(0,2)
+			'You lean back and relax for a while. '+iif(noShampoo_tmp = 1, 'It’s not your shampoo, so you use a little more than you normally would; with a tinge of guilt you ', 'Using your own shampoo, you carefully ')+'begin to lather your body, gently gliding your soft hands over your smooth curves, and wash yourself thoroughly.'
+		end
+
+		if shampoo = 0 and noShampoo_tmp = 1:
+			'When you get a chance, you should stop by the supermarket and buy some shampoo.'
+		elseif shampoo <= 5:
+			'You are getting low on shampoo, with only <<shampoo>> remaining. When you get a chance, you should stop by the supermarket and buy some more.'
+		end
+
+		if hypnoAddict > 0:'You have no reason to, but you carefully avoid cleaning out your pussy and ass.'
+
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & 'Your deodorant gets washed away in the bath.'
+
+		if btwarn > 0:
+			if btwarn = 1: $weightwarn = 'losing'
+			if btwarn = 2: $weightwarn = 'gaining'
+			'<font color="red"><b>You seem to be <<$weightwarn>> weight.</b></font>'
+			killvar '$weightwarn' & btwarn = 0
+		end
+		if normbuffpick = 1:
+			''
+			'<b>You notice that your muscles are starting to show through your skin.</b>'
+			act 'Examine yourself closer while drying off and getting dressed...': gt 'din_van', 'buffpick'
+		end
+
+		dynamic $dryOff
+
+		act '"Wash" your pussy':
+			menu_off = 1
+			*clr & cla
+			if obdysh = 1 and rand(0, 5) = 1:gt 'vann', 'v4'
+			minut += 10
+
+			'<center><video autoplay loop src="images/shared/home/bathroom/wash7.mp4"></center>'
+			*nl
+			'You turn on the faucet, lift your legs and scoot your ass over to align your pussy with the jet of warm water. It feels really good and soon a warmth begins to grow in your abdomen.'
+
+			if pcs_inhib < 30:inhib_exp += rand(1,3)
+			pcs_mood += 15
+			$orgasm_or = 'yes'
+			gs 'arousal', 'masturbate', 10
+			gs 'arousal', 'end'
+			dynamic $dryOff
+		end
+
+		act 'Take a selfie':
+			gs 'telefon', 'Phone_selfie_image_bathing', 'bath'
+		end
+
+		dynamic $brit
+	end
+	killvar 'noShampoo_tmp'
+}
+
+$brit = {
+	if shave_menu = 1  and stanok > 1:
+		if pcs_leghair > 3 or (pubestyle = 1 and pcs_pubes > 3) or (((pubestyle >= 2 and pubestyle <= 9) or pubestyle >= 12) and pcs_pubes > 19) or (pubestyle = 10 and pcs_pubes > 29) or (pubestyle = 11 and pcs_pubes > 10):
+			act 'Shave yourself (0:15)':
+				menu_off = 1
+				*clr & cla
+				minut += 15
+				pcs_leghair = 0
+				if pubestyle = 1:
+					pcs_pubes = 1
+				elseif (pubestyle >= 2 and pubestyle <= 9) or pubestyle >= 12:
+					pcs_pubes = 16
+				elseif pubestyle = 10 and pcs_pubes > 29:
+					pcs_pubes = 26
+				elseif pubestyle = 11 and pcs_pubes > 10:
+					pcs_pubes = 0
+				end
+				pcs_horny += 5
+				stanok -= 2
+				if obdysh = 1 and rand(0, 5) = 0:gt 'vann', 'brit1'
+				if $loc ='gadbana':
+					'<center><video autoplay loop src="images/shared/home/bathroom/shave.mp4"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave3.jpg"></center>'
+				end
+				*nl
+				if daystart < 10 and StoryLine = 0 and ntstart = 0:
+					'You can''t shake off the fact that you''re a girl now, so you decide it''d be best to shave your legs. You begin to lather your legs, still marveling at how soft and round they are. Then you take the razor in your hand and begin to shave your legs.'
+					'You feel really awkward, never having done this before as a guy. Luckily, you had more than enough experience with shaving your face and technically this isn''t really all that different. So in the end you get a pretty decent job done.'
+				elseif daystart < 30 and StoryLine = 0 and ntstart = 0:
+					pcs_mood += 10
+					'With a newfound routine you lather up your legs and start shaving, careful not to miss a spot. After washing away the foam you softly glide your hands over your smooth legs, feeling good to know that you don''t need to hide your legs in pants. Maybe you should wear a skirt tomorrow?'
+				elseif pubestyle = 1 or pubestyle = 11:
+					'You lather up your legs and crotch and carefully shave them. Once you''re finished you gently glide your hands over your smooth pussy and legs, enjoying the smooth feeling and getting slightly more aroused by the touch.'
+				elseif (pubestyle >= 2 and pubestyle <= 8) or pubestyle <= 12:
+					'You lather up your legs and carefully shave them. Once you''re finished gliding your hands over your smooth legs, ensuring you didn''t miss a spot, you spend some time cleaning up the area around your neatly trimmed and styled patch of pussy hair as well.'
+				elseif pubestyle = 9:
+					'You lather up your legs and carefully shave them. Once you''re finished gliding your hands over your smooth legs, ensuring you didn''t miss a spot, you spend some time trimming back your small neat bush as well.'
+				elseif pubestyle = 10:
+					'You lather up your legs and carefully shave them. Once you''re finished gliding your hands over your smooth legs, ensuring you didn''t miss a spot, you spend some time trimming back your	bush as well.'
+				end
+				dynamic $dryOff
+			end
+			
+			if pcs_leghair > 3:
+				act'Shave your legs (0:05)':
+					menu_off = 1
+					*clr & cla
+					minut += 5
+					pcs_leghair = 0
+					pcs_horny += 5
+					stanok -= 1
+					if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave.jpg"></center>'
+					*nl
+					if daystart < 10 and StoryLine = 0 and ntstart = 0:
+						'You can''t shake off the fact that you''re a girl now, so you decide it''d be best to shave your legs. You begin to lather your legs, still marveling at how soft and round they are. Then you take the razor in your hand and begin to shave your legs.'
+						'You feel really awkward, never having done this before as a guy. Luckily, you had more than enough experience with shaving your face and technically this isn''t really all that different. So in the end you get a pretty decent job done.'
+					elseif daystart < 30 and StoryLine = 0 and ntstart = 0:
+						pcs_mood += 10
+						'With a newfound routine you lather up your legs and start shaving, careful not to miss a spot. After washing away the foam you softly glide your hands over your smooth legs, feeling good to know that you don''t need to hide your legs in pants. Maybe you should wear a skirt tomorrow?'
+					else
+						'You lather your legs up with some soapy water and shave your legs. After a few swift movements, your legs are smooth as silk. The feeling of your smooth legs turns you on a little.'
+					end
+					dynamic $dryOff
+				end
+			end
+		else
+			'<br>You don''t need to shave.'
+		end
+	elseif shave_menu = 2 and stanok > 0:
+		if pcs_pubes > 3:
+			if pubestyle = 1 or (pubestyle = 11 and pcs_pubes > 10):
+				act 'Shave your pussy (0:10)':
+					menu_off = 1
+					*clr & cla
+					minut += 10
+					pcs_pubes = 0
+					pcs_horny += 5
+					stanok -= 1
+					if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave3.jpg"></center>'
+					*nl
+					'You lather your crotch with some soapy water and carefully shave your pubic hair. After shaving you can''t help but run your fingers over your pussy, enjoying the smooth feeling and getting slightly more aroused by the touch.'
+					dynamic $dryOff
+				end
+			elseif ((pubestyle >= 2 and pubestyle <= 8) or pubestyle >= 12) and pcs_pubes > 19:
+				act 'Trim your pubic hair (0:10)':
+					menu_off = 1
+					*clr & cla
+					minut += 10
+					pcs_pubes = 16
+					pcs_horny += 5
+					stanok -= 1
+					if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave4.jpg"></center>'
+					*nl
+					'You spend some time carefully shaving your pubic hair to your desired shape, and then trim it to make it neat and tidy.'
+					dynamic $dryOff
+				end
+			elseif pubestyle = 9 and pcs_pubes > 19:
+				act 'Trim your pubic hair (0:10)':
+					menu_off = 1
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave4.jpg"></center>'
+					*nl
+					if pcs_pubes >= 20:
+						'You carefully shave away the hair at the edges of your pussy, trimming it all away until there is only a neatly styled bush left at the top.'
+					else
+						'You carefully shave away the stubble at the edges of your pussy, careful to only trim and maintain the neatly styled bush you have at the top.'
+					end
+					minut += 10
+					pcs_pubes = 16
+					pcs_horny += 5
+					stanok -= 1
+					if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+					dynamic $dryOff
+				end
+			elseif pubestyle = 10 and pcs_pubes >= 29:
+				act 'Trim back your bush (0:10)':
+					menu_off = 1
+					*clr & cla
+					minut += 10
+					pcs_pubes = 26
+					pcs_horny += 5
+					stanok -= 1
+					if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+					'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave4.jpg"></center>'
+					*nl
+					'You spend some time trimming back your thick bush of pubic hair, tidying it up and keeping your bikini line nice and clean.'
+					dynamic $dryOff
+				end
+			end
+		end
+	elseif shave_menu = 3 and stanok > 0:
+		if pcs_leghair > 3:
+			act 'Shave your legs (0:05)':
+				menu_off = 1
+				*clr & cla
+				minut += 5
+				pcs_leghair = 0
+				pcs_horny += 5
+				stanok -= 1
+				if obdysh = 1 and rand(0, 5) = 5:gt 'vann', 'brit1'
+				'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shave.jpg"></center>'
+				*nl
+				if daystart < 10 and StoryLine = 0 and ntstart = 0:
+					'You can''t shake off the fact that you''re a girl now, so you decide it''d be best to shave your legs. You begin to lather your legs, still marveling at how soft and round they are. Then you take the razor in your hand and begin to shave your legs.'
+					'You feel really awkward, never having done this before as a guy. Luckily, you had more than enough experience with shaving your face and technically this isn''t really all that different. So in the end you get a pretty decent job done.'
+				elseif daystart < 30 and StoryLine = 0 and ntstart = 0:
+					pcs_mood += 10
+					'With a newfound routine you lather up your legs and start shaving, careful not to miss a spot. After washing away the foam you softly glide your hands over your smooth legs, feeling good to know that you don''t need to hide your legs in pants. Maybe you should wear a skirt tomorrow?'
+				else
+					'You lather your legs up with some soapy water and shave your legs. After a few swift movements, your legs are smooth as silk. The feeling of your smooth legs turns you on a little.'
+				end
+				dynamic $dryOff
+			end
+		end
+	end
+}
+
+$tampon = {
+	if sanpad > 0 and (mesec > 0 or (placebopart > 2 and pillcon < 40000)) and isprokp = 0 and isprok = 0 and $pantyworntype ! 'none' and knowpreg = 0:
+		act 'Use a sanitary pad (0:02)':
+			menu_off = 1
+			*clr & cla
+			sanpad -= 1
+			isprokp = 1
+			minut += 2
+			pcs_mood -= 5
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/wash3.jpg"></center>'
+			*nl
+			'You use a sanitary pad.'
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+	if tampon > 0 and (mesec > 0 or (placebopart > 2 and pillcon < 40000)) and isprok = 0 and isprokp = 0 and knowpreg = 0:
+		act 'Use a tampon (0:02)':
+			menu_off = 1
+			*clr & cla
+			tampon -= 1
+			isprok = 1
+			minut += 2
+			pcs_mood -= 5
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/wash3.jpg"></center>'
+			*nl
+			'You use a tampon.'
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+}
+
+$quickwash = {
+	if spdirty > 0:
+		act 'Quick wash (0:15)':
+			menu_off = 1
+			*clr & cla
+
+			cumspclnt = 4
+			gs 'cum_cleanup'
+			if pcs_sweat < 30:
+				pcs_sweat = 15 + rand(0,4)
+			else
+				pcs_sweat -= 10 + rand(0,4)
+			end
+			minut += 15
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/wash5.jpg"></center>'
+			*nl
+			'You give yourself a catlick, thus removing any traces of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	gs 'din_van', 'pblc_pee'
+}
+
+$wearpan = {
+	if $pantyworntype = 'none':
+		act 'Wear panties (0:02)':
+			minut += 2
+			gs 'stat'
+			gt 'panties', 'view_panty_list', 'bathroom'
+		end
+	end
+
+	if $braworntype = 'none':
+		act 'Wear a bra (0:02)':
+			minut += 2
+			gs 'stat'
+			gt 'bras', 'view_bra_list', 'bathroom'
+		end
+	end
+}
+
+$removepan = {
+	if $pantyworntype ! 'none' and $braworntype ! 'none':
+		act 'Remove underwear (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'underwear', 'remove'
+			gt $loc, $metka
+		end
+	end
+
+	if $pantyworntype ! 'none':
+		act 'Remove panties (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'panties', 'remove'
+			gt $loc, $metka
+		end
+	end
+
+	if $braworntype ! 'none':
+		act 'Remove bra (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'bras', 'remove'
+			gt $loc, $metka
+		end
+	end
+}
+
+!! Meant for non-home bathrooms. If you have a bag stashes the underwear in there and enables putting it back on later.
+!! purse_____ variables get wiped in 'wardrobe', 'clothing', 'panties' and 'bra' so there isn''t a chance of duplication
+$publicpan = {
+	if $pantyworntype ! 'none' and $braworntype ! 'none':
+		act 'Remove underwear'+iif(bag = 1, ' and put it in your purse ',' ') + '(0:02)':
+			minut += 2
+			gs 'stat'
+			if bag = 1:
+				$pursepantytype = $pantyworntype
+				pursepantynumber = pantywornnumber
+				$pursebratype = $braworntype
+				pursebranumber = brawornnumber
+			end
+			gs 'underwear', 'remove'
+			gt $loc, $metka
+		end
+	elseif bag = 1 and $pantyworntype = 'none' and $braworntype = 'none' and $pursepantytype ! '' and $pursebratype ! '':
+		act 'Put your underwear back on (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'panties', 'wear', $pursepantytype, pursepantynumber
+			gs 'bras', 'wear', $pursebratype, pursebranumber
+			killvar '$pursepantytype' & killvar 'pursepantynumber'
+			killvar '$pursebratype' & killvar 'pursebranumber'
+			gt $loc, $metka
+		end
+	end
+
+	if $pantyworntype ! 'none':
+		act 'Remove panties'+iif(bag = 1, ' and put them in your purse ',' ') + '(0:02)':
+			minut += 2
+			gs 'stat'
+			if bag = 1:
+				$pursepantytype = $pantyworntype
+				pursepantynumber = pantywornnumber
+			end
+			gs 'panties', 'remove'
+			gt $loc, $metka
+		end
+	elseif bag = 1 and $pantyworntype = 'none' and $pursepantytype ! '':
+		act 'Put your panties back on (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'panties', 'wear', $pursepantytype, pursepantynumber
+			killvar '$pursepantytype' & killvar 'pursepantynumber'
+			gt $loc, $metka
+		end
+	end
+
+	if $braworntype ! 'none':
+		act 'Remove bra'+iif(bag = 1, ' and put it in your purse ',' ') + '(0:02)':
+			minut += 2
+			gs 'stat'
+			if bag = 1:
+				$pursebratype = $braworntype
+				pursebranumber = brawornnumber
+			end
+			gs 'bras', 'remove'
+			gt $loc, $metka
+		end
+	elseif bag = 1 and $braworntype = 'none' and $pursebratype ! '':
+		act 'Put your bra back on (0:02)':
+			minut += 2
+			gs 'stat'
+			gs 'bras', 'wear', $pursebratype, pursebranumber
+			killvar '$pursebratype' & killvar 'pursebranumber'
+			gt $loc, $metka
+		end
+	end
+}
+
+$basin = {
+	if cumloc[12] = 1:
+		act 'Rinse your mouth (0:05)':
+			menu_off = 1
+			cla
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			minut += 5
+			gs 'stat'
+			*nl
+			'You rinse your mouth and get rid of the taste of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if cumloc[13] = 1:
+		act 'Wash the cum from your hands (0:05)':
+			menu_off = 1
+			cla
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			minut += 5
+			gs 'stat'
+			*nl
+			'You wash your hands and get rid of any trace of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if cumloc[11] = 1 and cumloc[16] = 0:
+		act 'Wash the cum from your face (0:05)':
+			menu_off = 1
+			*clr & cla
+			pcs_makeup = 1
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			cumspclnt = 11
+			gs 'cum_cleanup'
+			if pcs_sweat > 19 : pcs_sweat -= 5
+			minut += 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/facesp.jpg"></center>'
+			*nl
+			'You clean your face and get rid of any trace of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	elseif cumloc[11] = 0 and cumloc[16] = 1:
+		act 'Wash the cum out of your hair (0:10)':
+			menu_off = 1
+			cla
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			cumspclnt = 5
+			gs 'cum_cleanup'
+			pcs_hairbsh = 0
+			if pcs_sweat > 19 : pcs_sweat -= 5
+			minut += 10
+			gs 'stat'
+			*nl
+			'You clean your hair and get rid of any trace of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	elseif cumloc[11] = 1 and cumloc[16] = 1:
+		act 'Wash the cum from your face and hair (0:10)':
+			menu_off = 1
+			*clr & cla
+			pcs_makeup = 1
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			cumspclnt = 12
+			gs 'cum_cleanup'
+			pcs_hairbsh = 0
+			if pcs_sweat > 19 : pcs_sweat -= 5
+			minut += 10
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/facesp.jpg"></center>'
+			*nl
+			'You clean your face and hair and get rid of any trace of cum.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if cumloc[2] = 1 or cumloc[5] = 1 or cumloc[6] = 1 or cumloc[7] = 1:
+		act 'Wash the cum off your clothes (0:10)':
+			menu_off = 1
+			*clr & cla
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			cumspclnt = 6
+			gs 'cum_cleanup'
+			minut += 10
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/sex/cum/frotsp.jpg"></center>'
+			'You spend ten minutes wiping and rinsing the cum stains out of your clothes. In the end, all that remains of the stains are some damp spots that should dry up in a few minutes.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if body_write > 0 or face_write > 0:
+		act 'Wash the writings off your body (0:10)':
+			menu_off = 1
+			*clr & cla
+			body_write = 0
+			face_write = 0
+			minut += 10
+			gs'stat'
+
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/wash1.jpg"></center>'
+			*nl
+			'You wash off the indecent inscriptions on your body.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if pcs_makeup ! 1:
+		act 'Wash off cosmetics (0:10)':
+			menu_off = 1
+			cla
+			pcs_makeup = 1
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			cumspclnt = 11
+			gs 'cum_cleanup'
+			minut += 10
+			*nl
+			'You wash off your makeup.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if false_lashes >= 1:
+		act 'Remove false lashes (0:05)':
+			menu_off = 1
+			cla
+			'You carefully peel off the glued-on strip, careful to protect your natural lashes.'
+			lashsavechance = rand(0,4)
+			if lashsavechance = 4:
+				'These lashes still look to be in pretty good shape; you could probably use them again.'
+				if pcs_lashes = 4:fakelashesmink += 1
+				if pcs_lashes = 3:fakelashesplain += 1
+			end
+			pcs_lashes = pcs_naturallashes
+			false_lashes = 0
+			minut += 5
+			gs 'body_shape', 'basebeautycalc', 1
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if deodorant > 0 and deodorant_on = 0:
+		act 'Apply deodorant (0:01)':
+			*clr & cla
+			menu_off = 1
+			minut += 1
+			deodorant -= 1
+			gs 'sweat', 'deo'
+			iif(func('body_din','pregnancyVisibility') = 1, '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant_preg.jpg"></center>', '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant.jpg"></center>')
+			'You apply deodorant to your armpits. It will keep you feeling fresh and clean for longer.'
+			act 'Continue': menu_off = 0 & gt $loc, $metka
+		end
+	end
+}
+
+$pir_title = {
+	*clr & cla
+	'<center><b>Available piercings - select one by clicking the image</b></center>'
+	*nl
+}
+$pirTongue = {
+	dynamic $pir_title
+
+	i = 1
+	:looptongue_pir
+		if dyneval('RESULT = PirsA<<i>>_owned') = 1:*p '<a href="exec:pirsA = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/a<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 4:jump 'looptongue_pir'
+}
+
+$pirLip = {
+	dynamic $pir_title
+
+	i = 1
+	:looplip_pir
+		if dyneval('RESULT = PirsB<<i>>_owned') = 1:*p '<a href="exec:pirsB = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/b<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 7:jump 'looplip_pir'
+}
+
+$pirEars = {
+	dynamic $pir_title
+
+	i = 1
+	:loopears_pir
+		if dyneval('RESULT = PirsC<<i>>_owned') = 1:*p '<a href="exec:pirsC = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/c<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 24:jump 'loopears_pir'
+}
+
+$pirNose = {
+	dynamic $pir_title
+
+	i = 1
+	:loopnose_pir
+		if dyneval('RESULT = PirsD<<i>>_owned') = 1:*p '<a href="exec:pirsD = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/d<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 7:jump 'loopnose_pir'
+}
+
+$pirBrow = {
+	dynamic $pir_title
+
+	i = 1
+	:loopbrow_pir
+		if dyneval('RESULT = PirsE<<i>>_owned') = 1:*p '<a href="exec:pirsE = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/e<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 2:jump 'loopbrow_pir'
+}
+
+$pirNips = {
+	dynamic $pir_title
+
+	i = 1
+	:loopnipple_pir
+		if dyneval('RESULT = PirsF<<i>>_owned') = 1:*p '<a href="exec:pirsF = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/f<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 7:jump 'loopnipple_pir'
+}
+
+$pirNavel = {
+	dynamic $pir_title
+
+	i = 1
+	:loopnavel_pir
+		if dyneval('RESULT = PirsN<<i>>_owned') = 1:*p '<a href="exec:pirsN = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/n<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 4:jump 'loopnavel_pir'
+}
+
+$pirPubic = {
+	dynamic $pir_title
+
+	i = 1
+	:looppubic_pir
+		if dyneval('RESULT = PirsG<<i>>_owned') = 1:*p '<a href="exec:pirsG = <<i>> & pierWearCount += 1 & dynamic $pirManage"><img src="images/pc/body/piercings/g<<i>>.jpg"	height="250" ></a>'
+		i += 1
+	if i <= 10:jump 'looppubic_pir'
+}
+
+$pirManage = {
+	cla
+	menu_off = 1
+	'<center>Piercing Management</center>'
+	*nl
+	if pirsA > 0:
+		if pirsA < 10000:
+			'<center><a href="exec:*clr & cla & pirsA = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove tongue piercing</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirTongue">Insert tongue piercing</a>.</center>'
+		end
+		*nl
+	end
+	if pirsB > 0:
+		if pirsB < 10000:
+			'<center><a href="exec:*clr & cla & pirsB = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove lip piercing</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirLip">Insert lip piercing</a>.</center>'
+		end
+		*nl
+	end
+	if pirsC > 0:
+		if pirsC < 10000:
+			'<center><a href="exec:*clr & cla & pirsC = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove ear piercings</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirEars">Insert ear piercings</a>.</center>'
+		end
+		*nl
+	end
+	if pirsD > 0:
+		if pirsD < 10000:
+			'<center><a href="exec:*clr & cla & pirsD = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove nose piercing</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirNose">Insert nose piercing</a>.</center>'
+		end
+		*nl
+	end
+	if pirsE > 0:
+		if pirsE < 10000:
+			'<center><a href="exec:*clr & cla & pirsE = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove eyebrow piercing</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirBrow">Insert eyebrow piercing</a>.</center>'
+		end
+		*nl
+	end
+	if pirsF > 0:
+		if pirsF < 10000:
+			'<center><a href="exec:*clr & cla & pirsF = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove nipple piercings</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirNips">Insert nipple piercings</a>.</center>'
+		end
+		*nl
+	end
+	if pirsN > 0:
+		if pirsN < 10000:
+			'<center><a href="exec:*clr & cla & pirsN = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove navel piercing</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirNavel">Insert navel piercing</a>.</center>'
+		end
+		*nl
+	end
+	if pirsG > 0:
+		if pirsG < 10000:
+			'<center><a href="exec:*clr & cla & pirsG = 10000 & pierWearCount -= 1 & dynamic $pirManage">Remove pussy piercings</a>.</center>'
+		else
+			'<center><a href="exec:dynamic $pirPubic">Insert pussy piercings</a>.</center>'
+		end
+		*nl
+	end
+
+	act 'Continue': menu_off = 0 & gt $loc, $metka
+}
+
+$enema = {
+	if klisma = 1 and (klismaday ! daystart or arrpos('sparrloc', 3) ! -1):
+		act 'Give yourself an enema (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			cumspclnt = 7
+			gs 'cum_cleanup'
+			minut += 5
+			klismaday = daystart
+			klismaday1 = 1
+
+			'<center><img <<$set_imgh>> src="images/shared/home/bathroom/klisma.jpg"></center>'
+			*nl
+			'You give yourself an enema, feeling clean down there. Your ass is now ready for anal sex without any awkward surprises.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+}
+
+$toymanage = {
+	if analplug = 1 and analplugin = 1:
+		act 'Remove your butt plug (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			minut += 5
+			analplugIN = 0
+
+			if pcs_ass < 30:pcs_ass += 1
+
+			'<center><img <<$set_imgh>> src="images/pc/body/analplug.jpg"></center>'
+			*nl
+			'You squat and tug gently at the butt plug, gasping as you push it out of you. You can''t help but feel a bit empty, now that it''s out.' & !!0.2.6: Removed unneccessary var check
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	elseif analplug = 1 and analplugin = 0 and klismaday = daystart:
+		act 'Insert your butt plug (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			minut += 5
+			analplugIN = 1
+
+			if pcs_ass < 10:pcs_ass += 5
+			if pcs_ass >= 10 and pcs_ass < 20:pcs_ass += rand(1, 2)
+			if pcs_ass >= 20 and pcs_ass < 30:pcs_ass += rand(0, 1)
+
+			'<center><img <<$set_imgh>> src="images/pc/body/analplug.jpg"></center>'
+			*nl
+			if butpluguse > 0:'You squat and gently rub the butt plug against your anus, after lubricating it with a bit of saliva. After a short while, you''ve relaxed enough to be able to push it in. Once it''s in you give it a few gentle tugs, wondering if anyone will catch you wearing it today.'
+			if butpluguse = 0:butpluguse = 1 & '"If I''m not going to use it, then why did I buy it?" you ask yourself. You look at the butt plug for a while, thinking "It is necessary to start developing my ass, so I could have great adventures someday... you could even say huge and thick adventures with crimson heads, uh, now I got carried away..." You''re slightly embarrassed at the thought for a second, but are then overcome by your horny fantasies. Determined to get the plug all the way in, you slowly press it against your asshole after lubricating it with a bit of saliva. It hurts a bit at first, but once the thickest part is in the rest follows rather easily. Patting yourself on your ass once it''s in, you wonder if anyone will notice you''re wearing it today and then immediately feel naughty for even having thought that.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if vibrator = 1 and vibratorIN = 1:
+		act 'Remove the vibrator (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			minut += 5
+			vibratorIN = 0
+
+			if pcs_vag < 30:pcs_vag += 1
+
+			'<center><img <<$set_imgh>> src="images/shared/accessories/toys/vibrator.jpg"></center>'
+			*nl
+			'You spread your legs and take the vibrator out of your pussy, letting out a slight moan as you do so. You feel somewhat empty now.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	elseif vibrator = 1 and vibratorIN = 0 and pcs_vag ! 0:
+		act 'Insert the vibrator in your vagina (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			minut += 5
+			vibratorIN = 1
+
+			if pcs_vag < 30:pcs_vag += 2
+
+			'<center><img <<$set_imgh>> src="images/shared/accessories/toys/vibrator.jpg"></center>'
+			*nl
+			'You spread your legs and slowly insert the vibrator in your pussy, wondering if anyone will notice you wearing it today.'
+
+			act 'Finish':gt $loc, $metka
+		end
+	end
+}
+
+$palelady = {
+	if dur > 0:'You have enough cocaine for <<dur>>'+iif(dur = 1, 'line.', 'lines.')
+
+	if dur > 0 and narkday ! daystart:
+		act 'Do a line of cocaine (0:05)':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			narkday = daystart
+			gs 'drugs', 'cocaine'
+			'<center><img <<$set_imgh>> src="images/shared/drugs/dur.jpg"></center>'
+			'You snort some cocaine, feeling dizzy for just a moment. After that you feel fantastic, and incredibly horny.'
+
+			act 'Continue': menu_off = 0 & gt $loc, $metka
+		end
+	end
+}
+
+if $ARGS[0] = 'private':
+	menu_off = 0
+	if stanok > 0:'Your razor will last <b><<stanok>></b> more shaves. <a href="exec:gs ''din_van'', ''shave_options''">Shave Options</a>'
+
+	if mosolmaz > 0: 'On a shelf is a tube of ointment for chafing, which will be enough for <b><<mosolmaz>></b> applications.'
+
+	if tampon = 0 and sanpad = 0:
+		'<b><font color="red">You have no tampons left.</font></b>'
+	elseif tampon = 1:
+		'<font color="red">You have only <b><<tampon>></b> tampon left.</font>'
+	else
+		'You have <b><<tampon>></b> tampons.'
+	end
+	if sanpad = 0 and tampon = 0:
+		'<b><font color="red">You have no pads left.</font></b>'
+	elseif sanpad = 1:
+		'<font color="red">You have only <b><<sanpad>></b> pads left.</font>'
+	else
+		'You have <b><<sanpad>></b> pads.'
+	end
+
+	'Your deodorant will last you for <b><<deodorant>></b> more '+iif(deodorant = 1, 'application.', 'applications.')
+	
+	if $ARGS[1] = 'hotelroom':
+		dynamic $shower
+		if $ARGS[2] = 'bath': dynamic $bath
+	elseif $loc = 'vanrPar':
+		'You can use your parent''s shampoo.'
+		dynamic $shower
+		dynamic $bath
+	elseif $loc = 'tanvanr':
+		'You can use Tanya''s shampoo.'
+		dynamic $shower
+		dynamic $bath
+	elseif shampoo > 0:
+		'You have enough shampoo for <b><<shampoo>></b> uses.'
+		dynamic $shower
+		dynamic $bath
+	else
+		'<font color="red">You''ve run out of shampoo and will have to buy some more before you can wash yourself.</font>'
+	end
+
+	if painkiller > 0:
+		'You have <b><<painkiller>></b> painkiller'+iif(painkiller > 1, 's.', '.')
+		if pain['total'] > 0 and pain['killer'] = 0:
+			act 'Take a painkiller':
+				cla
+				pain['killer'] += 1
+				painkiller -= 1
+				pcs_hydra += 20
+				gs 'stat'
+
+				*nl
+				'You take a painkiller and gulp it down with a glass of water.'
+
+				act 'Finish':menu_off = 0 & gt $loc, $metka
+			end
+		end
+	end
+
+	if bcream_have > 0:
+		'<a href="exec:dynamic $use_bcream & gt $loc, $metka">Apply breast cream.</a> Uses left: <<bcream_have>>.'
+	end
+
+	if pirsA + pirsB + pirsC + pirsD + pirsE + pirsF + pirsN + pirsG + pirsGL > 0:'<a href="exec:*clr & cla & dynamic $pirManage">Manage your piercings</a>'
+
+	if fillimplant = 1 and siliconeBag >= 1:'<a href="exec:cls & siliconeBag -= 1 & silicone += 10 & gt $loc, $metka">Inject silicone into your breast implants.</a>'
+	if fillimplant = 1 and silicone >= 20:'<a href="exec:cls & silicone -= 10 & gt $loc, $metka">Drain silicone from your breast implants.</a>'
+
+	dynamic $bteeth
+
+	dynamic $tampon
+
+	act 'Change clothes and toys':
+		cla
+
+		act 'Return':menu_off = 0 & gt $loc, $metka
+
+		dynamic $wearpan
+		dynamic $removepan
+
+		if $curloc = 'vanrPar' and $clothingworntype = 'nude':
+			act 'Wear clothes (0:05)':
+				*clr & cla
+				minut += 5
+				'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
+				'You get dressed'
+				gs 'clothing', 'wear_last_worn'
+				gs 'stat'
+				act 'Return': menu_off = 0 & gt $loc, $metka
+			end
+		elseif $curloc = 'vanrPar' and $clothingworntype ! 'nude':
+			act 'Remove clothes (0:05)':
+				*clr & cla
+				minut += 5
+				'<center><video autoplay loop src="images/shared/accessories/computer/webcam/undress1.mp4"></video></center>'
+				'You remove your clothing'
+				gs 'clothing', 'strip'
+				gs 'stat'
+				act 'Return': menu_off = 0 & gt $loc, $metka
+			end
+		end
+		dynamic $toymanage
+	end
+
+	'<a href="exec:msg ''<center>Your weight is <<pcs_weight>> kg<br>Your body mass index (BMI) is <<bmi_calc>>.<br><<$bmi_desc>></center>''">Check weight on the scales</a>'
+
+	gs 'din_van', 'prvt_pee'
+
+	dynamic $basin
+
+	dynamic $brit
+
+	dynamic $enema
+
+
+	if mosolmaz > 0 and mosol > 0 and mosal_time ! (daystart * 100) + hour:
+		act 'Rub ointment onto your pussy (0:05)':
+			cla
+			mosal_time = (daystart * 100) + hour
+			minut += 5
+			mosolmaz -= 1
+			mosol -= 5
+			'You take a tube of cream and rub it onto your itchy vulva.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	!For now, the pregnancy reactions use bimbolevel as a chack. Once the pregnancy fetish is added to the game, the check will likely change to that.
+	if pregtest > 0 and (abortionbirthdate = 0 or daystart - abortionbirthdate > 100):
+		act 'Do a pregnancy test (0:05)':
+			cla
+			minut += 5
+			pregtest -= 1
+			gs 'stat'
+			 if pregchem > 120 and bimbolevel < 3 and knowpreg = 0 and husband = 0 and pcs_pregtalk = 0:
+				cla
+				knowpreg = 1
+				thinkpreg = 1
+				*nl
+				'The test shows two strips. You are pregnant. As you look at the test in your hand, you are?'
+				act 'Horrified':gt 'din_van', 'HorrifiedReact1'
+				act 'Concerned':gt 'din_van', 'ConcernedReact1'
+				act 'Excited':gt 'din_van', 'ExcitedReact1'
+			elseif pregchem > 120 and bimbolevel = 3 and knowpreg = 0 and husband = 0 and pcs_pregtalk = 0:
+				cla
+				knowpreg = 1
+				thinkpreg = 1
+				*nl
+				'The test shows two strips. You are pregnant. As you look at the test in your hand, you are?'
+				act 'Excited':gt 'din_van', 'ExcitedReact1'
+				act 'Aroused':gt 'din_van', 'ArousedReact1'
+			elseif pregchem > 120 and knowpreg = 0 and husband = 1 and kid = 0 and pcs_pregtalk = 0:
+				knowpreg = 1
+				thinkpreg = 1
+				gt 'din_van', 'WifeReact1'
+			elseif pregchem > 120 and knowpreg = 0 and husband = 1 and kid > 0 and pcs_pregtalk = 0:
+				knowpreg = 1
+				thinkpreg = 1
+				gt 'din_van', 'WifeReact2'
+			elseif pcs_pregtalk = 1 and pregchem > 120 and knowpreg = 0:
+				*nl
+				knowpreg = 1
+				thinkpreg = 1
+				'The test shows two strips. You are pregnant.'
+			elseif pcs_pregtalk = 1 or (knowpreg = 1 and preg = 1):
+				*nl
+				knowpreg = 1
+				thinkpreg = 1
+				'The test shows two strips. You are pregnant.'
+			else
+				knowpreg = 0
+				*nl
+				'The test shows one band. You are not pregnant.'
+			end
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	!!breast pump is now in the menu, not on the screen
+	if breastpump > 0 and bp_unbox >= 1:
+		act 'Use breast pump':
+			gt 'lact_bp', 'bp_milking'
+		end
+	elseif breastpump > 0 and bp_unbox <= 0:
+		'<a href="exec: gt ''lact_bp'', ''bp_unbox_event''">Unbox</a> your breast pump'
+	elseif breastpump <= 0:
+		gs 'lact_bp', 'massage'
+	end
+end
+
+if $ARGS[0] = 'misery':
+	menu_off = 1
+
+	if stiralka > 0:
+		if husband > 0 and husbanday > 0 and husporday ! daystart and poroshok >= 1:
+			husband += 5
+			poroshok -= 1
+			husporday = daystart
+			'The washing machine washed your husband''s dirty laundry.'
+		elseif poroshok < 1:
+			'You ran out of washing powder for the washing machine.'
+		end
+	end
+
+	if husband > 0 and husbanday > 0 and husporday ! daystart and poroshok >= 2:
+		act 'Wash your husbands clothes (2 units of washing powder) (1:00)':
+			*clr & cla
+			husband += 5
+			poroshok -= 2
+			minut += 60
+			husporday = daystart
+			pcs_mood -= 25
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/apartment/stir.jpg"></center>'
+			*nl
+			'You spend an hour washing your husband''s dirty laundry.'
+
+			act 'Leave the bathroom':menu_off = 0 & gt $loc, $metka
+		end
+	end
+
+	if husband > 0 and husbanday > 0 and huspolday ! daystart:
+		act 'Clean the apartment (1:00)':
+			*clr & cla
+			husband += 5
+			minut += 60
+			huspolday = daystart
+			pcs_mood -= 25
+			!!'<center><img <<$set_imgh>> src="images/shared/home/kitchen/cook.jpg"></center>'
+			*nl
+			'You take a rag and start cleaning the apartment.'
+
+			act 'Finish':menu_off = 0 & gt $loc, $metka
+		end
+	end
+end
+
+if $ARGS[0] = 'buffpick':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit2.jpg"></center>'
+	*nl
+	'While drying off and getting dressed you examine the sleek muscles that are showing through your skin.'
+	'As you do so you think about how you look and decide:'
+	act 'You like how you look.': normbuffpick = 2 & mirror_steam = hour & menu_off = 0 & gt $loc, $metka
+	act 'You don''t like how you look.': nrmbfpckct += 1 & normbuffpick = 0 & mirror_steam = hour & menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'HorrifiedReact1':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+	'You stare in disbelief at the test in your hand. The two strips displayed can only mean one thing: you are pregnant. You sink to the floor, mind spinning. Tears well in your eyes. How could this happen?'
+		if stat['hidden_vaginal'] > 0 and stat['vaginal'] = 1:
+			'You don''t even know how this is possible. You''ve never even had sex with anyone.'
+			'What did you do to deserve this? What is everyone going to think of you? Your life is ruined.'
+			'After several minutes of sobbing and trying to make sense of your situation, you finally pull yourself off of the floor. You straighten your clothes and wash your face as you begin to accept the situation you’re stuck with.'
+		elseif rape > 0 and stat['vaginal'] > 1:
+			'It’s bad enough that you were raped, but possibly getting pregnant from it as well? It’s completely unfair.'
+			'What did you do to deserve this? What is everyone going to think of you? Your life is ruined.'
+			'After several minutes of sobbing and trying to make sense of your situation, you finally pull yourself off of the floor. You straighten your clothes and wash your face as you begin to accept the situation you’re stuck with.'
+		else
+			'This is the worst possible thing that could have happened to you. You feel like you''re going to vomit from the stress.'
+			'What did you do to deserve this? What is everyone going to think of you? Your life is ruined.'
+			'After several minutes of sobbing and trying to make sense of your situation, you finally pull yourself off of the floor. You straighten your clothes and wash your face as you begin to accept the situation you’re stuck with.'
+		end
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'ConcernedReact1':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+	'Your mind races as you gaze at the test in your hand. The two strips clearly show that you''re pregnant. You know this isn''t the worst thing that could happen to you, but your life is definitely going to change. Are you even ready for that kind of change?'
+		if stat['hidden_vaginal'] > 0 and stat['vaginal'] = 1:
+			'The worst part about this whole situation is that you don''t even know how this happened. How can you get pregnant without having sex?'
+			'After a few minutes of weighing your options, you choose to get on with your day. You still have a lot to consider before you can decide what to do about this pregnancy, but you can’t spend all day in the bathroom without drawing suspicion.'
+		elseif rape > 0 and stat['vaginal'] > 1:
+			'The worst part about this whole situation is that this isn''t even your fault. This was forced on you.'
+			'After a few minutes of weighing your options, you choose to get on with your day. You still have a lot to consider before you can decide what to do about this pregnancy, but you can’t spend all day in the bathroom without drawing suspicion.'
+		else
+			'On some level, you''re aware that this is a consequence of your own actions, but you''re not quite ready to come to terms with that.'
+			'After a few minutes of weighing your options, you choose to get on with your day. You still have a lot to consider before you can decide what to do about this pregnancy, but you can’t spend all day in the bathroom without drawing suspicion.'
+		end
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'ExcitedReact1':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+	'You''re overcome with glee as you look at the pregnancy test in your hand. Its two strips confirm that your wish has been granted: you are pregnant. You giggle as you clutch the pregnancy test, excited to share the news with everyone you know.'
+		if stat['hidden_vaginal'] > 0 and stat['vaginal'] = 1:
+			'You''re not sure how this happened, but you''re not going to complain. Who cares if a miracle made it happen?'
+			'You spend the next several minutes fantasizing about your entry into parenthood before you remember you have places you need to be. You finally get up, still giddy as you go on with your day.'
+		elseif rape > 0 and stat['vaginal'] > 1:
+			'You don’t even care about the circumstances that got you pregnant. It was absolutely worth it for this moment.'
+			'You spend the next several minutes fantasizing about your entry into parenthood before you remember you have places you need to be. You finally get up, still giddy as you go on with your day.'
+		else
+			'Every time you had sex, you hoped the act would make you into a mother.'
+			'You spend the next several minutes fantasizing about your entry into parenthood before you remember you have places you need to be. You finally get up, still giddy as you go on with your day.'
+		end
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'ArousedReact1':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+	'You rub your thighs together as you stare at the pregnancy test in your hand. The two strips displayed confirm that you’ve been knocked up. You excitedly recount every load of cum blast into your fertile womb, wondering which one found purchase. You gently rub your clit in a circular motion as you think about the fact that, in a few months, everyone who sees your large, pregnant belly will know what a slut you are.'
+		if rape > 0 and stat['vaginal'] > 1 and incest['exp'] = 0:
+			'You pick up speed as you recall your rapist forcefully pumping you full of his wonderful semen without any concern for your desires. You loved having your agency stripped away as a complete stranger decided to make you a mother.'
+		elseif incest['exp'] > 0:
+			'You pick up speed as you recall willingly allowing yourself to be pumped full of all of that wonderful semen. Knowing that you would get pregnant filled you with joy every time someone shot rope after rope of their baby batter into you.'
+			'The taboo knowledge that you could have gotten pregnant from incest turns you on even more.'
+		else
+			'You pick up speed as you recall willingly allowing yourself to be pumped full of all of that wonderful semen. Knowing that you would get pregnant filled you with joy every time someone shot rope after rope of their baby batter into you.'
+		end
+		'After several minutes of this you orgasm hard. You spend a moment panting before cleaning up and straightening your clothes. Once you''ve freshened up, you move on with your day, still aroused.'
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'WifeReact1':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+		'A wide smile spreads across your face as you look down at the pregnancy test. The two strips displayed exclaim that you’re finally starting a family. You begin to shake with excitement as you think about how you are going to tell your husband. Should you just tell him as soon as you see him, or do you want to make it an even more special occasion and tell him over a fancy dinner? Maybe you should just nonchalantly drop the test in front of him to see his reaction. Regardless of how you decide to do it, you can''t keep the excitement to yourself any longer. You take a brief moment to freshen up before leaving the room. '
+		'You have a little time before your husband gets home and the baby''s room isn''t going to design itself.'
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+if $ARGS[0] = 'WifeReact2':
+	menu_off = 1
+	cla
+	pcs_pregtalk = 1
+	minut += 10
+	*nl
+	'You smile warmly at the test in your hand. You are definitely pregnant again. Your chest swells with joy, knowing that your wonderful family is about to get a little bit larger. You contentedly sigh as you envision your pregnant belly swelling again, proclaiming your motherhood to the world. Having a child is the greatest thing that has ever happened to you, and you’re thrilled at the opportunity to experience it again. You can’t wait any longer to tell your husband. You quickly spruce yourself up before going to share the fantastic news with your spouse.'
+	act 'Finish' :menu_off = 0 & gt $loc, $metka
+end
+
+!!------------------------------------------------------------------------------------------------------------------------------------------------------
+
+!!Peeing text
+
+!!I''m separating the following text into two versions, some for private bathrooms like those found in homes, and one set for public bathrooms, like those at the school.
+
+!!Private bathrooms: One of these text should be randomly selected if using a private restroom, such as one in a home.
+if $ARGS[0] = 'prvt_pee':
+	if pee_hour ! hour or (pee_hour = hour and pee_day ! daystart): 
+		act 'Go pee (0:04)':
+			*clr & cla
+			menu_off = 1
+			pee_hour = hour
+			pee_day = daystart
+			minut += 4
+			'<center><img <<$set_imgh>> src="images/pc/pee/pee-private/' + rand(1,19) + '.jpg"></center>'
+			!!Get random pee-private picture
+			rand_pee = rand(0,7)
+			if rand_pee = 0:
+				'You take a seat on the toilet and begin peeing, glad to feel the pressure released.'
+			elseif rand_pee = 1:
+				'After sitting on the toilet you finally release your bladder. A shiver runs down your spine as the stream flows out of you. "Wow," you think, "I had to go more than I thought."'
+			elseif rand_pee = 2:
+				'Settling into the toilet seat you pull out your phone and begin checking for messages and doing other things to occupy the time until the stream slows to a trickle and finally stops.'
+			elseif rand_pee = 3:
+				'You plop down onto the porcelain throne and begin to unleash a torrent of urine into the bowl. As you wait for nature to finish it''s business you begin to daydream a bit as your mind wanders off.'
+			elseif rand_pee = 4:
+				'While relaxing your bladder and beginning to pee you decide to reflect on your recent interactions with the people in your life. "What do they think of me? Do they talk behind my back?" You continue contemplating until your body signals that the flow has ended.'
+			elseif rand_pee = 5:
+				'You nearly piss yourself as you rush to seat yourself onto the toilet. Unable to hold back the flood anymore, your body releases a seemingly endless stream as you moan quietly in relief, thankful that you made it in time.'
+			elseif rand_pee = 6:
+				'After situating yourself on the toilet, you relax and begin peeing. The urine tickles your labia as it sprays out of you into the toilet bowl.'
+			else
+				'As you begin to sit down you nearly jump back to your feet as the cold toilet seat stings your bare bottom. You shake your head and sigh before settling back onto the icy seat and doing your business.'
+			end
+
+	!!If PC is on her period and using tampon, then the following options should appear as well as the standard "Finish and wipe" act:
+	!!This may require an addition check to see if the PC has a purse since I think they need that to carry tampons with them.
+			if isprok = 1 and tampon > 0:
+				act 'Change tampon (0:02)':
+					*clr & cla
+					minut += 2
+					'<center><img <<$set_imgh>> src="images/pc/pee/period/tampon/' + rand(1,12) + '.jpg"></center>'
+					'Reaching down and taking the string between your fingers, you slowly pull the used tampon from your vagina. You wrap it in toilet paper to be thrown in the trash bin. Opening your purse, you retrieve a fresh one before unpackaging it and carefully inserting it into you.'
+
+					gs 'din_van', 'prvt_pee_end'
+				end
+			end
+	!!If PC is on her period and using pad, then the following options should appear as well as the standard "Finish and wipe" act:
+	!!This may require an addition check to see if the PC has a purse since I think they need that to carry pads with them.
+			if isprokp = 1 and sanpad > 0:
+				act 'Change pad (0:02)':
+					*clr & cla
+					minut += 2
+					'<center><img <<$set_imgh>> src="images/pc/pee/period/pad/' + rand(1,6) + '.jpg"></center>'
+					'Checking your pad, you decide it''s time for a new one. You carefully peel it off of your panties before folding it into thirds and setting it aside to be thrown away. Digging in your bag, you pull out a fresh pad, unpackage it, peel off the adhesive strip, and place it into your underwear. Finally, you wrap the wings around the sides of the gusset to make sure it is nice and secure.'
+
+					gs 'din_van', 'prvt_pee_end'
+				end
+			end
+
+			gs 'din_van', 'prvt_pee_end'
+		end
+	end
+end
+
+if $ARGS[0] = 'prvt_pee_end':
+	act 'Finish and wipe':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/pc/pee/wiping/' + rand(1,9) + '.jpg"></center>'
+		rand_pee = rand(0,2)
+		if rand_pee = 0:
+			'Gathering some toilet paper from the roll, you reach down wipe your vagina clean from the last drops of pee leaking from you before dropping the paper into the toilet.'
+		elseif rand_pee = 1:
+			'Wrapping some toilet paper around your hand, you reach around and give your pussy and ass a quick wipe before letting the paper drop into the bowl.'
+		else
+			'You take a wad of toilet paper in your fist before using it to gently pat your vagina dry. You toss the used material in the toilet and flush it down.'
+		end
+
+		act 'Finish':menu_off = 0 & gt $loc, $metka
+	end
+end
+
+!!Public bathrooms: These texts should be randomly selected if using a public restroom
+if $ARGS[0] = 'pblc_pee':
+	if pee_hour ! hour or (pee_hour = hour and pee_day ! daystart): 
+		act 'Go pee (0:04)':
+			*clr & cla
+			menu_off = 1
+			pee_hour = hour
+			pee_day = daystart
+			minut += 4
+			'<center><img <<$set_imgh>> src="images/pc/pee/pee-public/' + rand(1,11) + '.jpg"></center>'
+			rand_pee = rand(0,7)
+			if rand_pee = 0:
+				'Settling into the toilet seat you pull out your phone and begin checking for messages and doing other things to occupy the time until the stream slows to a trickle and finally stops.'
+			elseif rand_pee = 1:
+				'While relaxing your bladder and beginning to pee you decide to reflect on your recent interactions with the people in your life. "What do they think of me? Do they talk behind my back?" You continue contemplating until your body signals that the flow has ended.'
+			elseif rand_pee = 2:
+				'You nearly piss yourself as you rush to seat yourself onto the toilet. Unable to hold back the flood anymore, your body releases a seemingly endless stream as you moan quietly in relief, thankful that you made it in time.'
+			elseif rand_pee = 3:
+				'Immediately up entering the restroom, your nostrils are assaulted by the most heinous stench. Knowing that you have no other option, you try to suppress your gags as you sit in a stall and do your business.'
+			elseif rand_pee = 4:
+				*clr
+				'<center><img <<$set_imgh>> src="images/pc/pee/pee-public/hovercraft' + rand(1,2) + '.jpg"></center>'
+				'You enter the stall and groan in disgust at the sight of the gross facilities. Realizing that you have no choice, you decided to "hovercraft" it. Instead of sitting down on the filthy seat, you hover your ass above the bowl before letting go of the pee you''d been holding, not caring if all of the stream gets into the toilet or elsewhere.'
+			else
+				!!Graffiti trigger text
+				rand_pee = rand(0,21)
+				'As you sit down to relieve your bladder you get distracted reading some of the graffiti on the wall of the stall.'
+				$rand_girl = func('gschool_randperson', 1, '', 1, 1, 1, 1, 1, 0)
+				if rand_pee = 0:
+					'Albina and her Starlettes are a bunch of dirty whores.'
+				elseif rand_pee = 1:
+					'<<$rand_girl>>''s vagina smells like puke!'
+				elseif rand_pee = 2:
+					'Beware of Dimka! He''s not as nice as he seems!'
+				elseif rand_pee = 3:
+					'If you''re on the rag, check the seat when you get up and WIPE IT OFF!!! No one wants a nasty seat!'
+				elseif rand_pee = 4:
+					'If you smell fish, it''s probably your dirty twat! Hahaha!'
+				elseif rand_pee = 5:
+					'Shave your punani, bitches! No one likes digging through a forest, LOL.'
+				elseif rand_pee = 6:
+					'Shaved pussies stink and are prone to infection! Don''t believe the lies!'
+				elseif rand_pee = 7:
+					'Fight the Patriarchy!'
+				elseif rand_pee = 8:
+					'Tampons vs. Pads, cast your vote! Below this text are hash marks indicating various girl''s preference. One person also wrote "Freebleeder for life!" Ewww.'
+				elseif rand_pee = 9:
+					'Petra''s cock is smaller than my lipstick tube, LOL!'
+				elseif rand_pee = 10:
+					'You''re beautiful! Believe that!'
+				elseif rand_pee = 11:
+					'Putin is a chauvinist pig!'
+				elseif rand_pee = 12:
+					'Suck dick! It''s good for you!'
+				elseif rand_pee = 13:
+					'"I''ll pull out, I swear! is the most dangerous lie you can believe." This text is followed by a crude drawing of a pregnant woman.'
+				elseif rand_pee = 14:
+					'Cut back on the perfume, ladies. It smells like a unicorn farted in here.'
+				elseif rand_pee = 15:
+					'<<$rand_girl>> is a slut and everyone knows it!'
+				elseif rand_pee = 16:
+					'Men are like pantyhose; They either run, cling, or don''t fit right in the crotch!'
+				elseif rand_pee = 17:
+					'Gopnik guys are SO HOT!!!'
+				elseif rand_pee = 18:
+					'That rumor about black guys is true! Just ask Marcus for a sneak peek.'
+				elseif rand_pee = 19:
+					'Butt sex is the best sex!'
+				elseif rand_pee = 20:
+					'I just wrote on the wall. Take THAT, society!'
+				else
+					'Never quit loving your clit.'
+				end
+			end
+
+			if mesec > 0 and (isprok = 1 or (isprok = 0 and isprokp = 0)) and tampon > 0 and bag = 1:
+				act 'Change tampon (0:02)':
+					*clr & cla
+					minut += 2
+					'<center><img <<$set_imgh>> src="images/pc/pee/period/tampon/' + rand(1,12) + '.jpg"></center>'
+					'Reaching down and taking the string between your fingers, you slowly pull the used tampon from your vagina. You wrap it in toilet paper to be thrown in the trash bin. Opening your purse, you retrieve a fresh one before unpackaging it and carefully inserting it into you.'
+
+					gs 'din_van', 'pblc_pee_end'
+				end
+			end
+
+			if mesec > 0 and (isprokp = 1 or (isprok = 0 and isprokp = 0)) and sanpad > 0 and bag = 1:
+				act 'Change pad (0:02)':
+					*clr & cla
+					minut += 2
+					'<center><img <<$set_imgh>> src="images/pc/pee/period/pad/' + rand(1,6) + '.jpg"></center>'
+					'Checking your pad, you decide it''s time for a new one. You carefully peel it off of your panties before folding it into thirds and setting it aside to be thrown away. Digging in your bag, you pull out a fresh pad, unpackage it, peel off the adhesive strip, and place it into your underwear. Finally, you wrap the wings around the sides of the gusset to make sure it is nice and secure.'
+
+					gs 'din_van', 'pblc_pee_end'
+				end
+			end
+
+			gs 'din_van', 'pblc_pee_end'
+		end
+	end
+end
+
+
+if $ARGS[0] = 'pblc_pee_end':
+	act 'Finish and wipe':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/pc/pee/wiping/' + rand(1,9) + '.jpg"></center>'
+		rand_pee = rand(0,6)
+		if rand_pee = 0:
+			'Gathering some toilet paper from the roll, you reach down wipe your vagina clean from the last drops of pee leaking from you before dropping the paper into the toilet.'
+		elseif rand_pee = 1:
+			'Wrapping some toilet paper around your hand, you reach around and give your pussy and ass a quick wipe before letting the paper drop into the bowl.'
+		elseif rand_pee = 2:
+			'You take a wad of toilet paper in your fist before using it to gently pay your vagina dry. You toss the used material in the toilet and flush it down.'
+		elseif rand_pee = 3:
+			'You gather some of the rough, cheap toilet paper and use it to lightly wipe yourself, not wanting to irritate your sensitive skin. You drop it into the dirty toilet and use your foot to push the handle in order to flush.'
+		elseif rand_pee = 4:
+			'Looking over for the roll of toilet paper see that the roll has been used up. Noticing that the stall next to you seems occupied, you politely ask the stranger to help you out. The stranger chuckles a bit before kindly handing you a wad under the stall wall, which you happily use.'
+		else
+			*clr
+			'<center><img <<$set_imgh>> src="images/pc/pee/wiping/no' + rand(1,6) + '.jpg"></center>'
+			'Reaching out for toilet paper you sigh as you notice that the roll is empty. Annoyed, you wiggle your ass to shake the last few drops from your lady bits before pulling up your panties and walking out of the stall.'
+		end
+
+		act 'Finish':menu_off = 0 & gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'shave_options':
+	menu_off = 1
+	*clr & cla
+	if shave_img_hgt = 0:shave_img_hgt = 100
+	!! images handled using FUNC(''$pube_image'')
+	'<h3><center><b><font color="maroon">Shaving optons</b></h3><br><center><font color="maroon">Here you can choose your style for pubic hair and which body parts you wish to shave.</font></center>'
+	'<br><center><table border=0 cellspacing=<<shave_img_hgt/25>> cellpadding=5>'
+	*P '<TR><TD><center><a href="exec:view''images/pc/body/pussy/hair/pussy.jpg''"><img Height = <<shave_img_hgt>> src="images/pc/body/pussy/hair/pussy.jpg"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],2)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],2)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],3)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],3)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],4)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],4)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],5)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],5)>>"></a></center></TD>'
+	'<TR><TD><center>'
+	if pubestyle ! 1:
+		'<a href="exec:pubestyle = 1 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Clean Shave</a>'
+	else
+		'Clean Shave'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 2 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 2 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">V-shaped</a>'
+	else
+		'V-shaped'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 3 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 3 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Triangle-shaped</a>'
+	else
+		'Triangle-shaped'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 4 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 4 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Landing-strip</a>'
+	else
+		'Landing-strip'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 5 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 5 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Heart-shaped</a>'
+	else
+		'Heart-shaped'
+	end
+	'</center></TD>'
+	*P '<TR><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],6)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],6)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],7)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],7)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],8)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],8)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],9)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],9)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',26,pcs_pubecol[2],10)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',26,pcs_pubecol[2],10)>>"></a></center></TD>'
+	'<TR><TD><center>'
+	if pubestyle ! 6 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 6 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Flame-shaped</a>'
+	else
+		'Flame-shaped'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 7 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 7 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Cross-Shaped</a>'
+	else
+		'Cross-Shaped'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 8 and pcs_pubes > 20:
+		'<a href="exec:pubestyle = 8 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Trimmed</a>'
+	else
+		'Trimmed'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 9 and pcs_pubes > 25:
+		'<a href="exec:pubestyle = 9 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Small Bush</a>'
+	else
+		'Small Bush'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 10 and pcs_pubes > 35:
+		'<a href="exec:pubestyle = 10 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Full Bush</a>'
+	else
+		'Full Bush'
+	end
+	*P '<TR><TD><center><a href="exec:view''<<FUNC(''$pube_image'',5,pcs_pubecol[2],11)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',5,pcs_pubecol[2],11)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],12)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],12)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],13)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],13)>>"></a></center></TD><TD><center><a href="exec:view''<<FUNC(''$pube_image'',16,pcs_pubecol[2],14)>>''"><img Height = <<shave_img_hgt>> src="<<FUNC(''$pube_image'',16,pcs_pubecol[2],14)>>"></a></center></TD>'
+	*nl
+	'<TR><TD><center>'
+	if pubestyle ! 11 and pcs_pubes > 10:
+		'<a href="exec:pubestyle = 11 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Lazy</a>'
+		'(don''t immediately shave stubble)'
+	else
+		'Lazy'
+		'(don''t immediately shave stubble)'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 12 and pcs_pubes > 15:
+		'<a href="exec:pubestyle = 12 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Mini Bush</a>'
+	else
+		'Mini Bush'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 13 and pcs_pubes > 20:
+		'<a href="exec:pubestyle = 13 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Bushy Strip</a>'
+	else
+		'Bushy Strip'
+	end
+	'</center></TD><TD><center>'
+	if pubestyle ! 14 and pcs_pubes > 20:
+		'<a href="exec:pubestyle = 14 & '+iif(shave_menu = 3,'shave_menu = 1', 'shave_menu = 2')+' & gt ''din_van'', ''shave_options''">Rectangle</a>'
+	else
+		'Rectangle'
+	end
+	
+	
+	'</center></TD><TR><center>'
+	'Your razor will last for <b><<stanok>></b> more shaves.'
+	*nl
+	'<center><b>Change your shaving routine:</b></center>'
+	'<center><font color="grey">Note: Choosing to never shave, or to shave legs only, will remove your chosen shave style.<br> You can only choose a style if you currently have enough hair to support it.</font></center>'
+	*nl
+	!if shave_menu = 0:nothing
+	!if shave_menu = 1:legs and pussy
+	!if shave_menu = 2:pussy only
+	!if shave_menu = 3:legs only
+	if shave_menu = 0:
+		$shave_chosen = 'doesn''t include any shaving options.'
+		$shave_time = ''
+		'Never shave | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave everything.''">Everything</a>','<a href="exec:shave_menu = 1 & gs ''din_van'', ''shave_options''">Everything</a>')+' | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave your pussy.''">Pussy only</a>','<a href="exec:shave_menu = 2 & gs ''din_van'', ''shave_options''">Pussy only</a>')+' | <a href="exec:shave_menu = 3 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Legs only</a>'
+	elseif shave_menu = 1:
+		$shave_chosen = 'involves shaving your legs and maintaining your current pubic style.'
+		$shave_time = 'It takes 15 minutes to complete this routine.'
+		'<a href="exec:shave_menu = 0 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Never shave</a> | Everything | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave your pussy.''">Pussy only</a>','<a href="exec:shave_menu = 2 & gs ''din_van'', ''shave_options''">Pussy only</a>')+' | <a href="exec:shave_menu = 3 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Legs only</a>'
+	elseif shave_menu = 2:
+		$shave_chosen = 'involves not shaving your legs and maintaining your current pubic style.'
+		$shave_time = 'It takes 10 minutes to complete this routine.'
+		'<a href="exec:shave_menu = 0 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Never shave</a> | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave everything.''">Everything</a>','<a href="exec:shave_menu = 1 & gs ''din_van'', ''shave_options''">Everything</a>')+' | Pussy only | <a href="exec:shave_menu = 3 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Legs only</a>'
+	elseif shave_menu = 3:
+		$shave_chosen = 'involves shaving your legs and not maintaining any chosen pubic style.'
+		$shave_time = 'It takes 5 minutes to complete this routine.'
+		'<a href="exec:shave_menu = 0 & pubestyle = 0 & gs ''din_van'', ''shave_options''">Never shave</a> | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave everything.''">Everything</a>','<a href="exec:shave_menu = 1 & gs ''din_van'', ''shave_options''">Everything</a>')+' | '+iif(pubestyle = 0,'<a href="exec: msg ''You must choose a shave style before you can choose to shave your pussy.''">Pussy only</a>','<a href="exec:shave_menu = 2 & gs ''din_van'', ''shave_options''">Pussy only</a>')+' | Legs only'
+	end
+	*nl
+	'<center>Your current routine <<$shave_chosen>> <br><<$shave_time>></center>'
+	'</table></center>'
+
+	act 'Return':menu_off = 0 & gt $loc, $metka
+	act 'Set image height for this view':
+		shave_img_hgt = input("Enter height in pixels you want for images on this page<br>(default 100, min 50, max 500)")
+		if shave_img_hgt < 50:
+			shave_img_hgt = 50
+		elseif shave_img_hgt > 500:
+			shave_img_hgt = 500
+		end
+		gt 'din_van', 'shave_options'
+	end
+end
+
+--- din_van ---------------------------------
+

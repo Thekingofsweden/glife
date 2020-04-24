@@ -1,0 +1,1986 @@
+# rolanapt
+
+if $ARGS[0] = 'home':
+	music_loop = 0
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/korr.mp3',30
+	$metkaM = 'home'
+	$locM = 'rolanapt'
+	$metka = 'home'
+	$loc = 'rolanapt'
+	$location_type = 'private'
+	$menu_loc = 'rolanapt'
+	$menu_arg = 'start'
+	menu_off = 0
+	clr
+	popolaini = 0
+	saunaYouRoom = 0
+	boycherdaksex = 0
+	minut += 1
+	bonusZ = 0
+	gs 'stat'
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptdoor.jpg"></center>'
+	'You walk up to the front door and knock.'
+	if hour >= 23:
+		'It''s too late in the day to visit Mr. Matveev'
+		act 'Move away from the door':gt 'pavComplex', 'start'
+	elseif hour < 15:
+		'Mr. Matveev is probably at work.'
+		act 'Move away from the door':gt 'pavComplex', 'start'
+	elseif newbath = 1 and rolanworker = 3 and hour >= 15 and hour < 23 and RolanLoc[hour] >= 2 and RolanLoc[hour] =< 8:
+		'You can''t wait to see Rolan''s face.'
+		act 'Ring the doorbell':gt 'rolanbath', 'surprise'
+	elseif hour >= 15 and hour < 23 and RolanLoc[hour] >= 2 and RolanLoc[hour] =< 8:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanwelcome.jpg"></center>'
+		'The door opens, "Welcome, Miss <<$pcs_lastname>>, here, take a seat."'
+		act 'Enter': gt 'rolanapt','hallway'
+	else
+		'No one answers. Rolan is not home.'
+		act 'Move away from the door':gt 'pavComplex', 'start'
+	end
+end
+
+if $ARGS[0] = 'hallway':
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/korr.mp3',30
+	$location_type = 'indoors'
+	cla
+	*clr
+	minut += 1
+	$location_type = 'private'
+	menu_off = 1
+	killvar '$locclass'
+	gs 'stat'
+	gs 'rolanapt' , 'rolanroute'
+	'<center><h4><font color="maroon">Entrance hall</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/hallway.jpg"></center>'
+	if RolanLoc[hour] = 0:
+		'Rolan should be at work.'
+	!RolanLoc = 0 (Rolan not home school)
+	elseif RolanLoc[hour] = 1:
+		'Rolan is a devout man, he should be at church.'
+	!RolanLoc = 1 (Rolan not home church)
+	elseif RolanLoc[hour] = 2:
+		'Rolan is here'
+	!RolanLoc = 2 (Rolan in the hallway)
+	elseif RolanLoc[hour] = 3:
+		'You hear snoring... Rolan is sleeping.'
+	!RolanLoc = 3 (Rolan in his room)
+	elseif RolanLoc[hour] = 4:
+		'<i>sniff sniff</i> Someone is cooking...'
+	!RolanLoc = 4 (Rolan in the kitchen)
+	elseif RolanLoc[hour] = 5:
+		'The old TV is on.'
+	!RolanLoc = 5 (Rolan in the livingroom)
+	elseif RolanLoc[hour] = 6:
+		'There''s a suspicious silence...'
+	!RolanLoc = 6 (Rolan in grandma''s room)
+	elseif RolanLoc[hour] = 7:
+		'The water is running... you shouldn''t disturb Rolan.'
+	!RolanLoc = 7 (Rolan in the bathroom)
+	elseif RolanLoc[hour] = 8:
+		'The guest room''s door is open, Rolan should be in there.'
+	!RolanLoc = 8:(Rolan in the guestroom)
+	elseif RolanLoc[hour] = 9:
+		'The weather is nice, Rolan is likely at the park or the courtyard.'
+	!RolanLoc = 9 (Rolan not home park)
+	elseif RolanLoc[hour] = 10:
+		'The weather is nice, Rolan is likely at the courtyard or the park.'
+	!RolanLoc = 10 (Rolan not home coutyard)
+	else
+		'Where is Rolan?'
+	end
+
+	if rolan_bazar_day ! daystart: rolan_bazar_count = 5
+	if rolan_kuhbaz_day ! daystart: rolan_kuhbaz_count = 5
+	if rolan_panty_day ! daystart: rolan_panty_count = 1
+	if rolan_steal_day ! daystart: rolan_steal_count = 0
+
+	if rolanworker = 4 and rolanknow = 1:
+		RolanLoc[hour] = 6
+		gs 'stat'
+		'You should check on Rolan, he seems really upset...'
+		act '<b>Leave Rolan''s apartment</b>':
+			gt 'rolanapt', 'hallway'
+		end
+	else
+		act '<b>Leave Rolan''s apartment</b>': gt 'pavComplex', 'start'
+	end
+	act 'Go to Rolan''s room': gt 'rolanapt','room'
+	act 'Go to the bathroom': gt 'rolanbath','start'
+	act 'Go to the guest room': gt 'rolanapt','guestroom'
+	act 'Go to the living room': gt 'rolanapt','livingroom'
+	act 'Go to the kitchen': gt 'rolanapt','kitchen'
+	act 'Go to grandma''s room': gt 'rolanapt','grandmaroom'
+end
+
+if $ARGS[0] = 'room':
+	CLOSE ALL
+	cla
+	*clr
+	minut += 1
+	$location_type = 'private'
+	$locclass = 'bedr'
+	menu_off = 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Rolan''s bedroom</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bedroom.jpg"></center>'
+	'This is Rolan''s bedroom, it''s quite messy. An old clock on the wall fills the quiet room with some sound. You see what looks like an old bedpan under his bed. "...Is he really that lazy?" you wonder.'
+	if RolanLoc[hour] = 3: 'Rolan is here.'
+	act 'Leave the room': gt 'rolanapt','hallway'
+	if RolanLoc[hour] ! 3 and rolanpantyQW >= 5:
+		act 'Snoop around': gt 'rolanapt','drawer'
+	end
+	if RolanLoc[hour] = 3 and rolanpantyQW >= 7 and rolanpantyfound = 1 and rolanpantyconfession ! 1 and hour < 23 and $pantyworntype ! 'none':
+		act 'Confront Rolan': gt 'rolanapt','mypanty'
+	end	
+end
+
+if $ARGS[0] = 'guestroom':
+	CLOSE ALL
+	cla
+	*clr
+	minut += 1
+	$location_type = 'private'
+	$locclass = 'bedr'
+	menu_off = 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Guest Room</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/guestroom.jpg"></center>'
+	'This is the guest room. There''s a stove in here keeping the room warm.'
+	if RolanLoc[hour] = 8: 'Rolan is here'
+	act 'Leave the room': gt 'rolanapt','hallway'
+end
+
+if $ARGS[0] = 'livingroom':
+	CLOSE ALL
+	cla
+	*clr
+	minut += 1
+	$locclass = 'livingr'
+	menu_off = 1
+	gs 'stat'
+	'<center><b><font color = maroon>Living Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/livingroom.jpg"></center>'
+	if rolanpantyconfession ! 1:
+		'The living room isn''t exactly messy but it''s definitely not clean either. It looks as though nothing''s been dusted nor the floor swept for quite a long time now. There''s an old TV in the corner, an even older looking vase sits on it. You notice a doll sitting in a chair on the other side of the room... Rolan can be very creepy at times. You wonder if the stories about him stealing girl''s panties from the locker room at school are true. Well, at least he doesn''t steal yours.'
+	else
+		'The living room isn''t exactly messy but it''s definitely not clean either. It looks as though nothing''s been dusted nor the floor swept for quite a long time now. There''s an old TV in the corner, an even older looking vase sits on it. You notice a doll sitting in a chair on the other side of the room... Rolan can be very creepy at times.'
+	end
+	if RolanLoc[hour] = 5: 'Rolan is here,'
+	act 'Leave the room': gt 'rolanapt','hallway'
+	if RolanLoc[hour] = 5 and rolanworker = 1:
+		act 'Spend some time chatting':
+			*clr & cla
+			minut += 15
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolancheek.jpg"></center>'
+			'You approach Rolan and kiss him on the cheek, showing kindness to obtain your goal...'
+			'"Hi, Rolan..."'
+			*nl
+			'You caught him by surprise... "I-I-Hi... Miss <<$pcs_lastname>>..."'
+			act 'Continue': gt 'rolanapt', 'worker'
+		end
+	end
+end
+
+if $ARGS[0] = 'kitchen':
+	CLOSE ALL
+	cla
+	*clr
+	minut += 1
+	$locclass = 'kitr'
+	$loc = 'rolanapt'
+	$metka = 'kitchen'
+	$menu_loc = 'rolanapt'
+	$menu_arg = 'kitchen'
+	menu_off = 0
+	gs 'kit_din'
+	gs 'stat'
+	'<center><b><font color = maroon>Kitchen</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitchen.jpg"></center>'
+	if rolancooklesson > 1 and rolancooklesson =< 5 and rolan_cooklesson_day = daystart:
+		'"What the...I just washed them today...."'
+	elseif rolancooklesson = 6 and rolan_cooklesson_day = daystart:
+		'"That''s it. This is the last time."'
+	else
+		'This room appears the most modern in the house. However, like the rest it is not clean. You wonder, "how long have the plates been sitting in the sink?"'
+	end
+	act 'Leave the room': gt 'rolanapt','hallway'
+!!	'This room appears the most modern in the house. However, like the rest it is not clean. You wonder, "how long have the plates been sitting in the sink?"'
+!!  RolanLoc[hour] = 3  rolanpantyQW = 8
+	if RolanLoc[hour] = 4:
+		'Rolan is here.'
+		if rand(1,100) < 50:
+			'When you enter the kitchen, <a href="exec:gt ''rolanapt'',''kuh_buh''">Rolan</a> gives you a friendly nod. He''s sitting at the table, eating an apple.'
+		else
+			'When you enter the kitchen, <a href="exec:gt ''rolanapt'',''bend''">Rolan</a> is sitting at the table holding an apple. He smiles when he notices you.'
+		end
+
+		if rolanpantyconfession = 1 and rolancooklesson < 1 and sup_count = 0 and $wornpantytype ! 'none':
+			act 'Approach Rolan':
+				*clr & cla
+				minut += 5
+				menu_off = 1
+				rolancooklesson = 1
+				rolan_cooklesson_day = daystart
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/bread0.jpg"></center>'
+				'"We need to talk."'
+				'"Miss <<$pcs_lastname>>, I swear I''ve done nothing wrong!"'
+				act 'Continue':
+				cla
+				*clr
+				'<center><b><font color = maroon>Intro</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro0.jpg"></center>'
+				'"Ah, silly boy! I''m not angry, I just want to help you learn how to cook. You need a gentle hand to guide you through it!"'
+				*nl
+				'"Miss <<$pcs_lastname>>, do not worry, it''s not necessary, I can take care of myself."'
+					act 'Continue':
+					cla
+						*clr
+						'<center><b><font color = maroon>Intro</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro1.jpg"></center>'
+						'"So it seems, but you need some lessons if you want to stay healthy."'
+						*nl
+						'"Miss <<$pcs_lastname>>, really this is not necessary. I usually cook for the week, I''m not a pro but I''m satisfied with my skill..."'
+						act 'Continue':
+							cla
+							*clr
+							'<center><b><font color = maroon>Intro</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro2.jpg"></center>'
+							'"I SAID WE ARE GOING TO START IMPROVING YOUR COOKING ABILITIES."'
+							act 'Continue': gt 'rolanapt', 'chef'
+						end
+					end
+				end
+			end
+		elseif rolancooklesson = 2 and rolan_cooklesson_day ! daystart and $wornpantytype ! 'none':
+			act 'Approach Rolan':
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro3.jpg"></center>'
+				'As soon as you walk toward Rolan he stands up and tries to escape, but you manage to stop him...'
+				*nl
+				'"Hey now, what''s the rush? I hope you are not trying to avoid me."'
+				*nl
+				'Rolan sighs. He doesn''t want to do this, but you''re not giving him a choice.'
+				act 'Start lesson': gt 'rolanapt', 'chef'
+			end
+		elseif rolancooklesson > 2 and rolancooklesson <= 6 and rolan_cooklesson_day ! daystart and $wornpantytype ! 'none':
+			act 'Approach Rolan':
+				*clr & cla
+				menu_off = 1
+				minut += 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro3.jpg"></center>'
+				'This time, Rolan doesn''t attempt to flee. "<i>Good</i>," you think, this lesson should go smoother than usual.'
+				act 'Start lesson': gt 'rolanapt', 'chef'
+			end
+		end
+	end
+!!	elseif rolancooklesson = 6:
+	act 'Look in the fridge': gt 'rolanapt', 'holodil'
+	dynamic $driwater
+	dynamic $fill_bottle
+	!!FRIDGE!!
+	!!filling the refrigerator:
+	!!count-bottles of beer in a day
+	if guavacoco_day ! daystart: guavacoco_count = 2
+	!!count-of glasses in a bottle of vodka
+	if kvass_day ! daystart: kvass_count = 5
+	!!count-in soup plates in kostryule
+	if sup_day ! daystart: sup_count = 1
+end
+
+if $ARGS[0] = 'holodil':
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	if guavacoco_count = 2:
+		$r_guavacoco = ' 2 guavacoco,'
+	elseif guavacoco_count = 1:
+		$r_guavacoco = ' 1 guavacoco,'
+	else
+		$r_guavacoco = ''
+	end
+	if kvass_count = 5:
+		$r_kvass = ' a full bottle of homemade kvass beer,'
+	elseif kvass_count = 3:
+		$r_kvass = ' a half-empty bottle of homemade kvass beer,'
+	elseif kvass_count = 1:
+		$r_kvass = ' a nearly empty bottle of homemade kvass beer,'
+	else
+		$r_kvass = ''
+	end
+	if sup_count >= 1:
+		$r_sup = ' a large pot of soup'
+	else
+		$r_sup = ''
+	end
+	if guavacoco_count = 0 and kvass_count = 0 and sup_count = 0:
+		$r_pusto = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/kuh/holodpusto.jpg"></center><br>You open the fridge and see:<br><font color = red>empty shelves.</font>'
+	else
+		$r_pusto = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/selfservice'+rand(0,8)+'.jpg"></center><br>You open the fridge and see:'
+	end
+	'<<$r_pusto>><br><<$r_kvass>><<$r_guavacoco>><<$r_sup>>'
+	act 'Close the refrigerator': gt 'rolanapt','kitchen'	
+	!drink guavacoco
+	if guavacoco_count > 0:
+		act 'Have a guavacoco':
+			*clr & cla
+			minut += 5
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			pcs_hydra = 100
+			guavacoco_day = daystart
+			guavacoco_count -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/guavacoco'+rand(0,2)+'.jpg"></center>'
+			'You take a bottle of guavacoco from the fridge and drink it, quenching your thirst. You wonder if he ever drinks mors or kompot.'
+			act 'Continue': gt 'rolanapt', 'holodil'
+		end
+	end
+	!drink kvass
+	if kvass_count > 0:
+		act 'Drink some kvass':
+			*clr & cla
+			minut += 1
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			pcs_hydra = 100
+			kvass_day = daystart
+			kvass_count -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kvass'+rand(0,2)+'.jpg"></center>'
+			if rolancooklesson = 0:
+				'You pour some kvass beer in a glass and drink it. You have to reconsider Rolan''s cooking skills... Maybe you can teach him a thing or two about cooking soup.'
+			elseif rolancooklesson <= 4:
+				'You pour some kvass beer in a glass and drink it. You think over Rolan''s next cooking lesson.'
+			elseif rolancooklesson = 5:
+				'You pour some kvass beer in a glass and drink it. You think about the progress Rolan has made with his cooking and smile.'
+			else
+				'You pour some kvass beer in a glass and drink it. You can''t help but smile as Rolan has become quite the cook since you began helping him.'
+			end
+			act 'Put the bottle back in the fridge': gt 'rolanapt', 'holodil'
+			act 'Drink more kvass':
+				if kvass_count > 0:
+					*clr
+					minut += 1
+					cumspclnt = 2
+					gs 'cum_cleanup'
+					pcs_breath = 0
+					pcs_hydra = 100
+					kvass_day = daystart
+					kvass_count -= 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kvass'+rand(0,2)+'.jpg"></center>'
+					'You pour yourself another glass and drain it in one gulp. Wow, that stuff is really good!'
+				else
+					*clr
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kvass3.jpg"></center>'
+					'<font color = red>There''s no kvass beer left, you drank it all!</font>'
+					*nl
+					'Better put the bottle away.'
+				end
+			end
+
+		end
+	end
+	!Soup
+	if sup_count > 0:
+		act 'Eat a bowl of soup':
+			*clr & cla
+			minut += 5
+			sup_day = daystart
+			sup_count -= 1
+			pcs_health += 10
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			'<center><b><font color = maroon>Rolan''s soup</font></b></center>'
+			if rolancooklesson = 2:
+				pcs_mood -= 40
+				fat += 1
+				pcs_energy += 5
+				pcs_hydra += 4
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup0.jpg"></center>'
+				'<i>G''uuuuh,</i> you are unable to stomach this... <i><b>whatever</b> this</i> is supposed to be. "<i>This is going to take some work</i>," you think.'
+				'Rolan''s cooking is beyond terrible. How Rolan has kept himself alive eating this "soup," you''ll never know.'
+			elseif rolancooklesson = 3:
+				pcs_mood -= 30
+				fat += 5
+				pcs_energy += 50
+				pcs_hydra += 40
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup1.jpg"></center>'
+				'Well, at least this batch might stay down. <i>Your stomach grumbles softly, as though in disagreement.</i>'
+				'Rolan has to get better at cooking soon, right?'
+			elseif rolancooklesson = 4:
+				pcs_mood -= 20
+				fat += 4
+				pcs_energy += 50
+				pcs_hydra += 40
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup2.jpg"></center>'
+				'"At least it was cooked this time," you ponder aloud. You just need to teach Rolan to peel the potatoes next time.'
+				'There''s some improvement, but Rolan''s soup is far from being good...'
+			elseif rolancooklesson = 5:
+				fat += 3
+				pcs_energy += 50
+				pcs_hydra += 40
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup3.jpg"></center>'
+				'"<i>That was much better, but probably hell on my cholesterol</i>," you think. Next time, teach him to use milk instead of cream.'
+				'Rolan''s soup needs to be lighter.'
+			elseif rolancooklesson = 6:
+				fat += 2
+				pcs_energy += 50
+				pcs_hydra += 40
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup4.jpg"></center>'
+				'It''s almost there. Almost. "Next time, for sure!"'
+				'You can try something else to improve Rolan''s abilities. But you feel like there isn''t much room for improvement.'
+			elseif rolancooklesson > 6:
+				pcs_mood += 10
+				fat += 2
+				pcs_energy += 50
+				pcs_hydra += 40
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup5.jpg"></center>'
+				'You think you have done all you were capable of... and probably saved Rolan''s life.'
+				'Rolan''s soup is... well, it''s Rolan''s soup.'
+			else
+				pcs_mood -= 40
+				fat += 1
+				pcs_energy += 5
+				pcs_hydra += 4
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup0.jpg"></center>'
+				'You only managed a couple of bites before you rush to bathroom to spit it up. "Fuck! He''s trying to kill somebody! I gotta do something..."'
+				'Rolan is really bad in kitchen. It''s a fatty, terrible soup. You wonder how he''s still alive...'
+			end
+			gs 'stat'
+			if rolancooklesson >= 3:
+				act 'Further': gt 'rolanapt', 'holodil'
+			else
+				act 'Further': gt 'rolanapt', 'hallway'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'grandmaroom':
+	CLOSE ALL
+	*clr & cla
+	minut += 1
+	temp = rand(0,1)
+	menu_off = 1
+	gs 'stat'
+	'<center><b><font color = maroon>Grandma''s room</font></b></center>'
+	if rolanworker = 4 and rolanknow = 1:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolancry.jpg"></center>'
+		'...'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/grandmaroom.jpg"></center>'
+		'This is the only room in good condition. It seems no one lives here... but this room is regularly cleaned.'
+	end
+
+	act 'Leave the room': gt 'rolanapt','hallway'
+
+	if RolanLoc[hour] = 6: 
+		'Rolan is here.'
+		if rolanworker = 4 and rolanknow = 1:
+			act 'Talk to Rolan':
+				*clr & cla
+				minut += 5
+				rolanworker += 1
+				'<center><b><font color = maroon>Grandma''s room</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanheadbath2.jpg"></center>'
+				'"Rolan, is everything all right? You ran away like... why are you crying?"'
+				*nl
+				'"Out."'
+				act 'Ask':
+					*clr & cla
+					minut += 5
+					'<center><b><font color = maroon>Grandma''s room</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanheadbath3.jpg"></center>'
+					'"Rolan, you can tell me. What''s happened?"'
+					*nl
+					'"Out. I said get out of here. You are not welcome in this house anymore!"'
+					*nl
+					'You''re at a loss for words.'
+					act 'But...':
+						*clr & cla
+						minut += 5
+						rolanblockhome = 1
+						'<center><b><font color = maroon>Grandma''s room</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanheadbath4.jpg"></center>'
+						'"What have I done?"'
+						*nl
+						'"That''s it," Rolan grabs his phone and dials a number. "Mr. Chervov? It''s Rolan Matveev here... yes, the janitor. There is a thief in my home..."'
+						*nl
+						'"A thief? But I... okay. Okay, I''ll leave."'
+						act 'Leave':gt 'pavComplex', 'start'
+					end
+				end
+			end
+		end
+	else
+		if workertool ! 1:
+			act 'Look around':
+				*clr & cla
+				minut += 5
+				'<center><b><font color = maroon>dreamroom</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/grandma.jpg"></center>'
+				'You snoop around, opening drawers, and looking in the closet. Even if you were hoping to find something of interest, you didn''t. The only thing of note is a dark marble container full of grey powder.'
+				act 'Leave':gt 'rolanapt','hallway'
+			end
+		else
+			act 'Look around':
+				*clr & cla
+				minut += 2
+				'<center><b><font color = maroon>a bad mistake</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/grandma.jpg"></center>'
+				'You snoop around, opening drawers, and looking in the closet. The only thing of note is a dark marble container full of grey powder.'
+				act 'Take the powder':
+					*clr & cla
+					minut += 2
+					workertool += 1
+					'<center><b><font color = maroon>a bad mistake</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/grandma.jpg"></center>'
+					'"That powder should do the trick."'
+					act 'Leave':gt 'rolanapt','hallway'
+				end
+			end
+		end
+	end
+end
+
+!!=========================================================================================!!
+!!Rolan is drinking kvass in the kitchen (between 18:00 to 21:00, random 25%)!!
+!!-----------------------------------------------------------------------------------------!!
+if $ARGS[0] = 'kuh_buh':
+	*clr & cla
+	minut += 1
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/rolanapple0.jpg"></center>'
+	'"Hello Miss <<$pcs_lastname>>! Great day, isn''t it?" he shouts cheerfully.'
+	act 'Leave him alone': gt 'rolanapt','kitchen'
+	act 'Chat with Rolan':
+		*clr & cla
+		npc_rel['A133'] +=1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/rolanbazar.jpg"></center>'
+		'Suddenly Rolan becomes serious, getting ready to tell a story. You sit down next to him, wondering what he''s going to want to talk about today.'
+		act 'Listen':  gt 'rolanapt','kuhbaz'
+	end
+end
+
+if $ARGS[0] = 'bend':
+	*clr & cla
+	minut += 1
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/rolanapple1.jpg"></center>'
+	'"Miss <<$pcs_lastname>>, would you be so kind as to help an old man"?'
+	rollrolan = rand(1,4)
+	act 'Leave him alone': gt 'rolanapt','kitchen'
+	act 'Help Rolan':
+		if rollrolan = 1:
+			*clr & cla
+			npc_rel['A133'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/bread'+rand(0,3)+'.jpg"></center>'
+			'"I buy my bread from Pushkin. It is really the best for my kvass beer. What I like to do is..." He suddenly trails off, realizing he doesn''t want to reveal his secret beer recipe to you.'
+			act 'Continue': gt 'rolanapt','kuh_buh'
+		elseif rollrolan = 2:
+			*clr & cla
+			npc_rel['A133'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/guavacoco'+rand(0,3)+'.jpg"></center>'
+			'"Miss <<$pcs_lastname>>, could you bring me a guavacoco? My throath is dry..."'
+			act 'Continue': gt 'rolanapt','kuh_buh'
+		elseif rollrolan = 3:
+			*clr & cla
+			npc_rel['A133'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/kvass'+rand(0,3)+'.jpg"></center>'
+			'"Miss <<$pcs_lastname>>, please take some kvass beer, I''m more than happy to share some with you." You take some kvass beer and go to sit near him. "Lately our courtyard is more crowded than ever..." '
+			act 'Continue': gt 'rolanapt','kuh_buh'
+		else
+			*clr & cla
+			npc_rel['A133'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/oven'+rand(0,3)+'.jpg"></center>'
+			'"Could you check the oven please? I haven''t finished eating." You go to check Rolan''s oven and he starts to speak, "Times are strange, Miss <<$pcs_lastname>>, times are really strange..."'
+			act 'Continue': gt 'rolanapt','kuh_buh'
+		end
+	end
+end
+!!gs 'rolanbath', 'rolansteal'
+
+if $ARGS[0] = 'kuhbaz':
+	minut += 2
+	menu_off = 1
+	gs 'stat'
+	
+	act 'Return to the hallway': gt 'rolanapt','hallway'
+	
+	if rolan_kuhbaz_count = 0:
+		*clr & cla
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolankuhbusy.jpg"></center>'
+		'"Sorry Miss <<$pcs_lastname>>, I have to cook. Maybe we can chat some more later!"'
+		act 'Return to the hallway': gt 'rolanapt','hallway'
+	else
+		*clr & cla
+		gs 'stat'
+		rolan_kuhbaz_day = daystart
+		rolan_kuhbaz_count -= 1
+		sh_rolan_kuhbaz += 1
+		minut += 5
+!!redo
+		rolan_textb_vanna = RAND(1,8)
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitchen.jpg"></center>'
+		if rolan_textb_vanna = 1:$rolan_textb_vanna = 'Rolan tells you that he doesn''t mind if you take a shower here.'
+		if rolan_textb_vanna = 2:$rolan_textb_vanna = 'Rolan tells you that he see often sees some of your classmates buying clothes at G&M Stores, though he doesn''t know how it''s possible for young girls to have so much money.'
+		if rolan_textb_vanna = 3:$rolan_textb_vanna = 'Rolan tells you that he wants to run for mayor and end the discrimination he sees in Pavlovsk.'
+		if rolan_textb_vanna = 4:$rolan_textb_vanna = 'Rolan tells you that the day before Ms. Sokoloff stopped to chat with him as he was coming back from the supermarket.'
+		if rolan_textb_vanna = 5:$rolan_textb_vanna = 'Rolan tells you that he saw two of your classmates arguing outside.'
+		if rolan_textb_vanna = 6:$rolan_textb_vanna = 'Rolan tells you that the courtyard is dangerous at night.'
+		if rolan_textb_vanna = 7:$rolan_textb_kuh = 'Rolan tells you he saw two girls walking in the park, hand in hand, like they were in love. He wonders what is wrong with people these days. Girls need a man after all.'
+		if rolan_textb_vanna = 8:$rolan_textb_kuh = 'Rolan tells you he saw Anushka and Alyona kissing on the playground, in the apartment courtyard. He thinks it is very unbecoming of them, they should be with men.'
+		'<br><<$rolan_imgb_kuh>><br>'
+		'<br><<$rolan_textb_kuh>><br>'
+		'"Sure Miss <<$pcs_lastname>>, tell me!"'
+!!finish redo
+!!		RolanLoc[hour] = 7
+		act 'Chat some more': gt 'rolanapt', 'kuhbaz'
+	end	
+end
+!! rolanpantyQW = 6 from drawer you will exit with rolanpantyfound = 1
+
+if $ARGS[0] = 'drawer':
+	CLOSE ALL
+	cla
+	*clr
+	menu_off = 1
+	minut += 2
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/private'+rand(0,1)+'.jpg"></center>'
+	act 'Stop snooping': gt 'rolanapt','room'
+	if rolanpantyfound ! 1 and rolanpantyQW >= 5:
+		'You wonder if your missing panties are in here.'
+		act 'Open the drawer':
+			cla
+			*clr
+			'<center><b><font color = maroon>Drawer</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection0.jpg"></center>'
+			'You open a drawer. Inside you see four rows of panties labeled <i>Grudzeva</i>, <i>Artamonov</i>, <i>Starov</i>, and <i>Zvereva</i>.'
+			act 'Open the second drawer':
+				cla
+				*clr
+				'<center><b><font color = maroon>Drawer</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection1.jpg"></center>'
+				'You open a second drawer. You see six rows of panties labeled <i>Meynold</i>, <i>Meynold</i>, <i>Berlovskay</i>, <i>Davyatova</i>, <i>Ivanko</i>, and <i>Petrov</i>.'
+				act 'Open the third drawer':
+					cla
+					*clr
+					'<center><b><font color = maroon>Drawer</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection2.jpg"></center>'
+					'In the third drawer, you see five rows of panties labeled <i>Maksimov</i>, <i>Zima</i>, <i>Sebagotulina</i>, <i>Kostantinov</i>, and <i>Tsarev</i>.'
+					act 'Open the fourth drawer':
+						cla
+						*clr
+						'<center><b><font color = maroon>Drawer</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection3.jpg"></center>'
+						'The fourth contains twelve compartments of panties labeled <i>Milov</i>, <i>Alkaev</i>, <i>Braakman</i>, <i>Orlov</i>, <i>Sokoloff</i>, and <i>Belova</i>.'
+						'"Wow! Ms. Sokoloff too?!"'
+						act 'Open the fifth drawer':
+							cla
+							*clr
+							'<center><b><font color = maroon>Drawer</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection4.jpg"></center>'
+							'Drawer #5, includes three rows of panties labeled <i>Sokolov</i>, <i>Pavlov</i>, and <i>Kotov</i>.'
+							act 'Open the last drawer':
+								cla
+								*clr
+								rolanpantyfound = 1
+								'<center><b><font color = maroon>Drawer</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection5.jpg"></center>'
+								'Finally, the last drawer. You see two separate rows of panties labeled <i>Aleksandrov</i> and <i>Volkov</i>. How did he get the nurse''s panties? <b><i>And Principal Volkov?!</i></b> Unbelievable!'
+								'it seems that no one is safe from Rolan!'
+								act 'Close the drawers': gt 'rolanapt','room'
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolanpantyfound = 1 and rolanpantyQW >= 5:
+		'"Hmm, I wonder if Rolan has added to his collection since I last looked?"'
+		act 'Continue':
+			cla
+			*clr
+			'<center><b><font color = maroon>Drawer</font></b></center>'
+			rolan_pantext_baz = RAND(0,5)
+			if rolan_pantext_baz = 0:$rolan_pantext_baz = '<i>Grudzeva</i>, <i>Artamonov</i>, <i>Starov</i>, and <i>Zvereva</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection0.jpg"></center>'
+			if rolan_pantext_baz = 1:$rolan_pantext_baz = '<i>Meynold sisters</i>, <i>Berlovskay</i>, <i>Davyatova</i>, <i>Ivanko</i>, and <i>Petrov</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection1.jpg"></center>'
+			if rolan_pantext_baz = 2:$rolan_pantext_baz = '<i>Maksimov</i>, <i>Zima</i>, <i>Sebagotulina</i>, <i>Kostantinov</i>, and <i>Tsarev</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection2.jpg"></center>'
+			if rolan_pantext_baz = 3:$rolan_pantext_baz = '<i>Milov</i>, <i>Alkaev</i>, <i>Braakman</i>, <i>Orlov</i>, <i>Sokoloff</i>, and <i>Belova</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection3.jpg"></center>'
+			if rolan_pantext_baz = 4:$rolan_pantext_baz = '<i>Sokolov</i>, <i>Pavlov</i>, and <i>Kotov</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection4.jpg"></center>'
+			if rolan_pantext_baz = 5:$rolan_pantext_baz = '<i>Aleksandrov</i> and <i>Volkov</i>' & $rolan_pantpic_baz = '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/collection5.jpg"></center>'
+			'<br><<$rolan_pantpic_baz>><br>'
+			'<br><<$rolan_pantext_baz>><br>'
+			act 'Stop snooping': gt 'rolanapt','room'
+		end
+	end
+end
+
+if $ARGS[0] = 'mypanty':
+	if pcs_inhib > 35 and pcs_intel > 35 and rolanpantyconfession ! 1:
+		cla
+		*clr
+		minut += 1
+		npc_rel['A133']-= 30
+		menu_off = 1
+		gs 'stat'
+		'<center><b><font color = maroon>Guilty</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/headrol.jpg"></center>'
+		'You decide to confront Rolan with your discovery. "So the rumors at school are true. You really are a panty thief...."'
+		*nl
+		'Rolan''s eyes drop to the floor. "Miss <<$pcs_lastname>>, I don''t know what you''re talking about..."'
+		*nl
+		'"Oh is that so? Hmm, let''s play a game..." Rolan suddenly looks up at you.'
+		act 'Take off your panties':
+			cla
+			*clr
+			minut += 1
+			gs 'stat'
+			'<center><b><font color = maroon>Guilty</font></b></center>'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant.mp4"></center>'
+			'"Miss <<$pcs_lastname>>... what are you doing?"'
+			act 'Explain the rules':
+				cla
+				*clr
+				'<center><b><font color = maroon>I want my panties back</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant0.jpg"></center>'
+				'"You see, sometimes, girls need to feel free..."'
+				act 'Continue':
+					cla
+					*clr
+					'<center><b><font color = maroon>I want my panties back</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant1.jpg"></center>'
+					'"....and since you have no interest in stealing someone else''s panties... well the rules are very simple..."'
+					act 'Continue':
+						cla
+						*clr
+						rolanpantyconfession = 1
+						'<center><b><font color = maroon>I want my panties back</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant3.jpg"></center>'
+						'Suddenly, Rolan rushes over to you and snatches the panties from the floor. "What? Hey, how did he.... It seems I don''t need to continue with the rules..."'
+						*nl
+						'"Rolan?"'
+						*nl
+						'"Miss <<$pcs_lastname>>..."'
+						*nl
+						'"ROLAN?"'
+						*nl
+						'"I''m sorry..."'
+						act 'Be nice to him':
+							cla
+							*clr
+							npc_rel['A133']+= 20
+							rolancooklesson = 0
+							rolangift = 1
+							gs 'panties', 'dispose'
+							'<center><b><font color = maroon>Gift</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant2.jpg"></center>'
+							'"It''s okay, Rolan."'
+							*nl
+							'"Miss <<$pcs_lastname>>..."'
+							*nl
+							'"I''m serious, Rolan. It''s okay. I don''t want to push you so I won''t ask. It''s just... why did you lie to me? I thought we were friends."'
+							'Rolan starts to speak in a feeble voice, "It''s stronger than me! I mean I don''t own panties... they own me!" You see he is on the verge of tears.'
+							*nl
+							'You speak up before he can break, "Rolan, I said I won''t ask. I don''t know if you want some help from me or what type of help I can give, but if I can do something I will."'
+							*nl
+							'Rolan extends his hand to you, attempting to give your panties back to you, but you raise your hand. "You know what? You can have them... We are friends and friends usually exchange gifts. So consider this is a gift from your friend <<$pcs_nickname>>."'
+							*nl
+							'"Miss <<$pcs_lastname>>..."'
+							act 'Leave': gt 'rolanapt','room'
+						end
+						act 'Be rude to him':
+							cla
+							*clr
+							npc_rel['A133']+= 20
+							rolancooklesson = 0
+							'<center><b><font color = maroon>My panty</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/drawer/pant4.jpg"></center>'
+							'You raise your voice, "What are you, a fucking perv?"'
+							*nl
+							'Rolan''s eyes drop back to the floor. "Miss <<$pcs_lastname>>, ...I''m sorry!"'
+							*nl
+							'"I''m really disappointed in you, Rolan, and too angry to speak. I''m going to correct your bad behaviour, no matter what. I don''t want to see your face today, I''m so mad at you! We''ll discuss this another time."'
+							*nl
+							'You are very angry and decide to leave for now.'
+							act 'Slam the door': gt 'rolanapt','hallway'
+						end
+					end
+				end
+			end
+		end
+	else
+		cla
+		*clr
+		minut += 1
+		npc_rel['A133']-= 30
+		gs 'stat'
+		'<center><b><font color = maroon>Guilty?</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/headrol.jpg"></center>'
+		'"So it''s true. The rumors at school? You really are a panty thief!"'
+		*nl
+		'Rolan eyes you suspiciously, "Miss <<$pcs_lastname>>, I have no idea what you''re talking about."'
+!! LURK MORRISON Suggest here that the player will need to be more daring before confronting Rolan?
+!! 'If you''re going to confront Rolan with his thievery, <b>you''ll need to be more daring</b>. Perhaps if you tempted him while wearing panties?'
+		act 'Move away from Rolan': gt 'rolanapt','hallway'
+	end
+end
+!RolanLoc = 0 (Rolan not home school)
+!RolanLoc = 1 (Rolan not home church)
+!RolanLoc = 9 (Rolan not home park)
+!RolanLoc = 10 (Rolan not home coutyard)
+!RolanLoc = 2 (Rolan in the hallway)
+!RolanLoc = 3 (Rolan in his room)
+!RolanLoc = 4 (Rolan in the kitchen)
+!RolanLoc = 5 (Rolan in the livingroom)
+!RolanLoc = 6 (Rolan in grandma''s room)
+!RolanLoc = 7 (Rolan in the bathroom)
+!RolanLoc = 8:(Rolan in the guestroom)
+
+if $ARGS[0] = 'chef':
+	if rolancooklesson = 1:
+		*clr & cla
+		minut += 60
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		gs 'stat'
+		'<center><h4><font color="maroon">Introduction course</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro0.jpg"></center>'
+		'"O-okay, Miss <<$pcs_lastname>>, please don''t get mad."'
+		*nl
+		'"Oh , I''m not getting mad. When I get mad, you''ll know it. So now let''s get started."'
+		act 'Continue':
+		    *clr & cla
+			'<center><b><font color = maroon>Introduction course</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro1.jpg"></center>'
+			'"First of all, we have to clean the kitchen. A good cook takes care of his kitchen and never leaves the dishes dirty. We''ll start by washing them."'
+			act 'Continue':
+				*clr & cla
+				'<center><b><font color = maroon>Introduction course</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro2.jpg"></center>'
+				'"Once the dishes are washed, you have to dry them. This can be tedious but I assure you, there is a benefit to drying them."'
+				act 'Continue':
+					*clr & cla
+					'<center><b><font color = maroon>Introduction course</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro3.jpg"></center>'
+					'"When you leave your dishes wet, you will raise the humidity in the kitchen and mold can grow. This leaves a moldy smell that can affect your food. See, we just started and you have already learned something!"'
+					*nl
+					'Rolan simply nods his head.'
+					act 'Continue':
+						*clr & cla
+						'<center><b><font color = maroon>Introduction course</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro4.jpg"></center>'
+						'"You''re a good listener, Rolan. I didn''t expect you to be interested in cleaning considering the state of your kitchen, but I have to reconsider my plans. Do you want to ask me something? I''m more than happy to explain"'
+						*nl
+						'Rolan''s eyes have wandered down to your chest. "M-miss <<$pcs_lastname>>, y-your... br-br-bre-brea..."'
+						act 'Continue':
+							*clr & cla
+							'<center><b><font color = maroon>Introduction course</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro5.jpg"></center>'
+							'You look down at yourself and notice your predicament. "Oh? Thank you, Rolan. You''re quite the gentleman. Not every man would warn a girl in this condition."'
+							act 'Continue':
+								*clr & cla
+								'<center><b><font color = maroon>Introduction course</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro6.jpg"></center>'
+								'You pull your shirt back up, "But we don''t want a distraction, or we''ll never be able to finish!"'
+								*nl
+								'"Yes, Miss <<$pcs_lastname>>," mumbles, disappointedly.'
+								act 'Continue':
+									*clr & cla
+									'<center><b><font color = maroon>Introduction course</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro7.jpg"></center>'
+									'"Good, we''ve finished drying the dishes, and the kitchen seems clean enough. Our next step is to organize our kitchen. You need to have easy access to your cooking tools. You can''t leave something on the stove while you search for your utensils; you''ll burn the food!"'
+									act 'Continue':
+										*clr & cla
+										'<center><b><font color = maroon>Introduction course</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro8.jpg"></center>'
+										'"Spatula..."'
+										act 'Continue':
+											*clr & cla
+											'<center><b><font color = maroon>Introduction course</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro9.jpg"></center>'
+											'You look around through various cabinets, "Your pans. Where do you keep your pans?"'
+											*nl
+											'An unsure look crosses Rolan''s face, "Eeemh, I think they are in the oven..."'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Introduction course</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro10.jpg"></center>'
+												'You look at him, slightly bewildered, "The oven? Why would you keep them there? They''re the most useful tool in any kitchen!"'
+												*nl
+												'"Well, I use them for frying about once a month or so. And I didn''t want to throw out the leftover oil..."'
+												*nl
+												'"Rolan!" you exclaim. "You can''t keep using the same oil over and over! It''s not healthy! And it will stink up your kitchen."'
+												*nl
+												'"Oh, alright, Miss <<$pcs_lastname>>."'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Introduction course</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro11.jpg"></center>'
+													'"The pot will be useful for soup cooking, as I''m sure you''re well aware of..."'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Introduction course</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro12.jpg"></center>'
+														'"And lastly, an apron! Every good chef has one. It can be useful to hold your utensils like our spatula, whisks, spoons, nail files..."'
+														*nl
+														'"Nail fails?" Rolan asks.'
+														*nl
+														'"Yes, Rolan. You can trim your nails while waiting for something to finish on the stove or in the oven. But, you''re a man, so you probably just bite your nails. Well, an apron has plenty of pockets so you can just put your hands in them too," you say with a laugh. "Of course, the main function of an apron is to keep your clothes clean."'
+														act 'Continue':
+															*clr & cla
+															'<center><b><font color = maroon>Introduction course</font></b></center>'
+															'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro13.jpg"></center>'
+															'"Like, for example, when you''re using flour," you begin lightly dusting some flour on the counter.'
+															act 'Continue':
+																*clr & cla
+																'<center><b><font color = maroon>Introduction course</font></b></center>'
+																'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro14.jpg"></center>'
+																'"It has a nasty habit of getting everywhere," you giggle.'
+																act 'Continue':
+																	*clr & cla
+																	'<center><b><font color = maroon>Introduction course</font></b></center>'
+																	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro15.jpg"></center>'
+																	'"Knives are important, too. A dull blade increases the chance that you could cut yourself when slicing food."'
+																	act 'Continue':
+																		*clr & cla
+																		'<center><b><font color = maroon>Introduction course</font></b></center>'
+																		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro16.jpg"></center>'
+																		'"I think that''s enough for today. Do you have any questions about what we''ve discussed, Rolan?"'
+																		*nl
+																		'"No, no, Miss <<$pcs_lastname>>, I think I got it," Rolan says to you with a warm smile.'
+																		*nl
+																		'"Okay, then. In that case, I will give you a shopping list for our next lesson."'
+																		act 'Continue':
+																			*clr & cla
+																			'<center><b><font color = maroon>Introduction course</font></b></center>'
+																			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/intro/intro17.jpg"></center>'
+																			'"Hmm, I think we should make a borscht. Yes, that''s it! Let''s see," you begin to make a list of ingredients. "Of course, we''ll need vegetable broth, beets, carrots, onions, tomatoes, cabbage, some salt, lemon juice, pepper and sour cream. Yes, I think that''s everything. Okay Rolan get those ingredients soon."'
+																			*nl
+																			'"Alright Miss <<$pcs_lastname>>, I''ll try."'
+																			*nl
+																			'"Good, I''ll make you a better cook in no time! You''ll see!"'
+																			act 'Leave the room': gt 'rolanapt','hallway'
+																		end
+																	end
+																end
+															end
+														end
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolancooklesson = 2:
+		*clr & cla
+		minut += 60
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		gs 'stat'
+		'<center><h4><font color="maroon">Borscht</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/fridge0.jpg"></center>'
+		'"Okay, you bought everything right?" You check the fridge. "Rolan, where''s the broth? It was the first thing on the list. How could you forget?"'
+		*nl
+		'Rolan is fidgeting around, "It''s just, there was so much to get. I got everything else, though. Maybe we should wait to do this? How about next week?"'
+		*nl
+		'You sigh to yourself, "Rolan."'
+		act 'Continue':
+		    *clr & cla
+			'<center><b><font color = maroon>Borscht</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht0.jpg"></center>'
+			*nl
+			'"Look, I know you don''t want to do this, but you need to learn to cook! It''s really not so difficult, and I''m here to help you! Luckily, I brought some broth with me."'
+			*nl
+			'You pour the broth into a pot and place it on the stove. Rolan sighs to himself, "Dammit."'
+			act 'Continue':
+				*clr & cla
+				'<center><b><font color = maroon>Borscht</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht1.jpg"></center>'
+				'You poke your tongue out at Rolan, "At least you got all the vegetables. From the looks of things, I''d guess you''ve never had this many vegetables in your kitchen all at once."'
+				*nl
+				'"That is because I''m a man, not a rabbit!" You try to stiffle your laughter. It doesn''t work, but even Rolan can''t help but smile at his words.'
+				act 'Continue':
+					*clr & cla
+					'<center><b><font color = maroon>Borscht</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht2.jpg"></center>'
+					'"Now, we need to peel our vegetables."'
+					*nl
+					'"What? Peel them, that''s new," Rolan looks a bit puzzled.'
+					act 'Continue':
+						*clr & cla
+						'<center><b><font color = maroon>Borscht</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht3.jpg"></center>'
+						'Once the peeling is done, you hand a knife to Rolan, "You have to cut them into little pieces. There''s no rush, our broth still isn''t ready."'
+						*nl
+						'"This sure is a lot of work for just borscht," Rolan complains.'
+						act 'Continue':
+							*clr & cla
+							'<center><b><font color = maroon>Borscht</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht4.jpg"></center>'
+							if npc_rel['A11'] > 40:
+								'Your phone buzzes. "Oh, it''s Vasily. He wants to know what I''m doing right now."'
+							else
+								'Your phone buzzes. It''s your mother wondering where you are...'
+							end
+							act 'Continue':
+								*clr & cla
+								'<center><b><font color = maroon>Borscht</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht5.jpg"></center>'
+								if npc_rel['A11'] > 40:
+									'You snap a photo of yourself and text: "hey loser im cooking lol"'
+								else
+									'You snap a photo of yourself and text: "I''m at a friend''s house helping them cook. Be home soon."'
+								end
+								act 'Continue':
+									*clr & cla
+									'<center><b><font color = maroon>Borscht</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht6.jpg"></center>'
+									'You finish sending your text just as Rolan has finished cutting up the last of the vegetables.'
+									act 'Continue':
+										*clr & cla
+										'<center><b><font color = maroon>Borscht</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht7.jpg"></center>'
+										'You check on the broth, "It''s nearly ready, we can add the vegetables now."'
+										act 'Continue':
+											*clr & cla
+											'<center><b><font color = maroon>Borscht</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht8.jpg"></center>'
+											'You grab a bowl to put the vegetables in,'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Borscht</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht9.jpg"></center>'
+												'You give the prepared broth a quick stir before you start adding the vegetables.'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Borscht</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht10.jpg"></center>'
+													'"Okay, mix the vegetables in the broth and let it cook 20 minutes. Oh, don''t forget to cover the pot! Hmm, where did I put the apron? Rolan? I don''t want to dirty my clothes..."'
+													*nl
+													'You notice Rolan staring at your chest. Is he even paying attention?'
+													*nl
+													'"Rolan? Earth to Rolan?" He looks up at you. You sigh to yourself before spotting the apron. "Nevermind, I found it."'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Borscht</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht11.jpg"></center>'
+														'You spend the next few minutes in silence. You notice Rolan occasionally sneaking glances at your chest again. Finally you speak up, "Okay, now we can add the cabbage and some butter, then cook for another 20 minutes. We can leave the top off this time."'
+														*nl
+														'"Hmm, take your top off, yes, yes. That''s good." What is Rolan even talking about?'
+														act 'Continue':
+															*clr & cla
+															'<center><b><font color = maroon>Borscht</font></b></center>'
+															'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht12.jpg"></center>'
+															'Another awkwardly silent 20 minutes goes by. "Time to test taste." You grab a ladle, and take a careful sip, "Okay, not bad, not bad. Let''s stir in some lemon juice, but not too much."'
+															act 'Continue':
+																*clr & cla
+																'<center><b><font color = maroon>Borscht</font></b></center>'
+																'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht13.jpg"></center>'
+																'"We''re almost done... is everything clear, Rolan?"'
+																*nl
+																'"Uhh, yeah, yeah, I think so..." He doesn''t sound very convincing.'
+																'He''s not still hung up on all the vegetables you used, is he?'
+																*nl
+																'"Now, we just have to let it sit for an hour or so. You can reheat it or just leave it at room temperature. Add some sour cream and..."'
+																act 'Continue':
+																	*clr & cla
+																	'<center><b><font color = maroon>Borscht</font></b></center>'
+																	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/borsh/borscht.jpg"></center>'
+																	'"Voila! Here is our borscht... it''s actually better to eat the next day!"'
+																	act 'Continue':
+																		*clr & cla
+																		'<center><b><font color = maroon>Dishes</font></b></center>'
+																		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes4.jpg"></center>'
+																		'As Rolan is eating, you tell him, "Don''t forget to clean the dishes when you''re done, so next time they are ready to be used. Here''s a list of ingredients you''ll need for our next lesson. I''ll see you later!"'
+																		act 'Leave the room': gt 'rolanapt','hallway'
+																	end
+																end
+															end
+														end
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolancooklesson = 3:
+		cla
+		*clr
+		minut += 60
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		gs 'stat'
+		'<center><h4><font color="maroon">Olivier Salad</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/fridge2.jpg"></center>'
+		'"Today, we''re going to make an Olivier salad, even though it''s not New Years. I think you should already have everything," you begin to grab the ingredients from around the kitchen. "Hmm, a can of sweet peas, a medium sized potato, carrots, eggs, a cucumber, oh! Can''t forget the olive oil. Yup, that''s everything!"'
+		act 'Continue':
+		    *clr & cla
+			'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver0.jpg"></center>'
+			'"First, we need to boil some water."'
+			act 'Continue':
+				*clr & cla
+				'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver1.jpg"></center>'
+				'"Then, while that''s going, we''ll prepare our vegetables." You move over to the sink and start rinsing the vegetables. "I know you find this part quite a-peeling," you jest.'
+				*nl
+				'You can''t see him, but you can sense Rolan''s eyes rolling at your lame pun.'
+				act 'Continue':
+					*clr & cla
+					'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver2.jpg"></center>'
+					'"We can add these straight to the water, we''ll dice them up later so it''ll be a bit easier this time. That''ll need about 20 minutes, so Rolan?"'
+					*nl
+					'"Yes, Miss <<$pcs_lastname>>?"'
+					*nl
+					'"Go ahead and crack some eggs into that bowl, we''ll get started on the mayonnaise."'
+					*nl
+					'"Sure, just give me a moment." Rolan leaves the kitchen but returns almost immediately.'
+					act 'Continue':
+						*clr & cla
+						'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver3.jpg"></center>'
+						'You hear a strange noise.'
+						*nl
+						'You turn to look at Rolan, "What are you doing?"'
+						act 'Continue':
+							*clr & cla
+							'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver4.jpg"></center>'
+							'"You wanted me to crack the eggs, no?"'
+							*nl
+							'"That''s not... What did you... Rolan?"'
+							*nl
+							'"Perhaps a hammer would work better?"'
+							act 'Continue':
+								*clr & cla
+								'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver5.jpg"></center>'
+								'You can''t help but laugh at the situation. "Okay, here, let me show you have to crack an egg."'
+								*nl
+								'You grab the eggs from Rolan and move over to a mixing bowl.'
+								act 'Continue':
+									*clr & cla
+									'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver6.jpg"></center>'
+									'"Now we''ll use our mixer here to make the mayonnaise. The secret is to pour the oil in really slowly..."'
+									act 'Continue':
+										*clr & cla
+										'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver7.jpg"></center>'
+										'A few moments later, the mayonnaise is ready. You lick a little excess mayo from your fingers, "Mmm, that''s good..."'
+										act 'Continue':
+											*clr & cla
+											'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver8.jpg"></center>'
+											'"Alright, mayo''s done, and the vegetables should be boiled by now. Get them out of the water, but be careful, they''re very hot! I need to change my clothes."'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver9.jpg"></center>'
+												'You return to the kitchen a few minutes later. You''ve removed your clothes and replaced them with only an apron, "Here, what do you think?"'
+												*nl
+												'Rolan looks you over, "Uh, um, you, uh, look go-great as always, Miss <<$pcs_lastname>>!"'
+												*nl
+												'"Thanks, Rolan!" You wink at him, "You know girls love compliments almost as much as man who cooks!"'
+												*nl
+												'He looks a bit flustered, "Uhh, sure, Miss <<$pcs_lastname>>... whatever you say."'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver10.jpg"></center>'
+													'You begin dicing the potatoes and carrots into pieces with Rolan''s help.'
+													*nl
+													'"You see, they were a lot easier to dice this way. Now we''ll add them back to the pot and pour in the mayonnaise."'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver11.jpg"></center>'
+														'"We spray a little cold water to keep the vegetables from cooking our mayonnaise. That''s kinda important, so at least remember this part, Rolan!"'
+														act 'Continue':
+															*clr & cla
+															'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+															'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver12.jpg"></center>'
+															'You accidentally spray yourself with water. "...Well, it''s a good thing I remembered the apron!"'
+															act 'Continue':
+																*clr & cla
+																'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver13.jpg"></center>'
+																'"I''m absolutely drenched!"'
+																*nl
+																'Rolan says nothing.'
+																act 'Continue':
+																	*clr & cla
+																	'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver14.jpg"></center>'
+																	'"Need to drain the water from our salad." You prop a foot up on the counter, giving Rolan quite the view, "And I guess i need to air out as well!"'
+																	*nl
+																	'Rolan is trying his best not to stare. You think you hear him mutter, "Don''t look, don''t look, don''t look..."'
+																	act 'Continue':
+																		*clr & cla
+																		'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver15.jpg"></center>'
+																		'"Rolan, you don''t mind if I leave my leg up like this, do you?"'
+																		*nl
+																		'He takes a long breath, "N-no, Miss <<$pcs_lastname>>. I-I don''t mind at all..."'
+																		*nl
+																		'"Thank you. I need to let my panties dry out. I don''t want to catch a cold and miss our days together."'
+																		act 'Continue':
+																			*clr & cla
+																			'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver16.jpg"></center>'
+																			'"Now, where were we? Oh yes, now that the vegetables are cooled off, we can mix in the mayonnaise."'
+																			act 'Continue':
+																				*clr & cla
+																				'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver17.jpg"></center>'
+																				'"Oh! I nearly forgot!"'
+																				act 'Continue':
+																					*clr & cla
+																					'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver18.jpg"></center>'
+																					'You bend over and start searching through some cabinets, "Where did we leave the salt and pepper?"'
+																					*nl
+																					'Rolan has a clear view of your wet panties. His eyes are fixated on them.'
+																					act 'Continue':
+																						*clr & cla
+																						'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver19.jpg"></center>'
+																						'"You don''t want to add too much, otherwise it''ll take away from the flavor and remove all our hard work."'
+																						*nl
+																						'Rolan nods mindlessly along, "...remove the panties, yes, very hard."'
+																						act 'Continue':
+																							*clr & cla
+																							'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver20.jpg"></center>'
+																							'You giggle at Rolan''s obvious staring. He is so easy. "There, that''s one more meal you can now make Like our borscht, this can be eaten now or you can wait another day and really let the flavors mix together!"'
+																							act 'Continue':
+																								*clr & cla
+																								'<center><b><font color = maroon>Olivier Salad</font></b></center>'
+																								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/russalad/oliver.jpg"></center>'
+																								'"You need to remember to store this in your refrigerator. Make sure to cover the top with cellophane to keep it fresh, it should last up to about 3 days."'
+																								*nl
+																								'"Wrap the panties and refrigerate, yes."'
+																								act 'Continue':
+																									*clr & cla
+																									'<center><b><font color = maroon>Dishes</font></b></center>'
+																									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes0.jpg"></center>'
+																									'"Here''s your next list of ingredients, and don''t forget the dishes!" You blow him a kiss as you walk out.'
+																									act 'Leave the room': gt 'rolanapt','hallway'
+																								end
+																							end
+																						end
+																					end
+																				end
+																			end
+																		end
+																	end
+																end
+															end
+														end
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolancooklesson = 4:
+		cla
+		*clr
+		minut += 60
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		gs 'stat'
+		'<center><h4><font color="maroon">Blini</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/fridge4.jpg"></center>'
+		'"I think today, I''ll show you one of my favorite breakfast foods: blini! It''s quite simple, and you should already have the basic ingredients." You poke through the kitchen, "Eggs, milk, flour, sugar, salt, oil..."'
+		*nl
+		'Rolan speaks up, "Miss <<$pcs_lastname>>, can we postpone this for now? I''m a bit tired today..."'
+		*nl
+		'"That''s perfect. They are supposed to be eaten when you wake up. And think, what girl wouldn''t love to wake up to blinis made by a wonderful man, after a passionate night of lovemaking?"'
+		*nl
+		'Rolan seems to be at a loss for words.'
+		act 'Continue':
+		    *clr & cla
+			'<center><b><font color = maroon>Blini</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini0.jpg"></center>'
+			'"First, we''ll take our eggs and flour and get to work on the batter."'
+			act 'Continue':
+				*clr & cla
+				'<center><b><font color = maroon>Blini</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini1.jpg"></center>'
+				'"And while we''re doing that, we''ll let our pan get heated up."'
+				act 'Continue':
+					*clr & cla
+					'<center><b><font color = maroon>Blini</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini2.jpg"></center>'
+					'You crack the eggs into a bowl, "Now, we whisk our eggs."'
+					act 'Continue':
+						*clr & cla
+						'<center><b><font color = maroon>Blini</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini3.jpg"></center>'
+						'You continue, "...and we add the flour and milk..."'
+						*nl
+						'Rolan interrupts you, "Wouldn''t using the mixer be easier and faster?"'
+						*nl
+						'You shake your head, "No, we need to hand mix our batter."'
+						*nl
+						'"But why?" Rolan asks.'
+						act 'Continue':
+							*clr & cla
+							'<center><b><font color = maroon>Blini</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini4.jpg"></center>'
+							'"The batter needs to be smooth and creamy. If you''re mixing by hand, it''s much easier to tell. If you use the mixer, you might overdo it and the batter would be lumpy. Lumpy batter makes bad blini."'
+							act 'Continue':
+								*clr & cla
+								'<center><b><font color = maroon>Blini</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini5.jpg"></center>'
+								'You finish mixing the batter and check the pan, "Hand mixing also helps pass the time, and now our pan is heated and ready."'
+								act 'Continue':
+									*clr & cla
+									'<center><b><font color = maroon>Blini</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini6.jpg"></center>'
+									'"These shouldn''t take too long, just a minute or two for each side."'
+									*nl
+									'You continue, "The best part of blini, I think, is the flipping."'
+									act 'Flip':
+										if pcs_agil >= 40 and pcs_agil < 60:
+											*clr & cla
+											'<center><b><font color = maroon>Now do a barrel roll.</font></b></center>'
+											'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/flipag40.mp4"></center>'
+											'"Miss <<$pcs_lastname>>! Wow! I didn''t expect that!"'
+											*nl
+											'You wink at him, "Pretty soon, you''ll be able to do this as well. All the girls will be flocking here for breakfast!"'
+										elseif	pcs_agil >= 60:
+											*clr & cla
+											'<center><b><font color = maroon>You rolled a 20!</font></b></center>'
+											'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/flipag60.mp4"></center>'
+											'During your trick, Rolan was given quite the view of your legs, especially your panties.'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Blini</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini8.jpg"></center>'
+												'You stare at Rolan in amusement, "What? Cat got your tongue?"'
+												*nl
+												'Rolan stammers, "M-miss <<$pcs_lastname>>... I-I... wow..."'
+												*nl
+												'You laugh, "Oh, I guess you''ll be taking our lessons a little more seriously now?"'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Blini</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini.jpg"></center>'
+													'You hand Rolan a prepared plate, "Here are the blinis. You can serve them with cream and jam. Enjoy, sleepyhead!"'
+													*nl
+													'Rolan eyes his plate, "Miss <<$pcs_lastname>>, they look delicious!"'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Blini</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes3.jpg"></center>'
+														'"Rolan, please remember to clean up the kitchen after you finish eating!"'
+														*nl
+														'Mouth stuffed, he responds. "I''ll try miss <<$pcs_lastname>>..."'
+														*nl
+														'You don''t hear too much conviction in Rolan''s words while he eats his blini. You doubt he''ll even put his plate away...'
+														act 'Leave the room': gt 'rolanapt','hallway'
+													end
+												end
+											end
+										else
+											*clr & cla
+											'<center><b><font color = maroon>You rolled a 1.</font></b></center>'
+											'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/flipag30.mp4"></center>'
+											'Embarrassed, you exclaim, "Oops! That wasn''t supposed to happen!"'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Blini</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini7.jpg"></center>'
+												'Rolan asks in a mocking tone, "Miss <<$pcs_lastname>>... are you sure you''ve done this before?"'
+												*nl
+												'You try to save face, "Yes, yes, yes! I just, uh, wanted to show <b>YOU</b> what <b>NOT</b> to do. Haha, yeah, that''s right!"'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Blini</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini.jpg"></center>'
+													'A few minutes later, you''ve prepared another blini. You didn''t bother to show off this time. "Here are our pancakes. You can serve them with cream and jam. Here try these sleepy head."'
+													*nl
+													'Rolan eyes his plate, "Miss <<$pcs_lastname>>, they look delicious!"'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Blini</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes3.jpg"></center>'
+														'"Rolan, please remember to clean up the kitchen after you finish eating!"'
+														*nl
+														'Mouth stuffed, he responds. "I''ll try miss <<$pcs_lastname>>..."'
+														*nl
+														'You don''t hear too much conviction in Rolan''s words while he eats his blini. You doubt he''ll even put his plate away...'
+														act 'Leave the room': gt 'rolanapt','hallway'
+													end
+												end
+											end
+										end
+										act 'Continue':
+											*clr & cla
+											'<center><b><font color = maroon>Blini</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blini/blini.jpg"></center>'
+											'You hand Rolan a prepared plate, "Here are the blinis. You can serve them with cream and jam. Enjoy, sleepyhead!"'
+											*nl
+											'Rolan eyes his plate, "Miss <<$pcs_lastname>>, they look delicious!"'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Blini</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes3.jpg"></center>'
+												'"Rolan, please remember to clean up the kitchen after you finish eating!"'
+												*nl
+												'Mouth stuffed, he responds. "I''ll try miss <<$pcs_lastname>>..."'
+												*nl
+												'You don''t hear too much conviction in Rolan''s words while he eats his blini. You doubt he''ll even put his plate away...'
+												act 'Leave the room': gt 'rolanapt','hallway'
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolancooklesson = 5:
+		*clr & cla
+		minut += 10
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		gs 'stat'
+		'<center><h4><font color="maroon">Black Bread</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/fridge3.jpg"></center>'
+		'You begin rummaging through the kitchen, "Hmm, cider vinegar, bread flour, rye flour, dark corn syrup, brown sugar, unsweetened cocoa powder, instant coffee granules, active dry yeast, butter, water. Perfect!" You turn to face Rolan, "Today, I''m going to show you how to bake some black bread."'
+		act 'Continue':
+		   *clr & cla
+			minut += 10
+			gs 'stat'
+			'<center><b><font color = maroon>Black Bread</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb0.jpg"></center>'
+			'"We''re going to let the butter warm up to room temperature. Meanwhile, we''re going to go ahead and start mixing together our other ingredients."'
+			*nl
+			'"Got it." Is Rolan actually paying attention?'
+			*nl
+			'You continue, "The recipe doesn''t mention it, but we''re also going to add a little milk."'
+			act 'Continue':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><b><font color = maroon>Black Bread</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb1.jpg"></center>'
+				'"But shouldn''t we follow the recipe?" Wow, he <i>is</i> focusing today.'
+				*nl
+				'You grin at him, "Usually, yes, you should. But an important part of cooking for yourself is experimenting."'
+				*nl
+				'"But that''s not the only reason?"'
+				*nl
+				'"No, it''s not." Your grin grows wider, "I happen to really like milk!"'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><b><font color = maroon>Black Bread</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb2.jpg"></center>'
+					'"The butter should be soft enough to add to our mixture now..."'
+					*nl
+					'"Are we mixing with our hands, like last time?"'
+					*nl
+					'You nod, "Yup, just like our blini batter, we need to ensure the quality of our bread dough. For a beginner, it''s better to have that hands-on approach."'
+					*nl
+					'He nods along, "Of course, Miss <<$pcs_lastname>>."'
+					act 'Continue':
+						*clr & cla
+						minut += 10
+						gs 'stat'
+						'<center><b><font color = maroon>Black Bread</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb3.jpg"></center>'
+						'"Hmm," a naughty smile crosses your face. "We need to get messy with the flour."'
+						*nl
+						'Rolan takes a deep breath, but says nothing.'
+						*nl
+						'"Looks like I''ll need to change!"'
+						*nl
+						'As you leave the room to ''change'' you swear you hear Rolan mutter, "...she is going to be the death of me, I just know it..."'
+						act 'Continue':
+							*clr & cla
+							minut += 10
+							gs 'stat'
+							'<center><b><font color = maroon>Black Bread</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb4.jpg"></center>'
+							'You re-enter the room a few minutes later, your clothes replaced with only the apron. "There, now we can <i>really</i> get to work."'
+							act 'Continue':
+								*clr & cla
+								minut += 10
+								gs 'stat'
+								'<center><b><font color = maroon>Black Bread</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb5.jpg"></center>'
+								'"Sometimes the dough will stick, you just need to add a bit more flour. Then, you have to kneed it hard for about ten minutes," you almost grunt as you really put yourself into it.'
+								*nl
+								'Rolan is trying his damnedest to pay attention to your instructions."Uh-huh..."'
+								act 'Continue':
+									*clr & cla
+									minut += 60
+									gs 'stat'
+									'<center><b><font color = maroon>Black Bread</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb6.jpg"></center>'
+									'You place the dough into a bowl and cover it, "It will take about an hour to rise before the next step. So now, we wait."'
+									*nl
+									'You and Rolan spend the next hour making small talk. He can''t help but occasionally stare at your exposed panties.'
+									act 'Continue':
+										*clr & cla
+										minut += 10
+										gs 'stat'
+										'<center><b><font color = maroon>Black Bread</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb7.jpg"></center>'
+										'You remove the dough from the bowl and kneed it again, before setting it on a greased pan and covering it. "Just another hour now and we''ll be ready to finally bake our bread." You look yourself over, "Oh, look what a mess I''ve made of myself!" You pat your backside and pull lightly on your panties.'
+										*nl
+										'You try conversing with Rolan again, but by this point the poor man is almost mute. You note the time and tell him to preheat the oven.'
+										act 'Continue':
+											*clr & cla
+											minut += 10
+											gs 'stat'
+											'<center><b><font color = maroon>Black Bread</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb8.jpg"></center>'
+											'You continue speaking to the kitchen itself, Rolan occasionally nodding along at inopportune times, when the oven beeps. You place the pan into the oven and set the timer. "Alright, Rolan, while our bread is baking. I''m going to go clean myself off and when I come back, our loaf should be ready!"'
+											*nl
+											'You can feel his eyes trailing you as you exit the room.'
+											act 'Continue':
+												*clr & cla
+												minut += 30
+												gs 'stat'
+												'<center><b><font color = maroon>Black Bread</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackb9.jpg"></center>'
+												'You re-enter the kitchen and you see Rolan removing the bread from the oven. It smells delicious. "I''m back! We''ll put the bread on a rack so it can cool."'
+												*nl
+												'"Miss <<$pcs_lastname>>, is it ready to eat? I''m quite hungry after all this waiting..."'
+												*nl
+												'You lightly admonish him, "It''s almost done, Rolan. You need to be patient!"'
+												*nl
+												'"Alright..."'
+												act 'Continue':
+													*clr & cla
+													minut += 10
+													gs 'stat'
+													'<center><b><font color = maroon>Black Bread</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/blackbread/blackbread.jpg"></center>'
+													'You hand Rolan a plate with a couple of fresh cut slices, "There, our black bread is finished and ready to eat!"'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Black Bread</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes1.jpg"></center>'
+														'"You will remember to clean the dishes before our next lesson, won''t you Rolan?" You hear a muffled reply from the man as he eats, though you couldn''t tell if it was a positive or negative reply. You should just stop asking him at this point.'
+														act 'Leave the room': gt 'rolanapt','hallway'
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif rolancooklesson = 6:
+		*clr & cla
+		minut += 60
+		rolancooklesson += 1
+		rolan_cooklesson_day = daystart
+		rolanworker = 1
+		gs 'stat'
+		'<center><h4><font color="maroon">Stroganoff</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/fridge1.jpg"></center>'
+		'"Okay Rolan, this is it. Our last cooking lesson. After this, I think you should be able to handle anything else on your own, but don''t be afraid to ask me for help if you need it." You give him an assuring smile. "But first, do you have something I could wear? The aprons are still drying from last time. I can''t believe you forgot to wash them! Or were you hoping I''d go without this time, you naughty old man..."'
+		*nl
+		'"No, no, of course not, Miss <<$pcs_lastname>>! I honestly forgot! I should have something you could wear, just give me one moment, please!" He hurries out of the room. You start gathering ingredients.'
+		act 'Continue':
+		    *clr & cla
+			'<center><b><font color = maroon>Stroganoff</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff0.jpg"></center>'
+			'Rolan returns with an old shirt. You slipped off your own clothes and put it on. "Okay, today we''re going to make Beef Stroganoff!"'
+			*nl
+			'It looks like Rolan wants to say something.'
+			*nl
+			'"Yes, what is it?"'
+			act 'Continue':
+				*clr & cla
+				'<center><b><font color = maroon>Stroganoff</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff1.jpg"></center>'
+				'"Well, it''s just that, Miss <<$pcs_lastname>>..." He seems hesitant to continue, "I thought you were vegetarian or something..."'
+				*nl
+				'You look at him curiously, "Hmm? No, why would you think that?"'
+				*nl
+				'"Ah, well, it''s just that our other lessons were loaded with vegetables and we haven''t touched meat so far..."'
+				*nl
+				'"Oh, that''s just because we needed to work our way up. It''s much easier to work with vegetables to start with. I wouldn''t expect you to live off only bread and vegetables. You''re a man, not a rabbit, after all!" You laugh remembering your earlier lessons.'
+				act 'Continue':
+					*clr & cla
+					'<center><b><font color = maroon>Stroganoff</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff2.jpg"></center>'
+					'"We''ll get rid of the excess fat on this meat by searing it..."'
+					act 'Continue':
+						*clr & cla
+						'<center><b><font color = maroon>Stroganoff</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff3.jpg"></center>'
+						'"It doesn''t need too long, the beef will actually finish cooking when we add it to the stew."'
+						*nl
+						'As you''re moving the beef from the pan to a plate, your shirt slides up giving Rolan an unobstructed view of your panties.'
+						act 'Continue':
+							*clr & cla
+							'<center><b><font color = maroon>Stroganoff</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff4.jpg"></center>'
+							'You wipe your brow, "Whew! I got a little hot there, this shirt doesn''t breathe too well. I hope you don''t mind if I take it off..."'
+							*nl
+							'Rolan doesn''t raise any objections as you pull the shirt off.'
+							act 'Continue':
+								*clr & cla
+								'<center><b><font color = maroon>Stroganoff</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff5.jpg"></center>'
+								'"I hope you''re paying attention to this stew, Rolan. Rolan?" You turn to face him, his eyes are glued to your panties.'
+								if pcs_inhib > 50 and $wornpantytype ! 'none':
+									act 'Tease Rolan further':
+										*clr & cla
+										'<center><b><font color = maroon>Stroganoff</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff6.jpg"></center>'
+										'You sigh and start to put the shirt back on, but then...'
+										'"...so you are distracted by my panties..."'
+										*nl
+										'Rolan doesn''t speak.'
+										act 'Continue':
+											*clr & cla
+											gs 'panties', 'remove'
+											pcs_horny += 5
+											gs 'stat'
+											'<center><b><font color = maroon>Stroganoff</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff7.jpg"></center>'
+											'"Then I should take them off..."'
+											*nl
+											'Rolan only whimpers as he watches your panties slide down your legs.'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Stroganoff</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff8.jpg"></center>'
+												'"We don''t want distractions..."'
+												*nl
+												'Rolan''s eyes look like they might pop out of his head.'
+												act 'Continue':
+													*clr & cla
+													pcs_horny += 5
+													gs 'stat'
+													'<center><b><font color = maroon>Stroganoff</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff9.jpg"></center>'
+													'"Once these are gone, we can refocus on our cooking..."'
+													*nl
+													'"N-no, p-please..."'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Stroganoff</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff10.jpg"></center>'
+														'"There, now we''re free to focus on the food."'
+														*nl
+														'"P-please... M-miss <<$pcs_lastname>>... i-it''s worse..."'
+														act 'Continue':
+															*clr & cla
+															pcs_horny += 5
+															gs 'panties', 'wear'
+															gs 'stat'
+															'<center><b><font color = maroon>Stroganoff</font></b></center>'
+															'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff11.jpg"></center>'
+															'With those words, you put your panties back on.'
+															'"Good to know, I think we can continue now."'
+															*nl
+															'Short of breath, Rolan manages to respond. "Y-yes."'
+															act 'Continue':
+																*clr & cla
+																'<center><b><font color = maroon>Stroganoff</font></b></center>'
+																'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff12.jpg"></center>'
+																'You return your focus to the cooking lesson, "Next, we can add the rest of our ingredients to the pot."'
+																act 'Continue':
+																	*clr & cla
+																	'<center><b><font color = maroon>Stroganoff</font></b></center>'
+																	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff13.jpg"></center>'
+																	'"Soon, we can add our beef to the mix and let it cook for a few more minutes."'
+																	act 'Continue':
+																		*clr & cla
+																		'<center><b><font color = maroon>Stroganoff</font></b></center>'
+																		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff.jpg"></center>'
+																		'You prepare a bowl for poor Rolan, still in shock over your earlier show, "Our Stroganoff is ready!"'
+																		act 'Continue':
+																			*clr & cla
+																			'<center><b><font color = maroon>Stroganoff</font></b></center>'
+																			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes2.jpg"></center>'
+																			'"I hope you''ve enjoyed these lessons, Rolan. I know I have. Oh, and don''t forget the dishes, dear!"'
+																			act 'Leave the room': gt 'rolanapt','hallway'
+																		end
+																	end
+																end
+															end
+														end
+													end
+												end
+											end
+										end
+									end
+								end
+								act 'Hey':
+									*clr & cla
+									'<center><b><font color = maroon>Stroganoff</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff14.jpg"></center>'
+									'You feel a bit bad for Rolan, perhaps you pushed things too far? "...no, Rolan. This is not good. We are working here, you should be focused..."'
+									*nl
+									'"I-I''m sorry..." You put the shirt back on, making sure to cover yourself as much as possible.'
+									act 'Continue':
+										*clr & cla
+										'<center><b><font color = maroon>Stroganoff</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff15.jpg"></center>'
+										'"It''s okay, Rolan. But we should get back to our cooking."'
+										*nl
+										'"Thank you, Miss <<$pcs_lastname>>, I''ll try not to get distracted again."'
+										*nl
+										'You turn your attention back to the stove, "Okay, so... where were we?"'
+										act 'Continue':
+											*clr & cla
+											'<center><b><font color = maroon>Stroganoff</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff12.jpg"></center>'
+											'You begin to add the remainder of the ingredients to the pot.'
+											act 'Continue':
+												*clr & cla
+												'<center><b><font color = maroon>Stroganoff</font></b></center>'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff13.jpg"></center>'
+												'"Soon, we can add our beef to the mix and let it cook for a few more minutes."'
+												act 'Continue':
+													*clr & cla
+													'<center><b><font color = maroon>Stroganoff</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/stroganoff/stroganoff.jpg"></center>'
+													'You prepare a bowl for Rolan, who has been noticeably quiet for the past few minutes, though he hasn''t been staring at you like before. "Here, our Stroganoff is ready!"'
+													act 'Continue':
+														*clr & cla
+														'<center><b><font color = maroon>Stroganoff</font></b></center>'
+														'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/kitch/lesson/dishes2.jpg"></center>'
+														'"I hope you''ve enjoyed our cooking lessons, Rolan. Oh, don''t forget the dishes, dear!"'
+														act 'Leave the room': gt 'rolanapt','hallway'
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'worker':
+	if rolanworker = 1:
+		*clr & cla
+		minut += 5
+		rolanworker += 1
+		workertool = 0
+		gs 'stat'
+		'<center><h4><font color="maroon">Chat</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/prelude1.jpg"></center>'
+		'"I was wondering, why don''t you do some work around your home to fix it up?"'
+		act 'Continue':
+		    *clr & cla
+			minut += 2
+			'<center><b><font color = maroon>Chat</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanwelcome.jpg"></center>'
+			'"Miss <<$pcs_lastname>>, I have thought about it. But I don''t have the money to pay anyone to work on my home and I also don''t have all the know-how to do it myself."'
+			act 'Continue':
+				*clr & cla
+				minut += 2
+				'<center><b><font color = maroon>Chat</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/prelude2.jpg"></center>'
+				'"What if I helped you?"'
+				act 'Continue':
+					*clr & cla
+					minut += 2
+					'<center><b><font color = maroon>Chat</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/rolanwelcome.jpg"></center>'
+					'"No, no, I couldn''t ask you to do that. Please, I will find a way eventually."'
+					act 'Continue': gt 'rolanapt','livingroom'
+				end
+			end
+		end
+	elseif rolanworker = 2:
+		*clr & cla
+		minut += 5
+		rolanworker += 1
+		gs 'stat'
+		'<center><h4><font color="maroon">Worker</font></h4></center>'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker6.jpg"></center>'
+		'<i>First I''ll prepare the concrete, I don''t need a whole lot, the crack''s not that big after all...</i>'
+		act 'Continue':
+		    *clr & cla
+			minut += 5
+			'<center><b><font color = maroon>Worker</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker7.jpg"></center>'
+			'<i>Next, I''ll search for the pipes and mark their path. Definitely don''t wanna break those...</i>'
+			act 'Continue':
+				*clr & cla
+				minut += 5
+				'<center><b><font color = maroon>Worker</font></b></center>'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker8.jpg"></center>'
+				'<i>...I hope his neighbors aren''t home...</i>'
+				act 'Continue':
+					*clr & cla
+					minut += 10
+					'<center><b><font color = maroon>Worker</font></b></center>'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker9.jpg"></center>'
+					'<i>...whew, that''s done. Good thing too, I''m really starting to sweat...</i>'
+					act 'Continue':
+						*clr & cla
+						minut += 5
+						'<center><b><font color = maroon>Worker</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker10.jpg"></center>'
+						'<i>...now to patch the holes with the concrete...</i>'
+						act 'Continue':
+							*clr & cla
+							minut += 5
+							'<center><b><font color = maroon>Worker</font></b></center>'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker11.jpg"></center>'
+							'<i>...this is more work than I thought it''d be. I''m absolutely soaked in sweat...</i>'
+							act 'Continue':
+								*clr & cla
+								minut += 10
+								'<center><b><font color = maroon>Worker</font></b></center>'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker12.jpg"></center>'
+								'<i>That feels</i> <b>sooo</b> <i>much better! Good thing Rolan isn''t around, he''d have a heart attack!</i>'
+								act 'Continue':
+									*clr & cla
+									minut += 5
+									'<center><b><font color = maroon>Worker</font></b></center>'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker13.jpg"></center>'
+									'You begin painting the walls.'
+									act 'Continue':
+										*clr & cla
+										minut += 10
+										'<center><b><font color = maroon>Worker</font></b></center>'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker14.jpg"></center>'
+										'<i>I sure hope Rolan is happy with my work.</i>'
+										act 'Continue':
+											*clr & cla
+											minut += 5
+											'<center><b><font color = maroon>Worker</font></b></center>'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker15.jpg"></center>'
+											'<i>...the upper walls are done, finally. Now time for the lower walls...</i>'
+											act 'Continue':
+												*clr & cla
+												minut += 10
+												'<center><b><font color = maroon>Worker</font></b></center>'
+												'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/workpaint.mp4"></center>'
+												'<i>...this paint will be a pain to wash off in the shower...</i>'
+!! LURK MORRISON Idea: Check if PC has showered with Kolka (washing each other), if true then display next line instead
+												!! '<i>...I wonder if Kolka wouldn''t mind washing this paint off me in the shower later...</i>'
+												act 'Continue':
+													*clr & cla
+													minut += 5
+													newbath = 1
+													gs 'drugs', 'alcohol', 'beer'
+													gs'stat'
+													'<center><b><font color = maroon>Worker</font></b></center>'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/aptrolan/bathchat/builder/worker16.jpg"></center>'
+													'"I''m sure Rolan won''t mind me stealing a beer. Oh wow... that''s the best beer I''ve ever tasted! No wonder why builders drink so much at work!"'
+													act 'Continue': gt 'rolanapt','hallway'
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+   end
+end
+
+if $ARGS[0] = 'rolanroute':
+	if RolanLocSet ! DayStart:
+		RolanLoc[0] = 3
+		RolanLoc[1] = 3
+		RolanLoc[2] = 3
+		RolanLoc[3] = 3
+		RolanLoc[4] = 3
+		RolanLoc[5] = 3
+		RolanLoc[6] = iif(week ! 7, 0, 3)
+		RolanLoc[7] = iif(week ! 7, 0, 3)
+		RolanLoc[8] = iif(week ! 7, 0, 3)
+		RolanLoc[9] = iif(week ! 7, 0, 1)
+		RolanLoc[10] = iif(week ! 7, 0, 1)
+		RolanLoc[11] = iif(week ! 7, 0, 1)
+		RolanLoc[12] = iif(week ! 7, 0, 1)
+		if week ! 6 and week ! 7: RolanLoc[13] = 0
+		if month >=3 and month =< 11 and week = 6 or week = 7: RolanLoc[13] = rand(9,10) else RolanLoc[13] = rand(2,8)
+		if week ! 6 and week ! 7: RolanLoc[14] = 0
+		if month >=3 and month =< 11 and week = 6 or week = 7: RolanLoc[14] = rand(9,10) else RolanLoc[14] = rand(2,8)
+		RolanLoc[15] = rand(4,7)
+		if week ! 6 and week ! 7: RolanLoc[16] = rand(2,8)
+		if month >=3 and month =< 11 and week = 6 or week = 7: RolanLoc[16] = rand(9,10) else RolanLoc[16] = rand(2,8)
+		if week ! 6 and week ! 7: RolanLoc[17] = rand(2,8)
+		if month >=3 and month =< 11 and week = 6 or week = 7: RolanLoc[17] = rand(9,10) else RolanLoc[17] = rand(2,8)
+		if month >=3 and month =< 11: RolanLoc[18] = rand(9,10) else RolanLoc[18] = rand(2,8)
+		if week ! 6: RolanLoc[19] = rand(2,8) else RolanLoc[19] = 1
+		if week ! 6: RolanLoc[20] = rand(2,8) else RolanLoc[20] = 1
+		RolanLoc[21] = rand(4,7)
+		RolanLoc[22] = 3
+		RolanLoc[23] = 3
+		RolanLocSet = DayStart
+	end
+end
+
+!iif(proseventrand <= 8, 'blow job', iif(proseventrand <= 14, 'sex', 'anal'))
+
+--- rolanapt ---------------------------------
+

@@ -1,0 +1,1000 @@
+# zaprFWash
+! most complete comments for how the code works can be found in 'wash', 'titsFlash', 'runback', and 'punishSpank'
+! most other code in here are just variations of those sections
+
+if $ARGS[0] = 'start':
+	$metka = 'start'
+	$loc = 'zaprFWash'
+	$menu_loc = 'zaprFWash'
+	$menu_arg = 'start'
+	menu_off = 0
+	*clr & cla
+	! can''t wash cars if have visible cum already
+	if (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1:
+		minut += 5
+		pcs_mood -= 5
+		pav_sex += rand(0,2)
+		
+		'The gas station worker chases you away: "At least go wash yourself off first, whore!"'
+		
+		act 'Leave':gt 'zaprF', 'start'
+		act 'Go to the toilet':gt 'zaprF', 'toilet'
+	else
+		gt 'zaprFWash', 'wash'
+	end
+end
+
+if $ARGS[0] = 'wash':
+	
+	if litltown = 0:
+		slut_compare = city_slut
+	elseif litltown = 1:
+		slut_compare = pav_slut
+	end
+	
+	! only wearing bimbo or prostitute clothing and looking good can get propositioned by a customer
+	if PCloBimbo = 1 or PCloStyle = 4:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+		
+		minut += 60
+		pcs_mood -= 5
+		gs 'sweat', 'add', 2
+		
+		if pcs_apprnc >= 60:
+			! slightly more money for wearing bimbo or prostitute clothing and looking good too
+			'You washed the windows of several cars and earned 100 <b>₽</b>.'
+			money += 100
+			
+			! min chance of 20 percent; max chance of 80 percent; percent chance scales with city_slut or pav_slut
+			! as your repuation increases you will be asked more often
+			skimpyCustomerChance = rand(1, 100)
+			if skimpyCustomerChance <= min(max(20,slut_compare),80):
+				'As you finish washing another car, the driver walks up to you to give you a tip. From the way he''s looking at you, it''s obvious he''s interested in something more as well.'
+				! starts off with always doing titsQ when rep is low, as rep increases they may skip a question since they know you will do it anyway
+				! also different people have different tastes so you wont be asked the same thing in the same order every time by every customer that walks up to you
+				carwashscene = rand(1, 100)
+				if carwashscene <= min(max(25,slut_compare),50) and carwashscene >= 25:
+					gt 'zaprFWash', 'assQ'
+				elseif carwashscene <= min(max(50,slut_compare),65) and carwashscene >= 50:
+					gt 'zaprFWash', 'pussyQ'	
+				elseif carwashscene <= min(max(65,slut_compare),85) and carwashscene >= 65:	
+					gt 'zaprFWash', 'handQ'
+				elseif carwashscene <= min(max(85,slut_compare),100) and carwashscene >= 85:	
+					gt 'zaprFWash', 'blowQ'
+				else
+					gt 'zaprFWash', 'titsQ'
+				end
+			else
+				gs 'zaprFWash', 'flash_passing'
+			end
+		else
+			! slightly more money for wearing bimbo or prostitute clothing but not looking too great
+			'You washed the windows of several cars and earned 80 <b>₽</b>.'
+			money += 80
+			
+			gs 'zaprFWash', 'flash_passing'
+		end
+	else
+		minut += 60
+		pcs_mood -= 5
+		gs 'sweat', 'add', 2
+		money += 60
+		
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/regular' + rand(1,4) + '.jpg"></center>'
+		
+		! normal money just for the car washing
+		'You washed the windows of several cars and earned 60 <b>₽</b>.'
+		
+		gs 'zaprFWash', 'flash_passing'
+	end
+end
+
+if $ARGS[0] = 'flash_passing':
+	act 'Continue':gt 'zaprF', 'start'
+	if PCloPants > 0 or PCloSkirt > 0:
+		if pcs_inhib >= 35: act 'Flash your tits at passing cars':gt 'zaprFWash', 'titsFlash', 'Free', 'Flash'
+		if exhibitionist_lvl > 0: act 'Flash your ass at passing cars':gt 'zaprFWash', 'assFlash', 'Free', 'Flash'
+		if exhibitionist_lvl > 1: act 'Flash your pussy at passing cars':gt 'zaprFWash', 'pussyFlash', 'Free', 'Flash'
+	end
+end
+
+if $ARGS[0] = 'titsQ':
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+	
+	'Want to earn some more cash, girl? Show me your tits. I''ll give you 50 <b>₽</b>. It''s easy money.'
+	
+	! inhibition or exhibitionism requirements needed to accept the offer or just have fun with him
+	if exhibitionist_lvl > 0 or pcs_inhib >= 35 or pcs_horny >= 40: act 'Agree and show him your tits':gt 'zaprFWash', 'titsFlash', 'Paid', 'Question'
+	act 'Refuse':gt 'zaprFWash', 'refuse'
+end
+
+if $ARGS[0] = 'assQ':
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+	
+	'What a nice ass you have there. Let me see it. Will 50 <b>₽</b> convince you to show it to me?'
+	
+	! inhibition or exhibitionism requirements needed to accept the offer or just have fun with him
+	if exhibitionist_lvl > 0 or pcs_horny >= 60: act 'Agree and show him your ass':gt 'zaprFWash', 'assFlash', 'Paid', 'Question'
+	act 'Refuse':gt 'zaprFWash', 'refuse'
+end
+
+if $ARGS[0] = 'pussyQ':
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+	
+	'You look like a cool girl. Let me see your pussy. I''ll give you 50 <b>₽</b>.'
+		
+	! inhibition or exhibitionism requirements needed to accept the offer or just have fun with him
+	if exhibitionist_lvl > 1 or pcs_horny >= 80: act 'Agree and show him your pussy':gt 'zaprFWash', 'pussyFlash', 'Paid', 'Question'
+	act 'Refuse':gt 'zaprFWash', 'refuse'
+end
+
+if $ARGS[0] = 'handQ':
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+	
+	'Could you help me out girl? It''s getting tight down here in my pants just looking at you. How about you touch it a bit? I''ll pay you 200 <b>₽</b>.'
+	
+	! slut or horny requirements needed to accept the offer or just have fun with him
+	if slut_compare >= 25 or pcs_horny >= 25: act 'Agree and give him a handjob':gt 'zaprFWash', 'handjob', 'Paid'
+	act 'Refuse':gt 'zaprFWash', 'refuse'
+end
+
+if $ARGS[0] = 'blowQ':
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/bimboclean' + rand(1,4) + '.jpg"></center>'
+	
+	'Looking hot today girl! How about you put your mouth to good use? I''ll pay you 200 <b>₽</b>.'
+	
+	! slut or horny requirements needed to accept the offer or just have fun with him
+	if slut_compare >= 30 or pcs_horny >= 30: act 'Agree and give him a blowjob':gt 'zaprFWash', 'blowjob', 'Paid', 'Question'
+	act 'Refuse':gt 'zaprFWash', 'refuse'
+end
+
+if $ARGS[0] = 'refuse':
+	! just being asked can slowly change your inhibitions which will enable a player to eventually agree to the questions above
+	if pcs_inhib < 35: inhib_exp += rand(1,2)
+	pcs_mood += 5
+	gs 'stat'
+	
+	'<center><video autoplay loop src="images/pc/no.mp4"></video></center>'
+	
+	'You begin to consider his offer but decide turn him down and walk away.'
+	
+	act 'Go back to washing cars':gt 'zaprF', 'start'
+end
+
+! $ARGS[1] = whether you got paid for this
+! $ARGS[2] = whether this act came from a customer question or just flashing for passing cars
+if $ARGS[0] = 'titsFlash':
+	! reputation and money will depend on whether you were paid
+	if $ARGS[1] = 'Paid':
+		money += 50
+		if litltown = 0:
+			city_prostitute += rand(0,1)
+		elseif litltown = 1:
+			pav_prostitute += rand(0,1)
+		end
+	elseif $ARGS[1] = 'Free':
+		gs 'exhibitionism', 1
+	end
+	if pcs_inhib < 30: inhib_exp += rand(2,4)
+	pcs_mood += 5
+	gs 'stat'
+	
+	! chance for using photos or videos
+	if rand(1, 100) < 50:
+		i = rand(1, 100)
+		! chance of using old pics since there are so many newer pics to choose from
+		if i < 15:
+			if PCloPants > 0:
+				i = rand(1, 2)
+				'<center><img <<$set_imgh>> src="images/locations/shared/carwash/pants/titsflash<<i>>.jpg"></center>'
+			elseif PCloSkirt > 0:
+				i = 1
+				'<center><img <<$set_imgh>> src="images/locations/shared/carwash/skirt/titsflash<<i>>.jpg"></center>'
+			end
+		else
+			! newer photos are more neatly organized into different folders so no looping needed
+			if PCloPants > 0:
+				'<center><img <<$set_imgh>> src="images/pc/flashing/pants/outside/tits/' + rand(1,14) + '.jpg"></center>'
+			elseif PCloSkirt > 0:
+				'<center><img <<$set_imgh>> src="images/pc/flashing/dress/outside/tits/' + rand(1,12) + '.jpg"></center>'
+			end
+		end
+	else
+		if PCloPants > 0:
+			i = rand(1, 4)
+			'<center><video autoplay loop src="images/locations/shared/carwash/pants/titsflash<<i>>.mp4"></video></center>'
+		elseif PCloSkirt > 0:
+			i = rand(1, 3)
+			'<center><video autoplay loop src="images/locations/shared/carwash/skirt/titsflash<<i>>.mp4"></video></center>'
+		end
+	end
+	
+	! text differences depending on whether you were paid, whether you are flashing for a customer or for the cars on the road, and what type of clothing you are wearing
+	if $ARGS[1] = 'Paid':
+		if PCloPants > 0:'You lift up your top up and show him your breasts for a few seconds. Then you quickly cover up and take your money.'
+		if PCloSkirt > 0:'You pull down your top and show him your breasts for a few seconds. Then you quickly cover up and take your money.'
+	elseif $ARGS[1] = 'Free':
+		if $ARGS[2] = 'Question':
+			if PCloPants > 0:'You lift up your top up and show him your breasts for a few seconds. You give your breasts a little shake for him before you cover up.'
+			if PCloSkirt > 0:'You pull down your top and show him your breasts for a few seconds. You give your breasts a little shake for him before you cover up.'
+		elseif $ARGS[2] = 'Flash':
+			if PCloPants > 0:'You lift up your top up and expose your breasts to the road for a few seconds. A couple cars pass by and honk in appreciation. You give your breasts a little shake before you cover up.'
+			if PCloSkirt > 0:'You pull down your top and expose your breasts to the road for a few seconds. A couple cars pass by and honk in appreciation. You give your breasts a little shake before you cover up.'
+		end
+	end
+	gs 'arousal', 'flashlite', 5
+	gs 'stat'
+	
+	! can only continue with more questions if flashing for a customer
+	! also more questions will require either sub or dom or bimbo or horny as well as bimbo or prostitute clothing
+	! this has a wide range of requirements so that many different types of characters can still play this content
+	!if (bimbolevel >= 1 or pcs_horny >= 5) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+	if (bimbolevel >= 1 or pcs_horny >= 5) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+		! once again dynamically choosing the next scene to play based on reputation
+		carwashscene = rand(1, 100)
+		if carwashscene <= min(max(30,slut_compare),60) and carwashscene >= 50:
+			act 'Continue':gt 'zaprFWash', 'pussyQ'	
+		elseif carwashscene <= min(max(60,slut_compare),80) and carwashscene >= 60:	
+			act 'Continue':gt 'zaprFWash', 'handQ'
+		elseif carwashscene <= min(max(80,slut_compare),100) and carwashscene >= 80:	
+			act 'Continue':gt 'zaprFWash', 'blowQ'
+		else
+			act 'Continue':gt 'zaprFWash', 'assQ'
+		end
+	! flashing for cars just allows you to return to the gas station
+	else
+		act 'Go back to the gas station': 
+			if $ARGS[1] = 'Paid': slutty += 1
+			gt 'zaprF', 'start'
+		end
+	end
+end
+
+! $ARGS[1] = whether you got paid for this
+! $ARGS[2] = whether this act came from a customer question or just flashing for passing cars
+if $ARGS[0] = 'assFlash':
+	if $ARGS[1] = 'Paid':
+		money += 50
+		if litltown = 0:
+			city_prostitute += rand(0,1)
+		elseif litltown = 1:
+			pav_prostitute += rand(0,1)
+		end
+	elseif $ARGS[1] = 'Free':
+		gs 'exhibitionism', 2
+	end
+	if pcs_inhib < 30: inhib_exp += rand(2,4)
+	pcs_mood += 5
+	gs 'stat'
+	
+	if rand(1, 100) < 50:
+		i = rand(1, 100)
+		if i < 10:
+			if PCloPants > 0:
+				i = 1
+				'<center><img <<$set_imgh>> src="images/locations/shared/carwash/pants/assflash<<i>>.jpg"></center>'
+			elseif PCloSkirt > 0:
+				i = 1
+				'<center><img <<$set_imgh>> src="images/locations/shared/carwash/skirt/assflash<<i>>.jpg"></center>'
+			end
+		else
+			if PCloPants > 0:
+				'<center><img <<$set_imgh>> src="images/pc/flashing/pants/outside/butt/' + rand(1,16) + '.jpg"></center>'
+			elseif PCloSkirt > 0:
+				'<center><img <<$set_imgh>> src="images/pc/flashing/dress/outside/butt/' + rand(1,9) + '.jpg"></center>'
+			end
+		end
+	else
+		if PCloPants > 0:
+			i = rand(1, 3)
+			'<center><video autoplay loop src="images/locations/shared/carwash/pants/assflash<<i>>.mp4"></video></center>'
+		elseif PCloSkirt > 0:
+			i = rand(1, 2)
+			'<center><video autoplay loop src="images/locations/shared/carwash/skirt/assflash<<i>>.mp4"></video></center>'
+		end
+	end
+	
+	if $ARGS[1] = 'Paid':
+		if PCloPants > 0:'You pull your pants down and show him your ass for a few seconds. Then you quickly cover up and take your money.'
+		if PCloSkirt > 0:'You lift your skirt up and show him your ass for a few seconds. Then you quickly cover up and take your money.'
+	elseif $ARGS[1] = 'Free':
+		if $ARGS[2] = 'Question':
+			if PCloPants > 0:'You pull your pants down and show him your ass for a few seconds. You give your ass a little shake for him before you cover up.'
+			if PCloSkirt > 0:'You lift your skirt up and show him your ass for a few seconds. You give your ass a little shake for him before you cover up.'
+		elseif $ARGS[2] = 'Flash':
+			if PCloPants > 0:'You pull your pants down and expose your ass to the road for a few seconds. A couple cars pass by and honk in appreciation. You give your ass a little shake before you cover up.'
+			if PCloSkirt > 0:'You lift your skirt up and expose your ass to the road for a few seconds. A couple cars pass by and honk in appreciation. You give your ass a little shake before you cover up.'
+		end
+	end
+	gs 'arousal', 'flashlite', 5
+	gs 'stat'
+	
+	!if (bimbolevel >= 1 or pcs_horny >= 10) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+	if (bimbolevel >= 1 or pcs_horny >= 10) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+		carwashscene = rand(1, 100)
+		if carwashscene <= min(max(50,slut_compare),75) and carwashscene >= 50:	
+			act 'Continue':gt 'zaprFWash', 'handQ'
+		elseif carwashscene <= min(max(75,slut_compare),100) and carwashscene >= 75:	
+			act 'Continue':gt 'zaprFWash', 'blowQ'
+		else
+			act 'Continue':gt 'zaprFWash', 'pussyQ'
+		end
+	else
+		act 'Go back to the gas station': 
+			if $ARGS[1] = 'Paid': slutty += 1
+			gt 'zaprF', 'start'
+		end
+	end
+end
+
+! $ARGS[1] = whether you got paid for this
+! $ARGS[2] = whether this act came from a customer question or just flashing for passing cars
+if $ARGS[0] = 'pussyFlash':
+	if $ARGS[1] = 'Paid':
+		money += 50
+		if litltown = 0:
+			city_prostitute += 1
+		elseif litltown = 1:
+			pav_prostitute += 1
+		end
+	elseif $ARGS[1] = 'Free':
+		gs 'exhibitionism', 3
+	end
+	if pcs_inhib < 40: inhib_exp += rand(4,6)
+	pcs_mood += 5
+	gs 'stat'
+	
+	if PCloPants > 0:
+		'<center><img <<$set_imgh>> src="images/pc/flashing/pants/outside/pussy/' + rand(1,9) + '.jpg"></center>'
+	elseif PCloSkirt > 0:
+		'<center><img <<$set_imgh>> src="images/pc/flashing/dress/outside/pussy/' + rand(1,13) + '.jpg"></center>'
+	end
+	
+	if $ARGS[1] = 'Paid':
+		if PCloPants > 0:'You pull your pants down and show him your pussy for a few seconds. Then you quickly cover up and take your money.'
+		if PCloSkirt > 0:'You lift your skirt up and show him your pussy for a few seconds. Then you quickly cover up and take your money.'
+	elseif $ARGS[1] = 'Free':
+		if $ARGS[2] = 'Question':
+			if PCloPants > 0:'You pull your pants down and show him your pussy for a few seconds. You rub your clit a little for him before you cover up.'
+			if PCloSkirt > 0:'You lift your skirt up and show him your pussy for a few seconds. You rub your clit a little for him before you cover up.'
+		elseif $ARGS[2] = 'Flash':
+			if PCloPants > 0:'You pull your pants down and expose your pussy to the road for a few seconds. A couple cars pass by and honk in appreciation. You rub your clit a little before you cover up.'
+			if PCloSkirt > 0:'You lift your skirt up and expose your pussy to the road for a few seconds. A couple cars pass by and honk in appreciation. You rub your clit a little before you cover up.'
+		end
+	end
+	gs 'arousal', 'flashlite', 5
+	gs 'stat'
+	
+	!if (bimbolevel >= 1 or pcs_horny >= 15) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+	if (bimbolevel >= 1 or pcs_horny >= 15) and (PCloBimbo = 1 or PCloStyle = 4) and $ARGS[2] = 'Question':
+		carwashscene = rand(1, 100)
+		if carwashscene <= min(max(60,slut_compare),100) and carwashscene >= 60:	
+			act 'Continue':gt 'zaprFWash', 'blowQ'
+		else
+			act 'Continue':gt 'zaprFWash', 'handQ'
+		end
+	else
+		act 'Go back to the gas station': 
+			if $ARGS[1] = 'Paid': slutty += 1
+			gt 'zaprF', 'start'
+		end
+	end
+end
+
+! $ARGS[1] = whether you got paid for this
+if $ARGS[0] = 'handjob':
+	! generate random npc for sex
+	gs 'npcgeneratec', 0, 'gas station customer', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+	
+	if $ARGS[1] = 'Paid':
+		money += 200
+		if litltown = 0:
+			city_prostitute += 2
+		elseif litltown = 1:
+			pav_prostitute += 2
+		end
+	elseif $ARGS[1] = 'Free':
+		pav_sex += 2
+	end
+	if pcs_inhib < 50: inhib_exp += rand(6,8)
+	pcs_mood += 5
+	gs 'stat'
+
+	if rand(1, 100) < 50:
+		i = rand(1, 2)
+		if i = 1:
+			'<center><img <<$set_imgh>> src="images/shared/sex/handjob/hand.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/shared/sex/handjob/hj.jpg"></center>'
+		end
+	else
+		i = rand(0, 2)
+		if i = 0:
+			'<center><video autoplay loop src="images/shared/sex/handjob/hj<<i>>.mp4"></video></center>'
+		else
+			'<center><video autoplay loop src="images/shared/sex/handjob/handjob<<i>>.mp4"></video></center>'
+		end
+	end
+	
+	if $ARGS[1] = 'Paid':
+		'You follow him behind the gas station, where you get the promised money, kneel down, unzip his pants and start working his shaft with your hands.'
+		gs 'arousal', 'hj', 15, 'sub', 'prostitution', 'unknown'
+	elseif $ARGS[1] = 'Free':
+		'You lead him behind the gas station, kneel down, unzip his pants and start working his shaft with your hands.'
+		gs 'arousal', 'hj', 15, 'dom', 'unknown'
+	end
+	gs 'stat'
+	
+	'After a while, the man starts pulling your head closer and closer to him. He asks you to blow him: "I''ll give you 200 <b>₽</b> if you open that mouth for me.'
+	
+	!bimbolevel >= 1 or pcs_horny >= 30:
+	if bimbolevel >= 1 or pcs_horny >= 30:
+		if pcs_inhib >= 30 or pcs_horny >= 30:act 'Open your mouth for him':gt 'zaprFWash', 'blowjob', 'Paid', 'handjob'
+		act 'Rub harder to make him cum':gt 'zaprFWash', 'handjobEndQ'
+	else
+		act 'Rub harder to make him cum':gt 'zaprFWash', 'handjobEndQ'
+	end
+end
+
+! $ARGS[1] = whether you got paid for this
+! $ARGS[2] = whether this act came from a customer question or already giving a customer a handjob
+if $ARGS[0] = 'blowjob':
+	if $ARGS[2] = 'Question':
+		gs 'npcgeneratec', 0, 'gas station customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+	end
+	
+	if $ARGS[1] = 'Paid':
+		money += 200
+		if litltown = 0:
+			city_prostitute += 2
+		elseif litltown = 1:
+			pav_prostitute += 2
+		end
+	elseif $ARGS[1] = 'Free':
+		pav_sex = 2
+	end
+	if pcs_inhib < 50: inhib_exp += rand(6,8)
+	pcs_mood += 5
+	gs 'stat'
+
+	if rand(1, 100) < 50:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/blowjob' + rand(1,4) + '.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/blowjob' + rand(1,3) + '.mp4"></video></center>'
+	end
+	
+	if $ARGS[2] = 'Question': 
+		if $ARGS[1] = 'Paid':
+			'You follow him behind the gas station, where you get the promised money, kneel down, unzip his pants and start working his shaft with your mouth.'
+			gs 'arousal', 'bj', 15, 'sub', 'prostitution', 'unknown'
+		elseif $ARGS[1] = 'Free':
+			'You lead him behind the gas station, kneel down, unzip his pants and start working his shaft with your mouth.'
+			gs 'arousal', 'bj', 15, 'dom', 'unknown'
+		end
+	elseif $ARGS[2] = 'handjob':
+		if $ARGS[1] = 'Paid':
+			'You grab the money he tosses at you and switch to working his shaft with your mouth.'
+			gs 'arousal', 'bj', 15, 'sub', 'prostitution', 'unknown'
+		elseif $ARGS[1] = 'Free':
+			'You switch to working his shaft with your mouth.'
+			gs 'arousal', 'bj', 15, 'dom', 'unknown'
+		end
+	end
+	gs 'stat'
+	
+	'After a while, the man starts trying to remove your clothes. He asks you to let him fuck your pussy: "I''ll give you 400 <b>₽</b> if you let me take your pussy! C''mon!'
+	
+	!bimbolevel >= 1 or pcs_horny >= 40:
+	if bimbolevel >= 1 or pcs_horny >= 40:
+		if pcs_vag = 0:
+			if pcs_inhib >= 40 or pcs_horny >= 40: act 'Offer your ass instead (you don''t want to lose your virginity to this stranger...)':gt 'zaprFWash', 'fuckAnal', 'Paid'
+		else
+			if pcs_inhib >= 40 or pcs_horny >= 40: act 'Offer your pussy':gt 'zaprFWash', 'fuckPussy', 'Paid'
+			if pcs_inhib >= 40 or pcs_horny >= 40: act 'Offer your ass':gt 'zaprFWash', 'fuckAnal', 'Paid'
+		end
+		act 'Suck harder to make him cum':gt 'zaprFWash', 'blowjobEndQ'
+	else
+		act 'Suck harder to make him cum':gt 'zaprFWash', 'blowjobEndQ'
+	end
+end
+
+! $ARGS[1] = whether you got paid for this
+if $ARGS[0] = 'fuckPussy':
+	if $ARGS[1] = 'Paid':
+		money += 400
+		if litltown = 0:
+			city_prostitute += 4
+		elseif litltown = 1:
+			pav_prostitute += 4
+		end
+	elseif $ARGS[1] = 'Free':
+		pav_sex += 4
+	end
+	if pcs_inhib < 60: inhib_exp += rand(14,16)
+	pcs_mood += 10
+	gs 'stat'
+
+	if rand(1, 100) < 50:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/fuckpussy' + rand(1,4) + '.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/fuckpussy' + rand(1,4) + '.mp4"></video></center>'
+	end
+	
+	if $ARGS[1] = 'Paid':
+		'You bend over and let the man start fucking your pussy after collecting your money.'
+		gs 'arousal', 'vaginal', 30, 'sub', 'prostitution', 'unknown'
+	elseif $ARGS[1] = 'Free':
+		'You bend over and let the man start fucking your pussy.'
+		gs 'arousal', 'vaginal', 30, 'dom', 'unknown'
+	end
+	gs 'stat'
+	
+	act 'Continue':gt 'zaprFWash', 'pussyEndQ'
+end
+
+! $ARGS[1] = whether you got paid for this
+if $ARGS[0] = 'fuckAnal':
+	if $ARGS[1] = 'Paid':
+		money += 400
+		if litltown = 0:
+			city_prostitute += 4
+		elseif litltown = 1:
+			pav_prostitute += 4
+		end
+	elseif $ARGS[1] = 'Free':
+		pav_sex += 4
+	end
+	if pcs_inhib < 60: inhib_exp += rand(14,16)
+	pcs_mood += 10
+	gs 'stat'
+
+	if rand(1, 100) < 50:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/fuckanal' + rand(1,4) + '.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/fuckanal' + rand(1,4) + '.mp4"></video></center>'
+	end
+	
+	gs 'arousal', 'auto_lube', 'anal'
+	if $ARGS[1] = 'Paid':
+		'You bend over and let the man start fucking your ass after you collect your money. His cock is still wet with your saliva as it slides inside you.'
+		gs 'arousal', 'anal', 30, 'sub', 'prostitution', 'unknown'
+	elseif $ARGS[1] = 'Free':
+		'You bend over and let the man start fucking your ass. His cock is still wet with your saliva as it slides inside you.'
+		gs 'arousal', 'anal', 30, 'dom', 'unknown'
+	end
+	gs 'stat'
+	
+	rapePussyChance = rand(1, 100)
+	if rapePussyChance <= min(max(1,slut_compare),20):
+		act 'Continue':gt 'zaprFWash', 'rapePussy'
+	else
+		act 'Continue':gt 'zaprFWash', 'analEndQ'
+	end
+end
+
+if $ARGS[0] = 'rapePussy':
+	i = rand(1, 5)
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/hardanal<<i>>.mp4"></video></center>'
+	
+	'The man fucks your ass furiously, taking no heed to your painful moans. As you try to move away a bit to limit the depth he can reach in your ass, he slaps your buttcheeks hard and shouts:'
+	'"Stop moving bitch! Who do you think you are, that you can tell me what to do?"'
+	
+	if pcs_vag = 0:
+		'He gropes your ass, lifts it up and suddenly spots your hymen.'
+		'"What, you are a virgin? Such a tease and still a virgin, really?"'
+		rapeAnyway = rand(1, 100)
+		if rapeAnyway <= min(max(1,slut_compare),50):
+			'"It would have happened sooner or later anyway, virgin slut. Now enjoy and remember this moment; I know I will!"'
+			act 'Continue':gt 'zaprFWash', 'rapePussyYes', 'virgin'
+		else
+			'"Girls like you should not be acting like this! Someone should have taught you a lesson a long time ago."'
+			act 'Continue':gt 'zaprFWash', 'punishSpank'
+		end
+	else
+		act 'Continue':gt 'zaprFWash', 'rapePussyYes', 'normal'
+	end
+end
+
+! $ARGS[1] = whether you were a virgin before this or not
+if $ARGS[0] = 'rapePussyYes':
+	inhib_exp += rand(10,20)
+
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/pussytoanal' + rand(1,3) + '.mp4"></video></center>'
+	
+	if $ARGS[1] = 'virgin':
+		pcs_mood -= 30
+		'He gropes your ass, lifts it up and pushes his dick inside your pussy in one thrust! You feel your hymen break and know your virginity is gone forever. What will your friends and family think of you now if they find out?'
+	elseif $ARGS[1] = 'normal':
+		pcs_mood -= 20
+		'He gropes your ass, lifts it up and pushes his dick inside your pussy in one thrust, all the way to the hilt!'
+	end
+	gs 'arousal', 'vaginal', 30, 'sub', 'prostitution', 'rough', 'rape', 'unknown'
+	gs 'stat'
+	
+	act 'Continue':gt 'zaprFWash', 'vaginaCum', 'rape'
+end
+
+if $ARGS[0] = 'pussyEndQ':
+	'You can feel that the man is about to orgasm. You decide to...:'
+	
+	act 'Let him cum inside your vagina':gt 'zaprFWash', 'vaginaCum', 'consensual'
+	act 'Take his cum on your face':gt 'zaprFWash', 'blowjobEndFace', 'inside'
+	act 'Let him cum inside your mouth':gt 'zaprFWash', 'blowjobEndMouth', 'inside'
+end
+
+if $ARGS[0] = 'analEndQ':
+	'You can feel that the man is about to ejaculate. You decide to...:'
+	
+	act 'Let him cum inside your ass':gt 'zaprFWash', 'assCum'
+	act 'Take his cum on your face':gt 'zaprFWash', 'blowjobEndFace', 'inside'
+	act 'Let him cum inside your mouth':gt 'zaprFWash', 'blowjobEndMouth', 'inside'
+end
+
+! $ARGS[1] = whether this was rape or not
+if $ARGS[0] = 'vaginaCum':
+	if pcs_inhib < 40: inhib_exp += rand(4,6)
+	pcs_vag += 1
+	pain['vaginal'] += 4
+	gs 'cum_call', ''
+	gs 'stat'
+
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/cumpussy' + rand(1,5) + '.mp4"></video></center>'
+	
+	if $ARGS[1] = 'consensual':
+		pcs_mood += 20
+		'You let him cum deep inside your vagina. A pleasant warmth fills your insides as he shoots his load deep inside you. When he pulls out, a bit of sperm leaks out of your hole.'
+	elseif $ARGS[1] = 'rape':
+		pcs_mood -= 20
+		'The pounding suddenly stops as he cums deep inside your vagina. You can feel his cum inside of you as he continues to shoot his load inside your vagina. When he pulls out, a bit of sperm leaks out of your hole.'
+	end
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Go back to the gas station':gt 'zaprF', 'start'
+end
+
+if $ARGS[0] = 'assCum':
+	if pcs_inhib < 40: inhib_exp += rand(4,6)
+	minut += 5
+	pcs_mood += 10
+	pcs_ass += 1
+	pain['asshole'] += 1
+	gs 'cum_call', 'anus'
+	gs 'stat'
+	
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/cumanal' + rand(1,2) + '.mp4"></video></center>'
+	
+	'You let him cum deep inside your ass. A pleasant warmth fills your insides as he shoots his load deep inside you. When he pulls out, a bit of sperm leaks out of your hole before you can tighten your worn out anus.'
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Go back to gas station':gt 'zaprF', 'start'
+end
+
+if $ARGS[0] = 'handjobEndQ':
+	'You can feel that the man is about to orgasm. You decide to take it...:'
+	
+	act 'On your face':gt 'zaprFWash', 'blowjobEndFace', 'outside'
+	act 'On your hands':gt 'zaprFWash', 'handjobEndHands'
+end
+
+if $ARGS[0] = 'handjobEndHands':	
+	if pcs_inhib < 30: inhib_exp += rand(2,4)
+	pcs_mood += 5
+	gs 'cum_call', 'hands'
+	gs 'stat'
+
+	if rand(1, 100) < 30:
+		'<center><video autoplay loop src="images/shared/sex/cum/handjob/hand0,' + rand(0,1) + '.mp4"></video></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/shared/sex/cum/handjob/hand' + rand(1,2) + '.jpg"></center>'
+	end
+	
+	'When the man starts to ejaculate, you quickly point his cock away from your face. Your hands are covered in cum by the time he is done ejaculating. His sack was full, you can say that for sure.'
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Go back to the gas station':gt 'zaprF', 'start'
+end
+
+if $ARGS[0] = 'blowjobEndQ':
+	'You can feel that the man is about to orgasm. You decide to take it...:'
+	
+	act 'On your face':gt 'zaprFWash', 'blowjobEndFace', 'outside'
+	act 'In your mouth':gt 'zaprFWash', 'blowjobEndMouth', 'outside'
+end
+
+! $ARGS[1] = whether his cock was inside or outside of you before he cums on your face
+if $ARGS[0] = 'blowjobEndFace':
+	if pcs_inhib < 30: inhib_exp += rand(2,4)
+	pcs_mood += 5
+	gs 'cum_call', 'face'
+	gs 'stat'
+
+	if rand(1, 100) < 30:
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/cumface' + rand(1,2) + '.mp4"></video></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/cumface' + rand(1,4) + '.jpg"></center>'
+	end
+	
+	if $ARGS[1] = 'outside':
+		'When the man starts to ejaculate, you quickly point his cock towards your face. Your face is covered in cum by the time he is done ejaculating. His sack was full, you can say that for sure.'
+	elseif $ARGS[1] = 'inside':
+		'When the man starts to ejaculate, you quickly take his cock out of you and point it towards your face. Your face is covered in cum by the time he is done ejaculating. His sack was full, you can say that for sure.'
+	end
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Go back to the gas station':gt 'zaprF', 'start'
+end
+
+! $ARGS[1] = whether his cock was inside or outside of you before he cums in your mouth
+if $ARGS[0] = 'blowjobEndMouth':
+	gs 'cum_call', 'mouth'
+	gs 'stat'
+
+	if rand(1, 100) < 60:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/cummouth' + rand(1,4) + '.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/cummouth1.mp4"></video></center>'
+	end
+	
+	if $ARGS[1] = 'outside':
+		'When the man starts to ejaculate, you quickly open your mouth while keeping his cock aimed straight at your tongue, giving him a good view of the cum as it flies inside your mouth. His sack was full, you can say that for sure.'
+	elseif $ARGS[1] = 'inside':
+		'When the man starts to ejaculate, you quickly take his cock out of you and aim it straight at your tongue, giving him a good view of the cum as it flies inside your mouth. His sack was full, you can say that for sure.'
+	end
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Continue':gt 'zaprFWash', 'blowjobEndMouthQ'
+end
+
+if $ARGS[0] = 'blowjobEndMouthQ':
+	'Your mouth is full of sperm. You decide to...:'
+	act 'Swallow and then show him your empty mouth':gt 'zaprFWash', 'blowjobEndMouthSwallow'
+	act 'Spit it out in front of him':gt 'zaprFWash', 'blowjobEndMouthSpit'
+end
+
+
+if $ARGS[0] = 'blowjobEndMouthSwallow':
+	if pcs_inhib < 40: inhib_exp += rand(4,6)
+	swallow += 1
+	pcs_mood += 10
+	gs 'stat'
+	
+	'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/swallow' + rand(1,4) + '.jpg"></center>'
+	
+	'You gulp down the mouthful of sperm and then present your tongue as a proof that all of his seed is now in your belly.'
+	'The man smiles, slaps you mildly on your face and says: "What a nice young slut you are. Next time I need a refill, I''ll be sure to stop by."'
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	act 'Go back to the gas station':gt 'zaprF', 'start'
+end
+
+if $ARGS[0] = 'blowjobEndMouthSpit':
+	if pcs_inhib < 30: inhib_exp += rand(2,4)
+	gs 'stat'
+
+	if rand(1, 100) > 50:
+		'<center><img <<$set_imgh>> src="images/locations/shared/carwash/sex/spit' + rand(1,3) + '.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/spit1.mp4"></video></center>'
+	end
+	
+	'You spit the load of sperm down between the legs of your customer. He doesn''t seem happy about it...'
+	'His face darkens and he says: "What, my cum isn''t good enough for you to swallow? I''ll teach you bitch!"'
+	'He moves closer to you with an angry look!'
+	
+	act 'Run back to the gas station':gt 'zaprFWash', 'runback'
+end
+
+if $ARGS[0] = 'runback':
+	minut += 5
+	! runSuccess uses a simpler version of the formula used with carwashscene
+	! just based on strength and agility; uses whichever is higher to try and run away
+	! min 25 percent chance; max 75 percent chance for this initial getaway
+	runSuccess = rand(1, 100)
+	if runSuccess <= min(max(25,pcs_stren,pcs_agil),75):
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/turn_back.jpg"></center>'
+		
+		'You managed to escape his grasp! You take a quick look behind you to make sure he''s not following you before heading back to the gas station.'
+		
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Escape':gt 'zaprF', 'start'
+	else
+		pain['cheeks'] += 2
+		pain['head'] += 2
+		pain['mouth'] += 2
+		pain['neck'] += 4
+		
+		'<center><video autoplay loop src="images/locations/shared/carwash/sex/punishbeatface.mp4"></video></center>'
+		
+		'You weren''t quick enough and he caught you. He pushes you down and starts to slap your face!'
+		
+		gs 'arousal', 'end'
+		gs 'stat'
+		
+		act 'Endure his punishment':gt 'zaprFWash', 'punish'
+		! gave doms the choice to fight back as long as they have some energy related stat with something left even if they lost the roll for runSuccess
+		! these values are based off of the cheat menu values for players who turn off these stats as they can never go below 35
+		gs 'willpower', 'skill', 'force', 'stren_lvl'
+		will_cost = (will_cost * 3) / 2
+		if will_cost <= pcs_willpwr:
+			act 'Push him off of you and escape (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'force' & gt 'zaprFWash', 'fight'
+		else
+			act 'Push him off of you and escape (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+end
+
+if $ARGS[0] = 'fight':
+	! maybe at some point this could be an actual fight but with the state of the combat logic is in this will just be left to drain a stat to escape
+	! these values are based off of the cheat menu values for players who turn off these stats as they can never go below 35
+	if pcs_energy >= 35: 
+		pcs_energy -= 35
+	elseif pcs_hydra >= 35: 
+		pcs_hydra -= 35
+	elseif pcs_sleep >= 35: 
+		pcs_sleep -= 35
+	end
+	
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	gt 'zaprF', 'start'
+end
+
+if $ARGS[0] = 'punish':
+	! once again punishType uses the same logic as carwashscene for dynamic choices
+	punishType = rand(1, 100)
+	if punishType <= min(max(50,slut_compare),75) and punishType >= 50:	
+		gt 'zaprFWash', 'punishAnal'
+	elseif punishType <= min(max(75,slut_compare),100) and punishType >= 75:	
+		gt 'zaprFWash', 'punishPussyQ'
+	else
+		gt 'zaprFWash', 'punishSpank'
+	end
+end
+
+if $ARGS[0] = 'punishSpank':
+	pcs_horny = 0
+	pcs_mood -= 10
+	inhib_exp += rand(2,4)
+	pain['asscheeks'] += 5
+	gs 'stat'
+	
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/punishspank.mp4"></video></center>'
+	
+	'The angry man drags you to a more secluded area, bends you over and starts to spank your ass very hard.'
+	'After twenty minutes of ruthless punishment, you can finally crawl away with your burning ass.'
+	
+	gs 'arousal', 'foreplay', 15, 'sub', 'rough', 'unknown'
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	! SM it was too hard to get abducted so remove old check against strength/agility, now only checks against slut reputation
+	! minimum chance of 1% maximum chance of 90% to be abducted
+	abductionChance = min(max(1,slut_compare),180)/2
+	if abductionChance >= rand(1,100):
+		'But your perpetrator isn''t done with you.'
+		'He catches you again, drags you to his car and pushes you into the trunk...'
+		'You have a feeling this probably will not go well for you...'
+		
+		act 'Cry for help':gt 'abduction', 'start'
+	else		
+		'Your perpetrator stands up and just watches as you crawl away in pain.'
+		'He turns around and calmly walks away, leaving you alone.'
+		
+		act 'Escape':gt 'zaprF', 'start'
+	end
+end
+
+if $ARGS[0] = 'punishAnal':
+	pcs_horny = 0
+	pcs_mood -= 20
+	pain['asshole'] += 6
+	inhib_exp += rand(5,10)
+	gs 'cum_call', 'anus'
+	gs 'stat'
+	
+	i = rand(1, 3)
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/punishanal<<i>>.mp4"></video></center>'
+	
+	'The angry man drags you to a more secluded area, bends you over, and sticks a finger in your ass.'
+	'Your anus fully exposed, he starts fucking it ruthlessly.'
+	'After half an hour of rough assfucking he releases his grip on you so you can finally crawl away; your aching ass sore from the brutal penetration.'
+	
+	gs 'arousal', 'anal', 30, 'sub', 'rough', 'rape', 'unknown'
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	abductionChance = min(max(1,slut_compare),180)/2
+	if abductionChance >= rand(1,100):
+		'But your perpetrator isn''t done with you.'
+		'He catches you again, drags you to his car and pushes you into the trunk...'
+		'You have a feeling this probably will not go well for you...'
+		
+		act 'Cry for help':gt 'abduction', 'start'
+	else		
+		'Your perpetrator stands up and just watches as you crawl away in pain.'
+		'He turns around and calmly walks away, leaving you alone.'
+		
+		act 'Escape':gt 'zaprF', 'start'
+	end
+end
+
+if $ARGS[0] = 'punishPussyQ':
+	'The angry man drags you to a more secluded area. He bends you over and starts to rub your pussy.'
+	
+	if pcs_vag = 0:
+		'Suddenly he remarks: "What? You''re a virgin? Such slutty tease and still a virgin?'
+		
+		penetrate = rand (1, 100)
+		if penetrate <= min(max(50,slut_compare),75) and penetrate >= 50:	
+			'I''ll spare your virginity but you''ll get fucked anyway. Sluts have more than one hole for a reason, right?'
+			
+			act 'Endure':gt 'zaprFWash', 'punishAnal'
+		elseif penetrate <= min(max(75,slut_compare),100) and penetrate >= 75:	
+			'This makes it even better! I''ll enjoy your tears even more! I haven''t had a virgin in forever!'
+			
+			act 'Endure':gt 'zaprFWash', 'punishPussy', 'virgin'
+		else
+			'Someone should have done this a long time ago, but I''ll spare you penetration this time!'
+			
+			act 'Endure':gt 'zaprFWash', 'punishSpank'
+		end
+	else
+		'Let''s try what you''ve been teasing, you ungrateful whore!'
+		act 'Endure':gt 'zaprFWash', 'punishPussy', 'normal'
+	end
+end
+
+! $ARGS[1] = whether you were a virgin before this or not
+if $ARGS[0] = 'punishPussy':
+	pcs_horny = 0
+	pain['vaginal'] += 4
+	inhib_exp += rand(5,10)
+	gs 'cum_call', ''
+	gs 'stat'
+	
+	'<center><video autoplay loop src="images/locations/shared/carwash/sex/punishpussy' + rand(1,5) + '.mp4"></video></center>'
+	
+	if $ARGS[1] = 'virgin':
+		'Your pussy fully exposed, he slowly inserts his cock inside of you. He pushes right up against your hymen, savoring the moment. Suddenly, you feel your hymen break and know your virginity is gone forever. What will your friends and family think of you now if they find out?'
+		pcs_mood -= 40
+	elseif $ARGS[1] = 'normal':
+		'Your pussy fully exposed, he starts fucking it ruthlessly.'
+		pcs_mood -= 20
+	end
+	'After half an hour of destroying your cunt he releases his grip on you so you can finally crawl away; your aching pussy sore from the brutal penetration.'
+	
+	gs 'arousal', 'vaginal', 30, 'sub', 'rough', 'rape', 'unknown'
+	gs 'arousal', 'end'
+	gs 'stat'
+	
+	abductionChance = min(max(1,slut_compare),180)/2
+	if abductionChance >= rand(1,100):
+		'But your perpetrator isn''t done with you.'
+		'He catches you again, drags you to his car and pushes you into the trunk...'
+		'You have a feeling this probably will not go well for you...'
+		act 'Cry for help':gt 'abduction', 'start'
+	else		
+		'Your perpetrator stands up and just watches as you crawl away in pain.'
+		'He turns around and calmly walks away, leaving you alone.'
+		act 'Escape':gt 'zaprF', 'start'
+	end
+end
+
+--- zaprFWash ---------------------------------
+

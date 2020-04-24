@@ -1,0 +1,135 @@
+# init
+!Calculation initiative
+!Be sure to check for mills
+!hod variable is responsible for who will attack
+!hod = 0 player attacks hod = 1 enemy attacks
+!<font color = red><<$pcs_nickname>> </font>
+
+if GedoMazo = 1 and stunV > 0:stunV = 0 & manaV = manaV - 1000 & '<font color = red><<$boydesc>> lets out a deafening roar. It rejuvenates a large amount of energy which allows him to attack you again.</font>'
+
+initi = pcs_react*20/100
+initi = initi - dospehVes
+if initi < 0:initi = 0
+init = RAND(pcs_react-initi,pcs_react+initi) + initBonus
+initiV = reactV*20/100
+initiV = initiV - dospehVesV
+if initiV < 0:initiV = 0
+initV = RAND(reactV-initiV,reactV+initiV) + initBonusV
+
+if hodtime >= 3 and stun = 0 and stunV = 0 and initBonus = 0:
+	!the player has already attacked three times
+	'<font color = red><<$boydesc>> took the initiative.</font>'
+
+	hod = 1
+	hodtime = 0
+	exit
+elseif hodtimeV >= 3 and stun = 0 and stunV = 0 and initBonusV = 0:
+	!the opponent three times already attacked
+	'<font color = green>You take the initiative.</font>'
+
+	hod = 0
+	hodtimeV = 0
+	exit
+end
+
+if stun = 0 and stunV = 0 and hodtime < 3 and hodtimeV < 3 or stun = 0 and stunV = 0 and initBonus > 0 or stun = 0 and stunV = 0 and initBonusV > 0:
+	!neither in the camp
+	if tuman = 0 and tumanV = 0:
+		!no fog
+		if init > initV:
+			!initiative tackler
+			'<font color = green>You take the initiative.</font>'
+
+			hod = 0
+			hodtime = hodtime + 1
+			exit
+		elseif init < initV:
+			!the initiative has captured the enemy
+			'<font color = red><<$boydesc>> took the initiative.</font>'
+
+			hod = 1
+			hodtimeV = hodtimeV + 1
+			exit
+		elseif init = initV:
+			hod = RAND(0,1)
+			if hod = 0:'<font color = green>You barely take the initiative.</font>'
+			if hod = 1:'<font color = red><<$boydesc>> barely took the initiative.</font>'
+			exit
+		end
+	elseif tuman > 0:
+		!fog player
+		tuman = tuman - 1
+		initV = reactV-initiV
+
+		if init > initV:
+			!initiative tackler
+			'<font color = green>Blinded by the mist <<$boydesc>> can''t find you, giving you the initiative.</font>'
+
+			hod = 0
+			hodtime = hodtime + 1
+			exit
+		elseif init < initV:
+			!the initiative has captured the enemy
+			'<font color = red><<$boydesc>> could find you through the mist. He takes the initiative.</font>'
+
+			hod = 1
+			hodtimeV = hodtimeV + 1
+			exit
+		elseif init = initV:
+			hod = RAND(0,1)
+			if hod = 0:'<font color = green>You were barely able to take the initiative despite the mist.</font>'
+			if hod = 1:'<font color = red>Despite the mist <<$boydesc>> still took the initiative.</font>'
+			exit
+		end
+	elseif tumanV > 0:
+		!fog opponent
+		tumanV = tumanV - 1
+		init = pcs_react-initi
+
+		if init > initV:
+			!initiative tackler
+			'<font color = green>Despite the mist, you managed to take the initiative.</font>'
+
+			hod = 0
+			hodtime = hodtime + 1
+			exit
+		elseif init < initV:
+			!the initiative has captured the enemy
+			'<font color = red><<$boydesc>> The enemy easily gains the initiative.</font>'
+
+			hod = 1
+			hodtimeV = hodtimeV + 1
+			exit
+		elseif init = initV:
+			hod = RAND(0,1)
+			if hod = 0:'<font color = green>You barely managed to take the initiative despite the mist.</font>'
+			if hod = 1:'<font color = red><<$boydesc>> The enemy easily gains the initiative by using the mist.</font>'
+			exit
+		end
+	end
+end
+
+if stun > 0:
+	!player in the camp
+	stun = stun - 1
+	hod = 1
+	if tuman > 0:tuman = tuman - 1
+	if tumanV > 0:tumanV = tumanV - 1
+
+	'<font color = red>You can not move, and <<$boydesc>> easy to takes the initiative.</font>'
+
+	exit
+elseif stunV > 0:
+	!the enemy in the camp
+	stunV = stunV - 1
+	hod = 0
+	if tuman > 0:tuman = tuman - 1
+	if tumanV > 0:tumanV = tumanV - 1
+
+	'<font color = green><<$boydesc>> can not move and you easily take the initiative.</font>'
+
+	exit
+end
+
+--- init ---------------------------------
+

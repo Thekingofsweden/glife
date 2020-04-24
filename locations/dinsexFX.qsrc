@@ -1,0 +1,192 @@
+# dinsexFX
+!! penetration
+!!horny - excitement
+!!pcs_vag - vagina elasticity
+!!silavag - male skill:0-clumsy, 1-middle, 2-stud, 3-random
+!!dick - his penis size
+!!orgazm - what kind of orgasm
+
+$vagstart = {
+!condom check, to skip just use 2
+	if prezik > 0:
+		dynamic $prezik
+		protect = 1
+		if preziktype = 2:
+			sexcontra = 7
+			'You give the guy a sabotaged condom and he puts it on in silence.'
+		else
+			sexcontra = 3
+			'You give the guy a condom and he puts it on in silence.'
+		end
+	end
+	dynamic $vagstart2
+}
+
+$vagstart2 = {
+!need $boy, dick and silavag
+	frost = 0
+
+	pcs_horny += 10
+	minut += 10
+	if mesec > 0:
+		!!Menstruation ruins the mood
+		pcs_horny = 0
+		pcs_mood -= 10
+		'Menstrual blood slowly flows from your vagina, somewhat ruining the mood.'
+	end
+}
+
+$vagend = {
+!!pose = 0:front, pose = 1:back, pose = 3:cum inside, silavag = sexskill
+	if pcs_horny >= 80:
+		if pcs_vag = 0:
+			pcs_horny = 0
+			pcs_mood -= 15
+			pcs_vag += 1
+			'You bite your <<$liptalk>> in pain and tears flow down your face, <<$boydesc>> has torn your hymen with his <<dick>> centimeter dick. Your bloody pussy a reminder of your lost virginity.'
+		elseif mesec > 0:
+			pcs_horny -= 10
+			'As enjoyable as the sex may be, you are too worried about your bleeding to fully relax and can not orgasm.'
+		else
+			!!No Menstruatsion
+			prinat = pcs_vag + (pcs_horny / 10)
+
+			if dick >= prinat * 2:
+				!!Painfully too big for PC
+				orgazm = 0
+			elseif dick > prinat:
+				!!Big, but more bearable
+				if silavag = 0:
+					if pcs_horny >= 100:orgazm = 2
+					if pcs_horny >= 90 and pcs_horny < 100:orgazm = 1
+					if pcs_horny >= 80 and pcs_horny < 90:orgazm = 0
+				elseif silavag = 1:
+					if pcs_horny >= 90:orgazm = 2
+					if pcs_horny >= 80 and pcs_horny < 90:orgazm = 1
+				elseif silavag = 2:
+					orgazm = 2
+				end
+			elseif dick <= prinat and dick >= pcs_vag:
+				!!Perfect size
+				orgazm = 2
+			elseif dick < pcs_vag:
+				!!On the small side
+				if silavag = 0:
+					if pcs_horny >= 100:orgazm = 2
+					if pcs_horny < 100:orgazm = 3
+				elseif silavag = 1:
+					if pcs_horny >= 90:orgazm = 2
+					if pcs_horny < 90:orgazm = 3
+				elseif silavag = 2:
+					orgazm = 2
+				end
+			end
+		end
+
+		if orgazm = 0:
+			if vgape < 2:vgape = 2
+			pcs_horny -= 10
+			pcs_mood -= 10
+			'You bite your lip in pain <<$boydesc>>s <<dick>> centimeter cock is too big and he has left you insides battered and bruised. You are moaning in pain and not pleasure. Your poor pussy.'
+		elseif orgazm = 1:
+			pcs_mood += 10
+			'You are startled by how much your pussy has been stretching by <<$boydesc>>. It felt good when his <<dick>> centimeter dick was fucking your pussy. A pleasant warmth spread across your abdomen, but the strain of accommodating him denies you your release.'
+		elseif orgazm = 2:
+			pcs_horny = 0
+			pcs_mood += 15
+			orgasm += 1
+			vaginalOrgasm += 1
+			'Right from the pleasant feeling of your pussy stretching to fit his dick, it has felt so good having his <<dick>> centimeter dick fuck your pussy. The warmth that spread from your lower abdomen, has enveloped your entire body with hot, orgasmic waves. You scream with pleasure.'
+		elseif orgazm = 3:
+			pcs_horny += 5
+			pcs_mood += 5
+			'You felt from the moment his penis entered your pussy, that his <<dick>>cm dick is just too small for your pussy and his best efforts are not doing it for you. There is some please to be gained, but you never reach the heights of an orgasm.'
+		end
+	end
+
+	if pcs_vag < dick:pcs_vag += 1
+
+	stat['vaginal'] += 1
+
+	if protect < 2:
+		!!Unprotected sex
+
+		if rand(0, 1) = 0 or pose = 3:
+			!!Inside
+			gs 'cum_manage'
+			'<<$boydesc>> groans and you feel a jet of sperm fill your pussy.'
+			!std check
+			dynamic $veneracheck
+			if protect = 0:
+
+				pcs_mood -= 15
+
+				gs 'cuminsidereact'
+			end
+		else
+			!!Out
+
+			if pose = 0:
+				spafinloc = 14
+				gs 'cum_manage'
+				'<<$boydesc>> groans and after pulling out his dick, he came on your stomach.'
+			elseif pose = 1:
+				spafinloc = 4
+				gs 'cum_manage'
+				'<<$boydesc>> groans and after pulling out his dick, he came on your ass.'
+			end
+		end
+	else
+		protect = 0
+		'<<$boydesc>> groans and you realize that he came in the condom.'
+		prezrand = rand(0, 100)
+
+		if Sexcontra = 4:
+			'Pulling out of you and looking at his dick, <<$boydesc>> said "Hmm, condom burst"'
+			!std check
+			dynamic $veneracheck
+			Sexcontra = 0
+		end
+	end
+	protect = 0
+	sexcontra = 0
+
+	pose = 0
+}
+
+$veneracheck = {
+	if cheatHealth = 0:
+		tipvenerarand = rand(1, 10)
+		if tipvenerarand = 8:
+			!!herpes
+			if rand(1, 100) > 90 and GerpesOnce = 0:
+				GerpesOnce = 1
+				Venera += 1
+				Gerpes += 1
+			end
+		elseif tipvenerarand = 7:
+			!!syphilis
+			if rand(1, 100) > 97 and SifacOnce = 0:
+				SifacOnce = 1
+				Venera += 1
+				Sifilis += 1
+			end
+		elseif tipvenerarand >= 5 and tipvenerarand < 7:
+			!!gonorrhea
+			if rand(1, 100) > 90 and TriperOnce = 0:
+				TriperOnce = 1
+				Venera += 1
+				Triper += 1
+			end
+		elseif tipvenerarand < 5:
+			!!thrush
+			if rand(1, 100) > 85 and KandidozOnce = 0:
+				KandidozOnce = 1
+				Kandidoz += 1
+			end
+		end
+	end
+}
+
+--- dinsexFX ---------------------------------
+

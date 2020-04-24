@@ -1,0 +1,157 @@
+# kakuzu
+if $ARGS[0] = 'start':
+	cla & *clr
+	minut += 5
+	$menu_loc = 'kakuzu'
+	$menu_arg = 'start'
+	menu_off = 0
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b>Mansion Kakuzu</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/mansion/mansion.jpg"></center>'
+	'Old gloomy mansion, which even at the local gangs don''t approach out of fear and sincerely believe that something evil lives there. No need to have some sort of skills that make your system, from the death blows.'
+
+	act 'Enter the mansion':gt 'kakuzu', 'mansion'
+	act 'Leave':gt 'nord'
+end
+
+if $ARGS[0] = 'mansion':
+    $location = 'event'
+	*clr & cla
+	minut += 5
+	gs 'stat'
+	'<center><b>Mansion Kakuzu</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/mansion/mansion1.jpg"></center>'
+	'The room sits Kakuzu not paying any attention to you'
+
+	act 'Talk to Kakuzu':gt 'kakuzu', 'mansion1'
+	act 'Leave':gt 'kakuzu', 'start'
+end
+
+if $ARGS[0] = 'mansion1':
+    $location = 'event'
+	*clr & cla
+	minut += 5
+	gs 'stat'
+	'<center><b>Kakuzu</b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/city/kakuzu/kakuzu.jpg"></center>'
+
+	if tobiQW = 1:'I know who you are and what you need. Pay 100k and then I will teach you how to achieve affinity with the elements.'
+	if tobiQW = 2:'You have <<srodpaper>> sheets of paper to determine the affinity of the elements. If you run out of paper, you have to buy more at Kakuzu 10 thousand sheet.'
+
+	if money >= 100000 and tobiQW = 1:
+		act 'Here''s the money (100,000 <b>₽</b>)':
+			cla
+			money -= 100000
+			tobiQW = 2
+			srodpaper = 10
+			'You put money in front of Kakuzu. He threw them in a drawer without even looking.'
+			'You ask, "Not even going to count?" Kakuzu replies quietly, "if there is not enough by even a ruble, I will find and kill you."'
+			'(Kakuzu) - Listen to me carefully. There are five elements, '
+			'fire - school has the most powerful damage potential and the weakest protection. But there is no better school for defeating opponent with a single blow.'
+			'lightning - in this school each hit paralyzes the opponent, it has weaker than damage than the fire, but if you''re hooked by lightning, then quickly you will achieve any.'
+			'wind - weak damage, weak defense, but no fog or clones can save them from the wind and wind spells are almost impossible to dodge.'
+			'earth - defensive school, but the attacks are very dangerous. If the enemy attack misses, they will get stuck in the ground and unable to move. Earth protection is the most powerful of all protection, protection of land and regenerate itself absolute defense to attack the enemy.'
+			'Water - Damage of this school is weak, but all spells steal mana from the enemy, the same high level of water protection is very dangerous, it consumes mana from an enemy and regenerates, although it is weaker than earth protection.'
+			'Affinity with the elements means that you can learn this particular element. You can not explore another element after selecting affinity until izuchish element completely. I''ll give you 10 sheets of paper magic. Each sheet cost me 5, 000 <b>₽</b>. Concentrate the energy on a piece of paper until you succeed, then you can either start over and hope for another element, or proceed with the element that appeared to you.'
+
+			act 'Mark sheets':gt 'kakuzu', 'mansion1'
+		end
+	elseif tobiQW = 2 and srodpaper <= 0 and money >= 10000:
+		act 'I need another paper (10,000 <b>₽</b>)':
+			cla
+			money -= 10000
+			srodpaper += 1
+			'You gave money and Kakuzu handed a sheet of paper.'
+
+			act 'Mark sheets':gt 'kakuzu', 'mansion1'
+		end
+	end
+
+	if tobiQW = 2:
+		act 'Tell us again about the elements':
+			cla
+			'(Kakuzu) - Idiot, listen and remember.  There are five elements, '
+			'fire - school has the most powerful damage potential and the weakest protection. But there is no better school for defeating opponent with a single blow.'
+			'lightning - in this school each hit paralyzes the opponent, it has weaker than damage than the fire, but if you''re hooked by lightning, then quickly you will achieve any.'
+			'wind - weak damage, weak defense, but no fog or clones can save them from the wind and wind spells are almost impossible to dodge.'
+			'earth - defensive school, but the attacks are very dangerous. If the enemy attack misses, they will get stuck in the ground and unable to move. Earth protection is the most powerful of all protection, protection of land and regenerate itself absolute defense to attack the enemy.'
+			'Water - Damage of this school is weak, but all spells steal mana from the enemy, the same high level of water protection is very dangerous, it consumes mana from an enemy and regenerates, although it is weaker than earth protection.'
+			'Affinity with the elements means that you can learn this particular element. You can not explore another element after selecting affinity until izuchish element completely. I''ll give you 10 sheets of paper magic. Each sheet cost me 5, 000 <b>₽</b>. Concentrate the energy on a piece of paper until you succeed, then you can either start over and hope for another element, or proceed with the element that appeared to you.'
+
+			act 'Move away':gt 'kakuzu', 'mansion1'
+		end
+	end
+
+	if tobiQW = 2 and srodpaper > 0 and pcs_mana < 2000:'You do not have enough mana to continue concentrating.'
+
+	if tobiQW = 2 and srodpaper > 0 and pcs_mana >= 2000:
+		act 'Concentrating the energy in the sheet of paper (1:00)':
+			cla
+			minut += 60
+			pcs_mana -= 2000
+			gs 'sweat', 'add', 40
+
+			if srodstvo = 0:srodrand = rand(1, 5)
+
+			'You concentrate energy in the sheet of paper. You feel that you are spending a huge amount of mana for this action.'
+			srodstvo += rand(9-(2*difficulty), 10)
+
+			if srodstvo < 100:
+				'You get tired and sweat like a horse, but your effort was not enough.'
+
+				act 'Move away':gt 'kakuzu', 'mansion1'
+			elseif srodstvo >= 100:
+				srodpaper -= 1
+
+				if srodrand = 1:'Paper broke in your hands. Kakuzu nods approvingly. Affinity with fire. Will you take it?'
+				if srodrand = 2:'Paper electrified in your hands, and sparks dance on it. Kakuzu nods approvingly. Affinity with lightning. Will you take it?'
+				if srodrand = 3:'Paper hardened in your hands. Kakuzu nods approvingly. Affinity with the land. Will you take it?'
+				if srodrand = 4:'Paper shredded to pieces in your hands. Kakuzu nods approvingly. Affinity with the wind. Will you take it?'
+				if srodrand = 5:'Paper soaked in your hands. Kakuzu nods approvingly. Affinity for water. Will you take it?'
+
+				act 'Secure affinity':
+					cla
+					tobiQW = 3
+					stihia = srodrand
+					srodstvo = 0
+					gt 'kakuzu', 'mansion1'
+				end
+
+				act 'Unsubscribe from this affinity':
+					srodstvo = 0
+					gt 'kakuzu', 'mansion1'
+				end
+			end
+		end
+	end
+
+	if tobiQW = 3 and pcs_mana < 1000:
+		'Kakuzu tells you "You have almost no energy, you need to rest."'
+	elseif tobiQW = 3 and pcs_mana >= 1000:
+		if stihia = 1:
+			gs 'spellList', 'teacherActions', '$fireSpells', 'kakuzu', 'mansion1'
+		end
+
+		if stihia = 2:
+			gs 'spellList', 'teacherActions', '$electSpells', 'kakuzu', 'mansion1'
+		end
+
+		if stihia = 3:
+			gs 'spellList', 'teacherActions', '$earthSpells', 'kakuzu', 'mansion1'
+		end
+
+		if stihia = 4:
+			gs 'spellList', 'teacherActions', '$airSpells', 'kakuzu', 'mansion1'
+		end
+
+		if stihia = 5:
+			gs 'spellList', 'teacherActions', '$waterSpells', 'kakuzu', 'mansion1'
+		end
+	end
+
+	act 'Leave':gt 'kakuzu', 'mansion'
+end
+
+--- kakuzu ---------------------------------
+

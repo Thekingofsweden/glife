@@ -1,0 +1,146 @@
+# cloakroom
+
+menu_off = 1
+
+$coat_list_line = {
+	!! a single line in a clothing list (wardrobe, etc)
+	!! ARGS 0 - clothing index
+
+	if Enable_clothwidth > 0:
+		clothing_temp = Enable_clothwidth - 1
+	else
+		clothing_temp = 150 & !clothing widdefault to 150
+	end
+
+	gs 'themes', 'clothing', 1
+
+	$RESULT = '<TR bgcolor='+$bgcolor+'>'
+
+	$RESULT +='<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', <<ARGS[0]>>"><img src="<<FUNC(''$clothing_image'', ''coat'', ARGS[0])>>" width="<<clothing_temp>>"></a></TD>'
+
+	$RESULT += '<TD>Coat # <<ARGS[0]>><br>strength: ' + dyneval '$RESULT += coatH[<<ARGS[0]>>]'+'</TD>'
+
+	$RESULT += '<TD>' + FUNC('$clothing_name', 'coat', ARGS[0]) + '</TD>'
+
+	$RESULT += '<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', <<ARGS[0]>>">View</a></TD>'
+
+	if coatH[i] > 0:
+		$RESULT += '<TD><a href="exec:defaultcoat = ''<<i>>'' & gt ''cloakroom'', ''view_coat_list''">Wear</a></TD>'
+	end
+
+	$RESULT += '<TD>'
+	if i = defaultcoat:
+		$RESULT += 'Yes'
+	end
+	$RESULT += '</TD>'
+
+	$RESULT += '<TD>'
+	if dyneval('RESULT = coatS[<<ARGS[0]>>]') = 0:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest'', <<ARGS[0]>>">Keep</a>'
+	if dyneval('RESULT = coatS[<<ARGS[0]>>]') = 2:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest1'', <<ARGS[0]>>">Unwanted</a>'
+	$RESULT += '</TD>'}
+
+if $ARGS[0] = 'dest':
+	*clr
+	dynamic 'coatS[<<ARGS[1]>>] = 2'
+	gt 'cloakroom', 'view_coat_list'
+end
+
+if $ARGS[0] = 'dest1':
+	*clr
+	dynamic 'coatS[<<ARGS[1]>>] = 0'
+	gt 'cloakroom', 'view_coat_list'
+end
+
+if $ARGS[0] = 'clothwidth':
+	act 'Set image height for this view': 
+		Enable_clothwidth = input("Enter height in pixels you want for images on this page <br>(Default 150, min 50, max 500)")
+		if Enable_clothwidth < 50:
+			Enable_clothwidth = 50
+		elseif Enable_clothwidth > 500:
+			Enable_clothwidth = 500
+		end
+		gt 'cloakroom', 'view_coat_list'
+	end
+end
+
+if $ARGS[0] = 'view_coat_list':
+
+	'<h3><center><b><font color="maroon">Wardrobe</font></b></center></h3>'
+	'<center>These are the coats that are currently available for you to wear.</center>'
+	*nl
+
+	if defaultcoat = 0:
+		'<center>You will not wear a coat when outside in the cold.</center>'
+	else
+		'<center>You will wear Coat<<defaultcoat>> when a coat is required.</center>'
+	end
+	*nl
+
+	gs 'themes', 'clothing', 2
+	
+	'<table><table border=0 cellspacing=0 cellpadding=5><TH></TH><TH>Item no.</TH><TH>Description</TH><TH>Large image</TH><TH>Set as default</TH><TH>Default</TH><TH>Set for sale</TH>'
+
+	i = 1
+	:loopcoat
+		if coat[i] = 1:*p dyneval($coat_list_line, i)
+		i += 1
+	if i <= ARRSIZE('coat'):jump 'loopcoat'
+
+	'</table>'
+
+	act 'Return':gt 'wardrobe', 'start'
+	if defaultcoat ! 0:
+		act 'Remove coat':
+			defaultcoat_warmth = 0
+			defaultcoat = 0
+			gt 'cloakroom', 'view_coat_list'
+		end
+	end
+	gs 'cloakroom', 'clothwidth'
+
+end
+
+if $ARGS[0] = 'view_coat_item':
+	!! ARGS 0 - view_clothing_item
+	!! ARGS 1 - clothing index
+
+	cla
+	'<center><img <<$set_imgh>> src="<<FUNC(''$clothing_image'', ''coat'', ARGS[1])>>"></center>'
+	'coat no.<<ARGS[1]>>'
+	FUNC('$attributes_coat', coat, ARGS[1])
+	FUNC('$clothing_name', coat, ARGS[1])
+
+
+	$RESULT = '(strength '
+	dynamic '$RESULT += coatH[<<ARGS[1]>>]'
+	$RESULT += ')'
+	'<<$RESULT>>'
+
+	!! if the clothing is worn out
+	if dyneval('RESULT = coatH[<<ARGS[1]>>]') <= 0:
+		'This item is worn and is not suitable for further wear.'
+		act 'Throw it away':
+			dynamic 'coat[<<ARGS[1]>>] = 0'
+			gt 'cloakroom', 'view_coat_list', 'coat'
+		end
+	end
+
+	act 'Return':gt 'cloakroom', 'view_coat_list'
+
+	if defaultcoat ! '<<ARGS[1]>>':
+		act 'Wear this coat':
+			defaultcoat = '<<ARGS[1]>>'
+			if defaultcoat < 4:
+				defaultcoat_warmth = 1
+			elseif defaultcoat = 4 or defaultcoat = 5 or defaultcoat = 8 or defaultcoat = 10 or defaultcoat = 12 or defaultcoat = 13 or defaultcoat = 14 or defaultcoat = 16 or defaultcoat = 17 or defaultcoat = 18 or defaultcoat = 19:
+				defaultcoat_warmth = 2
+			elseif defaultcoat = 6 or defaultcoat = 7 or defaultcoat = 9 or defaultcoat = 11 or defaultcoat = 15:
+				defaultcoat_warmth = 3
+			end
+			gt 'wardrobe', 'start'
+		end
+	end
+end
+
+--- cloakroom ---------------------------------
+

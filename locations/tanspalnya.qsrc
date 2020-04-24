@@ -1,0 +1,163 @@
+# tanspalnya
+CLOSE ALL
+
+$metka = ''
+$loc = 'tanspalnya'
+$metkaM = ''
+$locM = 'tanspalnya'
+$location_type = 'private'
+$locclass = 'bedr'
+$menu_loc = 'tanspalnya'
+$menu_arg = ''
+menu_off = 0
+
+minut += 5
+tanhouse1 = 1
+gs 'stat'
+'<center><b>Your Bedroom in Nicholas'' Apartment</b></center>'
+'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/bedroomServant.jpg"></center>'
+
+'Your bedroom is fairly large, considering you''re only an employee. There is a small <a href="exec:gt ''bed'', ''start''">double bed</a> and an <a href="exec:gt ''budilnik'', ''start''">alarm clock</a>.'
+'Half a wall is taken up by an expensive-looking <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> (where you can choose outfits and organize your clothing). There''s a make-up table with a <a href="exec:gt ''mirror'', ''start''">mirror</a> next to it.'
+if komp = 1:
+	$komp = ' with your <a href="exec:gt ''Komp'', ''start''">laptop</a>.'
+else
+	$komp = '.'
+end
+'A luxurious <a href="exec:gt ''divan'', ''start''">leather sofa</a> is also part of the ensemble. Mounted on the wall opposite the sofa is a huge plasma <a href="exec:gt ''TV'', ''start''">TV</a>. Under the window, you see a brand-new <a href="exec:gt ''stol'', ''start''">desk</a><<$komp>>'
+*nl
+'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+*nl
+if obruch > 0:'<br>Your hula hoop stands in a corner of the room. '
+if skak > 0:'Your jump rope is sitting on a shelf. '
+if bookYog > 0:'A yoga mat is rolled up in a corner next to the wardrobe. '
+
+if mishka > 0:'On one of the shelves, you''ve placed your <<mishka>> teddy bear.'
+
+gs 'exercise', 'start'
+
+act 'Go to the corridor':
+	if $clothingworntype ! 'nude':
+		gt 'tanhouse'
+		else
+		msg'<b><font color = red>You probably shouldn''t walk around naked, especially not at your workplace. You need to get dressed.</font></b>'
+		gt $CURLOC
+	end
+end
+
+act 'Study (2:00)':
+	cla
+	menu_off = 1
+	minut += 120
+	intel_exp += 1
+	'You spend two hours studying and feel a little smarter now.'
+
+	act 'Finish':gt 'tanspalnya'
+end
+
+if student > 0 and kursovik < 100:
+	act 'Write course work (1:00)':
+		*clr & cla
+		menu_off = 1
+		minut += 60
+		kursovik += rand(pcs_intel / 20, pcs_intel / 10)
+
+		if kursovik > 100:kursovik = 100
+
+		pcs_mood -= 10
+		'<center><img <<$set_imgh>> src="images/pc/activities/study.jpg"></center>'
+		'You work on your course work and have now completed <<kursovik>> percent.'
+
+		act 'Finish':gt 'tanspalnya'
+	end
+end
+
+gs 'events', 'read'
+
+if pcs_magik >= 6 and spellbefshild = 1 and tobiQW = 0:gt'tobiQW','start'
+
+if sick >= 1:
+	act 'Get some bed rest (illness)':
+		*clr & cla
+		menu_off = 1
+		minut += 240
+		sick -= 1
+		if sick < 0:sick = 0
+		gs'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/shared/apartment/event/sick/sick'+rand(11,17)+'.jpg"></center>'
+
+		'You lie in bed, coughing, sneezing, blowing your nose... and, as if that wasn''t enough, you also think you might be getting a headache.'
+		'Drifting in and out of sleep, you spend about 4 hours tossing and turning, trying to sweat out the illness, and you actually feel better when you decide to stretch your legs.'
+
+		act 'Get up': gt 'bedr'
+	end
+end
+
+if pcs_horny >= 50: act 'Masturbate': gt'selfplay', 'start'
+
+if pornMagazine > 0:'You hide a porn magazine under your mattress.' & dynamic $d_read_porn
+
+dynamic $wearpan
+dynamic $removepan
+
+if dur > 0:'You have hidden <<dur>> doses of Pale Lady behind your wardrobe.'
+
+if dur > 0 and narkday ! daystart:
+	act 'Take some cocaine (0:05)':
+		*clr & cla
+		menu_off = 1
+		minut += 5
+		narkday = daystart
+		gs 'drugs', 'cocaine'
+		'<center><img <<$set_imgh>> src="images/shared/drugs/dur.jpg"></center>'
+		'You take a small dose of coke and not long after, you start to feel great, as if you could do anything, <b>be</b> anything - but you''re also starting to feel incredibly horny.'
+
+		act 'Leave':gt $curloc
+	end
+end
+
+if MaidWorkDay ! daystart:
+	MaidWorkDay = daystart
+	MaidWork = 0
+	TanHallClean = 0
+	TanRoomClean = 0
+	TanBathClean = 0
+	TanMasterClean = 0
+	TanLivingClean = 0
+	TanMaidRoomClean = 0
+	TanKitchenClean = 0
+	TanMadeBreakfast = 0
+end
+
+if tan_work_evalDay ! daystart and tan_work_evaluation = 1:
+	tan_work_evalDay = daystart
+	tan_work_evaluation = 0
+
+elseif tan_work_evalDay ! daystart and tan_work_evaluation = 0:
+	tan_work_evalDay = daystart
+	tan_work_rep -= 1
+	*nl
+	'You did not go to see Nicholas yesterday evening. Regardless of how much or little work you did, this is sure to decrease your professional standing with him as your employer.'
+	tan_work_evaluation = 0
+end
+
+if TanMaidRoomClean = 0:
+	act 'Clean your Room':
+		cla
+		menu_off = 1
+		minut += 30
+		TanMaidRoomClean = 1
+		MaidWork += 1
+		gs 'stat'
+		*nl
+		'You vacuum, wet wipe, dust and polish all the surfaces and objects in your room, knowing well that, if a guest wanted to take a look inside, you''d embarrass Nicholas if this room wasn''t in as perfect a condition as is expected of all the others.'
+		'At least you are free to wear whatever you want while you clean your room, you think.'
+		act 'Finish cleaning':
+			gt 'tanspalnya'
+		end
+	end
+end
+
+--- tanspalnya ---------------------------------
+

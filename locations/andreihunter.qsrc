@@ -1,0 +1,221 @@
+# andreihunter
+
+menu_off = 1
+gs 'boystat', 'A172'
+harakBoy = 2
+boyage = npc_dob[$boy]
+boyage = (boyage - boyage mod 10000) / 10000
+boyage = year - boyage
+
+'<center><b><font color = maroon>Andrei</font></b></center>'
+'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big172.jpg"></center>'
+'Andrei is the leader of the group of hunters that frequent the woods and swamp by Gadukino while living close by. He''s <<boyage>> years old and divorced.'
+if huntersAndreiQw < 0:'You and him have a bad relationship, because you offended him in the past.'
+if huntersAndreiQw >= 0 and huntersAndreiQw < 10:'You have a normal relationship with him.'
+if huntersAndreiQw >= 10 and huntersAndreiQw < 15:'You have friendly relations with him.'
+if huntersAndreiQw >= 15 and huntersAndreiQw < 25:'You''re good friends.'
+if huntersAndreiQw > 25 :'You love him.'
+if huntersAndreiLove = 1:'You love each other.'
+gs 'stat'
+
+act 'Chat (0:30)':
+	*clr & cla
+	minut += 30
+	if huntersAndreiQw < 10:huntersAndreiQw += 1
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/talk1.'+rand(1,3)+'.jpg"></center>'
+	if huntersAndreiQw >= 0:'You chat with Andrei. You learn interesting tidbits about hunting from him.'
+	if huntersAndreiQw < 0:'You talk to Andrei. He makes it clear he''d rather not talk to you, but takes part in the conversation anyway.'
+
+	act'Continue':gt $loc, $metka
+end
+
+if huntersAndreiQw >= 10:
+	if huntersAndreiLove = 0:
+		act 'Flirt':
+			minut += 5
+			!!not using arousal as no orgasm chance
+			pcs_horny += 10
+			*clr & cla
+			if huntersAndreiQw <= 35 and huntersKnowSlut = 0:huntersAndreiQw += 1
+			if huntersIgorQw >= 10 and huntersKnowSlut = 0:huntersIgorQw -= 1
+			if huntersSergeiQw >= 10 and huntersKnowSlut = 0:huntersSergeiQw -= 1
+			gs 'stat'
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterflirt1.'+rand(1,3)+'.jpg"></center>'
+			'You flirt with Andrei. He doesn''t say so aloud, but he likes the attention. You notice him checking you out when he thinks you aren''t looking.'
+
+			gs 'stat'
+
+			if huntersAndreiLove = 0 and huntersAndreiQw >= 25 and huntersKnowSlut = 0 and pcs_apprnc >= 60:
+				*clr & cla
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterkiss1.jpg"></center>'
+				'You smile sweetly at Andrei while you flirt and you are caught off guard when he suddenly goes in for a kiss.'
+
+				gs 'arousal', 'foreplay', 5
+				gs 'stat'
+
+				act 'Answer kiss':
+					*clr & cla
+					huntersAndreiLove = 1
+					huntersAndreiQw += 1
+					pcs_mood = 100
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterkiss2.jpg"></center>'
+					'Your lips touch... your heart skips a beat. Andrei takes control and continues aggressively, so you find yourself responding to his whims.'
+
+					gs 'arousal', 'kiss', 5
+					gs 'stat'
+
+
+					if pcs_horny >= 40:
+						act'Continue':
+							*clr & cla
+							minut += 5
+							gs 'stat'
+
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterkiss3.jpg"></center>'
+							'"<<$pcs_nickname>>, I want you", Andrei whispers when your lips finally part You nod eagerly then Andrei gently takes you by the hand and leads you to his bed.'
+							act 'Go':gt 'hunterLoveSex','Andrei'
+						end
+					else
+						act'Further':
+							*clr & cla
+							minut += 5
+							gs 'stat'
+
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterkiss3.jpg"></center>'
+							'"Maybe next time we won''t stop there, <<$pcs_nickname>>", Andrei says when your lips finally part. "For now though, let''s go back."'
+
+							act'Continue':gt $loc, $metka
+						end
+					end
+				end
+				act 'Push away':
+					*clr & cla
+					minut += 5
+					hunterslut += 1
+					huntersAndreiQw -= 50
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/pc/speak_to_the_hand.jpg"></center>'
+					'"Sorry... Andrei... I can''t right now", you tell him. He leaves with an angry look on his face.'
+
+					act'Leave':gt $loc, $metka
+				end
+			else
+				act'Leave':gt $loc, $metka
+			end
+		end
+	else
+		act 'Spend time together':
+			minut += 60
+			!!not using arousal as no orgasm chance
+			pcs_horny += 10
+			*clr & cla
+			huntersAndreiQw += 1
+			if huntersIgorLove > 0 or huntersSergeiLove > 0:hunterslut += 1
+			if huntersIgorLove = 0 and huntersSergeiLove = 0:hunterslut -= 1
+			pcs_mood = 100
+			gs 'stat'
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterlove1.'+rand(1,4)+'.jpg"></center>'
+			'You spend time together with Andrei. He can''t keep his hands and lips off of you as you lie there together. He is happy with your company. You can see a look of satisfaction on his face and feel wonderful knowing you''re the one who put it there'
+
+			gs 'stat'
+
+			act'Leave':gt $loc, $metka
+		end
+	end
+end
+
+if huntersAndreiLove > 0 and pcs_horny >= 60:
+	act 'Have sex':
+		*clr & cla
+		huntersAndreiQw += 1
+		huntersAndreisex += rand(6,24)
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterflirt2.'+rand(1,6)+'.jpg"></center>'
+		'You catch Andrei''s eyes with yours and give him a look that leaves no doubt what you want. He nods then places an arm around your shoulders to lead you inside.'
+
+		gs 'arousal', 'foreplay', 10
+		gs 'stat'
+
+		act 'Go':gt 'hunterLoveSex','Andrei'
+	end
+end
+
+if huntersAndreiLove > 0 and pcs_horny <= 60 and huntersAndreiQw >= 10 and temp = 1 and huntersAndreisex = 0:
+	*clr & cla
+	huntersAndreisex += rand(6,24)
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterlove1.4.jpg"></center>'
+	'As soon as you walked up to Andrei, he pulled you in for a kiss without saying a word. You have no time to get a word in as he pulls you towards him.'
+
+	gs 'arousal', 'kiss', 5
+	gs 'stat'
+
+	act 'Go with Andrei':
+		*clr & cla
+		huntersAndreiQw += 1
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterhands.jpg"></center>'
+		'You go with Andrei while his hands on your hips. You know how this ends and you really don''t mind.'
+
+		gs 'arousal', 'foreplay', 5
+		gs 'stat'
+
+		act 'Further':gt 'hunterLoveSex','Andrei'
+	end
+	act 'Refuse':
+		*clr & cla
+		minut += 5
+		huntersAndreiQw -= 1
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/pc/speak_to_the_hand.jpg"></center>'
+		'"No, Andrei not now." You quickly leave back the way you came.'
+		act 'Leave':gt $loc, $metka
+	end
+end
+
+if huntersAndreiLove > 0:
+	act 'Break up with Andrei':
+		*clr & cla
+		minut += 5
+		huntersAndreiLove = 0
+		huntersAndreiQw -= 100
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/brosila.jpg"></center>'
+		'"Andrei, I feel that our relationship has no future. I''m breaking up with you", you say. You leave while trying not to look back at him.'
+
+		act 'Leave':gt $loc, $metka
+	end
+end
+
+act'Leave':gt $loc, $metka
+
+if huntersAndreiQw < 10 and huntersAndreiLove > 0:
+	*clr & cla
+	minut += 5
+	huntersAndreiLove = 0
+	huntersAndreiQw -= 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/brosil.jpg"></center>'
+	'You want to talk to Andrei, but he cuts in before you can say anything.'
+	'"<<$pcs_nickname>>, It''s over between us," he says firmly and walks away.'
+	'"Well , maybe it''s for the best," you think as you leave in the other direction.'
+
+	act 'Leave':gt $loc, $metka
+end
+
+--- andreihunter ---------------------------------
+

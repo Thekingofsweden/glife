@@ -1,0 +1,400 @@
+# korrPar
+
+music_loop = 0
+CLOSE ALL
+
+if sound = 0 and pavhome_enter = 1:
+	PLAY 'sound/korr.mp3',30
+	pavhome_enter = 0
+end
+
+$loc = 'korrPar'
+$metka = ''
+$locM = 'korrPar'
+$metkaM = ''
+$location_type = 'private'
+$menu_loc = 'korrPar'
+$menu_arg = ''
+menu_off = 0
+killvar '$locclass'
+clr
+popolaini = 0
+saunaYouRoom = 0
+boycherdaksex = 0
+minut += 1
+bonusZ = 0
+curr_home = 1
+display_bb = 0
+gs 'stat'
+gs 'themes', 'indoors'
+gs 'family'
+gs 'family_schedule'
+
+'<center><h1><font color="maroon">Corridor</font></h1></center>'
+'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/korrpar.jpg"></center>'
+*nl
+'The corridor of your parent''s apartment. There are several doors which lead to the other rooms of the apartment, as well as the front door which leads outside to the stairwell.'
+*nl
+'A <a href="exec:gt ''mirror'', ''start''">mirror</a> hangs on the wall near the front door.'
+*nl
+
+if indorf = 1:'With your parents being away to visit your grandparents, the apartment seems quiet and empty.'
+
+if courtletter_date <= daystart and courtletter_date ! 0: gt 'sentence', 'letter'
+
+if hour ! 18 and blockBedrPar = 1:blockBedrPar = 0
+
+
+!!Her room isn''t on the cleaning list yet
+!!if (momloc = <number for cleaning her room> ) and motherQW['con_steal_hear'] + 4 < daystart and prezikday + 4 < daystart and rand(1,4) = 1: gt 'mother', 'condom_steal', 'hear'
+if momloc = 1 and hour = 22 and minut < 30 and motherQW['con_steal_talk'] + 4 < daystart and prezikday + 4 < daystart and rand(1,2) = 1: gt 'mother', 'condom_steal', 'talk'
+
+act '<b>Leave and go to the stairwell</b>':
+	if $clothingworntype ! 'nude':
+		gt'pod_ezd','etaj_2'
+	else
+		msg'<b><font color = red>You need to get dressed.</font></b>'
+		gt 'korrPar'
+	end
+end
+
+act '<b>Leave and go to the courtyard</b>':
+	if $clothingworntype ! 'nude':
+		if hour < 4 and motherWorry = 0 and age < 18:
+			'<font color=red>Are you sure? Your mother will worry.</b></font>'
+			cla
+			act '<font color=red><b>Yes, go outside</b></font>': minut += 5 & gt'pavComplex', 'start'
+			act 'No, stay inside':gt 'korrPar'
+		else
+			minut += 5
+			gt'pavComplex', 'start'
+		end
+	else
+		msg'<b><font color = red>You need to get dressed.</font></b>'
+		gt 'korrPar'
+	end
+end
+
+if blockBedrPar = 0:
+	if sisboyday + 1 = daystart and hour = 18 and sisboytrioQW = 1:
+		act 'Go to your room':gt 'sisterQW', 'sisboytrioQW_bedroom'
+	elseif sisboyday + 1 = daystart and hour = 18 and (npc_QW['A33'] = 3 or npc_QW['A33'] = 5 or npc_QW['A33'] = 7 or npc_QW['A33'] >= 9):
+		act 'Go to your room':gt 'sisterQW', 'sisboyQW_bedroom'
+	else
+		act 'Go to your room':gt 'bedrPar'
+	end
+end
+if momloc = 1:
+	if (hour = 5 and minut > 30) or (hour = 6 and minut < 10):
+		'The door is closed. You know your <<$npc_nickname[''A29'']>> is likely waking up your step father and getting dressed.'
+		act 'Knock on your parents'' door':
+			if hour = 6 and minut < 10 and rand(0,2) ! 0:
+				cla & *clr
+				minut += 2
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/pc/activities/spy/peep3.jpg"></center>'
+				'You knock on the door and a few moments later your <<$npc_nickname[''A29'']>> opens the door looking like she just woke up. "I don''t have time right now. Go wake up your brother." Then she closes the door.'
+				act 'Leave':gt 'korrPar'
+				act 'Go wake up Kolka':
+					cla & *clr
+					minut += 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/kolka/sleeping.jpg"></center>'
+					'You walk down the hall and into the living room where you find Kolka sound asleep still on the couch.'
+
+					!!act 'Shake him':gt '', ''
+					!!I am leaving the rest of this for Sicaa so he can tie in any events he has for kolka
+					act 'Leave':gt 'korrPar'
+				end
+			else
+				cla & *clr
+				minut += 2
+				momvladroom = rand(1,10)
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/pc/activities/spy/peep3.jpg"></center>'
+				if momvladroom = 1:
+					'You knock on the door and you hear your <<$npc_nickname[''A29'']>> say. "Go set the table." Which is followed by a few murmuring of voices and you think your mother giggling.'
+
+					act 'Leave':gt 'korrPar'
+					gs 'willpower', 'voyeur', 'self', 'medium'
+					if will_cost <= pcs_willpwr:
+						act 'Peek (<<will_cost>> Willpower)':
+							*clr & cla
+							gs 'willpower', 'pay', 'self'
+							gs 'stat'
+							gt 'bedPar2', 'peek'
+						end
+					else
+						act 'Peek (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+				else
+					'You knock on the door and a few moments later your <<$npc_nickname[''A29'']>> opens the door fully dressed, in the background you can see your step father starting to get out of bed. "I don''t have time right now. Go set the table for breakfast." Then she closes the door.'
+					act 'Leave':gt 'korrPar'
+				end
+			end
+		end
+	else
+		act 'Go to your parents'' room': msg'Your parents are probably asleep, you shouldn''t go in right now.'
+	end
+else
+	act 'Go to your parents'' room':gt 'bedrPar2'
+end
+act 'Go to the living room':gt 'sitrPar'
+if momloc = 5:
+	act 'Go to the bathroom':msg'You try to open the bathroom door but it immediately stops, banging against the latch. You hear the water running and your mother shouting at the door. "Doesn''t anybody in this family know how to knock?!"'
+else
+	act 'Go to the bathroom':minut += 1 & gt 'vanrPar'
+end
+act 'Go to the kitchen':gt 'kuhrPar'
+
+!to add a counter if you avoid Dimka
+if nodimkaK >= rand(7,10) and DimkaWarnedToday = 0 and DimaRudeBlock = 0:
+	nodimkaK = 0
+	if hour >= 14 and hour < 24 and week <=5 and DimkaWarnedToday = 0: gt 'dimaEv', 'Dimka_warning'
+	if hour >= 9 and hour < 24 and week >=6 and DimkaWarnedToday = 0: gt 'dimaEv', 'Dimka_warning'
+end
+
+if NatbelQW['QWstage'] >= 4 and week < 6 and (hour = 6 or hour = 7) and kanikuli = 0 and SchoolAtestat = 0 and SchoolBlock = 0 and (PCloStyle2 = 4 or Enable_sforma = 1):
+	*nl
+	'You could go to Natasha''s apartment and get her to carry your books to school.'
+	act 'Go to Natasha''s apartment':gt 'natbelEv', 'carrybooks'
+end
+
+$korrParMomHeader = '<center><h1><font color="maroon"><<$npc_nickname[''A29'']>></font></h1></center><center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/mom/mother.jpg"></center><br />'
+
+if hour >= 16 and hour <= 20 and indorf = 0:
+	if artemvbrosvid = 1 and artemhakday ! daystart and npc_QW['A29'] < 2 and mothervideotalk = 0 or BrotherNo = 1 and BrotherNoDay ! daystart:
+		*clr & cla
+		menu_off = 1
+		BJvideoPublic = 1
+		BrotherNo = 0
+		BrotherNoDay = daystart
+		pcs_mood = 5
+		npc_rel['A29'] -= 40
+		gs 'stat'
+		*pl $korrParMomHeader
+		'Your mother stands in the hallway waiting for you, clearly angry. As soon as she sees you, she grabs your ear and pinches it hard, making you wince in pain. "I just saw this video of you sucking some guy''s dick! What the hell were you thinking!? Your stepfather and I worked so hard to raise you properly, and then you do this. Do you realize that maybe this video was sent to others too? What will the people in town think of us now? I oughta teach you a lesson. What do you have to say for yourself!? Speak up!"'
+
+		act 'Beg her to do nothing':
+			cla
+			mothervideotalk = 2
+			minut += 5
+			gs 'stat'
+			*nl
+			'You burst into tears: "<<$npc_nickname[''A29'']>>, please forgive me! It will never happen again! I made a stupid mistake, I''m sorry... I didn''t mean to... please... I don''t... sorry..." You fall to your knees sobbing uncontrollably, hoping she will have mercy on you. Your mother looks down at you, still angry but not quite sure what to do. She lets out an exasperated gasp, shakes her head and walks away.'
+
+			act 'Get back on your feet':gt $curloc
+		end
+
+		act 'Be silent':
+			*clr & cla
+			mothervideotalk = 3
+			minut += 5
+			spank += 1
+			gs 'pain', 5, 'asscheeks', 'spank'
+			gs 'stat'
+			'<center><h1><font color="maroon"><<$npc_nickname[''A29'']>></font></h1></center>'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/mom/spank.jpg"></center>'
+			*nl
+			'You stand in the hallway staring at the floor, too embarrassed to say anything. What is there to say, anyway?'
+			'Your mother grabs you by the arm and pulls you into the living room: "Take off your pants and bend over!" You shake your head, not liking where this is going at all. Getting even angrier by your refusal, she shouts: "Vladimir, come and hold her down!"'
+			'A few seconds later your stepfather enters the living room and immediately pulls you down and keeps you in place, while your mother pulls away your clothing. She then grabs a belt and starts to flog your bare ass with it, not holding back at all.'
+			'You take your punishment as good as you can, but towards the end you''re in tears and your cries are heard throughout the apartment. When it''s finally over, you raise your head just in time to catch the startled faces of your brother and sister in the doorway.'
+
+			act 'Stand up and straighten your clothes':gt $curloc
+		end
+
+		if momslut >= 2:
+			act 'Threaten her':
+				cla
+				mothervideotalk = 1
+				npc_rel['A29'] -= 10
+				minut += 5
+				gs 'stat'
+				*nl
+				'You slap away her hand with a defiant look in your eyes. "Oh, really? You''re no angel yourself either, <<$npc_nickname[''A29'']>>... does Dad know what YOU have been up to lately? Why don''t we go ask him, while we''re on this subject?"'
+				'Your mother looks at you furiously, but is at a loss for words. After a few seconds of awkward silence she storms off, slamming the door shut behind her.'
+
+				act 'Continue':gt $curloc
+			end
+		end
+
+		exit
+	end
+
+	if artemvbrosvid=1 and artemhakday ! daystart and npc_QW['A29'] >= 2 and mothervideotalk = 0:
+		*clr & cla
+		menu_off = 1
+		BJvideoPublic = 1
+		pcs_mood = 5
+		gs 'stat'
+		*pl $korrParMomHeader
+		'When you enter the hallway, you find your mother waiting there for you. "What''s all this I hear about a video of you sucking some guy''s dick? How could you be so careless, <<$pcs_nickname>>? You do realize this makes our whole family look bad..."'
+
+		act 'Apologize':
+			cla
+			mothervideotalk = 1
+			minut += 5
+			npc_rel['A29'] -= 40
+			gs 'stat'
+			*nl
+			'"I don''t know what to say, <<$npc_nickname[''A29'']>>... I''m really sorry."'
+			'Your mother is clearly very upset with you. After a short discussion, she walks away.'
+
+			act 'Continue':gt $curloc
+		end
+
+		exit
+	end
+
+	if schoolprogul > 2 and SchoolAtestat = 0 and schoolPredupr < 3:
+		*clr & cla
+		gs 'stat'
+		*pl $korrParMomHeader
+
+		if npc_QW['A113'] = 10000:
+			menu_off = 1
+			npc_QW['A113'] = 10001
+			schoolprogul = 0
+			GspravkaT = 2
+			motherKnowSpravka = 1
+			gs 'stat'
+			'"Oh, my darling, where have you been? We have been so worried."'
+			'You go into the kitchen with your <<$npc_nickname[''A29'']>> and spend some time explaining what happened to you. Many of the details are difficult to talk about, and you cry and hug your <<$npc_nickname[''A29'']>> as you tell your story.'
+			'Your <<$npc_nickname[''A29'']>> tells you she will sort out everything with the school and makes you a bowl of chicken soup.'
+			if pcs_energy >= 30:
+				'You are too full to eat it.'
+			elseif pcs_energy >= 20 and pcs_energy < 30:
+				if pcs_hydra < 20:
+					pcs_hydra += 20
+					cumspclnt = 2
+					gs 'cum_cleanup'
+					pcs_breath = 0
+				end
+				fat += 3
+				pcs_energy += 10
+				'You have some of the chicken soup, but can''t finish it.'
+			elseif pcs_energy < 20:
+				if pcs_hydra < 20:
+					pcs_hydra += 20
+					cumspclnt = 2
+					gs 'cum_cleanup'
+					pcs_breath = 0
+				end
+				pcs_energy += 20
+				'You gladly eat it all.'
+			end
+
+			act 'Leave':gt 'kuhrPar'
+
+			exit
+		elseif npc_rel['A29'] >= 40:
+			if schoolPredupr = 2:
+				schoolPredupr = 3
+				npc_rel['A29'] = 0
+				SchoolBlock = 1
+				schoolprogul = 0
+				pcs_grades = 0
+				'As you enter the hallway, you find your mother there waiting for you. You have never seen her this furious. "<<$pcs_nickname>>? I just got off the phone with the school, they told me you didn''t show up yet again and expelled you. I''m extremely disappointed with you! I''ve warned you so many times! If you want to remain living in this house, you best start pulling your weight around here! Right now I want you out of the house, go out and find some work!" After that, she pushes you out the door and slams it shut in your face.'
+
+				act 'Leave':gt 'pavResidential'
+				exit
+			elseif schoolPredupr = 1:
+				schoolPredupr = 2
+				npc_rel['A29'] = 0
+				schoolprogul = 0
+				pcs_grades -= 40
+				'As you enter the hallway, you find your mother there waiting for you. She seems very angry with you. "School called, they said you didn''t show up for class again. They wanted to expel you! I had to go over there and beg the principal to give you one last chance. I''ve never felt so humiliated! This is the last straw for me, <<$pcs_nickname>>. You will not embarrass me any further. If you miss one more day of school, they will kick you out. And if you get kicked out of school, life is going to get a lot tougher for you, especially around here!" Having said her piece, your mother turns around and leaves.'
+			elseif schoolPredupr = 0:
+				schoolPredupr = 1
+				npc_rel['A29'] = 0
+				schoolprogul = 0
+				pcs_grades -= 20
+				'As you enter the hallway, you find your mother there waiting for you. "<<$pcs_nickname>>? The school called, they said you weren''t at school today. You know they''re very unforgiving when it comes to absenteeism, they said they would expel you if it happens again. What are you doing with your life? Get it together!" Your mother angrily leaves the room, leaving you to your thoughts.'
+			end
+		elseif npc_rel['A29'] < 40:
+			if schoolPredupr = 2:
+				schoolPredupr = 3
+				npc_rel['A29'] = 0
+				SchoolBlock = 1
+				home_owned[2] = 0
+				schoolprogul = 0
+				pcs_grades = 0
+				'As you enter the hallway, you find your mother there waiting for you. You have never seen her this furious. "<<$pcs_nickname>>? I just got off the phone with the school, they told me you didn''t show up yet again and expelled you. I''ve had it with you! I''ve warned you so many times! Go ahead, live your irresponsible life the way you want. You''re no longer welcome here." She already packed up all your things from your room before you got home, and roughly shoves the bag into your hands. After that, she pushes you out the door and slams it shut in your face.'
+
+				act 'Leave':gt 'pavResidential'
+				exit
+			elseif schoolPredupr = 1:
+				schoolPredupr = 2
+				npc_rel['A29'] = 0
+				schoolprogul = 0
+				pcs_grades -= 40
+				'As you enter the hallway, you find your mother there waiting for you. She seems very angry with you. "School called, they said you didn''t show up for class again. They wanted to expel you! I had to go over there and beg the principal to give you one last chance. I''ve never felt so humiliated! This is the last straw for me, <<$pcs_nickname>>. You will not embarrass me any further. If you miss one more day of school, they will kick you out. And if you get kicked out of school, I will personally kick you out of the house. If you cannot be responsible and behave like a normal person, then get out, no one is forcing you to stay." Having said her piece, your mother turns around and leaves.'
+			elseif schoolPredupr = 0:
+				schoolPredupr = 1
+				npc_rel['A29'] = 0
+				schoolprogul = 0
+				pcs_grades -= 20
+				'As you enter the hallway, you find your mother there waiting for you. "<<$pcs_nickname>>? The school called, they said you weren''t at school today. You know they''re very unforgiving when it comes to absenteeism, they said they would expel you if it happens again. What are you doing with your life? Get it together!" Your mother angrily leaves the room, leaving you to your thoughts.'
+			end
+		end
+
+		act 'Continue':gt $curloc
+
+		exit
+	end
+end
+
+if hour >= 15 and hour < 20:
+	if Gcall = 0:
+		numnpcboy = 0
+		:markboyfrendcall
+		numnpcboy += 1
+
+		if otnBoyFrend[numnpcboy] >= 20 and boyinday[numnpcboy]!daystart:
+			Gcall = 1
+			'You hear the <a href="exec:gt ''gtelefon''">phone</a> ringing in the hallway.'
+		elseif numboyFrend > numnpcboy:
+			jump 'markboyfrendcall'
+		end
+	end
+else
+	if Gcall > 0:Gcall = 0
+end
+
+if motherWorry = 1 and indorf = 0:
+	gt'mother'
+elseif motherWorry = 1 and indorf > 0:
+	motherWorry = 0
+end
+
+if notathomesleep > 7 and hour >= 16 and hour < 21 and mother_go = 0:
+	notathomesleep = 0
+	*clr & cla
+	*pl $korrParMomHeader
+	if npc_rel['A29'] < 40:
+		'You run into your mother in the hallway. "Well well, look who decided to come home for once.'
+		act 'Continue':gt 'korrPar'
+	end
+	if npc_rel['A29'] >= 40:
+		'You run into your mother in the hallway. She looks happy to see you. "What a surprise! Welcome home, honey! I missed you.'
+		act 'Continue':gt 'korrPar'
+	end
+end
+
+!If she has given herself to boys in the stairwell, customers start hammering at the door:
+if hour >= 10 and hour <= 23 and pav_slut >= 125 and podwhoreQW >= 3:
+	pod_client = rand(0,100)
+	if pod_whore_countQW <= 15 and pod_client <= 5:
+		play 'sound/door1.mp3',100
+		'Someone is at the door: <a href="exec: gt ''pod_whore'', ''client_talk''">Answer</a>'
+	elseif pod_whore_countQW > 15 and pod_client <= 20:
+		play 'sound/door1.mp3',100
+		'Someone is at the door: <a href="exec: gt ''pod_whore'', ''client_talk''">Answer</a>'
+	end
+end
+
+!!if rand (0,2) ! 0:gs 'din_bad' & dynamic $mobile_check
+
+--- korrPar ---------------------------------
+

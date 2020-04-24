@@ -1,0 +1,40 @@
+# body_din
+!! Medical procedures, such as abortions, are located at medical_din
+
+
+!! Determines whether a NPC sees that another character is pregnant.
+!! If ARGS 1-3 are not set the observed character is the player character (Sveta)
+!! Usage: visible = FUNC('body_din','pregnancyVisibility')
+!! Return values:
+!!				0: Has no reason to believe Sveta is pregnant
+!!				1: Believes Sveta is pregnant
+!! Parameters:
+!!				ARGS[1]; The current pregnancy state (default: pregchem)
+!!				$ARGS[2]: The worn clothing type (default $clothingworntype)
+!!				ARGS[3]: The worn clothing numer  (default: clothingwornnumber)
+
+if $ARGS[0] = 'pregnancyVisibility':
+	RESULT = 0
+	pregchemTemp = iif(ARGS[1] = 0,pregchem,ARGS[1])
+	$clothingworntypeTemp = iif($ARGS[2] = '',$clothingworntype,$ARGS[2])
+	clothingwornnumberTemp = iif(ARGS[3] = 0,clothingwornnumber,ARGS[3])
+	
+	gs 'clothing_attributes',$clothingworntypeTemp,clothingwornnumberTemp
+	if (CloThinness >= 5 or $clothingworntypeTemp = 'nude') and pregchemTemp > 2688: 
+		RESULT = 1
+	elseif CloThinness = 4 and pregchemTemp > 3460: 
+		RESULT = 1
+	elseif CloThinness = 3 and pregchemTemp > 3990: 
+		RESULT = 1	
+	elseif CloThinness = 2 and pregchemTemp > 4200: 
+		RESULT = 1	
+	elseif pregchemTemp > 5200: 
+		RESULT = 1	
+	end
+
+	killvar 'pregchemTemp'
+	killvar '$clothingworntypeTemp'
+	killvar 'clothingwornnumberTemp'
+end
+
+--- body_din ---------------------------------

@@ -1,0 +1,93 @@
+# treeCircle
+! The Magical Teleport Tree Circle
+!
+! ARGS[0] is your entrance point as those listed below.  If the user doesn''t have the magical ability,
+!		they will only be allowed to leave back from their entry point.
+
+! Locations
+$tpLocations[0] = 'CentralPark'
+$tpLocations[1] = 'PavlovskPark'
+$tpLocations[2] = 'GadForest'
+$tpLocations[3] = 'PushkinPark'
+$tpLocations[4] = 'Village'
+
+! Build Info Arrays for Locations
+!	treeCircName = The Pretty Name of the Location
+!	treeCircLoc  = The Location to send the user to when leaving Circle
+!	treeCircArg  = An argument to get the user to the right spot in the location.
+!Central Park Location
+$treeCircName['CentralPark'] = 'Central Park'
+$treeCircLoc['CentralPark'] = 'park'
+$treeCircArg['CentralPark'] = 'start'
+!Pavlovsk Park Location
+$treeCircName['PavlovskPark'] = 'Pavlovsk Park'
+$treeCircLoc['PavlovskPark'] = 'placer_gskver'
+$treeCircArg['PavlovskPark'] = ''
+!Gadukino Forest Location
+$treeCircName['GadForest'] = 'Gadukino Forest'
+$treeCircLoc['GadForest'] = 'gadforest'
+$treeCircArg['GadForest'] = 'forest_edge'
+!Pushkin Park Location
+$treeCircName['PushkinPark'] = 'Pushkin Park'
+$treeCircLoc['PushkinPark'] = 'lug'
+$treeCircArg['PushkinPark'] = 'prut2'
+!Communal Village Spring Location
+$treeCircName['Village'] = 'Communal Village Spring'
+$treeCircLoc['Village'] = 'etoexhib'
+$treeCircArg['Village'] = 'pos6'
+
+$EntryPoint = $ARGS[0]
+
+*clr & cla
+
+'<center><h2>Mysterious Circle of Trees</h2></center>'
+'<center><img <<$set_imgh>> src="images/locations/shared/park/tree_circle.jpg"></center>'
+
+'The small clearing in the center of the tree circle is two body lengths wide.  The ground is covered with a soft, sponging moss.  Everything is surprisingly visible considering you cna barely see the sky through the overhead cover of leaves and branches.  As you look to the outside of the circle, everything seems to be vague and indistinct.  This makes it hard to comprehend what lies outside the ring.'
+*nl
+
+! Determine if this user can teleport at all.
+canTeleport = 0
+if spellKnown['teleport'] = 1:
+	'You take the Fairy''s advice and get to know this Circle.'
+	minut += 15
+	if pcs_mana > spellMana['teleport']:
+		canTeleport = 1
+	else
+		*nl
+		'You feel too tired to pull off a shift right now.'
+	end
+else
+	'You can feel something strange and powerful in this place, but you can''t quite put your finger on it.  It is intriguing, though, so you take your time and loook the place over to try to understand it.'
+	minut += 15
+end
+
+! Learn the current entry point
+tpKnown[$EntryPoint] = 1
+
+! Setup Actions for locations when applicable
+i = 0
+:LocLoop
+if i < ARRSIZE('$tpLocations'):
+	gs 'treeCircActs', $tpLocations[i]
+	i += 1
+	jump 'LocLoop'
+end
+killvar 'i'
+
+if pcs_inhib >= 30 and pcs_horny > 60:
+	act 'Masturbate to clear your head.':
+		*nl
+		'<center><video autoplay loop src="images/locations/shared/park/tree_masturb.mp4"></center>'
+		*nl
+		'That''s better!'
+		$orgasm_or = 'yes'
+		gs 'arousal', 'masturbate', 15
+		gs 'arousal', 'end'
+		gs 'stat'
+		cla
+		act 'Head Cleared.': gt 'treeCircle', $EntryPoint
+	end
+end
+
+--- treeCircle ---------------------------------

@@ -1,0 +1,61 @@
+# npc_intro
+
+!! this procedure is designed for introduction of any npc either with standard or with custom description
+!! $ARGS[0] is ID number of npc ... required parameter
+!! $ARGS[1] is an image path
+!! $ARGS[2] is a color name of the title  e.g. 'red'
+!! $ARGS[3] is $npc_notes replacement
+!! $ARGS[4] is an additional text
+!! ARGS[5] sets image path to video output - 0 = off - 1 = on
+!! Format: gs 'npc_intro', ARGS[0], $ARGS[1], $ARGS[2], $ARGS[3], $ARGS[4]
+!! Example: gs 'npc_intro', 'A23', '', 'green', '', 'Optional text here' <=== This would display Albina''s picture using the path in 'npcstatic1' with her name above it in green text followed by her default description and finally, your relationship level.
+!! Credit goes to rachels for coming up with the concept and initial code!!!
+
+*clear
+$static_num = $args[0]
+
+if npc_rel[$static_num] < 20: $npc_cur_rel = 'You don''t get along at all with <<$npc_firstname[$static_num]>>.'
+if npc_rel[$static_num] >= 20 and npc_rel[$static_num] < 40: $npc_cur_rel = 'You don''t get along very well with <<$npc_firstname[$static_num]>>.'
+if npc_rel[$static_num] >= 40 and npc_rel[$static_num] < 60: $npc_cur_rel = 'You have a normal relationship with <<$npc_firstname[$static_num]>>.'
+if npc_rel[$static_num] >= 60 and npc_rel[$static_num] < 80: $npc_cur_rel = 'You have a good relationship with <<$npc_firstname[$static_num]>>.'
+if npc_rel[$static_num] >= 80: $npc_cur_rel = 'You have a great relationship with <<$npc_firstname[$static_num]>>.'
+
+if $ARGS[1] = '':
+	$image_path = $npc_pic[$static_num]
+else
+	$image_path = $args[1]
+end
+
+if $args[2] = '': 
+	$titlecolor ='maroon' 
+else 
+	$titlecolor = $args[2]
+end
+
+if $args[3] = '': 
+	$description = $npc_notes[$static_num]
+else 
+	$description = $args[3]
+end
+
+$apendix = $args[4]
+
+'<center><b><font color = <<$titlecolor>>><<$npc_firstname[$static_num]>> <<$npc_lastname[$static_num]>></font></b></center>' & *nl
+if $image_path ! '':
+	if ARGS[5] = 0:
+		'<center><img <<$set_imgh>> src="<<$image_path>>"></center>' & *nl
+	else
+		'<center><video autoplay loop src="<<$image_path>>"></video></center>' & *nl
+	end
+end
+if $description ! '' and $description ! ' ': $description + $npc_cur_rel
+if $apendix ! '' and $apendix ! ' ':$apendix
+
+killvar '$npc_cur_rel'
+killvar '$apendix'
+killvar '$description'
+killvar '$image_path'
+
+
+--- npc_intro ---------------------------------
+

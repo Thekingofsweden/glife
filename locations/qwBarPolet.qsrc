@@ -1,0 +1,696 @@
+# qwBarPolet
+
+gs 'themes', 'indoors'
+
+if $ARGS[0] = '':
+	$loc = 'qwBarPolet'
+	$metka = ''
+	$menu_loc = 'qwBarPolet'
+	$menu_arg = ''
+	menu_off = 0
+	$location_type = 'public_indoors'
+	alko_temp = alko
+	gs 'stat'
+	gs 'qwBarPolet', 'intro'
+	orderDrink = pcs_drank
+	if MartinTalkDaystart ! daystart:
+		MartinTalkDaystart = daystart
+		MartinTalkDay = 0
+	end
+	if MartinSexDaystart ! daystart:
+		MartinSexDaystart = daystart
+		MartinSexDay = 0
+	end
+	if MartinPrezikDaystart ! daystart:
+		MartinPrezikDaystart = daystart
+		MartinPrezik = 0
+	end
+	if BillHourDay ! daystart:
+		BillHourDay = daystart
+		killvar 'BillHour'
+		VicArt_BillDay = 0
+		temp = rand(1,3)
+		if temp = 1:
+			PBB_BillDay = 0
+		end
+	end
+	if knowMartin = 0 and RabotnikFirst = 0:
+		RabotnikFirst = 1
+		msg 'The different types of alcohol you can choose from give different (tiny) benefits to character attributes but they are mostly there for roleplaying reasons.'
+	end
+
+	! if debg = 0:
+		! '<a href="exec:debg=1">DEBUG</a>'
+	! elseif debg = 1:
+		! '<a href="exec:debg=0">DEBUG</a>'
+		! 'alko: '+alko
+		! 'knowMartin: '+knowMartin
+		! 'MartinTalk: '+MartinTalk
+		! 'MartinTalkVar: '+MartinTalkVar
+		! 'MartinTalkDay: '+MartinTalkDay
+		! 'MartinRel: '+MartinRel
+		! 'MartinRand: '+MartinRand
+		! 'DrinkingRand: '+DrinkingRand
+	! end
+
+	'<center><b><font color="maroon">Bar "Rabotnik"</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bar.jpg"></center>'
+	'As you enter the bar, you see that about a dozen regular tables and stools take up most of the room. A bar counter, right in front of you, dominates the center of the establishment. At the far end of it, near a door leading to the toilet, a doorway with a curtain leads to the obligatory pool table that rounds off the furniture.'
+		*nl
+		'This place has a rowdy air about it: The smell of spilled beer, schnaps, and a hint of vomit and blood are hard to miss, and some of the stools and billiard cues look like they''ve been used in fights before. It is obviously a worker pub and not trying to be anything fancier than that, but that gives it an odd charm and coziness of its own' + iif(hour >= 16,', and despite the hints of shadiness, you can hear plenty of laughter and friendly conversation','') + '. You doubt you''ll get a fancy cocktail in here, though.'
+		*nl
+
+	act 'Exit to the street':gt 'nord'
+	act 'Approach the bar': gt 'qwBarPolet', 'bar'
+	act 'Go to the toilet': gt 'qwBarPoletToilet'
+end
+
+if $ARGS[0] = 'bar':
+	*clr & cla
+	$loc = 'qwBarPolet'
+	$metka = 'bar'
+	$menu_loc = 'qwBarPolet'
+	$menu_arg = 'bar'
+	menu_off = 0
+	if orderDrink < pcs_drank:
+		orderDrink = pcs_drank
+		gt 'qwbarPolet','DrinkingBooze'
+	end
+
+	'<center><b><font color="maroon">Bar "Rabotnik"</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bar.jpg"></center>'
+
+	act 'Order from the bar (0:05)': gt 'qwBarPolet','Ordering'
+
+	!!!bill_rand = rand(1,6) instead of (0,6) because content incomplete
+	if BillHour ! hour:
+		BillHour = hour
+		:bill_loop
+			bill_rand = rand(1,6)
+			if bill_rand = 0 and VicArt_BillDay = 1:jump 'bill_loop'
+			if bill_rand = 1 and PBB_BillDay = 1:jump 'bill_loop'
+	end
+	*nl
+	'Your eyes wander towards the backroom with the billiard table.'
+	*nl
+
+	if bill_rand = 0 and Jaska_Ev = 0:
+		'You notice some guys are playing billiards in the backroom. They seem know each other well and are playing for quite a bit of money, from what you can tell, so you don''t want to interrupt right now.'
+	elseif bill_rand = 0 and Jaska_Friend_Bill = 0:
+		'You notice the guys Jaska played against are in the backroom with the billiard table, having a friendly match. Maybe you could play a round with them?'
+	elseif bill_rand = 0 and Jaska_Friend_Bill < 4:
+		'You notice that Jaska''s friends, Victor and Artyom, are in the backroom with the billiard table, having a friendly match. You could join them, if you wanted to.'
+	elseif bill_rand = 0:
+		temp = rand(1,4)
+		if temp = 1:
+			'You notice that Jaska''s friends, Victor and Artyom, are in the backroom with the billiard table, but they don''t seem to be alone: A woman you don''t know is with them, and judging by the looks Artyom is giving her, she has offered them something other than money as a wager...'
+		else
+			'You notice that Jaska''s friends, Victor and Artyom, are alone in the backroom with the billiard table, having a friendly match. You could join them, if you wanted to.'
+		end
+
+	elseif PBB_Met ! 0 and bill_rand = 1:
+		PBB_BillDay = 1
+		'The guy you played billiards with before seems to be playing against a pair of women who are looking increasingly distressed as he pockets one ball after the other. You can see quite a bit of money sitting on the side of the table and you are pretty sure he is about to win it all.'
+		if PBB_Met = 2:
+			'You wonder if he offered them the same ''money or blowjob'' deal he offered you...'
+		end
+	elseif bill_rand = 1:
+		PBB_BillDay = 1
+		'A stranger seems to be playing billiards with a pair of women who are looking increasingly distressed as he pockets one ball after the other. You can see quite a bit of money sitting on the side of the table and you are pretty sure he is about to win it all.'
+
+	elseif bill_rand = 2:
+		'The backroom seems to be empty at the moment, the billiard table deserted. Looks like there''s nobody you could play with.'
+
+	elseif bill_rand > 2:
+		'You notice that some people are playing some billiards. Maybe you could join them?'
+	end
+
+	if bill_rand > 2 or (bill_rand = 0 and Jaska_Ev ! 0 and (Jaska_Friend_Bill < 4 or temp ! 1)):
+		act 'Go play billiards':
+			if bill_rand = 0: VicArt_BillDay = 1
+			gt 'qwBarBilliard','billiard_ev2'
+		end
+	end
+
+	if (week < 5 or week = 7) and ((hour < 16) or (hour = 23 and minut >= 45)):
+		'The bar is emptying quickly as its owner is telling the few patrons who are left that he''s closing for the night. Within minutes, even those who you thought were too drunk to even understand what "leaving" means are gone and only the bartender himself remains.'
+		if npc_rel['A216'] < 20:
+			*nl
+			'Guess you had better head out, too.'
+		end
+
+	elseif (week = 5 or week = 6) and ((hour < 16) or (hour = 23 and minut >= 45)):
+		'It''s no small feat to get people to leave a bar when they don''t have to work the next day, but this bartender seems used to the hassle, exchanging friendly words with some, being a little more curt with others, and helping the drunks who would have slept through the night on one of the tables out the door, until only the barman himself remains.'
+		if npc_rel['A216'] < 20:
+			*nl
+			'Guess you had better head out, too.'
+		end
+
+	else
+		if hour < 21 and week < 7:
+			'Far from empty already, the bar keeps filling at an astounding rate as people get off work in the various surrounding factories, looking to have a beer with their friends before heading home, or to get piss drunk to take their mind off their problems.'
+		elseif hour < 21 and week = 7:
+			'Far from empty already, the bar keeps filling at an astounding rate as people look to spend their day off in the familiar comfort of the bar they visit every other day of the week, where the barman is burly, the men rowdy and the women ugly, but at least the beer tastes less like piss than it does in most other bars in the area.'
+		elseif hour >= 21 and (hour <=23 and minut < 45) and (week < 5 or week = 7):
+			'With the hour getting late and tomorrow being a workday, you are not surprised to see people trickle out of the bar, some walking straight, some stumbling, but all heading home. Still, what people are left manage to be fairly loud. A group of men playing billiards seems to be mainly responsible for it, but among the men who are quietly drinking and talking among themselves, there are some louder, less inhibited and supposedly drunker specimens.'
+		elseif hour >= 21 and (hour <=23 and minut < 45) and (week = 5 or week = 6):
+			'The hour may be getting late, but few of the people here seem concerned with going home anytime soon, enjoying the weekend the best way they can: With friends, at a bar, and well on their way to getting shitfaced, so it doesn''t come as a surprise that the bar is one of the noisiest places on the block right now. A group of men playing billiards seems to be mainly responsible for the racket, but even in the main room, the men who are quietly drinking and talking among themselves are in the minority tonight.'
+		end
+		*nl
+		'The bartender, a tough-looking guy with a scarred face and more tattoos than you can count, greets most of the men by name as they come in and prepares their usual drinks before they have even reached the counter.'
+		if knowMartin = 0:
+			*nl
+			'He, along with some of the regulars, shoot you a quick glance and you realize that young women are probably a rare sight around here. You spot a handful of women, spread out over all the occupied tables, but judging by how they are treated, most of the men they''re with seem to see them as "one of the guys", and judging by the muscular build some of them have, you can see why.'
+		end
+	end
+
+	if hour >= 16:
+		if MartinSexTalk = 1:
+			*nl
+			'After how things went with Martin the other night, you are really not in the mood to talk to him with people around. It would be best to wait until he closes the bar, so you can talk to him in private and sort this out.'
+
+			if MartinSexTalkDay < (daystart - 7):
+				*nl
+				'But honestly, you don''t want to talk to him at all right now - you are still too angry for that.'
+			end
+		end
+	end
+
+	!! act 'Find somebody to drink with':
+	!! OR
+	!! act 'Look around the bar': action to find people to interact with/who will invite her to a drink?
+		!!SOMEBODY ELSE ORDERING A DRINK FOR SVETA?
+		![RANDOM EVENTS (Rapey strangers inviting Sveta to have shots or something else with them)?]
+		![Events where Sveta interacts with random guys, resulting in drunk sex, groping etc. when drinking vodka?]
+		![RANDOM EVENTS (Friendly strangers or friends/acquaintances inviting Sveta to have beer or something else with them)?]
+		![RANDOM EVENTS (Strangers inviting her to have beer or something else with them, but overall friendly/consensual tone)?]
+
+
+	!!Run-in with Martin at the city gym?
+	!Between 10 and 2
+	!Quick talk?
+	!Assisted Training?
+	!Sex?
+
+	!Event / Talk at lakecafe mentioning Martin?
+
+	!NEED TO ADJUST obj_din or other location with npc_rel['A216'] so that people can actually see their relationship value with Martin
+
+	if npc_rel['A216'] > 20 and (hour < 16 or (hour = 23 and minut >= 45)) and MartinTalkVar > 3 and MartinSexDay = 0:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/emptybar.jpg"></center>'
+		'With the bar closing, Martin is cleaning up, taking stock and doing whatever else he has to do to keep the place running smoothly. Since you are more or less alone with him, now might be the perfect time to talk to him in private...'
+		if MartinSexTalk ! 1:
+			act 'Have a private chat with Martin': gt 'MartinSex'
+		elseif MartinSexTalkDay > (daystart - 7):
+			*nl
+			'But you are still too angry at him to even think about talking to him. He''s wrong! Maybe he''ll see that if you give it a few more days.'
+		else
+			*nl
+			'Now that some time has passed, maybe you can talk to Martin. Surely, you could convince him of your point of view. Unless... unless you want to apologize?'
+			act 'Have a private chat with Martin': gt 'MartinSex'
+		end
+	end
+	act 'leave the bar': gt 'qwBarPolet'
+end
+
+if $ARGS[0] = 'DrinkingBooze':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bar.jpg"></center>'
+	!Different Picture/s?!
+	if MartinSexTalk = 1:
+		'Martin brought you your drink as always, but you barely even looked at him - all you do is hand him the money and stare at what he brought you.'
+		*nl
+		'And you pretty much stay like that for the next 15 minutes or so, absorbed in your own little bubble of anger, more or less oblivious to what is going on around you, the beverage you''re nursing on your only link to the outside world.'
+		*nl
+		'When you''re finally finished with it, you are both angry and glad at the sight of the empty glass and the thought of ordering another crosses your mind.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif knowMartin ! 1:
+		knowMartin = 1
+		killvar 'RabotnikFirst'
+		npc_rel['A216'] = 10
+		'"What''s your name, girl?", he asks. You raise your eyebrow - didn''t he just read it on your ID?'
+		'"<<$pcs_firstname>>", you reply truthfully, taking a small sip from your beverage.'
+		'"Okay, <<$pcs_firstname>>. My name is Martin. This is my bar, and I don''t want any trouble here." You notice a faint accent you cannot quite place - maybe Spanish? "I know most people who come here by name, and most of them are good, honest men and women, but we are a rowdy bunch and tend to act more stupid than usual when pretty young girls are around."'
+		*nl
+		'You consider his words and look around the room. He''s right: Several men seem to be eying you.'
+		'"So... you don''t want me to come here again?", you ask carefully.'
+		'"No, it means that, if you want to spend time here, I don''t want you doing anything stupid so I don''t have to step in." His words and look almost make you feel like a daughter getting peptalked by her father before a night out with friends, and just like a good dad''s, his voice and features soften when he adds: "But if any of the guys gives you trouble, you just let me know. Got it?"'
+		'"Got it", you nod, and Martin gives you a hint of a smile - amazing how that can light up a face as gruff as his - before he returns to the regulars he had been talking to.'
+		*nl
+		'You spend the next 15 minutes pondering his words and the impression he has left on you, absentmindedly sipping your drink until you finally notice that your glass is empty.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	else
+		if MartinTalkDay = 0:
+			act 'Order the drink and chat with Martin':
+				MartinTalkDay = 1
+				npc_rel['A216'] += rand(1,2)
+				gt 'MartinTalk'
+			end
+		end
+
+		act 'Enjoy your drink alone':
+			MartinRand = RAND(1,7)
+
+			if MartinRand <= 2:
+				gt 'qwBarPolet', 'RandomDrinkEvents'
+			elseif MartinRand <= 4:
+				gt 'qwBarEncounters'
+			else
+				cla
+				*nl
+				'Safe from the friendly smile and words of gratitude you exchange with Martin, you were quickly left alone with your drink and nothing interesting seemed to be happening around the bar.'
+				'You therefore spent the last 15 minutes in peace, taking the occasional sip from your glass as you reflect the events of the day, think about your life and the people in it. You barely notice how your glass gets emptier and emptier until, finally, you notice that you have nothing left to drink.'
+
+				act 'Finish your drink': gt 'qwBarPolet', 'bar'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'Ordering':
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bar.jpg"></center>'
+	!Different Picture/s?!
+	'You go to the counter, sit down on one of the stools and, when the bartender notices you, ask: "Hey, could you bring me something to drink?"'
+	if cumloc[7] > 0 or cumloc[10] > 0 or cumloc[11] > 0 or cumloc[13] > 0 or cumloc[16] > 0:
+		if exhibitionist_lvl < 2:
+			pcs_mood -= rand(2,5)
+		else
+			pcs_horny += 5
+		end
+		npc_rel['A216'] -= 2
+		'Martin gives a stern look. "Don''t you think you should clean yourself up first?"'
+		*nl
+		if exhibitionist_lvl < 2 and pcs_inhib < 70:
+			'You are visibly covered in cum and Martin noticed it!'
+			*nl
+			'How embarrassing...'
+		elseif pcs_inhib >= 70 and exhibitionist_lvl < 2:
+			'"Huh?" You look over to the mirror behind the bar and realize that you still have cum on your face.'
+			'"Oh! Didn''t notice that. Yeah you''re right, I should go wash that off," you say before excusing yourself.'
+		else
+			'You are visibly covered in cum and Martin noticed it!'
+			'It''s kinda sexy to know that he noticed it. Your belly tingles at the thought that seeing the sperm must have made Martin imagine you having sex.'
+			'Still... You should probably go to the bathroom and wash it off.'
+		end
+
+		act 'Step away from the counter': gt 'qwBarPolet'
+
+	elseif alko >= 6:
+		*nl
+		iif(knowMartin=1,'Martin','The burly barman') + ' musters you. "I think you''ve had enough."'
+		'"I''m fine", you assure him with a hint of a slur, "Just gimme one."'
+		'"You can barely stand-up straight, ' + iif(knowMartin=1,'<<$pcs_firstname>>','girl') + '. And I sure as hell don''t want a young woman like yourself to pass out in my bar. Go home, or at least sober up a bit."'
+
+		if money >= 35:
+			act 'Can I have some water?':
+				cla
+				'"Can I at least have some water?" You ask.'
+				'Martin nods and, after a few seconds, puts down a glass of water in front of you.'
+				gs 'beverage','bev_wat'
+			end
+		end
+
+		act 'I''m not that drunk':
+			cla
+			'"Come on, I''m not that drunk!" You insist. Unfortunately, instead of telling Martin, you were addressing the beer taps next to him. Oops.'
+			'"Well, I''m convinced," he replies sarcastically.'
+			*nl
+			'With that, he turns and walks off to serve somebody else. Looks like he won''t let you drink yourself into a coma.'
+			'Bastard!'
+
+			act 'Give up for now': gt 'qwBarPolet', 'bar'
+		end
+
+	elseif knowMartin ! 1:
+		*nl
+		'The bartender comes over and musters you. "Sure. If you are old enough."'
+		*nl
+		if knowMartin = 0:
+			'You are surprised that someone in a bar like this seems interested in your age, and it must have shown in your face, because he adds: "I have enough things to worry about as is. I don''t need somebody spreading the word that I''m selling alcohol to kids."'
+		else
+			'You know exactly what he means. After all, he told you not to come back unless you really turned 18, and judging by the look he gives you, his opinion probably hasn''t changed.'
+		end
+
+		if knowMartin = 2 and age < 18:
+			'"I... I just wanted to come by and talk," you say, trying to avoid the fact you still aren''t 18.'
+			'But the barman is having none of it. "If you aren''t old enough to drink, I suggest you leave."'
+			'And without another look, Martin turns and walks off.'
+			*nl
+			'Guess you really have to be 18 to even think about restoring your relationship with him.'
+
+			if money >= 35:
+				act 'Can I have some water?':
+					cla
+					'"Can I at least have some water?" You ask.'
+					'Martin stops, ponders your order for a moment, then nods and, after a few seconds, puts down a glass of water in front of you.'
+					gs 'beverage','bev_wat'
+				end
+			end
+
+			act 'Leave the bar': gt 'nord'
+
+		elseif knowMartin = 2 and age >= 18:
+			knowMartin = 1
+			killvar 'RabotnikFirst'
+			npc_rel['A216'] += 10
+			*nl
+			'"Here," you hand him your new, genuine ID.'
+			'"Not a fake one again, I hope," he growls and examines it closely.'
+			'"No, I learned my lesson." More quietly, you add: "I missed talking to you."'
+			'Martin looks up from your ID. He is visibly surprised by your words, but quickly returns to his close examination. When he finds no flaw or telltale sign of manipulation, he hands it back, gives you a firm nod. "Alright, I guess you can come by every now and then again."'
+			*nl
+			'You give a sigh of relief and smile at him. "Thank you."'
+			'Martin isn''t quite so enthusiastic. "Do you understand why I threw you out?"'
+			'The smile vanishes as quickly as it appeared. "Because I lied to you. I betrayed you." You pause for a second. "But I''m not gonna do that again."'
+			'"Good. Cause I don''t appreciate dishonesty like that. Friends don''t lie to each other''s face."'
+			*nl
+			'He''s right, of course. You''re not sure if friends is what you and Martin are anymore, but you certainly were on friendly terms with each other before you let it slip that you were underage.'
+			'At the very least, it seems like Martin is willing to return to that, because he says, "Welcome back."'
+			'It''s probably going to take a while to recover from this, but the first big step is done.'
+			'"Now, what shall I bring you?" The bartender asks.'
+			gs 'food_menu'
+
+		elseif fakepassport = 1 or age >= 18:
+			*nl
+			'Nodding, you take out your ID and show it to him. He eyes it suspiciously and gives you a stern look... but then nods and hands it back to you.'
+			'"What can I bring you?"'
+			gs 'food_menu'
+
+		else
+			*nl
+			'"Um...", you try to maintain eye contact with him but eventually look down, "I, uh, must have forgotten my ID at home. Couldn''t you-"'
+			'"No, I can''t", he cuts you off. "No ID, no service."'
+			*nl
+			'Guess you''ll have to come back with an ID, or come up with another way to get a drink.'
+
+			act 'Nod and give up': gt 'qwBarPolet', 'bar'
+		end
+
+	else
+		'Martin nods. "Sure. What are you having?"'
+		gs 'food_menu'
+	end
+end
+
+if $ARGS[0] = 'RandomDrinkEvents':
+	menu_off = 1
+	*nl
+	!DrinkingRand ALWAYS NEEDS TO BE ADJUSTED FOR NEW EVENTS!!!
+	DrinkingRand = RAND(1,14)
+	pic_rand = RAND(1,6)
+	observ_exp += rand(0,2)
+
+	if DrinkingRand = 1:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event7.jpg"></center>'
+		'Martin nods and prepares your beverage. While he does, you hear voices swell behind you and turn to find their source. It would seem that two other patrons - workmates, if their identical, dusty work overalls are any indication - have had a little too much too drink and are now arguing loudly over who has been bumming more cigarettes off whom.'
+		*nl
+		'They get on their feet and are grabbing each other by the collar, apparently looking to settle the matter their alcohol-addled brains brought up once and for all; their friends are trying to hold them back, just as Martin puts the glass with your beverage down in front of you.'
+		*nl
+		'He seems completely unfazed by this disruption of the bar''s peace as he steps out from behind the counter, his burly, muscular build even more impressive out in the open room, and you don''t seem to be alone with that assessment: The few whose attention hadn''t been captured by the loud voices now cease whatever they are doing, the room eerily silent except for Martin''s voice: "Artur, Grisha," he calls the two.'
+		*nl
+		'They slowly turn their heads toward him and it seems to dawn on them who is speaking to them.'
+		'It''s astonishing, really: One moment, they are pumped up and ready to go at each other, and the next, they seem to physically deflate, letting go of each other almost unconsciously.'
+		*nl
+		'Martin doesn''t utter another word at them - he doesn''t have to. The two slowly sit back down, careful to avoid the bartender''s gaze as much as each other''s.'
+		'Satisfied with this outcome, Martin nods. "No more drinks for the two of you tonight," he declares before turning around to resume his post.'
+		'Within seconds, the bar''s volume is back to its normal level, laughter and dirty jokes filling the air.'
+		*nl
+		'While you enjoy your drink, you briefly wonder why Martin didn''t just throw them out, but then you notice that the Artur and Grigori are talking to each other again and then burst into laughter as if nothing happened.'
+		'Looks like the bartender knows his regulars.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 2:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event6.jpg"></center>'
+		'Martin nods and prepares your beverage, then places it in front of you.'
+		'"Thank you," you smile at him and earn a half-smile in return before he leaves you to yourself.'
+		*nl
+		'With nobody to talk to, your eyes drift around the bar until they come to rest on a nearby table where the patrons are playing poker. That alone would be boring to watch from afar, but you are looking right into the hand of one of the players, and he seems to have four jacks.'
+		*nl
+		'Curious as to how this is going to turn out (or maybe just for lack of better entertainment), you watch as one of the other players folds while the remaining three raise each other until their pot contains some 1000 rubles - not a very impressive win to some, but enough for a couple of rounds of beer, or a decent bottle of vodka.'
+		*nl
+		'The other two look confident.'
+		'One reveals three queens... and curses loudly when the second puts down a full house, a smug grin on his face.'
+		'You don''t know what expression ''your'' guy had when he placed his four jacks on the table, but seeing the grin wiped off the second player''s face almost makes it feel like you sat at the table with them.'
+		*nl
+		'Feeling victorious (and a little lonely), you focus your attention on your beverage again while the card players set up their next round.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 3:
+		'<center><video autoplay loop src="images/locations/city/industrial/bar/event5.mp4"></center>'
+		'"Sure," Martin nods and a few seconds later, your beverage sits in front of you. You give him a grateful smile as he directs his attention at the other patrons and, since you lack a partner to converse with, focus on your drink and let your mind wander.'
+		*nl
+		'A movement at the edge of your sight catches your eye; at first, you think your bored mind conjured up sexy images to distract you, but no, even while you''re consciously looking at it, the scene doesn''t vanish:'
+		'In a corner of the bar, a woman is on her knees, her tits exposed to the world, giving some guy a blowjob.'
+		*nl
+		'The boldness of this display causes you to give Martin a quick glance - he''d probably throw them out if he noticed - but he seems occupied with one of his regulars, and it works in the couple''s favor that they''re getting busy in a dead angle of the room, which means that Martin can''t readily see them from behind the counter... but everybody else can.'
+		*nl
+		'And sure enough, as the probably drunk girl fellates her obviously drunk partner, some of the guys around them get restless. One or two even pull out their own dicks and wave it at the woman, but their subtle advances are quickly shot down by the lovebirds.'
+		'They don''t seem to mind the attention, though: He makes a point of grabbing her head and driving his dick almost balls deep into the pretty woman''s mouth while giving the bystanders superior looks; and she seems to be getting off on the exposure and his displays of dominance, since the hand under her skirt is visibly busy while she''s taking his shaft deep down her throat.'
+		*nl
+		'Either you missed most of it or he''s not one to last very long, but before you know it, the bobs of her head and work of her tongue cause him to tense up and shiver, suppressed groans reaching your ear as he blasts hot cum into her waiting mouth, causing the hand on her cunt to go crazy. She releases him and gulps visibly... and cheer breaks out among the people around them. The two of them smile at their audience without even a hint of embarrassment.'
+		*nl
+		'The woman''s smile is quickly replaced by lust and determination, though, and as soon as she''s buttoned her blouse up and is back on her feet, she grabs her man''s hand and drags him out of the bar, probably off to get hers.'
+		gs 'arousal', 'voyeur_sex', 5, 'exhibitionism'
+		gs 'arousal', 'end'
+		gs 'stat'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 4:
+		if pcs_horny < 90: pcs_horny += rand(1,3)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bartalk<<pic_rand>>.jpg"></center>'
+		'"Coming right up." Only seconds later, Martin puts down a full glass in front of you before directing his attention elsewhere.'
+		'As you forlornly muster the liquid, one of the many conversations in the bar piques your interest.'
+		*nl
+		'"-and then the guy just straight-up fingered that women, right there in the metro," one man narrates.'
+		'His friend seems more than a little skeptical. "You''re fucking with me!"'
+		'"No, and they didn''t fuck either, but the guy <i>did</i> push her down on her knees and got her to blow him."'
+		'"Come on, shit like that doesn''t really happen here."'
+		'"Oh no, it does," a third one confirms. "The metro''s full of perverts these days. And so are the trains: I caught a glimpse of a couple fucking in one of the compartments."'
+		'"Damn... I wish my girl would let me do something like that with her."'
+		'"Yeah, mine doesn''t want to, either," the first one laughs, "but at least this way the sluts around town are making my way home more interesting."'
+		*nl
+		'The third one raises his glass. "To sluts!" The other two join in, down their drinks and order another round while the first describes another public exposure he has witnessed.'
+		*nl
+		'Only now that their storytime is over do you notice how enthralled you were by it, how you pictured that woman being molested in public... and that the thought aroused you a little.'
+		$OpenInnerThought+'Maybe I should ride the metro more often.'+$CloseInnerThought
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 5:
+		if pcs_horny < 90: pcs_horny += rand(3,5)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event1.jpg"></center>'
+		'"Coming right up." Only seconds later, Martin puts down a full glass in front of you before directing his attention elsewhere.'
+		*nl
+		'While sitting at the bar drinking, something catches your eye: A couple getting hot and heavy near you, whispering and fondling with little concern for possible onlookers; another girl you see nearby seems to have noticed them as well.'
+		*nl
+		'After observing the two for only a few moments, you watch with arousal as the man shoves his hand down the pants of the woman, obviously stroking her pussy or finger-banging her - you can''t tell which one but the circumstances make it exciting nonetheless.'
+		'Meanwhile, she is all smiles and coos, and melts into him as he plays with her, enjoying the explicit PDA. You might have thought she''d forgotten all about where she was if she hadn''t, at one point, met your eyes and subsequently bucked against her man''s hand and bit her lip to hold back moans as her lust overtook her.'
+		*nl
+		'But as time goes by, more and more patrons notice the couple and it borders on a miracle that Martin hasn''t seen them yet, so after a while, she whispers something into his ear - something that puts a shit-eating grin on his face - and they both hurry to the restroom...'
+		*nl
+		'At least somebody''s having fun.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 6:
+
+		if pcs_horny < 90: pcs_horny += rand(3,5)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event2.jpg"></center>'
+		'Martin nods and prepares your beverage, then places it in front of you.'
+		'"Thank you," you smile at him and earn a half-smile in return before he leaves you to yourself.'
+		*nl
+		'While sitting at the bar drinking, you notice a woman flirting with three men. She is obviously fairly drunk but loving the attention she is getting... and getting bold, too: As you watch, she flashes her tits to them, then breaks into a giggle and goes back to teasing whispers.'
+		'But not a minute later, she flashes them again, exposing herself longer this time, reveling in the hungry looks they are giving her, then chuckles and continues whatever sexually charged conversation she''s having with them.'
+		*nl
+		'They continue this game for a while, and after getting flashed a few more times, they seem to have reached the limits of their self-control, pawing at her and pulling her clothes aside to show everything she has to the world.'
+		'But neither she, nor the other patrons seem to have a problem with that.'
+		*nl
+		'Not long after, the four of them leave together, the woman flanked by two of the man, each of them possessively grabbing one of her ass cheeks.'
+		'That woman has a long night ahead of her, you''d wager, and the image of their impending foursame makes your belly tingle.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 7:
+		pcs_mood -= 5
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event8.jpg"></center>'
+		'"Sure," Martin nods and a few seconds later, your beverage sits in front of you. You give him a grateful smile as he directs his attention at the other patrons and, since you lack a partner to converse with, focus on your drink and let your mind wander.'
+		*nl
+		'You are shaken from your reverie when an older man sits down next to you.'
+		'"Drunk" isn''t quite strong enough to describe the state he''s in - it looks like he has to actively keep himself from falling asleep right there and then - and you fully expect him to start hitting on you, but he doesn''t.'
+		*nl
+		'Instead, he starts telling you a tale of woe: His "bitch wife" finally left him last week, his "ungrateful kids" refuse to talk to him anymore and he just lost his job today "because of that fuckin'' asshole of a boss". He''s slurring most of his story, but all the curses come out clearly articulated.'
+		*nl
+		'He talks about how the world has gone to shit and how a man can no longer be a man without someone stepping on him... then more or less starts over, apparently not remembering that he already told you about his "bitch wife".'
+		'You are feeling genuinely sympathetic towards him... but you are quite happy nonetheless when he finally falls unconscious right in the middle of the sentence and starts drooling on the counter.'
+		*nl
+		$OpenInnerThought+'They can take his job, but they can never take his dignity,'+$CloseInnerThought+' you think to yourself with a smirk.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 8:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event10.jpg"></center>'
+		npc_rel['A216'] += 1
+		'Martin nods and prepares your beverage. While he does, you hear voices swell behind you and turn to find their source.'
+		*nl
+		'A group of drunk men sitting at one of the nearby tables are joking loudly and discussing this and that at the top of their voices. Just then, a pretty woman walks by the table and one of the men grabs her and pulls her into his lap. His friends laugh as she struggles to get free.'
+		*nl
+		'"Finally found a woman that''s less ugly than your wife, Egor?"'
+		'Eventually, she slaps him across the face, which gets his friends laughing even more: "Haha, she likes you about as much as your wife, though!"'
+		*nl
+		'Egor doesn''t seem to be in a joking mood, though - he raises his hand to slap her back, but before he can, Martin, appearing seemingly out of nowhere, has his wrist in a vice grip and twists the drunk''s arm until he lets the woman go, who quickly hurries away.'
+		*nl
+		'Egor''s friends start to get up, but Martin gives them a piercing look and that seems to be all it takes to make them falter.'
+		'"Do you want to walk out", the barman asks menacingly, "or be thrown out?"'
+		*nl
+		'You''re not entirely sure if they are scared of him - though he is undoubtedly very scary - or if they are sober enough to realize that half the men in the suddenly very silent bar would rush to his aid if he needed it.'
+		'Whichever it is, they wisely choose to walk out while they still can.'
+		*nl
+		'Shortly after, the bar returns to normal, and after taking a moment to check up on the woman he saved, Martin brings you that drink you''d all but forgotten about. Say what you will about his appearance but he seems to have his heart in the right place.'
+
+		act 'Enjoy your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 9:
+		if pcs_horny < 90: pcs_horny += rand(1,3)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event3.jpg"></center>'
+		'"Sure," Martin nods and a few seconds later, your beverage sits in front of you. You give him a grateful smile as he directs his attention at the other patrons and, since you lack a partner to converse with, focus on your drink and let your mind and your eyes wander.'
+		*nl
+		'You notice an older woman - well, older than you, but she''s probably only in her early thirties - who, as you quickly realize, flashes and keeps on flashing her tits to Martin whenever he looks her way.'
+		'But other than the occasional smile, he gives no hint of even being aware of her antics. She does catch the attention of several other men, though, and they move over to talk to her.'
+		*nl
+		'She evidently has no interest in them but they don''t take the hint until Martin gives them one of his scary looks.'
+		'Coincidentally, the moment they notice, they all suddenly remember some very important business they have to take care of elsewhere immediately, and the woman''s fan club scatters in seconds.'
+		*nl
+		'Of course, this only encourages her to redouble her efforts in flirting with Martin, and when Martin''s eyes meet yours, you share a shrug and a knowing smile with him and focus on your beverage.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 10:
+		if pcs_horny < 90: pcs_horny += rand(1,3)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event4.jpg"></center>'
+		'"Right away," Martin says. With practiced ease, he pours you a beverage and sets it in front of you. You can say little more than a "thank you" before he has to move on to the next customer. '+$OpenInnerThought+'Busy night.'+$CloseInnerThought
+		*nl
+		'As you sip on your drink, you let your mind and your eyes wander and- wait, what was that?'
+		*nl
+		'Your eyes focus on a woman, not too far from you. At first you thought you were seeing things but now you''re sure: She is sitting there, her legs spread just enough to reveal that she has no panties on under her dress!'
+		*nl
+		'And she doesn''t seem embarrassed about it, either - on the contrary: She is biting her finger lasciviously as she''s looking around the bar, daring fate to make somebody notice her lack of underwear. It doesn''t take much of a detective to realize that she enjoys the risk of public exposure.'
+		*nl
+		'Then you realize something else: She is looking here and there, but she seems to be deliberately avoiding to look in your direction - could she be aware of your looking at her?'
+		*nl
+		'You quickly turn your face straight ahead again and focus so hard on your drink that it''s should be catching fire any second now.'
+		'The image in your head, however, is that of the exhibitionist and her smooth, exposed pussy...'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 11:
+		if pcs_horny < 90: pcs_horny += rand(1,3)
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/event9.jpg"></center>'
+		'"Coming right up." Only seconds later, Martin puts down a full glass in front of you before directing his attention elsewhere.'
+		*nl
+		'Lacking somebody to talk to, you prick your ears to catch an interesting conversation to eavesdrop on, but you are all out of luck. Bored, you look around the room, but all you see are people talking, people drinking, a couple walking towards the bathroom door, somebody trying to chew his initials into- wait, what?'
+		*nl
+		'Your eyes move back to the bathroom door, just in time to see the shy-looking woman disappear and the man closing the door behind them; but just before it does, your eyes and his meet briefly. Was that a grin?'
+		*nl
+		'You stare at the door intently, but no matter how much willpower you conjure up, you cannot look through solid matter. All you can do is use your imagination, but it provides no shortage of possible positions and practices they might be trying out in the public toilet.'
+		*nl
+		'Seconds pass and turn into minutes. Frankly, you''re not sure how long they''ve been in there, and even though you think you can hear a moan or another telltale noise every now and then, nobody in the room seems to look around or pay any attention. But you didn''t just imagine that couple going in there... did you?'
+		*nl
+		'No, sure enough, the bathroom door opens and a disheveled brunette steps out, her eyes glued to the ground, beads of sweat on her forehead and her face as red as it gets.'
+		'Two seconds later, a man follows, and his eyes immediately find yours, his lips parting to a self-satisfied, lewd smile.'
+		*nl
+		'He knew you had noticed them. He was aware that you would be waiting for them to come out again. And, looking at how ashamed the woman seems to be, maybe he told her too...'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 12:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bartalk<<pic_rand>>.jpg"></center>'
+		'"Alright." Martin nods and prepares your beverage, then places it in front of you.'
+		'"Thank you," you smile at him and earn a half-smile in return before he leaves you to yourself.'
+		*nl
+		'"Well, I guess this place is okay, but I don''t get why you insisted on bringing me here," you hear a male voice from nearby table.'
+		*nl
+		'"Are you kidding? This place is the most homely bar in the whole city," a second one declares. "Being here is like sitting in your living room, except without your wife nagging all the time."'
+		'"True, not many women here who could start whining," the first comments dryly. After a pause, he continues: "Hey, is the barman Cuban or something?"'
+		*nl
+		'"He''s Colombian."'
+		'"What the difference?"'
+		'"More drugs, less communism."'
+		*nl
+		'"Is that why he looks like he could murder everybody in the room?"'
+		'"Martin is great. I definitely wouldn''t piss him off, though," the second one explains. "I just wish he didn''t close the bar so early. What bar closes at midnight?"'
+		'"Most of them do. Have you ever actually been to another bar?" The other male asks.'
+		'"Why bother? The beer tastes like piss everywhere," his friend remarks, and they both laugh and raise their glasses to that.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 13:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bartalk<<pic_rand>>.jpg"></center>'
+		'"Coming right up." Only seconds later, Martin puts down a full glass in front of you before directing his attention elsewhere.'
+		'As you muster the liquid that can only do so much to cure your boredom, you start listening in on a nearby conversation.'
+		*nl
+		'"...and the guy yelled at me for ten minutes! ''What do you mean, I can''t buy a second car?! I demand to see your manager!'' It''s good my boss showed up when he did, cause I was about to punch him."'
+		'"I don''t get it. Why couldn''t he just buy that car?"'
+		'"Because the governor''s wife was caught having an affair with her driver and the governor doesn''t want her to leave the house on her own anymore, so he had the assembly pass that law for him."'
+		'"... really?"'
+		'"<b>No, you idiot!</b> I don''t have a fucking clue why you can''t buy a second car. How am I supposed to know? I can''t even afford <b>one</b>!"'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+	elseif DrinkingRand = 14:
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bartalk<<pic_rand>>.jpg"></center>'
+		'"Of course." With practiced ease, Martin prepares your beverage and puts down a full glass in front of you before another patron draws his attention.'
+		'While you enjoy your drink in solitude, you pick up a nearby conversation.'
+		*nl
+		'"... Speaking of which, I heard somebody got hurt at your plant last week."'
+		'The other man nods gravely. "Last Wednesday was a complete mess. Vanya got his hand stuck in the conveyor belt."'
+		'"Really, Vanya? Fuck... Is he alright?"'
+		'The man shrugs. "He''s probably gonna lose the hand, but the paramedics said he got lucky we shut it down when we did. Anyway, after that, the militia showed up and shut down the entire plant. By the time we were free to leave, there were photographers everywhere."'
+		'"They''re gonna tear your boss a new one over work safety."'
+		'"Meh, maybe. You know how things are: They talk about it for a week or two, somebody gets a ''small donation'' and it''s all back to normal."'
+		'"Yeah, I guess you''re right. Poor Vanya."'
+		'"No kidding. We came over to the bar to drink to his health, but Martin had it closed."'
+		'"Yeah, he always closes the bar on Wednesdays. Everyone needs a day off, even him."'
+		'"Why Wednesdays of all days, though?"'
+		'"I asked him that once, actually. He said: ''If you''ve made it through Monday and Tuesday, you can make it to Thursday, with or without a drink.''"'
+		'"Easy for him to say. He''d probably change his mind if he had been there with us..."'
+		*nl
+		'Whoever this Vanya is, his fate makes you think that you should probably aim higher than assembly-line work.'
+
+		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+!Template for infos	the NPCs give on events, stories and other points of interest in the game
+!	!!DrinkingRand ALWAYS HAS TO BE ADJUSTED AT THE TOP OF THE ARGUMENT
+!	elseif DrinkingRand = 15:
+!		'<center><img <<$set_imgh>> src="images/locations/city/industrial/bar/bartalk<<pic_rand>>.jpg"></center>'
+!		'"Coming right up." Only seconds later, Martin puts down a full glass in front of you before directing his attention elsewhere.'
+!		'As you forlornly muster the liquid, one of the many conversations in the bar piques your interest.'
+!		*nl
+!		'BLA BLA BLA'
+!		act 'Finish your drink': gt 'qwBarPolet', 'bar'
+
+
+	!Ideas for other random events:
+	!-Martin talking to somebody (and comforting them)
+	!-A group talking about work
+	!-Talk about prominent npcs
+	!-Talk about ingame locations
+	!-Discussing ingame politics
+
+	end
+end
+
+--- qwBarPolet ---------------------------------
+

@@ -1,0 +1,694 @@
+# Prostitute
+$location_type = 'public_outdoors'
+
+if $ARGS[0] = 'start':
+	$metka = $ARGS[0]
+	$loc = $CURLOC
+	$metkaSex = $ARGS[0]
+	$locSex = $CURLOC
+	menu_off = 1
+	cls
+	minut += 5
+	gs 'stat'
+
+	'<center><b><font color="maroon">Road near the park, among prostitutes</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park2.jpg"></center>'
+
+	if hour >= 16 and hour <= 23:
+		if whoreQW = 1:
+			'Several prostitutes are looking at you a bit awkwardly, remembering the beating you gave their friend all too well. They still don''t want you here, but they''re too scared to confront you directly.'
+
+			act 'Ask how things work around here':
+				cla
+				whoreQW = 2
+				'You approach one of the more isolated girls and give her a disarming smile: "Hey! So, the other girl said I have to be one of you to work here? How does that work?"'
+				'The prostitute shrugs, not entirely willing to talk to you, but she''s afraid you''d fight her too. She says: "We don''t really work for anyone, but that also means we don''t get any protection. One of the women here called Stella organized part of the girls into a group. She requires some protection money from time to time, and arranges ''accidents'' for those who don''t pay. She and her cronies are not that tough, but since she doesn''t ask for that much, I usually just pay her off. Less hassle that way, you know?"'
+				'You nod understandingly and the girl continues: "And then there''s the bandits! They sometimes extort us too, because we''re easy prey. Stella doesn''t have that much influence around here, but I wouldn''t mess with the bandits if I were you! They mean business..."'
+				'She also points out: "By the way, it may sound obvious but <b>if you want to pick up customers, you need to be dressed like a prostitute.</b> If it''s not very obvious to guys that you''re a working girl, none of them will approach you! You can buy some in a sex shop."'
+
+				act 'Thank her and move away':gt 'prostitute', 'start'
+			end
+		elseif whoreQW = 0:
+			'"Hey bitch, you''re not one of us!" a prostitute yells angrily at you, rapidly moving towards you. "Get off our turf, or it''ll cost you your teeth!"'
+			'She looks like she''s getting ready to fight you, though she''s clearly under the influence of drugs and wobbles a bit as she walks.'
+
+			act 'Fight her':
+				cla
+				minut += 15
+				gs 'npcgeneratec', 1, 'stoned prostitute', rand(18,28)
+				gs 'boyStat', $npclastgenerated
+
+				gs 'fight','initFight'
+
+				gs 'fight_npcdata', 'prostitute'
+
+				gt 'fight', 'start'
+			end
+
+			act '"How do I become one of you?"':
+				cla
+				'You raise your hands disarmingly and say: "Whoa, relax! I only wanted to ask... how do I become one of you? I want to work here!"'
+				'The prostitute grins meanly and spits on the ground before you, saying: "That''s what I thought, bitch. Stella runs this area! You pay her if you want to work here, you got that?"'
+
+				act 'Shrug and leave':gt 'prostitute', 'start'
+
+				act 'Nod understandingly':
+					cla
+					whoreQW = 2
+					'When you nod, the prostitute adds: "By the way: <b>you need to look like a whore, if you want to work as a whore</b>. The sex shop sells outfits. And remember: you work here, you pay Stella! Otherwise you''re in deep trouble!"'
+
+					act 'Move away from her':gt 'prostitute', 'start'
+				end
+			end
+		elseif whoreQW = 2:
+			'The prostitutes look at you curiously for a moment, but quickly turn their attention back to trying to attract customers.'
+
+			if PCloStyle = 4 and pcs_sleep > 0:
+				act 'Stand and wait for customers (0:16)':
+					cla
+					minut += 10
+
+					if rand(0, (pcs_apprnc/4 + hour) * 2) < 20:
+						'You walk around for a while, trying to find a customer. Unfortunately, no one is interested in you right now.'
+
+						act 'Continue':gt 'prostitute', 'start'
+					else
+						proseventrand = rand(1, 20)
+
+						if proseventrand = 1:
+							'A black jeep with tinted windows pulls up next to you, and a window rolls down. You''re looking into the face of a fairly mean looking guy, who you''re fairly sure is a criminal.'
+							'He looks at you with disdain. "Time for you to pay your tribute, slut."'
+
+							if money >= 1000:
+								act 'Give him 1000 <b>₽</b>':
+									cla
+									money -= 1000
+									'You give the man 1,000 <b>₽</b>, which he pockets right away. Then he drives off, without saying another word.'
+
+									act 'Continue':gt 'prostitute', 'start'
+								end
+							elseif money < 1000:
+								act 'Say you haven''t earned much':
+									cla
+									money = 0
+									'You try to explain to the man that you haven''t earned much yet. He thinks it over for a moment.'
+									'"Are you new, or do you just suck at your job then? All the girls here know to have their money ready when we come to collect!" he grunts as he opens the door of the car and pulls you in with his thick, burly arms. "Let''s see what you''re working with. Maybe you need someone to teach you how to make money around here!"'
+									'When he sees you hesitate, he slaps your face and says: "Go on, whore! I don''t have all day."'
+									'You realize he''s not going to let you off the hook easily, and that he probably has enough connections to get you into serious trouble. It''s probably easiest to treat him as just another customer, maybe he''ll let you go if you do a good job...'
+
+									act 'Reach for his groin':
+										gs 'npcgeneratec', 0, 'Bandit', rand(18,45)
+										gs 'boyStat', $npclastgenerated
+										gt 'blowPR', 'start'
+									end
+								end
+							end
+
+							act 'Refuse to pay and fight him':
+								cla
+								minut += 15
+								gs 'npcgeneratec', 0, 'Bandit', rand(18,45)
+								gs 'boyStat', $npclastgenerated
+
+								gs 'fight','initFight'
+
+								gs 'fight_npcdata', 'bandit'
+
+								gt 'fight', 'start'
+							end
+						elseif proseventrand = 2:
+							'A rather scrawny looking prostitute approaches you and says: "Listen up, skank. It''s time you pay Stella!"'
+
+							if money >= 500:
+								act 'Give her 500 <b>₽</b>':
+									cla
+									money -= 500
+									'As you give her the money, you''d swear you see a twinge of relief in her eyes. The girl was clearly worried you were going to give her a hard time.'
+									'She quickly walks away, not saying anything else.'
+
+									act 'Continue':gt 'prostitute', 'start'
+								end
+							elseif money < 500:
+								act 'Say you haven''t earned much':
+									cla
+									money = 0
+									'You begin to explain that you haven''t earned much money yet, but she''s not interested in your story.'
+									'She quickly rummages through your belongings, and takes all the money you have on you. Then she leaves quickly, before you can object.'
+
+									act 'Continue':gt 'prostitute', 'start'
+								end
+							end
+
+							act 'Refuse to pay and fight her':
+								cla
+								minut += 15
+								gs 'npcgeneratec', 1, 'prostitute', rand(18,28)
+								gs 'boyStat', $npclastgenerated
+
+								gs 'fight','initFight'
+
+								gs 'fight_npcdata', 'prostitue2'
+
+								gt 'fight', 'start'
+							end
+						else
+							'A car stops near you and the driver rolls his window down.'
+							prosti = 0
+							if proseventrand <= 8:
+								'The driver asks matter-of-factly: "You''ve got a cute face on you. How much for a blowjob?"'
+							elseif proseventrand <= 14:
+								'The driver says matter-of-factly: "You seem decent enough... I want to fuck you. How much?"'
+							else
+								'The driver says matter-of-factly: "I like your ass. How much do you charge for anal?"'
+							end
+
+							act 'Walk away from him':gt 'prostitute', 'start'
+
+							if ProsMoney > 0:
+								act '<<ProsMoney * 100>> <b>₽</b>':
+									cls
+									gt 'prostitute', 'work1', iif(proseventrand <= 8, 'blow job', iif(proseventrand <= 14, 'sex', 'anal'))
+								end
+							end
+
+							act 'Change the price':
+								cls
+								gs 'stat'
+								ProsMoney = input("Enter a number below, which will be multiplied by 100")
+
+								if ProsMoney < 1:
+									'"Are you making a joke or something? I''m not in the mood for jokes!" the customer sighs wearily. He starts his car again and drives away without saying another word.'
+									'The price you set was too low for the man to take you seriously.'
+
+									act 'Continue':gt 'prostitute', 'start'
+								else
+									gt 'prostitute', 'work1', iif(proseventrand <= 8, 'blow job', iif(proseventrand <= 14, 'sex', 'anal'))
+								end
+							end
+						end
+						killvar 'proseventrand'
+					end
+				end
+			end
+		end
+	end
+
+	act 'Go back to the park':
+		cla
+		minut += 5
+		gt 'park', 'start'
+	end
+end
+
+if $ARGS[0] = 'work1':
+	!! ARGS 1 - blow job, sex, anal
+    $location_type = 'event_outdoors'
+
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park2.jpg"></center>'
+	'You pretend to think it over for a moment, then look at the man again and smile: "For you, babe? Only <<ProsMoney * 100>> <b>₽</b>."'
+
+	vnpr = 0
+	if vidage >= 40:vnpr -= 20
+	if vidage >= 35 and vidage < 40:vnpr -= 10
+	if vidage >= 30 and vidage < 35:vnpr -= 5
+	if vidage >= 25 and vidage < 30:vnpr += 1
+	if vidage >= 20 and vidage < 25:vnpr += 5
+	if vidage >= 18 and vidage < 20:vnpr += 10
+	if vidage < 18:vnpr += 15
+	if pcs_apprnc = -10:
+		vnpr -= 100
+	elseif pcs_apprnc < 5:
+		vnpr -= 10
+	elseif pcs_apprnc < 15:
+		vnpr -= 5
+	elseif pcs_apprnc < 30:
+		vnpr += 1
+	elseif pcs_apprnc < 50:
+		vnpr += 5
+	else
+		vnpr += 10
+	end
+	if cumSUM > 0:vnpr -= 10
+	if pcs_makeup = 0:vnpr -= 10
+	if pcs_makeup = 1:vnpr -= 1
+	if pcs_makeup = 2:vnpr += 1
+	if pcs_makeup = 3:vnpr += 5
+	if pcs_makeup = 4:vnpr += 10
+	if pcs_leghair <= 0:vnpr += 1
+	if pcs_leghair > 0:vnpr -= 5
+	if pcs_pubes > 3:vnpr -= 5
+	if pcs_pubes <= 3:vnpr += 1
+	if pcs_tan > 0:vnpr += 1
+	if curly > 0:vnpr += 1
+	if pcs_sweat > 24:
+		vnpr -= 10
+	elseif pcs_sweat < 15:
+		vnpr += 1
+	end
+	if pcs_hairbsh = 0:vnpr -= 1
+	if pcs_lip = 4:vnpr += 1
+
+	if vnpr >= 0:
+		if ProsMoney = 1:
+			gt 'prostitute', 'work2', $ARGS[1]
+			exit
+		else
+			if vnpr >= rand(0, 30):
+				if $ARGS[1] = 'blow job':KlientMON = rand(1, 10)
+				if $ARGS[1] = 'sex':KlientMON = rand(3, 25)
+				if $ARGS[1] = 'anal':KlientMON = rand(5, 40)
+
+				if KlientMON >= ProsMoney:
+					killvar 'KlientMON' & gt 'prostitute', 'work2', $ARGS[1]
+					exit
+				else
+					if rand(0, 1) = 1:
+						'The client smiles and offers: "I only have <<KlientMON * 100>>... what do you say?"'
+
+						act 'Agree':
+							ProsMoney = KlientMON
+							killvar 'KlientMON'
+							gt 'prostitute', 'work2', $ARGS[1]
+							exit
+						end
+
+						act 'Refuse': killvar 'KlientMON' & gt 'prostitute', 'start'
+						exit
+					end
+				end
+			end
+		end
+	end
+
+	'The client examines you hesitantly, a bit startled by the amount you asked for. He shakes his head as he starts his car: "Too much."'
+	'Then he drives away before you can get another word in. Doesn''t he understand how bartering works!?'
+	act 'Continue':gt 'prostitute', 'start'
+end
+
+if $ARGS[0] = 'work2':
+	!! ARGS 1 - blow job, sex, anal
+    $location_type = 'event_outdoors'
+	'The client grins and gives you a nod: "Get in."'
+	act 'Get into his car':
+		cla
+		clr
+		*clr
+		gs 'npcgeneratec', 0, '"John"', rand(18,45)
+		gs 'boyStat', $npclastgenerated
+		!! gs 'boy', 'details'    & !! does not seem to be needed for "Johns"
+		slutty += 1
+		guy += 1
+		if pcs_throat < dick: pcs_throat += 1
+
+
+
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/bj.jpg"></center>'
+		'Once you''re in the car you slide your hand on his crotch. The man quickly drives to a quiet place, about two streets away from where he picked you up. You can already feel an impressive bulge as you reach into his pants and you compliment him on his nice cock when you finally liberate it. He''s nearly fully erect, and if you look closely you can actually see his cock throbbing.'
+		gs 'arousal', 'foreplay', 5, 'prostitution', 'unknown'
+		gs 'stat'
+		if prezik > 0:
+			protect = 1
+			act 'Put on a condom, using your mouth':
+				cla
+				clr
+				*clr
+				minut += 5
+				dynamic $prezik
+				gs 'stat'
+				picrand = rand(1, 7)
+				if picrand = 1:
+					'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/bjp.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/bjp<<picrand>>.jpg"></center>'
+				end
+				killvar 'picrand'
+				'You put a condom between your lips and slowly guide your mouth to his penis, you gently roll it down using only your lips. You can tell the guy is really impressed with your skills.'
+
+				if $ARGS[1] = 'blow job':
+					money += ProsMoney * 100
+					'You proceed to give him a blowjob, licking and sucking his condom-clad penis. The taste of the rubber is a bit unpleasant, but you do a good job regardless. In no time the guy groans loudly.'
+					'When you feel his cock finally soften between your lips, you pull your head back. The man ties a knot in the condom and tosses it out of the window carelessly, then he gives you the money he owes you.'
+					gs 'dinSex', 'std_trigger_oral'
+					gs 'arousal', 'bj', 5, 'prostitution', 'unknown'
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Get out of the car':gt 'prostitute', 'start'
+				elseif $ARGS[1] = 'sex':
+					'The client is so turned on, he doesn''t want any foreplay. Now that he has a condom on, he wants to fuck you.'
+
+					act 'Continue':
+						cla
+						clr
+						*clr
+						prosti = 0
+						protect = 1
+						if preziktype = 2:
+							sexcontra = 7
+						else
+							sexcontra = 3
+						end
+						money += ProsMoney * 100
+						gs 'stat'
+
+						if rand(0, 1) = 0:
+							'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar1.jpg"></center>'
+							'You obediently lie down on your back in the back seat. The man pounces on you eagerly, pushing your legs apart and buring his cock deep inside you, all in one swift motion. You groan at the sudden intrusion, but do nothing to stop his rough and fast pace. Quite the opposite actually, you encourage the hard fucking by wrapping your legs around his waist as he keeps slamming his dick deep into your vagina with all his might. '
+							gs 'arousal', 'vaginal', 15, 'prostitution', 'unknown', 'rough'
+							gs 'stat'
+						else
+							'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar2.jpg"></center>'
+							'You feel the man''s hands on your ass cheeks as soon as you get on your hands and knees in the back seat. He confidently guides his cock to your pussy, and slowly thrusts it inside you. You find his slow pace maddening and thrust back on his cock a few times to encourage a faster pace, after all you still have more customers you''d like to get to. The man complies and soon he is slamming his dick in and out of you, as you moan like a bitch in heat.'
+							gs 'arousal', 'vaginal', 15, 'prostitution', 'unknown', 'rough'
+							gs 'stat'
+						end
+
+						'After a few minutes of fucking you, the man groans and you feel his hips spasming against yours. He pulls out of you and takes the filled condom off his slowly shrinking cock.'
+						'He ties a knot in the condom and tosses it out of the window carelessly, and gives you the money he owes you.'
+						gs 'dinSex', 'std_trigger'
+						gs 'arousal', 'end'
+						gs 'stat'
+						protect = 0
+						act 'Get out of the car':gt 'prostitute', 'start'
+					end
+				elseif $ARGS[1] = 'anal':
+					'The client is so turned on, he doesn''t want any foreplay. Now that he has a condom on, he wants to fuck your ass.'
+
+					act 'Continue':
+						cla
+						clr
+						*clr
+						prosti = 0
+						money += ProsMoney * 100
+						gs 'stat'
+						dickK = dick * 10 / 100
+
+						if dickK < 1:dickK = 1
+						pcs_ass += dickK
+
+						'<center><img <<$set_imgh>> src="images/shared/sex/anal/doggy/anal30.jpg"></center>'
+						'You immediately feel the man''s hands on your ass cheeks when you get on your hands and knees in the back seat. The man confidently guides his condom-covered cock to your sphincter, and slowly thrusts all of his <<dick>> centimeter inside you.'
+
+						gs 'arousal', 'anal', 10, 'prostitution', 'unknown'
+						gs 'stat'
+						if pcs_ass < dick:
+							'Your anus stretches painfully while he fills your ass with his shaft, and you wince and beg him to take it easy for a little while. Fortunately, he listens.'
+							'Once he feels he gave you enough time to adapt, he begins to move his hips. Slowly at first, but his thrusts accelerate more and more as he gets closer to his orgasm.'
+							gs 'arousal', 'anal', 10, 'prostitution', 'unknown'
+							gs 'stat'
+						end
+
+						if pcs_ass >= dick:
+							pcs_horny += pcs_ass
+							'Your anus has no difficulty adjusting to the size of his member, and it actually feels fairly pleasant when he shoves his length in. Your anus clasps around the base of his cock from time to time, and the man begins to thrust his hips against yours enthusiastically when he notices you can take it.'
+							gs 'arousal', 'anal', 10, 'prostitution', 'unknown'
+							gs 'stat'
+						end
+
+						'After a few minutes of fucking your ass, the man groans and you feel his hips spasming against yours. He pulls out of you and takes the filled condom off his slowly shrinking cock.'
+						'The man ties a knot in the condom and tosses it out of the window carelessly, and gives you the money he owes you.'
+						gs 'dinSex', 'std_trigger'
+						protect = 0
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Get out of the car':gt 'prostitute', 'start'
+					end
+				end
+			end
+		else
+			act 'Get him hard with your mouth':
+				cla
+				clr
+				*clr
+				gs 'dinSex', 'std_trigger_oral'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/bjp<<rand(8, 13)>>.jpg"></center>'
+				'You close your lips around his member and flick your tongue over the tip of his cock teasingly.'
+				gs 'arousal', 'bj', 5, 'prostitution', 'unknown'
+				gs 'stat'
+				act 'Suck on his cock':
+					*clr
+					cla
+
+					if $ARGS[1] = 'blow job':
+						bjrand = rand(1, 100)
+						money += ProsMoney * 100
+
+						if bjrand <= 50:
+							if stat['bj'] <= 15:
+								spafinloc = 12
+								gs 'cum_manage'
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum32.jpg"></center>'
+								'You don''t have much experience giving blowjobs, and even though you do your best, the man can tell you''re not very good at it.'
+								'Your mouth makes him feel good nevertheless, and after a few minutes he groans and cums in your mouth. You wince from the unpleasant taste of his sperm, which earns you a disdaining look from him.'
+								'The man silently gives you the money he owes you, and then tells you to get out of his car.'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							else
+								spafinloc = 12
+								gs 'cum_manage'
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum33.jpg"></center>'
+								'Your trained tongue slides up and down his shaft expertly, you pull out all of your tricks to make him feel good. You even use some techniques you learned to stall his orgasm for a moment, making it all the more intense for him when he shoots his load into your mouth.'
+								'When you swallow his load obediently, the man smiles at you with a delighted look on his face and gives you the money he owes you. You really made him feel great!'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							end
+						elseif bjrand <= 80:
+							if stat['bj'] <= 15:
+								spafinloc = 11
+								gs 'cum_manage'
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial17.jpg"></center>'
+								'You don''t have much experience giving blowjobs, and even though you do your best, the man can tell you''re not very good at it.'
+								'When the man is about to cum, he suddenly pulls his cock out of your mouth and shoots his load all over your face. Not expecting this, you didn''t have time to close your eyes and some of it ends up in your eyes.'
+								if pcs_makeup > 1:pcs_makeup = 0 & 'The cum on your face makes a mess of your make-up, too.'
+								'You try to remain professional enough and smile at him, ignoring the pain, but the man can clearly tell you''re uncomfortable, yet he doesn''t seem to care.'
+								'The man silently gives you the money he owes you, and then tells you to get out of his car.'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							else
+								spafinloc = 11
+								gs 'cum_manage'
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial18.jpg"></center>'
+								'Your trained tongue slides up and down his shaft expertly, and you pull out all of your tricks to make him feel good. You even use some techniques you learned to stall his orgasm for a moment, making it all the more intense for him when he orgasms.'
+								'You quickly release his cock from your mouth and tilt your head backwards with your eyes closed, making him squirt his load onto your chin with a fake smile on your face.'
+								if pcs_makeup > 1: 'Even though the man thinks you''re delighted with him cumming all over you, in truth you''re mostly focusing on not smearing your make-up!'
+								'The man grins happily when he looks at his work of art, and gives you the money he owes you. You made his day!'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							end
+						else
+							if stat['bj'] <= 15:
+								spafinloc = 7
+								pcs_throat += 1
+								gs 'cum_manage'
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/chest/bjt2.jpg"></center>'
+								'You don''t have much experience giving blowjobs, and even though you do your best, the man can tell you''re not very good at it.'
+								'While you''re sucking him off, the man tries to pull your clothes aside to expose your breasts. You moan uncomfortably in protest with his cock still deep in your mouth, letting him know that was not part of the deal!'
+								'He''s clearly displeased, but lets go and refocuses his efforts on fucking your throat instead.'
+								'When he''s close to cumming, he pulls his cock out of your mouth. When he begins to jerk off furiously, you close your eyes and tilt your head back... except you don''t feel anything land on your face!'
+								'You open your eyes again after a few seconds and notice in horror that the asshole dumped his load onto your clothes, leaving stains everywhere! You silently curse him but force yourself to smile... he is still your customer, after all.'
+								'The man silently gives you the money he owes you, and then tells you to get out of his car.'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							else
+								money += 500
+								'<center><img <<$set_imgh>> src="images/shared/sex/cum/chest/bjt.jpg"></center>'
+								'Your trained tongue slides up and down his shaft expertly, and you pull out all of your tricks to make him feel good. You even use some techniques you learned to stall his orgasm for a while.'
+								'While you''re sucking him off, the man tries to pull your clothes aside to expose your breasts. Understanding what he wants, you expose your boobs readily. His cock erupts almost immediately at the sight of them, and he removes his cock from your mouth so he can spray his sperm over your tits too.'
+								'The man grins happily when he looks at his work of art across your boobs, and gives you an extra 500 <b>₽</b> as a tip on top of the money he owed you. You really made his day!'
+								gs 'arousal', 'bj', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							end
+						end
+						killvar 'bjrand'
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Get out of his car':gt 'prostitute', 'start'
+					elseif $ARGS[1] = 'sex':
+						'After you suck him off for a while, the guy reminds you that that''s not why you''re here. He''s ready to fuck you now.'
+
+						act 'Continue':
+							cla
+							clr
+							*clr
+							prosti = 0
+							money += ProsMoney * 100
+							gs 'stat'
+							prostRand = rand(1, 100)
+							gs 'dinSex', 'std_trigger'
+
+
+							if prostRand <= 50:
+								pose = 1
+								'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar<<rand(1, 7)>>.jpg"></center>'
+								'You lean against the car and expose your bare ass to the man. He''s not wasting any time and immediately gets behind you, eagerly rubbing his cock against your vagina. The feeling of a rock hard erection rubbing on your pussy lips excites you. Your hips move involuntarily seeking out more friction. The man smiles at your eagerness to be fucked and grants your wish by slamming powerfully his hard member deep into your willing vagina. '
+								gs 'arousal', 'vaginal', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							elseif prostRand <= 75:
+								pose = 1
+								'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar<<rand(8, 10)>>.jpg"></center>'
+								'You get down on your hands and knees like he wants you to, and brace yourself against the car when you feel him pressing his cock against your pussy in a none too gentle fashion, wasting no time as he roughly uses your tender vagina for his pleasure. You groan in pain, which only encourages the man to fuck you even harder. '
+								gs 'arousal', 'vaginal', 10, 'prostitution', 'unknown', 'rough'
+								gs 'stat'
+							else
+								pose = 0
+								'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar<<rand(11, 17)>>.jpg"></center>'
+								'He groans in your ear: "Get on the hood, on your back!"'
+								'You quickly do as he says, and let out a soft moan when he rubs his cock against your pussy lips.'
+								gs 'arousal', 'vaginal', 10, 'prostitution', 'unknown'
+								gs 'stat'
+							end
+							killvar 'prostRand'
+
+							'He exerted himself a great deal while he was fucking you, and is slowly catching his breath while you straighten your clothes.'
+							'With a satisfied smile on his face, he gives you the money he owes you and drives off.'
+
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Continue':gt 'prostitute', 'start'
+						end
+					elseif $ARGS[1] = 'anal':
+						'After you suck him off for a while, the guy reminds you that that''s not why you''re here. He''s ready to fuck your ass now.'
+
+						act 'Continue':
+							cla
+							clr
+							*clr
+							prosti = 0
+							gs 'stat'
+							dickK = dick * 10 / 100
+
+							if dickK < 1:dickK = 1
+							pcs_ass += dickK
+
+							'<center><img <<$set_imgh>> src="images/shared/sex/anal/mis/cowl<<rand(1, 6)>>.jpg"></center>'
+							'As soon as you lie down on the hood of the car, the man parts your legs and eagerly presses the tip of his cock against your anus.'
+							gs 'arousal', 'foreplay', 1, 'prostitution', 'unknown'
+							gs 'stat'
+							if pcs_ass < dick:
+								'You feel a sharp pain and wince when the man pushes the tip of his <<dick>> centimeter member past your sphincter, and continues to work most of his length inside you. Fortunately, he listens when you beg him to go slow.'
+								'The guy holds still for a moment so your ass can get used to how far it''s being stretched out. After a little while you don''t think it''s going to get any better, and you tell the man he can start to fucking you now with a forced, fake smile on your face.'
+								'He''s still careful at first, but soon forgets about your suffering and accelerates more and more. The man groans loudly while he hammers his cock inside your ass, ignoring your crying and mewling underneath him.'
+								gs 'arousal', 'anal', 10, 'prostitution', 'unknown', 'rough'
+								gs 'stat'
+							else
+								pcs_horny += pcs_ass
+								'Your anus has no difficulty adjusting to the size of his member, and it actually feels fairly pleasant when he shoves his length in. Your anus clasps around the base of his cock from time to time, and the man begins to thrust his hips against yours enthusiastically when he notices you can take it.'
+								gs 'arousal', 'anal', 10, 'prostitution', 'unknown'
+								gs 'stat'
+								gs 'dinSex', 'std_trigger'
+							end
+
+							if klismaday ! daystart:
+								act 'Continue':
+									cla
+									*clr
+									gs 'stat'
+									'When the man stops, you think it''s because he came. Instead, you hear swearing.'
+									'"What the fuck!? What kind of dirty whore are you, this is disgusting!" he yells.'
+									'When you turn around, you see the problem: his dick is covered in shit! You should really give yourself an enema first, if you want to sell your ass like this...'
+									'The man shouts angrily: "Get lost, whore... you''re lucky I''m letting you leave without beating you up first! You can forget about your money!"'
+
+									gs 'arousal', 'end'
+									gs 'stat'
+									act 'Leave quietly':gt 'prostitute', 'start'
+
+									act 'Insist he pays you anyway':
+										cla
+										*clr
+										money += ProsMoney * 100
+										pcs_mood -= 30
+										pcs_health -= pcs_health/5
+										pcs_throat += 1
+										spafinloc = 12
+										gs 'cum_manage'
+										pcs_breath = 0
+										gs 'dinSex', 'std_trigger_oral'
+										gs 'stat'
+										'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/bjr.jpg"></center>'
+										'"Hey, I did what you wanted! You owe m-" you begin, but he doesn''t let you finish. The man angrily punches you in the stomach, making you double over in pain.'
+										'"Fine! You''ll get your money... but you will correct your mistake, whore!" he snarls angrily.'
+										'He kneels down and thrusts his smelly, dirty cock all the way into your mouth, and says with a mean grin: "Start sucking, slut. It''s not coming out until it''s completely clean!"'
+										'The taste and stench are terrible, and you really have to fight the urge to vomit. You barely manage, partially because you''re afraid of what he would do otherwise...'
+										'A few minutes later, long after you licked and sucked his cock clean, the man is still fucking your throat violently. Then finally, he groans and cums inside your mouth.'
+										'He scoffs at you when he pulls away, while you roll to your stomach and dry heave a few times. That was disgusting!'
+										'He carelessly throws the money he owes you onto the ground and drives off, without saying another word.'
+
+										gs 'arousal', 'bj', 5, 'prostitution', 'unknown', 'sub', 'humiliation'
+										gs 'stat'
+										act 'Collect the money and get up':gt 'prostitute', 'start'
+									end
+
+									if pcs_intel >= 50:
+										act 'Apologize and make amends':
+											cla
+											*clr
+											pcs_throat += 1
+											gs 'dinSex', 'std_trigger_oral'
+											gs 'stat'
+											'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/bjr1.jpg"></center>'
+											'You understand perfectly why he''s upset... that wasn''t very smart of you. You''ll have to think of a solution fast!'
+											'"I''m sorry, sir! Please allow me to make it up to you..." you tell him, while you drop to your knees obediently. This is going to be unpleasant, but you have to do something to keep him happy! And still get paid.'
+											'The man watches in disgust as you close your lips around his dirty cock. The taste and smell are awful! He''s still upset, but you can see his anger slowly fade away when you lick his dirty cock clean. It''s fully erect again by now, and you can tell he''s still very horny despite your mishap.'
+											'He then says: "Good enough. Lie down in the grass and spread your legs."'
+
+											gs 'arousal', 'bj', 5, 'prostitution', 'unknown', 'sub', 'humiliation'
+											gs 'stat'
+											act 'Let him fuck you':
+												cla
+												*clr
+												pcs_vag += 1
+												money += ProsMoney * 110
+												protect = 1
+												gs 'dinSex', 'std_trigger'
+												protect = 0
+												gs 'stat'
+												'<center><img <<$set_imgh>> src="images/locations/shared/sex/car/sexcar20.jpg"></center>'
+												'You lie down obediently, giving the man a humble look as he takes place between your legs. He quickly put a condom on, not taking any more chances with you. You still have that awful taste in your mouth, but do your best to focus on giving the man pleasure.'
+												'The man drives his cock deep inside you and begins to fuck your pussy using long, firm strokes. He groans every time his hips slap against yours, and the intensity with which he fucks you makes you cry out as well.'
+												'After a few minutes, the man groans and you feel his hips spasming against yours. He pulls out of you and takes the filled condom off his slowly shrinking cock.'
+												'While you lay on the grass, recovering from all the things you just had to do to not lose your customer, he theatrically throws a number of bills onto your body one by one. He''s smiling again, and is clearly in a good mood. He even added a little extra!'
+
+												gs 'arousal', 'vaginal', 5, 'prostitution', 'unknown', 'sub', 'humiliation'
+												gs 'arousal', 'end'
+												gs 'stat'
+												act 'Collect the money and get up':gt 'prostitute', 'start'
+											end
+										end
+									end
+								end
+							else
+								money += 2000
+								cumanalRand = rand(0, 2)
+
+								if cumanalRand = 0:
+									spafinloc = 4
+									gs 'cum_manage'
+									'Suddenly the man groans loudly, and abruptly pulls his member out of your stretched anus. The sudden emptiness feels strange, but you smile seductively at the man while he jerks himself off over your ass cheeks. When he''s done covering your buttocks with his seed, he lets out a satisfied sigh and gives you your money.'
+								elseif cumanalRand = 1:
+									spafinloc = 7
+									gs 'cum_manage'
+									'Suddenly the man groans loudly, and abruptly pulls his member out of your stretched anus. The sudden emptiness feels strange, but you smile seductively at the man while he jerks himself off over your ass cheeks. Then the bastard suddenly aims his cock at your clothes, and shoots his load all over them!'
+									'You silently curse him, but force yourself to keep smiling as he lets out a satisfied sigh and gives you your money.'
+								else
+									spafinloc = 3
+									gs 'cum_manage'
+									'Suddenly the man groans loudly, and he holds still with his cock deep inside you. Then he very slowly pulls out, and a trickle of his sperm slowly runs out of your slightly gaping ass.'
+									'He admires his work for a moment, before giving the money he owes you with a satisfied smile on his face.'
+								end
+								killvar 'cumanalRand'
+
+								gs 'arousal', 'end'
+								gs 'stat'
+								act 'Take his money and straighten your clothes':gt 'prostitute', 'start'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+--- Prostitute ---------------------------------
+

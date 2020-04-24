@@ -1,0 +1,1152 @@
+# meadow
+
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+	$loc = 'meadow'
+	$metka = 'start'
+	$location_type = 'secluded'
+
+	$menu_loc = 'meadow'
+	$menu_arg = 'start'
+	menu_off = 0
+
+	gs 'stat'
+
+	!MiraLoc = 0 (Mira at home)
+	!MiraLoc = 1 (Mira at river)
+	!MiraLoc = 2 (Mira at meadow)
+	!MiraLoc = 3 (Mira at forest)
+	!MiraLoc = 4 (Mira at field)
+	!MiraLoc = 5 (Mira with gop)
+
+	!meadow = 1 'You have found the meadow'
+	!meadow = 2 'Your first visit with Mira'
+	!meadow = 3 'You allowed Mira to come here without you'
+	!meadow = 4 'You have denied Mira from coming here without you. Blocks wish and father events.'
+	!meadow = 5 'You are interested in Mira''s father'
+	!meadow = 6 'You have seduced Mira''s father, now its her turn'
+
+	'<center><H4>Meadow</H4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/meadow/meadow1_<<rand(0,5)>>.jpg"></center>'
+	*nl
+	'A quiet and deserted open field of grass and wildflowers in the forest, well hidden from civilization.'
+	'There are <a href="exec:gt ''meadow'', ''ruins''">ruins</a> of a long-abandoned house as well as some <a href="exec: gt ''meadow'', ''fruit_trees''">fruit trees</a> hinting at the areas original purpose.'
+	
+	!events trigger before everything
+	if (meadow = 3 or meadow = 6) and MiraLoc = 0 and npc_QW['A60'] = 2 and temper >= 12 and sunWeather = 1:gt 'meadow','mira_mitka'
+	if (meadow = 3 or meadow = 6) and Mira_no = 0 and MiraLoc = 0 and npc_QW['A60'] = 33 and temper >= 12 and sunWeather = 1:gt 'meadow','mira_gang'
+	if npc_QW['A63'] > 13 and mirasex = 0 and npc_QW['A60'] > 11:gt 'meadow','mira_lesb_talk1'
+	if npc_QW['A63'] > 13 and mirasex = 1 and npc_QW['A60'] > 11 and rand(1,5) = 1 and miraday ! daystart:gt 'meadow','mira_lesb_talk3'
+	if npc_QW['A63'] > 13 and mirasex = 1 and npc_QW['A60'] > 11:gt 'meadow','mira_lesb_talk2'
+	if mirasex = 2 and rand(1,5) > 3 and miraday ! daystart and npc_rel['A60'] >= 15:gt 'meadow','mira_lesb'
+
+	if MiraLoc = 2:
+		act 'Talk to Mira': gt 'meadow', 'Mira'
+		'<a href="exec: gt ''meadow'', ''Mira''">Mira</a> is in the meadow and is spinning with a delightful smile and laughing.'
+	elseif Mira_no = 0:
+		temp_md = 20
+		if (meadow = 3 or meadow = 6) and sunWeather = 1:temp_md = rand(0,20)
+		if mirasextimes < 15 and temper >= 12 and temp_md = 0:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''0''">Mira</a>.'
+		elseif npc_QW['A60'] >= 2 and temper >= 15 and temp_md = 1:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''1''">Mira with Mitka</a>.'
+		elseif npc_QW['A60'] >= 8 and temper >= 15 and temp_md = 2:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''2''">Mira with Mitka</a>.'
+		elseif npc_QW['A60'] >= 11 and temper >= 10 and temp_md = 3:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''3''">Mira with Kolyamba</a>.'
+		elseif npc_QW['A60'] >= 11 and temper >= 10 and temp_md = 4:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''4''">Mira with Vasyan</a>.'
+		elseif npc_QW['A60'] >= 11 and temper >= 25 and temp_md = 5:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''5''">Mira with Vasyan</a>.'
+		elseif npc_QW['A60'] >= 11 and temper >= 12 and temp_md = 6:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''6''">Mira with Mitka, Vasyan and Kolyamba</a>.'
+		elseif npc_QW['A60'] >= 20 and temper >= 12 and temp_md = 7:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''7''">Mira with Vasyan and Kolyamba</a>.'
+		elseif npc_QW['A60'] >= 30 and temper >= 20 and temp_md = 8:
+			'In the clearing you notice <a href="exec: gt ''meadow'', ''8''">A bunch of half-naked hillbilly men</a>.'
+		elseif npc_QW['A60'] >= 20 and temper >= 25 and temp_md = 9:
+			'In a clearing you see <a href="exec: gt ''meadow'', ''9''">Mira</a>.'
+		end
+	end
+
+	if MiraLoc = 2 and meadow ! 2:
+		act 'Go back to the forest': minut += 20 & MiraLoc = 3 & gt 'gadforest', 'forest_edge'
+	elseif meadow ! 2:
+		act 'Go back to the forest': minut += 20 & gt 'gadforest', 'forest_edge'
+	end
+
+	if sunWeather = 1:
+		if pcs_stam >= 15 or (pcs_stam >= 10 and bookYog + obruch > 0):
+			if $clothingworntype ! 'exercise':
+				*nl
+				'Your meadow is a perfect place to workout if you were wearing exercise clothes'
+			elseif pcs_inhib >= 35 and Miraloc ! 2 and temper >= 10:
+				*nl
+				'Your meadow is a perfect place to exercise. There is no one around, so you could probably exercise nude if you wanted.'
+				act 'Exercise': gt 'meadow', 'workout'
+				act 'Exercise nude':gt 'meadow', 'workout', 'nude'
+			elseif Miraloc = 2:
+				*nl
+				'Your meadow is a perfect place to exercise. Mira is here but she wouldn''t mind if you exercised for a little bit.'
+				act 'Exercise': gt 'meadow', 'workout'
+			else
+				*nl
+				'Your meadow is a perfect place to exercise.'
+				act 'Exercise': gt 'meadow', 'workout'
+			end
+		else
+			'Your meadow is a perfect place to exercise, but you don''t have the energy right now.'
+		end
+	else
+		'You can exercise in your meadow once the weather improves.'
+	end
+end
+
+if $ARGS[0] = 'workout':
+	*clr & cla
+	if $ARGS[1] = 'nude':
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/forest/nudeforest1.2.jpg"></center>'
+		*nl
+		if exhibitionist_lvl < 3:
+			'Your cheeks redden with embarrassment as you strip off your clothes. You giggle nervously at the thought of getting caught naked in the meadow.'
+		else
+			'You strip off your clothes. The thought of getting caught naked in the meadow excites you.'
+		end
+		clothesAtLocation = FUNC('lost_clothes_here','meadow')
+		gs 'clothing', 'strip', 'meadow'
+		gs 'underwear', 'remove'
+		gs 'exhibitionism', 3
+		gs 'stat'
+		act 'Continue': gt 'exercise', 'workout'
+	else
+		gt 'exercise', 'workout'
+	end
+end
+
+if $ARGS[0] = 'fruit_trees':
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/meadow/meadow_fruit_<<rand(0,1)>>.jpg"></center>'
+	*nl
+	'These fruit trees are flourishing in the undisturbed beauty of the meadow. Unfortunately all the fruit is out of your reach.'
+	act 'Continue': gt 'meadow', 'start'
+end
+
+if $ARGS[0] = 'ruins':
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/meadow/meadow_nearby_ruins.jpg"></center>'
+	*nl
+	'The ruins of this old house look intriguing. You wonder how long it has been here.'
+	act 'Continue': gt 'meadow', 'start'
+end
+
+if $ARGS[0] = 'Mira':
+	minut += 2
+	menu_off = 1
+	gs 'stat'
+	! first time here with Mira
+	if meadow = 2:
+		gs 'miroslava', 'miraclothes'
+		'"Wow! This place is awesome. My family and I have only been in the village a few months, but I have never heard anyone ever talk about this place." Mira tells you. "Now I know where I can come to, when I want to be alone. You don''t mind, do you?"'
+		act 'You allow her to come here on her own':
+			*clr & cla
+			meadow = 3
+			minut += 2
+			gs 'stat'
+			gs 'miroslava', 'miraclothes'
+			'"I think you are a responsible person, Mira, you can come to the meadow whenever it pleases you. But, I want this place to remain a secret so you can never tell anyone about this place."'
+			'Mira, readily agrees and is as happy as a lark. Mira energetically nodding her head and says, "I''ll take this secret to the grave, I swear. If I don''t, then I''ll grant you three wishes, that I promise I will perform no matter what..."'
+			act 'Finish': gt 'meadow', 'start'
+		end
+		act 'Sorry, I want to keep this meadow private':
+			*clr & cla
+			meadow = 4
+			minut += 2
+			gs 'stat'
+			gs 'miroslava', 'miraclothes'
+			'You tell her that this is your haven, you would prefer if she wants to come to the meadow that she can only do so with you. Mira looks crestfallen, tears start to well up in her eyes, though she tries not to let you see.'
+			'Mira looks at you seriously, "I will abide by your wishes. I swear. If I don''t, then I''ll grant you three wishes, that I promise I will perform no matter what..."'
+			if npc_QW['A64'] < 15:
+				'You and Mira speak for awhile. Her mood is a little down, but as you chat a smile slowly creeps onto her face.'
+				'Mira then asks if you could help cheer up her father. He has been depressed ever since her mother''s death nearly two years ago.'
+				act 'Maybe':
+					*clr & cla
+					meadow = 5
+					minut += 2
+					pcs_horny += 40
+					gs 'stat'
+
+					if npc_QW['A60'] = 0:
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mira.jpg"></center>'
+					else
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mira3.jpg"></center>'
+					end
+					'You agree, intrigued. You ask Mira what see has in mind? After a few seconds, she tells you she saw her father masturbating that morning. She doesn''t think her father has been with a woman since her mother passed away. Mira is sorry for her father''s loss, her''s too for that matter, but she has an overwhelming desire to help him. She can''t just do nothing.'
+					'You know Mira loves her father very much, you don''t know what you can do to help. You don''t want or need this drama in your life. You tell her that there is nothing you can do to help with her father''s depression. Mira''s pouts and stands with her arms crossed. Her whole demeanor is one of injured innocence.'
+					'A few minutes later, to your surprise, you feel a bit sorry for the way you snapped Mira. You think to yourself, chatting with her dad couldn''t hurt and it would be a good deed.'
+					act 'Leave': gt 'meadow', 'start'
+				end
+				act 'Leave': gt 'meadow', 'start'
+			else
+				meadow = 6
+				'You and Mira speak for awhile. Her mood is a little down, but as you chat a smile slowly creeps onto her face.'
+				'"I saw you meeting with my father. I want to thank you for attending to him. He had been depressed since my mother died two years ago. Being with you has really cheered him up."'
+				minut += 2
+				!! If Svetka has some shame left she can blush at being told she was seen with Afanasiy
+				if pcs_inhib <= 30:
+					act 'Blush':
+						cla
+						'You are a bit surprised that Mira must have been spying on you, and even though you two are friends, you are a still bit embarrassed.'
+						'You feel you''re cheeks get warm and quickly say goodbye to Mira.'
+						pcs_horny += 20
+						inhib_exp -= 2
+						gs 'stat'
+						act 'Leave': gt 'meadow', 'start'
+					end
+				!! If Svetka isnt a total prude she can be a little bold
+				elseif pcs_inhib > 30:
+					act 'You''re welcome':
+						cla
+						'You are a bit surprised that Mira must have been spying on you, and even though you two are friends, you didn''t think she was that type of girl.'
+						'You quickly respond, "Oh really, did you like what you saw? How about you join in next time? I''m sure your father wouldn''t mind."'
+						pcs_horny += 40
+						inhib_exp += 2
+						gs 'stat'
+						act 'Leave': gt 'meadow', 'start'
+					end
+				end
+				!! Svetka can always choose to be silently emotional without me defining what that emotion is
+				act 'Say nothing and leave': gt 'meadow', 'start'
+			end
+		end
+	elseif MiraLoc = 2:
+		gs 'miroslava', 'miraclothes'
+		'"What a wonderful place you have found, it''s so comfortable and sunny!"'
+		if pcs_horny >= 60 and npc_QW['A60'] > 15 and temper >= 20 and sunWeather = 1:
+			act 'Mira, come here and stick that tongue of your in my wet pussy!':
+				*clr & cla
+				if miralick = 0:miralick = 1 & girl += 1
+				! WD: missing horny adjust
+				gs 'stat'
+				if $pantyworntype ! 'none':
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/miralick.jpg"></center>'
+					'Mira immediately sits on the grass and waits until you get undressed. Holding out your hand, you throw caution to the winds and push your panties aside, revealing your already dripping snatch...'
+					gs 'arousal', 'foreplay', 5, 'lesbian'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/miralick1.jpg"></center>'
+						'You enjoy, Mira''s gentle touch between your legs. She teases you by gently touching your clit...'
+						gs 'arousal', 'vaginal_finger', 5, 'lesbian'
+						gs 'stat'
+						act 'Continue':
+							*clr & cla
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/miralick2.jpg"></center>'
+							'A couple of minutes later you eagerly get rid of your panties, while Mira lowers her mouth to your pussy and lightly nibbles on your clit, suddenly you are in the midst of an orgasm.'
+							$orgasm_or = 'yes'
+							gs 'arousal', 'cuni', 5, 'lesbian'
+							gs 'arousal', 'end'
+							gs 'stat'
+							act 'Finish': gt 'meadow', 'start'
+						end
+					end
+				else
+					act 'Continue':
+						*clr & cla
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/miralick2.jpg"></center>'
+						'Mira obediently kneels at your feet and starts licking your clit and fingering your pussy. After a few minutes of this treatment, Mira brings you to a blazing orgasm.'
+						$orgasm_or = 'yes'
+						gs 'arousal', 'cuni', 5, 'lesbian'
+						gs 'arousal', 'vaginal_finger', 5, 'lesbian'
+						minut -= 5
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Finish': gt 'meadow', 'start'
+					end
+				end
+			end
+		end
+		act 'Finish': gt 'meadow', 'start'
+	end
+end
+
+if $ARGS[0] = '0':
+	if temper < 20:
+		minut += 2
+		menu_off = 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr.jpg"></center>'
+		'You were about to approach her, but stop as she undoes her pants. You decide to watch to what she does...'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr1.jpg"></center>'
+			'Mira, pulls up harshly on her panties so that they bite deeply between her labia. Mira looks around again, but you are concealed in the dense thicket thus she fails to spot you watching...'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr2.jpg"></center>'
+				'She pauses for a few seconds before slowly sliding her hand inside her panties to rub her crotch.'
+				gs 'arousal', 'voyeur_sex', 2, 'lesbian'
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr3.jpg"></center>'
+					'Next she pulls down her panties and you can see her wet pussy.'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr4.jpg"></center>'
+						'Then she removes her jacket, exposing her small tits.'
+						gs 'arousal', 'voyeur', 2
+						gs 'stat'
+						act 'Watch':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr5.jpg"></center>'
+							'She begins to fondle her breasts while continuing to finger herself.'
+							gs 'arousal', 'voyeur_sex', 2, 'lesbian'
+							gs 'stat'
+							act 'Watch':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr6.jpg"></center>'
+								'Finally she leans against the nearest tree as she brings herself to orgasm. You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+								gs 'arousal', 'voyeur_sex', 10, 'lesbian'
+								gs 'arousal', 'end'
+								gs 'stat'
+								act 'Hide until she leaves': minut += 10 & gt 'meadow'
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif temper < 25:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr7.jpg"></center>'
+		'Mira is leaning against a tree and starts to caress herself.'
+		gs 'arousal', 'voyeur_sex', 2, 'lesbian'
+		gs 'stat'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr8.jpg"></center>'
+			'She plays with herself for a few minutes before she stopping to look at a nearby log...'
+			gs 'arousal', 'voyeur_sex', 5, 'lesbian'
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr9.jpg"></center>'
+				'Having made her decision, she walk over to the log and starts to remove her panties.'
+				gs 'arousal', 'voyeur', 2
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr10.jpg"></center>'
+					'Taking off her panties, she gently sits down on the log...'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr11.jpg"></center>'
+						'Mira begins to caress herself again and brings herself to orgasm... You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+						gs 'arousal', 'voyeur_sex', 10, 'lesbian'
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Hide until she leaves': minut += 10 & gt 'meadow'
+					end
+				end
+			end
+		end
+	else
+		minut += 2
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr12.jpg"></center>'
+		'You see Mira standing on a tree stump with a hand in her pants and her tits exposed enjoying the cool breeze.'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr13.jpg"></center>'
+			'She soon gets bored and she, as if on purpose, turns her ass towards you and pulls off her skirt.'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr14.jpg"></center>'
+				'After doing this, she sits down on the stump and continues to caress herself.'
+				gs 'arousal', 'voyeur_sex', 5, 'lesbian'
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr15.jpg"></center>'
+					'Getting up from the stump, Mira takes off her top and is now only in her panties.'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr16.jpg"></center>'
+						'Finally she takes off her shirt, squats, and brings herself to orgasm. You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+						gs 'arousal', 'voyeur_sex', 10, 'lesbian'
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Hide until she leaves': minut += 10 & gt 'meadow'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '1':
+	minut += 2
+	pcs_horny += 15
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex.jpg"></center>'
+	'You see Mira and Mitka talking to each other. You can''t hear what they are saying from this far away, but they begin to undress in your meadow.'
+	act 'Watch':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex1.jpg"></center>'
+		'Mira lies before Mitka on the bedspread and opens her legs invitingly in front of him. Mitka wastes no time and immediately starts roughly fucking her pussy.'
+		gs 'arousal', 'voyeur_sex', 15
+		gs 'stat'
+		act 'Watch':
+			*clr & cla
+			if npc_QW['A60'] = 2:npc_QW['A60'] = 3
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex2.jpg"></center>'
+			'Fifteen minutes Mitka finally cums in Mira and leaves. Mira cleans up and then leaves as well.'
+			gs 'arousal', 'voyeur_sex', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+end
+
+if $ARGS[0] = '2':
+	menu_off = 1
+	temp_md = RAND(0,1)
+	if temp_md = 0:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal.jpg"></center>'
+		'You see Mira lower her ass onto Mitka''s member and begin to bounce on top of him. You can hear the sound everytime her butt cheeks hit his thighs...'
+		gs 'arousal', 'voyeur_sex', 2
+		gs 'stat'
+	else
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal1.jpg"></center>'
+		'Mira get down on all fours and spreads her ass cheeks wide apart.She moans loudly as Mitka drives his cock into her ass.'
+		gs 'arousal', 'voyeur_sex', 2
+		gs 'stat'
+	end
+	act 'Watch':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal2.jpg"></center>'
+		'After a couple of minutes Mitka slaps her ass and pulls out of Mira. She gets up on her knees before him and sticks her tongue out as his warm cum shoots all over her face.'
+		gs 'arousal', 'voyeur_sex', 10
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+end
+
+if $ARGS[0] = '3':
+	menu_off = 1
+	if temper < 15:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj.jpg"></center>'
+		'She enthusiastically sucks his cock and takes his whole member down her throat...'
+		gs 'arousal', 'voyeur_sex', 2
+		gs 'stat'
+		act 'Watch':
+			*clr & cla
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj1.jpg"></center>'
+			'But, apparently, you''re a little late, because after a couple minutes Kolyamba puts a hand on the back of Mira''s head and holds her while he cums down her throat. At first she gags, but eventually obediently swallows his cum...'
+			gs 'arousal', 'voyeur_sex', 2
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	else
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj2.jpg"></center>'
+		'All Mira has on is some flip-flops with her face in the ground and her ass in the air. She''s moaning loudly as Kolyamba pounds her pussy and cums inside of her...'
+		gs 'arousal', 'voyeur_sex', 10
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+end
+
+if $ARGS[0] = '4' or $ARGS[0] = '5':
+	menu_off = 1
+	if temper < 12:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj5.jpg"></center>'
+		'Mira is tied to a tree as Vasyan enthusiastically drives his cock in her mouth. She gags and coughs, but at the same time, she moves her head farther down his member. After a couple of minutes Vasyan tilts back his head and with a blissful roar cums in her mouth...'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	elseif temper >= 12 and temper < 15:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj3.jpg"></center>'
+		'They are both completely naked and Mira is sticking her ass up in the air as she deepthroats Vasyan. After a couple of minutes you see Mira gulp down his sperm without even removing her mouth from his cock.'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	elseif temper >= 15 and temper < 20:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj4.jpg"></center>'
+		'They are both completely naked and Mira squeals with joy as she rides on Vasyan''s member. He does not last long and cums all over her butt as soon as he pulls out of her.'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	elseif temper >= 20:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj6.jpg"></center>'
+		'Mira is completely naked and bent over in front of Vasyan. She is really enjoying it as he thrusts into her ass. After a few minutes he pulls out and sprays cum all over back.'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+end
+
+! WD: No exit and does nothing
+!{
+if $ARGS[0] = '5':
+	menu_off = 1
+	if (meadow = 3 or meadow = 6) and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 25 and sunWeather = 1 and temp_md = 5:
+		*clr & cla
+		minut += 5
+		pcs_horny += 20
+		gs 'stat'
+	end
+end
+}!
+
+if $ARGS[0] = '6':
+	menu_off = 1
+	if temper < 20:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj7.jpg"></center>'
+		'Mira is kneeling in between the three friends and sucking their cocks with great pleasure. They are all crowded around her so you can''t make out who is in her mouth, who is grabbing her tits, and who is getting a handjob.'
+		gs 'arousal', 'voyeur_sex', 15
+	else
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj8.jpg"></center>'
+		'Mira is kneeling in between the three friends and sucking their cocks with great pleasure. They are all crowded around her so you can''t make out who is in her mouth, who is grabbing her tits, and who is getting a handjob.'
+		gs 'arousal', 'voyeur_sex', 5
+	end
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Hide until they leave': minut += 10 & gt 'meadow'
+end
+
+if $ARGS[0] = '7':
+	npc_QW['A60'] += 1
+	menu_off = 1
+	if temper < 15:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj11.jpg"></center>'
+		'Mira squats in front of one of the boys and takes his cock in her mouth while another gets ready for his turn.'
+		gs 'arousal', 'voyeur_sex', 15
+	elseif temper >= 15 and temper < 25:
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj10.jpg"></center>'
+		'Two boys are fucking Mira in her mouth and pussy at the same time. The whole time they are laughing and talking while Mira moans in between them... Fifteen minutes later they finish with her and leave.'
+		gs 'arousal', 'voyeur_sex', 15
+	else
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj9.jpg"></center>'
+		'Mira and the two boys she is with are all naked. She is sucking one of them while another plays with her breasts and pusy from behind.'
+		gs 'arousal', 'voyeur_sex', 15
+	end
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Hide until they leave': minut += 10 & gt 'meadow'
+end
+
+if $ARGS[0] = '8':
+	npc_QW['A60'] += 1
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj12.jpg"></center>'
+	'Mira is almost invisible with all the bodies around her. You can only see her naked ass and feet swaying in the air. You spend half an hour watching, as the men take turns fucking Mira until they are all tired out.'
+	gs 'arousal', 'voyeur_sex', 30
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Hide until they leave': minut += 10 & gt 'meadow'
+end
+
+if $ARGS[0] = '9':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadows.jpg"></center>'
+	'You see Mira on all fours with her back to you. She is shoving an ear of corn in her ass which looks painful but she is still moaning. Eventually, Mira finishes and tosses the cum covered ear of corn off into the bushes almost hitting you!'
+	gs 'arousal', 'voyeur_sex', 30
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Hide until she leaves': minut += 10 & gt 'meadow'
+end
+
+!125s
+!from 1.2.5 [Meadow_events]
+if $ARGS[0] = 'mira_mitka':
+	minut += 5
+	pcs_horny += 15
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex.jpg"></center>'
+	'You see Mira and Mitka talking to each other. You can''t hear what they are saying from this far away, but they begin to undress in your meadow.'
+	gs 'stat'
+	act 'Watch':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex1.jpg"></center>'
+		'Mira lies before Mitka on the bedspread and opens her legs invitingly in front of him. Mitka wastes no time and immediately starts roughly fucking her pussy.'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'stat'
+		act 'Watch':
+			*clr & cla
+			if npc_QW['A60'] = 2:npc_QW['A60'] = 3
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex2.jpg"></center>'
+			'Fifteen minutes Mitka finally cums in Mira and leaves. Mira cleans up and then leaves as well.'
+			gs 'arousal', 'voyeur_sex', 15
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+end
+
+if $ARGS[0] = 'mira_gang':
+	npc_QW['A60'] = 31
+	menu_off = 1
+	mirasextimes += 1
+
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj12.jpg"></center>'
+	'Mira is almost invisible with all the bodies around her. You can only see her naked ass and feet swaying in the air. You spend half an hour watching, as the men take turns fucking Mira until they are all tired out.'
+	gs 'arousal', 'voyeur_sex', 30
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Hide until they leave': minut += 10 & gt 'meadow'
+end
+
+if $ARGS[0] = 'miraperversion11':
+	minut += 5
+	menu_off = 1
+	pcs_horny += 10
+	npc_QW['A60'] = 12
+	gs 'stat'
+
+	gs 'miroslava', 'miraclothes'
+
+	'You don''t know where to begin, so you stay silent just staring at Mira. Mira at the same time is looking at her feet and blushing hard.'
+	'Finally you gather your wits and ask what happened last night? Mira, still not looking you in the eye, stammers out that she doesn''t know why she did it. She says that she was out of control.'
+	'But you were also drunk, and did not do what she did. Her face sinks with shame and she continues to look at the ground.'
+	'You speak with her awhile and somehow manage to soothe her and tell her that, she should just bite the bullet and move on.'
+	'Mira thanks you most sincerely for your support, but her eyes still look down....'
+	act 'Leave': gt $loc, $metka
+end
+
+if $ARGS[0] = 'lesb_mira':
+	menu_off = 1
+	miraday = daystart
+	mirahorny = rand(0,80)
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mirakiss1.jpg"></center>'
+	'"I''m glad you came Mira" you say.'
+	'You continue, "Mira, I want you," you whispered in her ear and kissed her passionately on the lips.'
+	gs 'arousal', 'kiss', 5, 'lesbian'
+	gs 'stat'
+	if mirahorny < 20:act 'Continue':gt 'mirasex','mirakiss'
+	if mirahorny >= 20:act 'Continue':gt 'mirasex','foreplay'
+end
+
+if $ARGS[0] = 'mira_lesb':
+	menu_off = 1
+	miraday = daystart
+	mirahorny = rand(40,80)
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mirakiss4.jpg"></center>'
+	'In the meadow Mira walks up to you, smiling mischievously.'
+	'" - <<$pcs_nickname>>, let me see your pussy" - she whispered in your ear, while pinning you to the tree and kissing your lips.'
+	gs 'arousal', 'kiss', 5, 'lesbian'
+	gs 'stat'
+	if pcs_horny < 20:act 'Agree':gt 'mirasex','mirakiss'
+	if pcs_horny >= 20:act 'Agree':gt 'mirasex','foreplay'
+	if pcs_horny < 40:
+		act 'Refuse':
+			*clr & cla
+			minut += 5
+			pcs_horny -= 5
+			npc_rel['A60'] -= 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk2.jpg"></center>'
+			'You tried hard to break out of her embrace.'
+			'" - Mira, come on now, " you said, seeing the silent question in her eyes. - The mood is not right.'
+			'"- You''re mean, " she sulked at you in response.'
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Continue':gt $loc, $metka
+		end
+	end
+end
+
+if $ARGS[0] = 'lesb_talk_mira1':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	gs 'miroslava', 'miraclothes'
+
+	'You are a long time silent, looking at Mira, not knowing how to start the conversation. But then still dare.'
+	' - Mira, you let all the boys in our village fuck you. Why?'
+	' - Yeah, so what?, Mira is bit embarrassed as she replies.'
+	' - I was thinking that you served all the boys but you forgot about your best friend.'
+	' - You are not a guy thought so why would want to do that?, Mira answered surprised.'
+	' - Everyone knows girls know the best ways to pleasure other girls, you shoot back.'
+	' - But I don''t do that, I''m not a lesbian said Mira.'
+	'She may not be a lesbian but you can tell by her flushed cheeks and shaky voice that she is finding the idea very arousing.'
+	' - Don''t worry I won''t be mean or rough like Mitka, you continue to push her. We can lick each other or I''m leaving and you can go back to the village boys instead and forget about me.'
+	'Mira thought for a second but it was an easy choice. She didn''t want to lose your friendship.'
+	' - Well <<$pcs_nickname>>, I''ll do it, " she said falling to her knees.'
+
+	act 'Let Mira lick you':gt 'mirasex','miralick_first'
+end
+
+if $ARGS[0] = 'lesb_talk_mira2':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	mirasex = 2
+	gs 'miroslava', 'miraclothes'
+	gs 'stat'
+	'You walk up to Mira with a malicious smile on your face.'
+	' - Well, Mira, congratulations, you said. - You are now the same whore as me. All the boys fucked you too.'
+	'She tried to keep silent, but you are not satisfied.'
+	' - So did they or did they not?, - you insist on an answer.'
+	' - Well, yes - she acknowledged.'
+	' - You know what that means?, - you continue.'
+	' - What? - blushing terribly asked Mira, although she already guessed where this is going.'
+	' - It''s time to return the favor, - you replied in a triumphant tone while leaning on a tree, and beckoned her with your finger. - You can start.'
+	'Mira hesitated a couple of moments, as if pondering something, and then sat down in front of you on her knees.'
+	act 'Let Mira lick you':gt 'mirasex','miralick_first'
+end
+
+if $ARGS[0] = 'lesb_talk_mira3':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	gs 'miroslava', 'miraclothes'
+	gs 'stat'
+
+	'You leaned on the tree and beckoned Mira the finger.'
+	'" - Get over her Mira. You know what to do"'
+	'She already know what to do and got down on her knees in front of you.'
+
+	act 'Let Mira lick you':gt 'mirasex','miralick_first'
+end
+
+if $ARGS[0] = 'mira_lesb_talk1':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	mirahorny = rand(0,80)
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk.jpg"></center>'
+	if MiraLoc ! 2:'In the clearing you met Mira. Seeing you, she immediately came up with a sly smile on his lips.'
+	if MiraLoc = 2:'When you came into the clearing, Mira immediately came to you with a sly smile on his lips.'
+	'" - <<$pcs_nickname>>, you fucked all the boys in the village now.'
+	'You tried to keep silent, but Mira wouldn''t let it go.'
+	'" - So did they or did they not?," - she insisted you answer.'
+	'" - Well, yeah so?"'
+	'" - I was thinking you served all the boys and forgot about your best friend." Mira said looking you in the eye.'
+	if lesbian = 0:
+		'" - So you''re not a guy. Do you want to do that?," - you say surprised'
+		'" - Everyone knows girls know the best ways to pleasure girls," she answered you.'
+	else
+		'You already guessed where she was going with this, but still hesitated.'
+		'" - Come on, don''t sulk <<$pcs_nickname>>, it doesn''t suit you, " she continued to get comfortable on the nearest stone.'
+		'" - Well Mira, I''ll do it, " you said falling on his knees.'
+		'"In the end, why not make her friend pleased?" - you thought to yourself.'
+	end
+	if lesbian = 0:
+		act 'Hesitate':
+			*clr & cla
+			minut += 5
+			pcs_horny += 30
+			gs 'stat'
+
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk2.jpg"></center>'
+			'After these words, you stared dumbfounded Mira.'
+			'" - But I don''t do that, I''m not a lesbian, " you try to find a way out of this. But the idea that you will go down on a girl right here in the middle of the clearing, makes your pussy soaking wet even if you didn''t want it to.'
+			act 'Try to convince Mira':
+				*clr & cla
+				minut += 5
+				pcs_horny += 10
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk3.jpg"></center>'
+				'You still hoped, that you could change Mira''s mind.'
+				'" - Come on, don''t be a prude now <<$pcs_nickname>>," - said Mira, taking you by the shirt and pulling you to the nearest stone. - "Sluts should always pleasure their friends first."'
+				'Sitting on the stone she looked eagerly at you:'
+				'" - Well what are you waiting for, I''m ready."'
+				'" - Well Mira, I''ll do it, " you finally gave in, sinking to his knees. "In the end, why not help Mira out?" - thinking to himself.'
+				act 'Lick Mira':gt 'mirasex','lickmira_start'
+			end
+		end
+	else
+		act 'Lick Mira':gt 'mirasex','lickmira_first'
+	end
+end
+
+if $ARGS[0] = 'mira_lesb_talk2':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	mirasex = 2
+	mirahorny = rand(0,80)
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk2.jpg"></center>'
+	'Mira walks up to you with a malicious smile on her face.'
+	' - Well, <<$pcs_nickname>>, congratulations, she said. - You are now the same whore as me. All the boys fucked you too.'
+	'You tried to keep silent, but she is not satisfied.'
+	' - So did they or did they not?, - she insists on an answer.'
+	' - Well, yes - you acknowledged.'
+	' - You know what that means?, - she continues.'
+	' - What? - blushing terribly you ask, although you already guessed where this is going.'
+	' - It''s time to return the favor, - a triumphant tone she replied leaning on a tree, beckoned you with her finger. - You can start.'
+	'You hesitated a couple of moments, as if pondering something, and then sat down in front of her on your knees.'
+	act 'Lick Mira':gt 'mirasex','lickmira_first'
+end
+
+if $ARGS[0] = 'mira_lesb_talk3':
+	menu_off = 1
+	minut += 5
+	pcs_horny += 5
+	mirahorny = rand(40,80)
+	miraday = daystart
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mira_lesb_talk3.jpg"></center>'
+	if MiraLoc ! 2:
+		'In the clearing you met Mira. Seeing you, she immediately came to you with an excited face.'
+		'" - But where are you <<$pcs_nickname>>, I was looking for you," she said. - Get over here and help me out.'
+	else
+		'When you came into the clearing, Mira immediately turned to you with an excited face.'
+		'" - Come help me out, <<$pcs_nickname>>," - she said and started to get comfortable.'
+	end
+	'You are already familiar with how this works and get on your knees before her.'
+
+	act 'Lick Mira':gt 'mirasex','lickmira_first'
+end
+
+if $ARGS[0] = 'mira_lesb_talk4':
+	menu_off = 1
+	minut += 20
+	pcs_horny += 5
+	mirahorny = rand(40,80)
+	miraday = daystart
+	gs 'stat'
+
+	gs 'miroslava', 'miraclothes'
+
+	'Walking through the village you meet Mira. Seeing you, she immediately came up to you with an excited face.'
+	'" - But where were you <<$pcs_nickname>>, I was looking for you," she said. - "Let''s go take a walk in our meadow."'
+	'She grabs you by the hand, and literally dragged you behind her. You can hear Mira''s excited breath and know full well why she is taking you to the meadow.'
+	'When you came into the clearing, Mira immediately turned to you with an excited face.'
+		'" - Come help me out, <<$pcs_nickname>>," - she said and started to get comfortable.'
+	'You are already familiar with how this works and get on your knees before her.'
+	act 'Lick Mira':gt 'mirasex','lickmira_first'
+end
+
+if $ARGS[0] = 'mirameadow':
+	menu_off = 1
+	minut += 2
+	gs 'stat'
+	if (meadow = 3 or meadow = 6) and MiraLoc = 0 and mirasextimes < 15 and temper >= 12 and temper < 20 and sunWeather = 1 and temp_md = 0:
+		*clr & cla
+		minut += 2
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr.jpg"></center>'
+		'You were about to approach her, but stop as she undoes her pants. You decide to watch to what she does...'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr1.jpg"></center>'
+			'Mira, pulls up harshly on her panties so that they bite deeply between her labia. Mira looks around again, but you are concealed in the dense thicket thus she fails to spot you watching...'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr2.jpg"></center>'
+				'She pauses for a few seconds before slowly sliding her hand inside her panties to rub her crotch.'
+				gs 'arousal', 'voyeur', 2
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr3.jpg"></center>'
+					'Next she pulls down her panties and you can see her wet pussy.'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr4.jpg"></center>'
+						'Then she removes her jacket, exposing her small tits.'
+						gs 'arousal', 'voyeur', 2
+						gs 'stat'
+						act 'Watch':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr5.jpg"></center>'
+							'She begins to fondle her breasts while continuing to finger herself.'
+							gs 'arousal', 'voyeur', 2
+							gs 'stat'
+							act 'Watch':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr6.jpg"></center>'
+								'Finally she leans against the nearest tree as she brings herself to orgasm. You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+								gs 'arousal', 'voyeur', 10
+								gs 'arousal', 'end'
+								gs 'stat'
+								act 'Hide until she leaves': minut += 10 & gt 'meadow'
+							end
+						end
+					end
+				end
+			end
+		end
+	elseif meadow = 3 and MiraLoc = 0 and mirasextimes < 15 and temper >= 20 and temper < 25 and sunWeather = 1 and temp_md = 0:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr7.jpg"></center>'
+		'Mira is leaning against a tree and starts to caress herself.'
+		gs 'arousal', 'voyeur', 2
+		gs 'stat'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr8.jpg"></center>'
+			'She plays with herself for a few minutes before she stopping to look at a nearby log...'
+			gs 'arousal', 'voyeur', 5
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr9.jpg"></center>'
+				'Having made her decision, she walk over to the log and starts to remove her panties.'
+				gs 'arousal', 'voyeur', 2
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr10.jpg"></center>'
+					'Taking off her panties, she gently sits down on the log...'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr11.jpg"></center>'
+						'Mira begins to caress herself again and brings herself to orgasm... You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+						gs 'arousal', 'voyeur', 10
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Hide until she leaves': minut += 10 & gt 'meadow'
+					end
+				end
+			end
+		end
+	elseif meadow = 3 and MiraLoc = 0 and mirasextimes < 15 and temper >= 25 and sunWeather = 1 and temp_md = 0:
+		*clr & cla
+		minut += 2
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr12.jpg"></center>'
+		'You see Mira standing on a tree stump with a hand in her pants and her tits exposed enjoying the cool breeze.'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr13.jpg"></center>'
+			'She soon gets bored and she, as if on purpose, turns her ass towards you and pulls off her skirt.'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr14.jpg"></center>'
+				'After doing this, she sits down on the stump and continues to caress herself.'
+				gs 'arousal', 'voyeur', 5
+				gs 'stat'
+				act 'Watch':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr15.jpg"></center>'
+					'Getting up from the stump, Mira takes off her top and is now only in her panties.'
+					gs 'arousal', 'voyeur', 1
+					gs 'stat'
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowmastr16.jpg"></center>'
+						'Finally she takes off her shirt, squats, and brings herself to orgasm. You watch a couple minutes in hopes of a sequel, but Mira begins to get dressed, so, you decide to make a hasty retreat...'
+						gs 'arousal', 'voyeur', 10
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Hide until she leaves': minut += 10 & gt 'meadow'
+					end
+				end
+			end
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 2 and temper >= 15 and sunWeather = 1 and temp_md = 1:
+		*clr & cla
+		minut += 2
+		pcs_horny += 15
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex.jpg"></center>'
+		'You see Mira and Mitka talking to each other. You can''t hear what they are saying from this far away, but they begin to undress in your meadow.'
+		act 'Watch':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex1.jpg"></center>'
+			'Mira lies before Mitka on the bedspread and opens her legs invitingly in front of him. Mitka wastes no time and immediately starts roughly fucking her pussy.'
+			gs 'arousal', 'voyeur', 5
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				if npc_QW['A60'] = 2:npc_QW['A60'] = 3
+				mirasextimes += 1
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadowsex2.jpg"></center>'
+				'Fifteen minutes Mitka finally cums in Mira and leaves. Mira cleans up and then leaves as well.'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Hide until they leave': minut += 10 & gt 'meadow'
+			end
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 8 and temper >= 15 and sunWeather = 1 and temp_md = 2:
+		*clr & cla
+		temp_md = RAND(0,1)
+		gs 'stat'
+		if temp_md = 0:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal.jpg"></center>'
+			'You see Mira lower her ass onto Mitka''s member and begin to bounce on top of him. You can hear the sound everytime her butt cheeks hit his thighs...'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+		else
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal1.jpg"></center>'
+			'Mira get down on all fours and spreads her ass cheeks wide apart.She moans loudly as Mitka drives his cock into her ass.'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+		end
+		act 'Watch':
+			*clr & cla
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowanal2.jpg"></center>'
+			'After a couple of minutes Mitka slaps her ass and pulls out of Mira. She gets up on her knees before him and sticks her tongue out as his warm cum shoots all over her face.'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 15 and sunWeather = 1 and temp_md = 3:
+		*clr & cla
+		if temper < 15:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj.jpg"></center>'
+			'She enthusiastically sucks his cock and takes his whole member down her throat...'
+			gs 'arousal', 'voyeur', 2
+			gs 'stat'
+			act 'Watch':
+				*clr & cla
+				mirasextimes += 1
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj1.jpg"></center>'
+				'But, apparently, you''re a little late, because after a couple minutes Kolyamba puts a hand on the back of Mira''s head and holds her while he cums down her throat. At first she gags, but eventually obediently swallows his cum...'
+				gs 'arousal', 'voyeur', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Hide until they leave': minut += 10 & gt 'meadow'
+			end
+		else
+			*clr & cla
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj2.jpg"></center>'
+			'All Mira has on is some flip-flops with her face in the ground and her ass in the air. She''s moaning loudly as Kolyamba pounds her pussy and cums inside of her...'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 15 and sunWeather = 1 and temp_md = 4:
+		*clr & cla
+		gs 'stat'
+		if temper < 20:
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj5.jpg"></center>'
+			'Mira is tied to a tree as Vasyan enthusiastically drives his cock in her mouth. She gags and coughs, but at the same time, she moves her head farther down his member. After a couple of minutes Vasyan tilts back his head and with a blissful roar cums in her mouth...'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		else
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj6.jpg"></center>'
+			'Mira is completely naked and bent over in front of Vasyan. She is really enjoying it as he thrusts into her ass. After a few minutes he pulls out and sprays cum all over back.'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 15 and sunWeather = 1 and temp_md = 5:
+		*clr & cla
+		gs 'stat'
+		if temper < 20:
+			mirasextimes += 1
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj3.jpg"></center>'
+			'They are both completely naked and Mira is sticking her ass up in the air as she deepthroats Vasyan. After a couple of minutes you see Mira gulp down his sperm without even removing her mouth from his cock.'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		else
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj4.jpg"></center>'
+			'They are both completely naked and Mira squeals with joy as she rides on Vasyan''s member. He does not last long and cums all over her butt as soon as he pulls out of her.'
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			act 'Hide until they leave': minut += 10 & gt 'meadow'
+		end
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 15 and sunWeather = 1 and temp_md = 6:
+		*clr & cla
+		mirasextimes += 1
+		if temper < 20:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj7.jpg"></center>'
+			'Mira is kneeling in between the three friends and sucking their cocks with great pleasure. They are all crowded around her so you can''t make out who is in her mouth, who is grabbing her tits, and who is getting a handjob.'
+			gs 'arousal', 'voyeur', 5
+		else
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj8.jpg"></center>'
+			'Mira is kneeling in between the three friends and sucking their cocks with great pleasure. They are all crowded around her so you can''t make out who is in her mouth, who is grabbing her tits, and who is getting a handjob.'
+			gs 'arousal', 'voyeur', 5
+		end
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 11 and temper >= 15 and sunWeather = 1 and temp_md = 7:
+		*clr & cla
+		if npc_QW['A60'] < 20: npc_QW['A60'] += 1
+		if temper < 20:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj11.jpg"></center>'
+			'Mira squats in front of one of the boys and takes his cock in her mouth while another gets ready for his turn.'
+			gs 'arousal', 'voyeur', 5
+		elseif temper >= 20 and temper < 25:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj10.jpg"></center>'
+			'Two boys are fucking Mira in her mouth and pussy at the same time. The whole time they are laughing and talking while Mira moans in between them... Fifteen minutes later they finish with her and leave.'
+			gs 'arousal', 'voyeur', 5
+		else
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj9.jpg"></center>'
+			'Mira and the two boys she is with are all naked. She is sucking one of them while another plays with her breasts and pussy from behind.'
+			gs 'arousal', 'voyeur', 5
+		end
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] > 30 and temper >= 15 and sunWeather = 1 and temp_md = 8:
+		*clr & cla
+		npc_QW['A60'] += 1
+		mirasextimes += 1
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirameadowbj12.jpg"></center>'
+		'Mira is almost invisible with all the bodies around her. You can only see her naked ass and feet swaying in the air. You spend half an hour watching, as the men take turns fucking Mira until they are all tired out.'
+		gs 'arousal', 'voyeur', 30
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until they leave': minut += 10 & gt 'meadow'
+	end
+	if meadow = 3 and MiraLoc = 0 and npc_QW['A60'] >= 20 and temper >= 15 and sunWeather = 1 and temp_md = 9:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/mirameadows.jpg"></center>'
+		'You see Mira on all fours with her back to you. She is shoving an ear of corn in her ass which looks painful but she is still moaning. Eventually, Mira finishes and tosses the cum covered ear of corn off into the bushes almost hitting you!'
+		gs 'arousal', 'voyeur', 10
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Hide until she leaves': minut += 10 & gt 'meadow'
+	end
+end
+
+--- meadow ---------------------------------
+

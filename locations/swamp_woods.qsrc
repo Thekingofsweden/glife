@@ -1,0 +1,299 @@
+# swamp_woods
+
+!TODO: Break into more arg blocks
+if $ARGS[0] = 'start':
+	*clr & cla
+
+	$loc = 'swamp_woods'
+	$metka = 'start'
+	$location_type = 'secluded'
+
+	$menu_loc = 'swamp_woods'
+	$menu_arg = 'start'
+	menu_off = 0
+
+	$forest_args1 = 'swamp_woods'
+
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+	gs 'stat'
+
+	gs 'hunter_ambient', 'schedule'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods.jpg"></center>'
+	'You are in the woods near the hut. You can see it not too far in the distance.'
+	'You can also venture deeper into woods to circle around the swamp, granted you do not get lost trying.'
+
+	!TODO: Make schedule more dynamic e.g. more factors
+	*nl
+
+	act 'Go back to the hut': minut += 10 & gt 'swamp_yard', 'start'
+	if firewood < 10:
+		'You can pick up some firewood around here to keep the fire going.'
+
+		act 'Collect firewood (0:15)':
+			cla & *clr
+			if $clothingworntype ! 'nude':
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/firewood_normal.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/firewood_nude.jpg"></center>'
+			end
+
+			firewood += rand(2,6)
+			minut += 15
+			'You pick up some dry branches and twigs, putting them in a pile near the fire pit before coming back.'
+
+			if firewood < 15:
+				'You have <<firewood>> pieces of firewood, and should probably grab some more to keep the fire going.'
+			else
+				'You have <<firewood>> pieces of firewood, and should have enough firewood to get a fire going.'
+			end
+
+			act 'Further': gt 'swamp_woods', 'start'
+		end
+	else
+		'You think about picking up some firewood before you remember you have plenty back at the yard.'
+	end
+
+	act 'Try to circle around the swamp':
+		!no one likes to be trapped. Need to update gadfrestswamp with pcs_bushcraft method, but there should always be an option to try, no matter how low the skill.
+		*clr & cla
+		if pcs_bushcraft < 15:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/thinks1.jpg"></center>'
+			'You consider trying to circle around the swamp but then think it is better if you did not get too far from the hut.'
+			'If only you were a skilled pathfinder or knew nearby people that could help you get back...'
+
+			act 'Further': gt 'swamp_woods', 'start'
+		elseif pcs_bushcraft < 30:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/thinks2.jpg"></center>'
+			'You consider trying to circle around the swamp. You have a vague idea on how to accomplish that but there is a good chance you may get lost.'
+
+			act 'Stay around for now': gt 'swamp_woods', 'start'
+			act 'Try anyway':
+				*clr & cla
+				minut += 30
+				nearby_woods_check = rand(1,10)
+
+				if nearby_woods_check = 1:
+					!Make it to the other side fine
+					if $clothingworntype ! 'nude':
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_success.jpg"></center>'
+					else
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_success_nude.jpg"></center>'
+					end
+					'You stick as close to the swamp as possible and follow the edge in one direction.'
+					'Even though you occassionally step into the swamp you manage to not get stuck'
+					'After some time walking and struggling not to get stuck you can see the hut on the opposite side'
+
+					act 'Success!': pcs_bushcraft += 5 & gt 'gadforest','forest_center'
+				elseif nearby_woods_check <= 3:
+					!End up stuck in the swamp
+					if $clothingworntype ! 'nude':
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_stuck.jpg"></center>'
+					else
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_stuck_nude.jpg"></center>'
+					end
+					'You stick as close to the swamp as possible and follow the edge in one direction.'
+					'Trusting the ground you keep going but at some point you sink right into the swamp without even realizing.'
+
+					*nl
+					'Seems like the forest can camouflage parts of the swamp, fooling careless hikers.'
+					act 'If only you knew': pcs_bushcraft += 3 & gt 'swamp','stuck'
+				else
+					if $clothingworntype ! 'nude':
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_hike.jpg"></center>'
+					else
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/nearby_woods_hike_nude.jpg"></center>'
+					end
+
+					!Circle back to where the pcs started
+					'You start going into the woods in a direction you think will take you around the swamp.'
+					'After a few hours walking you realize your surroundings are a bit familiar.'
+					'Then you look around you and can see the hut in the distance. Seems like you just walked around in circles and ended up where you started'
+
+					*nl
+					'You can see some broken branches and prints near ahead of you, marking the direction you initially started walking towards'
+					act 'That''s interesting...': pcs_bushcraft += 2 & gt 'swamp_woods', 'start'
+				end
+			end
+		else
+			minut += 30
+
+			!Make it back without effort
+			if $clothingworntype ! 'nude':
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/pathfinder.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/pathfinder_nude.jpg"></center>'
+			end
+
+			'You have a rough idea of how the forest curves around the swamp from having seen part of the swamp''s edge from the hut yard'
+			'With that in mind, you go into the forest, aware of your surroundings to make sure you are not stepping too far from the edge of the swamp'
+			'After a couple hours you are on the other edge of the forest'
+
+			act 'Further': gt 'gadforest','forest_center'
+		end
+	end
+end
+
+if $ARGS[0] = 'shooting_practice':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/andrei_shooting.jpg"></center>'
+	'You approach Andrei shooting some bottles with his pistol. You think maybe he can teach you a few tricks'
+
+	act 'Walk away': gt 'swamp_woods', 'start'
+	act 'Ask if you can shoot too':
+		if hunter_collective_opinion > 50 and rand(1,4) = 1:
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/andrei_shooting.jpg"></center>'
+			'"Sure thing! But say, how about we spice it up a bit? If you can hit that bottle over there in one shot, I will do anything you want" says Andrei'
+			'"And what if I cannot?" you ask.'
+			'"Well, in that case you get to do anything I ask for. It is only fair, right?" he asks with a smirk.'
+			'"I guess it is" you respond, slightly blushing thinking about what Andrei could ask you to do.'
+
+			act 'Take the bet':
+				cla & *clr
+
+				hunter_collective_opinion += 6
+				gs 'stat'
+
+				if $clothingworntype ! 'nude':
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_nude.jpg"></center>'
+				end
+				'You line up your sights and aim at the bottle. You inhale and hold your breath before...'
+				act 'Pull the trigger': gt 'hunter_interactions', 'shooting_bet'
+			end
+			act 'Refuse':
+				cla
+
+				hunter_collective_opinion -= 2
+				gs 'stat'
+
+				'Not liking the odds of likely spending the day naked or worse, "Maybe some other time" you respond before walking away.'
+				act 'Further': gt 'swamp_woods', 'start'
+			end
+		elseif hunter_collective_opinion > 35:
+			gt 'swamp_woods', 'shooting_practice', 'practice'
+		elseif hunter_sexual_comfort > 20:
+			gt 'swamp_woods', 'shooting_practice', 'andrei_request'
+		else
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/andrei_shooting.jpg"></center>'
+			'You try to get Andrei''s attention but he kind of ignores you. When you keep on trying he waves his hand in a gesture for you to go away.'
+			act 'Further': gt 'swamp_woods', 'start'
+		end
+	end
+
+	if $ARGS[1] = 'practice':
+		cla & *clr
+		minut += 60
+		shoot_lvl += 2
+
+		gs 'stat'
+
+		if $clothingworntype ! 'nude':
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_nude.jpg"></center>'
+		end
+		'"Alright I will show you a few tricks while you try" says Andrei. You spend about an hour practicing your shooting under Andrei''s guidance'
+		act 'Walk away': gt 'swamp_woods', 'start'
+	end
+
+	if $ARGS[1] = 'andrei_request':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/andrei_shooting.jpg"></center>'
+		'"You see, these bullets don''t come free" says Andrei. "My time looking over your shoulder also doesn''t come free. You gotta pay me back somehow"'
+		'"What do you mean?" you ask, with a vague idea of where this is going.'
+
+		act 'Walk away': gt 'swamp_woods', 'start'
+
+		if $clothingworntype = 'nude':
+			'"Since you are all naked might as well let me fuck your little pussy right here." he says. "Then I will let you shoot a bit"'
+			!TODO: if pcs_inhib < x
+			act 'Let him fuck you': gt 'hunter_interactions', 'andrei_quick_fuck'
+		else
+			andrei_shooting_request = rand(1,4)
+
+			if andrei_shooting_request = 1:
+				'"I want you to show me your tits. Just lift your top and let me have a good look at em. You can shoot the rifle then."'
+				act 'Flash your tits':
+					cla & *clr
+					hunter_sexual_comfort += 3
+					gs 'arousal', 'flashlite', 3
+					gs 'arousal', 'end'
+
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_tit_flash.jpg"></center>'
+					'You lift your top and expose your tits to Andrei for a minute. You then cover up and ask "Enough payment for a lesson?"'
+					'"Would appreciate a longer look but I will take it" responds Andrei'
+
+					act 'Further': gt 'swamp_woods', 'shooting_practice', 'practice'
+				end
+
+			elseif andrei_shooting_request = 2:
+				'"I want you to show me your pussy. Go sit on that log and lift up your bottom. You can shoot the rifle then."'
+				act 'Flash your pussy':
+					cla & *clr
+					hunter_sexual_comfort += 5
+					gs 'arousal', 'flashlite', 5
+					gs 'arousal', 'end'
+
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_pussy_flash.jpg"></center>'
+					'You lift your bottom and expose your pussy to Andrei for a minute. You then cover up and ask "Enough payment for a lesson?"'
+					'"Would appreciate a longer look but I will take it" responds Andrei'
+
+					act 'Further': gt 'swamp_woods', 'shooting_practice', 'practice'
+				end
+
+			elseif andrei_shooting_request = 3:
+				'"I want you to take off all your clothes. Then hand them all to me. If you wanna shoot my rifle, you gotta be in your birthday suit."'
+				act 'Strip naked':
+					cla & *clr
+					hunter_sexual_comfort += 7
+
+					gs 'clothing', 'strip', 'swamphouse'
+					gs 'underwear', 'remove'
+
+					gs 'arousal', 'flash', 10, 'exhibitionism'
+					gs 'arousal', 'end'
+
+					gs 'stat'
+
+!!Image needed						'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_strip.jpg"></center>'
+					'You slowly take off your clothes one by one until you are completely naked in front of Andrei.'
+					'You look on the ground and blush a bit as he stares at your exposed tits, ass and pussy. You cannot help but feel your pussy moisten.'
+					'"This	naked look suits you better, do you know that?" says Andrei. He ogles your body for a few more minutes before handing you the rifle'
+
+					act 'Further': gt 'swamp_woods', 'shooting_practice', 'practice'
+				end
+
+			elseif andrei_shooting_request = 4:
+				'"Seeing a young pretty thing like you prancing around gives me a boner. I want you to suck my dick." demands Andrei.'
+				act 'Suck his dick':
+					cla & *clr
+					hunter_sexual_comfort += 8
+
+					gs 'boyStat', 'A172'
+					gs 'arousal', 'bj', 15, 'sub', 'exhibitionism'
+					gs 'cum_call', 'mouth', 'A172', 1
+					swallow += 1
+					gs 'arousal', 'end'
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/shooting_bj.jpg"></center>'
+					'You kneel down obediently and start sucking his dick until you feel him cumming down your throat. You make sure to catch every drop.'
+					'"Now that''s a good girl. Good girls get to shoot the rifle." says Andrei with a chuckle'
+
+					act 'Further': gt 'swamp_woods', 'shooting_practice', 'practice'
+				end
+			end
+		end
+	end
+end
+
+--- swamp_woods ---------------------------------

@@ -1,0 +1,2026 @@
+# pod_ezd
+
+!SETTINGS:
+CLOSE ALL
+gs 'themes', 'indoors'
+$metka = ''
+$loc = 'pod_ezd'
+$location_type = 'public_indoors'
+!elevator does not work
+if liftnotwork_day ! daystart: liftnotwork_count = 1
+!Apartment Uncle Misha
+if mishahouse_day ! daystart: mishahouse_count = 1
+!how much money for sex give boys
+rnd_money_sex = rand(250,750)
+
+!================================================================================================!
+!FLOORS: ---------------------------Entrance to the town-------------------------------------- FLOORS:!
+!================================================================================================!
+if $ARGS[0] = 'occupants':
+	*clr & cla
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'occupants'
+	menu_off = 0
+	minut +=1
+	gs 'stat'
+	 '<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/housemates.jpg"></center>'
+	'Floor 1 - Apartment number 2: Artem Chebotarev'
+	'Floor 2 - Apartment number 7: Your Family							Apartment number 9: Uncle Misha'
+	'Floor 3 - Apartment number 13: Sergey and Vasily Shulgin	 		Apartment number 15: Julia Milova'
+	'Floor 4 - Apartment number 19: Natasha Belova						Apartment number 21: Aunt Luda'
+	'Floor 5'
+	act 'Leave': gt 'pod_ezd', 'etaj_1'
+end
+
+if $ARGS[0] = 'etaj_1' or $ARGS[0] = '':
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj_1'
+	menu_off = 0
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/podezd.mp3',30
+	gs 'stat'
+	'<center><b><font color = maroon>Ground floor of the apartment building</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/podezd2.jpg"></center>'
+	'<center>A dirty and poorly maintained stairwell, the same as any other in your town.</center>'
+
+	if seenAd = 0: gt 'pavSharedApt', 'advertNo30'
+
+	'There''s a <a href="exec: gt ''pod_ezd'', ''occupants''">list</a> of the people who live here on the wall.'
+	'Someone put up some <a href="exec:gt ''pod_ezd'',''pod_objava''">advertisements</a> on the wall, near the entrance.'
+	act 'Leave the building':
+		if hour < 4 and motherWorry = 0 and age < 18:
+			'<font color=red>Are you sure? Your mother will worry if you go out at this time.</font>'
+			cla
+			act 'No, stay inside': gt 'pod_ezd','etaj_1'
+			gs 'willpower', 'misc', 'self', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Yes, go outside (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'pavcomplex', 'start'
+				end
+			else
+				act 'Yes, go outside (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			gt 'pavcomplex', 'start'
+		end
+	end
+	act 'Go up to the second floor': minut += 1 & gt 'pod_ezd','etaj_2'
+	if ArtemBeInHome > 0 and artemblok = 0: act 'Apartment 2: Artem Chebotarev': gt 'artemhome', 'home'
+	act 'Take the elevator': gt 'pod_ezd','lift','etaj_1'
+end
+
+if $ARGS[0] = 'etaj_2':
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj_2'
+	menu_off = 0
+	gs 'stat'
+	'<center>2nd floor of the apartment building</center>'
+	if pod_whore_countQW <= 15:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj2.jpg"></center>'
+		'<center>The second floor stairwell is clean and well maintained. It was renovated not long ago, and the inhabitants do their best to keep it clean.</center>'
+		*nl
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj2_whore.jpg"></center>'
+		'<center>The second floor stairwell was renovated not long ago, but some hoodlums already sprayed graffiti on the walls, telling the world what a whore you are. You could <a href="exec: gt ''pod_ezd'', ''etaj2_paint''">cover it up</a> if you want to.</center>'
+		*nl
+	end
+
+	if rand(0,2) = 0 and ((minut + 60*(hour+daystart*24) - floor2_event_time) > 60) or ((daystart+1)*1440 < floor2_event_time):
+		floor2_event_time = minut + 60*(hour+daystart*24)
+		gt 'pod_ezd', 'floor2_events'
+	else
+		'<br>The stairwell is empty.'
+	end
+
+	act 'Go down to the first floor': minut += 1 & gt 'pod_ezd','etaj_1'
+	act 'Go up to the third floor': minut += 1 & gt 'pod_ezd','etaj_3'
+
+	if home_owned[2] = 1:
+		act '<b>Apartment 7: Your parents</b>': pavhome_enter = 1 & gt 'korrPar'
+	elseif home_owned[2] = 0:
+		act '<b>Apartment 7: Your parents</b>': msg 'Your knock is unanswered, and you no longer have a key.<br>It''s obvious you are no longer welcome here.'
+	end
+
+	act 'Apartment 9: Uncle Misha':
+		cla
+		act 'Leave': gt 'pod_ezd','etaj_2'
+		if hour >= 0 and hour < 5:
+			'It''s too late to visit uncle Misha, he''s probably sleeping now.'
+		elseif hour >= 5 and hour < 10:
+			'It''s too early in the morning to visit uncle Misha, he''s probably still sleeping.'
+		elseif week < 6 and hour >= 10 and hour < 19:
+			'You ring the door bell, but no one answers the door.'
+		elseif mishahouse_count = 1 and dyadyamishaevent >= 1 and week < 6 and hour >= 19 and hour <= 23 or mishahouse_count = 1 and dyadyamishaevent >= 1 and week >= 6 and hour >= 10 and hour <= 23:
+			*clr
+			gs 'stat'
+			'The door opens and uncle Misha invites you into the apartment.'
+			act 'Enter':
+				mishahouse_day = daystart
+				mishahouse_count -=1
+				gt 'misha','1'
+			end
+		elseif mishahouse_count <= 0 and dyadyamishaevent >= 1 and week < 6 and hour >= 19 and hour <= 23 or mishahouse_count <= 0 and dyadyamishaevent >= 1 and week >= 6 and hour >= 10 and hour <= 23:
+			'You ring the bell and uncle Misha opens the door. He says: "Sorry <<$pcs_nickname>>, I''m busy right now. Maybe come back tomorrow?"'
+		else
+			'You ring the door bell, but no one answers the door.'
+		end
+	end
+
+	act 'Take the elevator': gt 'pod_ezd','lift','etaj_2'
+end
+
+if $ARGS[0] = 'etaj2_paint':
+	*clr & cla
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj2_paint'
+	menu_off = 0
+	menu_off = 0
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj2_whore.jpg"></center>'
+	'You look at the graffiti and sigh: "Maybe I should get some paint and cover that up, it''s attracting a lot of people to our home."'
+
+	if paint_blue <= 0:
+		'<br>If you want to cover up the graffiti, you should go buy some paint.'
+		act 'Leave': gt 'pod_ezd','etaj_2'
+	else
+		'You paint: <<paint_blue>>'
+		act 'Shake your head and leave': gt 'pod_ezd','etaj_2'
+		act 'Cover it up':
+			*clr & cla
+			menu_off = 1
+			pod_whore_countQW = 0
+			minut +=40
+			paint_blue -= 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj2.jpg"></center>'
+			'You spend about 40 minutes covering up the graffiti. When you''re done, you step back and admire your work. Much better! Hopefully people won''t bother you as often now.'
+
+			act 'Leave': gt 'pod_ezd','etaj_2'
+		end
+	end
+end
+
+if $ARGS[0] = 'etaj_3':
+	*clr & cla
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj_3'
+	menu_off = 0
+	gs 'stat'
+	'<center>3rd floor of the apartment building</center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj3.jpg"></center>'
+	'<center>The third floor stairwell was renovated not long ago, but some hoodlums already sprayed graffiti on the walls.</center>'
+	*nl
+
+	if rand(0,2) = 0 and ((minut + 60*(hour+daystart*24) - floor3_event_time) > 60) or ((daystart+1)*1440 < floor3_event_time):
+		floor3_event_time = minut + 60*(hour+daystart*24)
+		gt 'pod_ezd', 'floor3_events'
+	else
+		'<br>The stairwell is empty.'
+	end
+
+	act 'Go down to the second floor': minut += 1 & gt 'pod_ezd','etaj_2'
+	act 'Go up to the fourth floor': minut += 1 & gt 'pod_ezd','etaj_4'
+	act 'Apartment 13: Vasily and Sergei Shulgin':gt 'shulgahome'
+	if BeInJulMilHome = 1: act 'Apartment 15: Julia Milova': gt 'JuliaMilVhod'
+	act 'Take the elevator': gt 'pod_ezd','lift','etaj_3'
+end
+
+if $ARGS[0] = 'etaj_4':
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj_4'
+	menu_off = 0
+	gs 'stat'
+	'<center>4th floor of the apartment building</center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj4.jpg"></center>'
+	'<center>A dirty and poorly maintained stairwell. The inhabitants don''t seem to care about how it looks.</center>'
+	''
+
+	if rand(0,2) = 0 and ((minut + 60*(hour+daystart*24) - floor4_event_time) > 60) or ((daystart+1)*1440 < floor4_event_time):
+		floor4_event_time = minut + 60*(hour+daystart*24)
+		gt 'pod_ezd', 'floor4_events'
+	else
+		'<br>The stairwell is empty.'
+	end
+
+	act 'Go down to the third floor': minut += 1 & gt 'pod_ezd','etaj_3'
+	act 'Go up to the fifth floor': minut += 1 & gt 'pod_ezd','etaj_5'
+
+	if NatbelQW['VisitedHome'] = 1: act 'Apartment 19: Natasha Belova': gt 'natbelapt', 'home'
+
+	act 'Apartment 21: Aunt Luda': gt 'ludahome', 'home'
+
+	act 'Take the elevator': gt 'pod_ezd','lift','etaj_4'
+end
+
+if $ARGS[0] = 'etaj_5':
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'etaj_5'
+	menu_off = 0
+	gs 'stat'
+	'<center>Floor #5</center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/etaj5.jpg"></center>'
+	'The fifth floor stairwell is in a poor state of repair, this floor was never renovated, all the apartments are vacant and in a poor state of repair.  So now almost no one comes up here, other than younger people to have somewhere private to hangout, then even hang out in some of the vacant apartments. They even come from the other apartment buildings around the area to hangout. There is a final set of stairs at the other end of the hall that go up to the roof.'
+	*nl
+
+	if rand(0,2) = 0 and ((minut + 60*(hour+daystart*24) - floor5_event_time) > 60) or ((daystart+1)*1440 < floor5_event_time):
+		floor5_event_time = minut + 60*(hour+daystart*24)
+		gt 'pod_ezd', 'floor5_events'
+	else
+		'<br>The stairwell is empty.'
+	end
+
+	act 'Go down to the fourth floor': minut += 1 & gt 'pod_ezd','etaj_4'
+	act 'Go up to the roof': minut += 1 & gt 'pod_ezd', 'roof'
+	act 'Take the elevator': gt 'pod_ezd','lift','etaj_5'
+end
+
+if $ARGS[0] = 'roof':
+	$metka = 'roof'
+	$menu_loc = 'pod_ezd'
+	$menu_arg = 'roof'
+	menu_off = 0
+	gs 'stat'
+	'<center>Roof</center>'
+	if month >= 11 or month <= 3:
+		!!if hour >= 8 and hour <= 21:
+			!!'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/roof/roofw.jpg"></center>'
+		!!else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/roof/roofw.jpg"></center>'
+		!!end
+	else
+		if hour >= 8 and hour <= 21:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/roof/roof.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/roof/roofn.jpg"></center>'
+		end
+	end
+	'<center>The roof is fairly flat, with the roof access door in a raised part in the middle of the roof. Along one of the walls is another door to some type of storage or maintenances access. There is several ventilation stacks on the roof as well.</center>'
+
+	act 'Go down to the fifth floor':
+		if $clothingworntype = 'swimwear' or $clothingworntype = 'nude':
+			msg '<center><font color = red>You need to get dressed first</font></center>'
+			gt 'pod_ezd','roof'
+		else
+			minut += 1
+			gt 'pod_ezd','etaj_5'
+		end
+	end
+	if joint > 0 and jointhigh = 0: act 'Smoke a joint': gs 'drugs', 'joint' & gt $loc, $metka
+	if $clothingworntype = 'swimwear' or $clothingworntype = 'nude':
+		act 'Change back into clothes':
+			minut += 5
+			gs 'underwear', 'wear'
+			gs 'clothing', 'wear_last_worn'
+			gt 'pod_ezd','roof'
+		end
+	end
+	if temper >= 15 and hour >= 8 and hour <= 20:
+		if ARRSIZE('swimwear') > 0 and $clothingworntype ! 'swimwear':
+			act 'Change into a bikini':gt 'changingroom', 'view_swim_list'
+		end
+		if $clothingworntype = 'swimwear':
+			act 'Sunbathe (1:00)':
+				*clr & cla
+				minut += 60
+				inhib_exp += rand(1,3)
+				if pcs_sweat < 35: gs 'sweat', 'add', 5
+				pcs_mood += 5
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/apartment/zagar1.jpg"></center>'
+
+				if krem = 0:
+					pcs_tan += 1
+					'You lie down to sunbathe.'
+				elseif krem > 0:
+					krem -= 1
+					pcs_tan += 3
+					'You put the sunblock on your body and lied down on the roof to sunbathe.'
+				end
+
+				act 'Get Up':gt 'pod_ezd', 'roof'
+			end
+		end
+	end
+end
+
+!ELEVATOR
+if $ARGS[0] = 'lift':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/elevator.jpg"></center>'
+	'<center>The elevator in the apartment building is quite old. The building supervisor does his best to keep it running, but it breaks down a lot. Someone put up a <a href="exec:gt ''pod_ezd'',''elev_objava''">notification</a> in the elevator.</center>'
+	act 'Push button: floor 1': gt 'pod_ezd','etaj_1'
+	act 'Push button: floor 2': gt 'pod_ezd','etaj_2'
+	act 'Push button: floor 3': gt 'pod_ezd','etaj_3'
+	act 'Push button: floor 4': gt 'pod_ezd','etaj_4'
+	act 'Push button: floor 5': gt 'pod_ezd','etaj_5'
+	pod_lift_ev = rand(0,10)
+	if pod_lift_ev = 1:
+		*clr & cla
+		minut +=1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/elevator'+rand(1,2)+'.jpg"></center>'
+		'When the elevator door opens, you see a naked woman standing in it! She looks at you in panic and is frantically pressing all the elevator buttons. You''re too baffled to do anything until it''s too late. The door is already closed again, and the elevator is moving away from you.'
+		act 'Leave': minut += 1 & gt 'pod_ezd',$ARGS[1]
+	elseif pod_lift_ev <= 5 or liftnotwork_count <=0:
+		*clr & cla
+		minut +=1
+		liftnotwork_day = daystart
+		liftnotwork_count -= 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/liftnotwork.jpg"></center>'
+		'The building supervisor put a sign on the elevator: "Dear tenants, the elevator is out of order for today. Don''t worry, I should have it working again by tomorrow!"'
+		act 'Leave': minut += 1 & gt 'pod_ezd',$ARGS[1]
+	end
+	killvar 'pod_lift_ev'
+end
+
+if $ARGS[0] = 'elev_objava':
+		*clr & cla
+		minut +=1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/elevator_ob'+rand(1,2)+'.jpg"></center>'
+	act 'Continue': gt 'pod_ezd','lift'
+end
+
+if $ARGS[0] = 'pod_objava':
+		menu_off = 1
+		*clr & cla
+		minut +=1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/pod_ob'+rand(1,2)+'.jpg"></center>'
+	act 'Continue': gt 'pod_ezd','etaj_1'
+end
+
+if $ARGS[0] = 'floor2_events':
+	floor2 = rand(1,12)
+	if (floor2 < 6 and week < 6 and hour >= 19 and hour <= 23) or (floor2 < 6 and week >=6 and hour >= 10 and hour <= 23):
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/mishasmoke.jpg"></center>'
+		'Uncle Misha is currently outside his apartment, smoking a cigarette. His name is Mikhail, though everyone calls him uncle Misha. He lives in the other apartment on the same floor as yours. Your mother always forbade you to talk to him, warning you that he used to be a local crime lord, and that you shouldn''t get involved with him. However, he has always been polite and nice to you.'
+		if (PCloStyle = 4 and pav_slut >= 75) or dyadyamishaevent >= 1 or CloStyle2 = 3:
+			if rand(0,1) = 1:
+				'You have a chat with uncle Misha, as he smokes his cigarette. You can tell he''s undressing you in his mind, but in a way you find it kind of flattering. As he stubs out his cigarette and puffs away the last bits of smoke, he asks:'
+				'"Say, <<$pcs_nickname>>, would you like to make an old man feel good? I could use a quick blowjob... there''ll be 100 <b>₽</b> in it for you, for your troubles."'
+				gs 'willpower', 'bj', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'Refuse (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'resist'
+						minut +=2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/mishasmoke.jpg"></center>'
+						'"Sorry uncle Misha, but I can''t right now. Maybe some other time?" you apologize. He doesn''t seem to mind at all.'
+						'"No problem <<$pcs_nickname>>, I''ll hold you to that!" he says as he gives you a lewd grin. "In that case, I better get going. I''ll talk to you later."'
+						act 'Say goodbye': gt 'pod_ezd', 'etaj_2'
+					end
+				else
+					act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+				act 'Suck him off': gt 'pod_ezd', 'misha_bj'
+			else
+				pcs_mood +=5
+				'You have a chat with uncle Misha, as he smokes his cigarette. He talks about how his life has been much easier, ever since he retired.'
+				act 'Say goodbye': gt 'pod_ezd', 'etaj_2'
+			end
+		else
+			pcs_mood +=5
+			'While uncle Misha smokes his cigarette, you engage with him in some small talk. When he finishes the cigarette, he apologizes and says he has to go.'
+			act 'Say goodbye': gt 'pod_ezd', 'etaj_2'
+		end
+	elseif floor2 = 7 or floor2 = 8:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+		'Some older boys that live in your building are currently sharing a cigarette in the stairwell.'
+		act 'Ignore them': gt 'pod_ezd', 'etaj_2'
+		act 'Approach them': $smoke_loc = 'etaj_2' & gt 'pod_ezd', 'boys_smoke'
+	elseif floor2 = 9:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutfat.jpg"></center>'
+		'Some fat chick is sitting on the chairs leaned against the railing passed out. You''ve seen her around before, you think she lives with her boyfriend or maybe husband, you''re not sure which. They live on the third floor, apparently she got to drunk to make it the rest of the way home.'
+		act 'Continue': gt 'pod_ezd', 'etaj_2'
+	elseif floor2 = 10:
+		*clr & cla
+		menu_off = 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/nakedstairs.jpg"></center>'
+		'You hear someone coming up the stairs, as you turn and look you see some naked woman walking up the stairs, carrying her clothes in her hand. When she see''s you, she blushes and ducks her head down, not meeting your gaze. She continues on up to the next floor, before you hear a door open and close above. You have no idea why she was naked carrying her clothes.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Continue': gt 'pod_ezd', 'etaj_2'
+	elseif floor2 = 11:
+		*clr & cla
+		menu_off = 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/openrobe.jpg"></center>'
+		'You see a woman standing outside of her open apartment door leaning on the stair railing wearing only a robe, which is untied and open. Allowing you or anyone else to see her naked body, when she see''s you she smiles at you. "Hello." She says as if everything was normal. You say hi back and try not to stare. After a couple of more drags off the cigarette she crushes it out and goes back into her apartment.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Continue': gt 'pod_ezd', 'etaj_2'
+	elseif floor2 = 12:
+		*clr & cla
+		menu_off = 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev1_1.jpg"></center>'
+		'As you walk around a corner in the stairwell, you''re suddenly looking straight at a woman''s bare pussy! She''s sitting on some stairs and is casually smoking a cigarette. Her partner chats her up, while he has a great look at her naked pussy and her widely spread legs.'
+		gs 'arousal', 'voyeur', 3
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_2'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Keep watching (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev1_2.jpg"></center>'
+				'The girl notices you, and gives you a cute wink. She keeps talking with her partner, and pulls her boobs out of her shirt while spreading her legs even further. You''re confused is she doing this for you, or for him?'
+				'You know you really should not be staring, especially when she knows, but at the same time you can''t take your eyes off her. After a few minutes, the guy helps her up and they head upstairs, towards one of the apartments there. The girl flashes you a conspiratory smile as her face disappears around the corner.'
+				gs 'arousal', 'voyeur', 3
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Leave': gt 'pod_ezd', 'etaj_2'
+			end
+		else
+			act 'Keep watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	else
+		gt 'pod_ezd', 'etaj_2'
+	end
+	killvar 'floor2'
+end
+
+if $ARGS[0] = 'gopnik_events':
+	if ARGS[1] = 1:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/vassmoke.jpg"></center>'
+		'You see Vasily standing in the stairwell having a smoke.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Ask him for a smoke': gt 'pod_ezd', 'vasily_smoke'
+	elseif ARGS[1] = 2:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/danvas.jpg"></center>'
+		'Vasily and Dan are standing outside uncle Sergey''s apartment, smoking a cigarette.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Ask them for a smoke': gt 'pod_ezd', 'smoke_danvas'
+	elseif ARGS[1] = 3:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/vitdanvas.jpg"></center>'
+		'Vasily, Vitek and Dan are standing outside uncle Sergey''s apartment, smoking a cigarette.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Ask them for a smoke': gt 'pod_ezd', 'smoke_vitdanvas'
+	elseif ARGS[1] = 4:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/lena.jpg"></center>'
+		'Lena is sitting outside uncle Sergey''s apartment, drinking.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Talk to Lena': gt 'pod_ezd', 'lena_chat'
+	end
+end
+
+if $ARGS[0] = 'floor3_events':
+	floor3 = rand(1,22)
+	if (floor3 <= 3 and hour >= 14 and hour < 17) or (floor3 <= 5 and week = 7 and hour >= 20 and hour <= 23) or (floor3 <= 5 and week >= 6 and hour >= 11 and hour < 14):
+		gt 'pod_ezd', 'gopnik_events', 1
+	elseif (floor3 <= 6 and hour >= 14 and hour < 17) or (floor3 <= 5 and week = 7 and hour >= 20 and hour <= 23) or (floor3 <= 5 and week >= 6 and hour >= 11 and hour < 14):
+		gt 'pod_ezd', 'gopnik_events', 2
+	elseif (floor3 <= 9 and hour >= 14 and hour < 17) or (floor3 <= 5 and week = 7 and hour >= 20 and hour <= 23) or (floor3 <= 5 and week >= 6 and hour >= 11 and hour < 14):
+		gt 'pod_ezd', 'gopnik_events', 3
+	elseif (floor3 <= 11 and hour >= 14 and hour < 17) or (floor3 <= 5 and week = 7 and hour >= 20 and hour <= 23) or (floor3 <= 5 and week >= 6 and hour >= 11 and hour < 14):
+		gt 'pod_ezd', 'gopnik_events', 4
+	elseif floor3 > 11 and floor3 <= 14 and hour >= 15 and hour <= 23:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/julia.jpg"></center>'
+		'You run into Julia Milova in the stairwell, just as she stepped out of her apartment.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Stop and chat': gt 'pod_ezd', 'juliamil'
+	elseif floor3 = 17:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+		'Some older boys that live in your building are currently sharing a cigarette in the stairwell.'
+		act 'Continue': gt 'pod_ezd', 'etaj_3'
+		act 'Approach the boys': $smoke_loc = 'etaj_3' & gt 'pod_ezd', 'boys_smoke'
+	elseif floor3 = 18 and ((hour >= 14 and hour < 17) or (week = 7 and hour >= 20 and hour <= 23) or (week >= 6 and hour >  20 and hour < 24)):
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3.jpg"></center>'
+		'As you walk around a corner in the stairwell, you run into Vasily and Dan fucking some random girl dressed in lingerie and a coat. She looks familiar, but you can''t get a good look at her face to know who it is for sure.'
+		'You hide for a second and try to see if you can recognize her in some way, but she''s squeezed between the boys and her face is hidden the whole time.'
+		'You would''ve liked to stay a while longer to get a glimpse of her face, but suddenly you hear footsteps behind you on the stairs. You quickly walk away, not wanting to get caught staring.'
+		gs 'arousal', 'voyeur_sex', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_3'
+	elseif floor3 = 19 or floor3 = 20:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/titsmoke.jpg"></center>'
+		'You see a topless girl wearing a skirt in the stairwell, standing next to a open window smoking a cigarette. She nods and smiles to you but doesn''t say anything. You decided to mind your own business.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_3'
+	elseif floor3 = 21 or floor3 = 22:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutf.jpg"></center>'
+		'Laying on the floor is some girl, she seems to be passed out. She reeks of alcohol, she obviously drank way too much and passed out before she can make it back home.'
+		act 'Ignore her': gt 'pod_ezd', 'etaj_3'
+		act 'Try to wake her up.':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutsf.jpg"></center>'
+			'You walk over and squat down next to her. You shake her shoulder several times until she finally groggily wakes up, rolling over onto her back and looking at you. She stares for several moments looking fairly confused.'
+			'"You ok? I found you laying here passed out." You tell her.'
+			'She looks around a moment then climbs to her feet. "Yeah thanks." She tells you, then she grabs her purse and stumbles away.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+	else
+		gt 'pod_ezd', 'etaj_3'
+	end
+	killvar 'floor3'
+end
+
+if $ARGS[0] = 'floor4_events':
+	*clr & cla
+	menu_off = 1
+	floor4 = rand(1,15)
+	if floor4 = 1:
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/luda/event/ev2.jpg"></center>'
+		'You hear someone coming up the stairs. They sound like they''re in a hurry. You turn around just in time to see aunt Luda in the stairwell, she''s not even wearing any pants or underwear! She can be so slutty sometimes. She''s on her way back up after "throwing away some garbage", she tells you, adding that she has no time to chat as she rushes past you and into her apartment.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	elseif floor4 > 1 and floor4 <= 5:
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+		'Some older boys that live in your building are currently sharing a cigarette in the stairwell.'
+		act 'Continue': gt 'pod_ezd', 'etaj_4'
+		act 'Approach the boys': $smoke_loc = 'etaj_4' & gt 'pod_ezd', 'boys_smoke'
+	elseif floor4 = 6:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_1.jpg"></center>'
+		'As you walk around a corner in the stairwell, you see Yelena Kotov, a girl from your class. She''s taking off her panties in front of several guys. If her brother Vitek could see this, he''d probably be beating the crap out of them right now. He''s extremely protective of his sister.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Hide and watch them (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'pod_ezd', 'lena_show'
+			end
+		else
+			act 'Hide and watch them (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif floor4 = 7:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/opendoor.jpg"></center>'
+		'You glance down the stairs and see that the apartment at the bottom has it''s door open. You can see inside the apartment, all the way to the bathroom, which also has it''s door wide open. Apparently the girl inside didn''t notice or maybe she did it on purpose. As she stands there naked applying facial cream to her face in the mirror.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	elseif floor4 = 8 or floor4 = 9:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/flashp' + rand(1,2) + '.jpg"></center>'
+		'As you walk around a corner in the stairwell, you see some girl hanging out with the boys that smoke. They are encouraging her to lift her dress and show them her pussy. After a bit she finally relents and lifts her dress showing off her pussy. This only seems to encourage them as they crowd her a bit and encourage her to get naked. When you catch one of them boys looking at you, you decided it is best to be on your way.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	elseif floor4 = 10 or floor4 = 11:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/flasht.jpg"></center>'
+		'As you walk around a corner in the stairwell, you see some girl hanging out with the boys that smoke. They are encouraging her to show her tits. After a bit she finally relents and pulls down her top, exposing her tits. This only seems to encourage them as they crowd her a bit and encourage her to get naked. When you catch one of them boys looking at you, you decided it is best to be on your way.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	elseif floor4 = 12 or floor4 = 13:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/nakeddoor.jpg"></center>'
+		'You hear some knocking and a girls voice. "Open up, come on please let me in before someone comes along." As you round the corner you see a naked girl standing at a door, frantically twisting and pulling on the doorknob. When she finally notices you, she blushes and you hear her say to who ever is in the apartment. "There is some girl here watching me, let me in!" When there is no reply she turns to face you. "My boyfriend is just being a asshole." Before you can reply the door opens behind her and she quickly darts inside, you see some guy just inside before the door closes laughing.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	elseif floor4 = 14 or floor4 = 15:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutm.jpg"></center>'
+		'You run across a naked passed out fat guy on the stairs. You recognize he lives in the building with his wife, and realize you''ve never seen him sober. You have heard when he gets to drunk and passes out, his wife strips him and drags him out into the hall to teach him a lesson, but it doesn''t appear he has learned the lesson yet. A couple of kids, who you think are from your brother''s class, are around him laughing and taking pictures.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	else
+		gt 'pod_ezd', 'etaj_4'
+	end
+	killvar 'floor4'
+end
+
+if $ARGS[0] = 'floor5_events':
+	floor5 = rand(1,7)
+	if floor5 = 1:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_1.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see an unfamiliar girl showing off her boobs to two guys. One of them is holding a camera. You''re fairly sure you have never seen any of them before.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Hide and keep watching (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'pod_ezd', 'home_movie1'
+			end
+		else
+			act 'Hide and keep watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif floor5 = 2:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3_1.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see a girl giving two guys an enthusiastic blowjob at the same time. One of the guys is filming everything with his camera.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Hide and keep watching (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'pod_ezd', 'home_movie2'
+			end
+		else
+			act 'Hide and keep watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif floor5 = 3:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_1.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see a guy and a girl having sex. Currently, the girl is giving him an enthusiastic blowjob while a second guy films everything with his camera.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Hide and keep watching (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'pod_ezd', 'home_movie3'
+			end
+		else
+			act 'Hide and keep watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif floor5 = 4:
+		*clr & cla
+		menu_off = 1
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_1.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see a guy and a girl having sex. Currently, the girl is giving him an enthusiastic blowjob while a second guy films everything with his camera.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+		gs 'willpower', 'voyeur', 'self', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Hide and keep watching (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'pod_ezd', 'home_movie4'
+			end
+		else
+			act 'Hide and keep watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	elseif (floor5 = 5 or floor6 = 6) and ((hour >= 14 and hour < 17) or (week = 7 and hour >= 20 and hour <= 24) or (week >= 6 and hour >= 11 and hour < 14) or (week = 6 and hour >= 20 and hour <= 24)):
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see Vitek, Dan, Vasily, Lena, Lera, along with a few older gopniks you don''t know hanging out. They are smoking, drinking and laughing.'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+		act 'Join them':
+			if rand(0,2) = 2:
+				gt 'pod_ezd', 'gopnik_events', rand(1,4)
+			else
+				gt 'pod_ezd', 'gopnik_group_chat'
+			end
+		end
+	elseif floor5 = 7:
+		*clr & cla
+		menu_off = 1
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutsf.jpg"></center>'
+		'When you walk up the stairs to the fifth floor, you see a girl laying on the ground passed out, she reeks of alcohol. Her pants are only half on, leaving most of her bare ass exposed. Her purse and panties are lying nearby, by the look of it, it looks like someone started to put her pants back on her but never finished the job and just left her there.'
+		gs 'arousal', 'voyeur', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Ignore her': gt 'pod_ezd', 'etaj_5'
+		act 'Try to wake her up.':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/passedoutsf.jpg"></center>'
+			'You walk over and squat down next to her. You shake her shoulder several times until she finally groggily wakes up, rolling over onto her back and looking at you. She stares at you for several moments looking fairly confused.'
+			'"You ok? I found you laying here passed out." You tell her.'
+			'She looks around a moment then climbs to her feet. "Yeah thanks." She tells you as she pulls her pants up, then she grabs her purse and panties and stumbles away.'
+			act 'Leave': gt 'pod_ezd', 'etaj_5'
+		end
+	else
+		gt 'pod_ezd', 'etaj_5'
+	end
+	killvar 'floor5'
+end
+
+!================================================================================================!
+!DYNAMIC EVENT: ------------------------------------------------------------ DYNAMIC EVENT:!
+!================================================================================================!
+
+if $ARGS[0] = 'boys_smoke':
+	*clr & cla
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+	gs 'boyStat', 'A<<rand(122,126)>>','1'
+	:ssboyloop
+	gs 'boyStat', 'A<<rand(122,126)>>','2'
+	if $boy[1] = $boy[2]: jump 'ssboyloop'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+	'The guys greet you, having seen you around before, and offer you a cigarette.'
+	act 'Decline and leave': gt 'pod_ezd', $smoke_loc
+	act 'Take the cigarette':
+		*clr & cla
+		minut += 5
+		siga += 1
+		gs 'drugs', 'smoke'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+		if pav_slut >= 125 and pav_sex < pav_prostitute:
+			'As you smoke the cigarette, you hear the boys whisper among themselves. "That''s <<$pcs_nickname>>! I heard she''s a '+func('gopsex','hide','gg_whore_text')+'. From what I''ve been told she''ll do just about anything if the price is right, let''s see if she''ll make us a deal."'
+			'One of the guys walks close to you, and gestures for you to lean your head closer to his. When you do, he pulls all of his money out of his pocket. He counts the crumpled bills and offers them to you, whispering, "Is <<rnd_money_sex>> <b>₽</b> enough for two?"'
+			'He never mentions what exactly he wants you to do with him and his friend.'
+			gs 'willpower', 'prostitution', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse and get away from them (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'resist'
+					gt 'pod_ezd', $smoke_loc
+				end
+			else
+				act 'Refuse and get away from them (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Accept and fuck them':
+				money += '<<rnd_money_sex>>'
+				gs 'fame', 'pav', 'prostitute', rand(3,9)
+				gt 'pod_ezd', 'sex_ev<<rand(1,3)>>'
+			end
+		elseif pav_slut >= 125 and pav_sex >= pav_prostitute:
+			'As you smoke the cigarette, you hear the boys whisper among themselves: "That''s <<$pcs_nickname>>. I heard she''s a total slut. I bet if someone walked up to her and dropped their pants, she would start sucking them off without a second thought."'
+			act 'Leave before they get any ideas': gt 'pod_ezd', $smoke_loc
+			act 'Keep smoking':
+				gs 'fame', 'pav', 'sex', 2
+				gt 'pod_ezd','sex_ev<<rand(1,3)>>'
+			end
+			gs 'willpower', 'gangbang', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Get angry and tell them off (<<will_cost>> Willpower)':
+					*clr & cla
+					minut +=2
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/megera.jpg"></center>'
+					'Tired of always having to defend yourself, you take all your anger out on the guys. "Are you kidding me!? Did all the blood drain from your brains and into your groins or something?"'
+					'"If I start screaming now, and accuse you of rape, everyone in the entire housing block will come to see what is happening. Who do you think they''ll going to believe, me or you?"'
+					'The guys realize they overplayed their hand, and the guy with his pants down quickly pulls them back up. "Okay okay, we''re sorry! We were just messing around." they say, and quickly walks away before you can get another word in.'
+					act 'Leave': gt 'pod_ezd', $smoke_loc
+				end
+			else
+				act 'Get angry and tell them off (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			'You gladly accept and spend the next 5 minutes smoking a cigarette with them, talking about trivial things.'
+			act 'Leave': gt 'pod_ezd', $smoke_loc
+		end
+	end
+	act 'Just chat with them':
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/smokeboys.jpg"></center>'
+		'You decline, but you stay for a while talking about trivial things.'
+		if pav_slut >= 125 and pav_sex < pav_prostitute:
+			'You hear the boys whisper among themselves. "That''s <<$pcs_nickname>>! I heard she''s a '+func('gopsex','hide','gg_whore_text')+'. From what I''ve been told she''ll do just about anything if the price is right, let''s see if she''ll make us a deal."'
+			'One of the guys walks close to you, and gestures for you to lean your head closer to his. When you do, he pulls all of his money out of his pocket. He counts the crumpled bills and offers them to you, whispering: "Is <<rnd_money_sex>> <b>₽</b> enough for two?"'
+			'He never mentions what exactly he wants you to do with him and his friend.'
+			gs 'willpower', 'prostitution', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse and get away from them (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'resist'
+					gt 'pod_ezd', $smoke_loc
+				end
+			else
+				act 'Refuse and get away from them (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Accept and fuck them':
+				money += '<<rnd_money_sex>>'
+				gs 'fame', 'pav', 'prostitute', rand(3,9)
+				slutty += 1
+				gt 'pod_ezd', 'sex_ev<<rand(1,3)>>'
+			end
+		elseif pav_slut >= 125 and pav_sex >= pav_prostitute:
+			'You hear the boys whisper among themselves. "That''s <<$pcs_nickname>>. I heard she''s a total slut. I bet if someone would walk up to her and drop their pants, she would start sucking them off without a second thought."'
+			gs 'willpower', 'gangbang', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Get angry and tell them off (<<will_cost>> Willpower)':
+					*clr & cla
+					minut +=2
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/megera.jpg"></center>'
+					'Tired of always having to defend yourself, you take all your anger out on the guys: "Are you kidding me!? Did all the blood drain away from your brains and into your groins or something?"'
+					'"If I start screaming now, and accuse you of rape, everyone in the entire housing block will come to see what is happening. Who do you think they''ll going to believe, me or you?"'
+					'The guys realize they overplayed their hand, and the guy with his pants down quickly pulls them back up. "Okay okay, we''re sorry! We were just messing around." they say, and quickly walk away before you can get another word in.'
+					act 'Leave': gt 'pod_ezd', $smoke_loc
+				end
+			else
+				act 'Get angry and tell them off (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Do as they say': gs 'fame', 'pav', 'sex', rand(3,9) & gt 'pod_ezd','sex_ev<<rand(1,3)>>'
+		else
+			act 'Leave': gt 'pod_ezd', $smoke_loc
+		end
+	end
+end
+
+if $ARGS[0] = 'misha_bj':
+	*clr & cla
+	menu_off = 1
+	money += 100
+	gs 'fame', 'pav', 'prostitute', 1
+	gs 'boyStat', 'A54'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/misha/sex/otsos_misha.jpg"></center>'
+	'You give him a quick nod and take a seat on the steps as he approaches you, he pulls his erect <<dick>>cm <<$dick_girth>> dick out through his opened zipper. You wrap your lips around the head of his cock and tease it with your tongue, as you put your fingers around his shaft and begin to gently stroke him while you suck. He doesn''t last long at all, and within a few minutes he spurts his load onto your tongue. You swallow it down and show him your open mouth, lifting your tongue and moving it to the sides to prove you swallowed it. "Well worth it. That was great, <<$pcs_nickname>>", he says while he hands you the money as promised. Then he excuses himself and turns to leave, saying. "Sorry girl but I got things to do."'
+	gs 'arousal', 'bj', 5, 'prostitution', 'exhibitionism'
+	gs 'cum_call','mouth', 'A54'
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Say goodbye': gt 'pod_ezd', 'etaj_2'
+end
+
+if $ARGS[0] = 'juliamil':
+	menu_off = 1
+	gs 'boyStat', 'A12'
+	minut +=5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big12.jpg"></center>'
+	'Having some time to spare, you stop and chat with her. The two of you stop and sit down to have a quick chat for a few minutes, catching up on the latest events.'
+	act 'Leave': gt 'pod_ezd', 'etaj_3'
+	if JulMilBestFrend >= 50:
+		juliamil_rnd = rand(1,3)
+		if juliamil_rnd = 1:
+		'Julia tells you an interesting story of what happened to her the other day.'
+		end
+		if juliamil_rnd = 2:
+		'Julia tells you some random nonsense story. You enjoy her company, despite the story not being all that interesting.'
+		end
+		if juliamil_rnd = 3:
+			'While you chat, you notice Julia keeps looking at you strangely, and then looking away with an embarrassed look on her face.'
+			act 'Ask her what''s wrong':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia1.jpg"></center>'
+				'Julia says nothing, but quickly kisses your <<$liptalk3>> when you least expect it. She''s actually a pretty good kisser. You also notice a dildo you poking out of her bag.'
+				gs 'arousal', 'foreplay', 2,'lesbian'
+				gs 'stat'
+				act 'Julia please, leave me alone': gt 'pod_ezd', 'etaj_3'
+				act 'Kiss her back and show her your boobs':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia2.jpg"></center>'
+					'You return her kiss, which makes her grow bolder and kiss you more enthusiastically. After an intense make-out session, she pulls her shirt down revealing her modest boobs. As you mimic her, she pulls you in for another deep kiss. Then she whispers in your ear: "<<$pcs_nickname>>, I need you please, lick my pussy!"'
+					gs 'arousal', 'foreplay', 2,'lesbian'
+					gs 'stat'
+					act 'Lick her':
+						*clr & cla
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia4.jpg"></center>'
+						'She really seems to want this. You push Julia back against the wall and drop to your knees, teasingly running your tongue over her inner thighs and vulva, always staying just a tiny bit off your mark. It definitely has an effect on her; in no time she''s begging and moaning. You decide you''ve teased Julia enough and lick her wet pussy, paying extra attention to her clit.'
+						gs 'arousal', 'cuni_give', 5, 'lesbian'
+						gs 'stat'
+						act 'Use the dildo on her':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia6.jpg"></center>'
+							'When you notice her pussy is getting soaked, you pull away from her. She opens her mouth to complain, but closes it again when she sees you were just grabbing the dildo, she closes her eyes.'
+							'Her juices have lubricated her pussy quite well, and you have no difficulty working the dildo all the way in. Fucking her pussy with it in a teasingly slow fashion, you stop moving it for a few seconds every time she begs or complains. Her pussy is so slick now, the juices are beginning to cover your fingers as they run down the dildo.'
+							gs 'arousal', 'vaginal_dildo_give', 5, 'lesbian'
+							gs 'stat'
+							act 'Continue':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia7.jpg"></center>'
+								'Julia feels like she has completely lost control of the situation, begging and pleading whenever she talks now. "<<$pcs_nickname>>, please lick my ass! It would feel so good, please!" You decide to enjoy your power trip a little more, and tell her "Right after you suck your juices off this dildo and my fingers." Julia happily complies, lapping and sucking her own juices off your fingers and the dildo.'
+								gs 'arousal', 'foreplay', 2,'lesbian'
+								gs 'stat'
+								act 'Lick her butthole':
+									*clr & cla
+									'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia8.jpg"></center>'
+									'Well fair''s fair, she earned it. You turn her around and put your hands on her ass cheeks and pull them apart as you gently lick her asshole. Just when you were getting ready to really dig in, she is already bucking against your face, trying her best to stifle her moans and stay upright as her orgasm hits her hard.'
+									'After a few seconds she looks into your eyes and whispers: "Wow, <<$pcs_nickname>>, that was amazing! I don''t think I''ve ever orgasmed that hard before."'
+									*nl
+									'Then she notices the time: "Oh crap, I''m late! I''m so late! I''m sorry <<$pcs_nickname>>, I''ll make it up to you! I promise! Maybe come visit me later at my place? If you bring some wine we could finish our homework quickly, and then have a good time?" she says with a wink.'
+									'Without waiting for a response, Julia quickly gathers her belongings and runs off. Despite not getting off yourself, that was a lot of fun.'
+									gs 'arousal', 'rimming_give', 2,'lesbian'
+									gs 'arousal', 'end'
+									gs 'stat'
+									act 'Straighten your clothes and gather your things': gt 'pod_ezd', 'etaj_3'
+								end
+							end
+						end
+					end
+					gs 'willpower', 'cuni', 'force'
+					if will_cost <= pcs_willpwr:
+						act 'Make her lick you instead (<<will_cost>> Willpower)':
+							*clr & cla
+							gs 'willpower', 'pay', 'force'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia5.jpg"></center>'
+							'You expose your pussy and gently rub a finger over your clit, telling her. "No, you''re going to lick me first."'
+							'"No <<$pcs_nickname>>, please lick me, I''m begging you!"'
+							'You lay back and spread you legs. "Do as I say." You tell her and pull her head into your crotch, once there she starts to eagerly lick at your pussy.'
+							gs 'arousal', 'cuni', 5, 'lesbian'
+							gs 'stat'
+							act 'Return the favor':
+								*clr & cla
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia4.jpg"></center>'
+								'She really seems to want this. You push Julia back against the wall and drop to your knees, teasingly running your tongue over her inner thighs and vulva, always staying just a tiny bit off your mark. It definitely has an effect on her; in no time she''s begging and moaning. You decide you''ve teased Julia enough and lick her wet pussy, paying extra attention to her clit.'
+								gs 'arousal', 'cuni_give', 5, 'lesbian'
+								gs 'stat'
+								act 'Use the dildo on her':
+									*clr & cla
+!!Image needed									'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/julia/sex/stairs/julia9.jpg"></center>'
+									'When you notice her pussy is getting soaked, you pull away from her. She opens her mouth to complain, but closes it again when she sees you were just grabbing the dildo, she closes her eyes.'
+									'Her juices have lubricated her pussy quite well, and you have no difficulty working the dildo all the way in. Fucking her pussy with it in a teasingly slow fashion, you stop moving it for a few seconds every time she begs or complains. Her pussy is so slick now, the juices are beginning to cover your fingers as they run down the dildo. As she starts bucking against your hand holding the dildo, trying her best to stifle her moans and stay upright as her orgasm hits her hard.'
+									'After a few seconds she looks into your eyes and whispers: "Wow, <<$pcs_nickname>>, that was amazing! I don''t think I''ve ever orgasmed that hard before."'
+									*nl
+									'Then she notices the time: "Oh crap, I''m late! I''m so late! I''m sorry <<$pcs_nickname>>, I''ll make it up to you! I promise! Maybe come visit me later at my place? If you bring some wine we could finish our homework quickly, and then have a good time?" she says with a wink.'
+									'Without waiting for a response, Julia quickly gathers her belongings and runs off. Despite not getting off yourself, that was a lot of fun.'
+									gs 'arousal', 'vaginal_dildo_give', 5, 'lesbian'
+									gs 'arousal', 'end'
+									gs 'stat'
+									act 'Straighten your clothes and gather your things': gt 'pod_ezd', 'etaj_3'
+								end
+							end
+						end
+					else
+						act 'Make her lick you instead (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+				end
+			end
+		end
+		killvar 'juliamil_rnd'
+	end
+end
+
+if $ARGS[0] = 'vasily_smoke':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/smoke5.jpg"></center>'
+	if pav_slut >= 50:
+		'You see Vasily standing in the stairwell, smoking a cigarette. You approach him and ask: "Hi Shulga, do you have a cigarette for me? I could really use a smoke right now."'
+		'Vasily shakes his head, but gives you a horny grin: "Sorry <<$pcs_nickname>>, I''m just finishing my last one. I do have something else you can put your lips around though..."'
+		'He idly runs his hand over his groin, and you can see the outline of his hard cock through the fabric of his pants quite clearly.'
+		'You look at him with some doubt. "I don''t know Shulga, people might see."'
+		'He reassures you, "Don''t worry <<$pcs_nickname>>, you''ll be fine. I''ll keep an eye out, and there''s no one here now right? Just take it in your mouth. I know you''re good at it, you can finish me off quickly."'
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse giving him a blowjob (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				minut +=1
+				gs 'stat'
+				if pav_slut >= 125:
+					'You adamantly shake your head: "Sorry Shulga, but it''s not gonna happen. Just give me a cigarette please."'
+					'He takes a long drag off the cigarette then crushes it out on the railing. "Buy your own cigarettes slut!" With that he walks back into his apartment.'
+					act 'Leave': gt 'pod_ezd', 'etaj_3'
+				else
+					'You adamantly shake your head: "Sorry Shulga, but it''s not gonna happen. Just give me a cigarette please."'
+					'He sighs dramatically and then pulls a pack out of his pocket and hands you one. You happily take it and light it up.'
+					act 'Have a chat while you smoke':
+						*clr & cla
+						minut +=5
+						pcs_mood +=5
+						npc_rel['A11'] +=1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+						'Vasily, also known as Shulga, is usually seen together with his friends Dan and Vitek. Vitek often makes jokes at his expense, but they''re very good friends nevertheless.'
+						'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+						act 'Leave': gt 'pod_ezd', 'etaj_3'
+					end
+				end
+			end
+		else
+			act 'Refuse giving him a blowjob (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Suck him off quickly': gt 'pod_ezd', 'vasily_smoke_bj'
+	else
+		siga += 1
+		gs 'drugs','smoke'
+		minut +=5
+		'You see Vasily standing in the stairwell, smoking a cigarette. You approach him and ask: "Hi Shulga, do you have a cigarette for me? I would really use a smoke right now."'
+		'He nods and offers you one. You happily take it and light it up.'
+		act 'Have a chat while you smoke':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A11'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+	end
+end
+
+if $ARGS[0] = 'vasily_smoke_bj':
+	*clr & cla
+	menu_off = 1
+	gs 'boyStat', 'A11'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/sex/stairs/otsos'+rand(1,2)+'.jpg"></center>'
+	'You sigh, and squat before <<$boydesc>>. While you take his <<dick>>cm <<$dick_girth>> cock out of his pants you say: "Okay Shulga, if it''s quick. Just promise you''ll tell me if you see or hear anyone, okay?" He nods his head in understanding.'
+	'You know you have to be quick about this, so take his <<dick>>cm <<$dick_girth>> cock in your mouth without a second thought. Using all the tricks you know you massage his balls and stroke his shaft with your delicate fingers while you suck and lick the head of his dick. He reaches his orgasm almost very quickly, shooting his load in your mouth.'
+	*nl
+	'You quickly swallow his semen and tuck his dick back into his pants after you lick it clean. You look at Vasily as you get back up and ask him: "There, satisfied?"'
+	'He nods with a blissful look on his face: "Thanks <<$pcs_nickname>>, that felt great. You''re really good friend. I need to get going though, I''ll see you around."'
+	gs 'arousal', 'bj', 5
+	gs 'cum_call','mouth', 'A11'
+	gs 'arousal', 'end'
+	gs 'stat'
+	act 'Leave': gt 'pod_ezd', 'etaj_3'
+end
+
+if $ARGS[0] = 'smoke_danvas':
+	*clr & cla
+	menu_off = 1
+	siga += 1
+	gs 'drugs','smoke'
+	minut +=5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/smoke4.jpg"></center>'
+	if pav_slut >= 50:
+		'You see Dan and Vasily standing in the stairwell, smoking a cigarette. You approach them and ask: "Hi Shulga, do you have a cigarette for me? I could really use a smoke right now."'
+		'Dan snorts and Vasily shakes his head, but gives you a horny grin: "Sorry <<$pcs_nickname>>, I''m just finishing my last one. I do have something else you can put your lips around though..."'
+		*nl
+		'He idly runs his hand over his groin, and you can see the outline of his hard cock through the fabric of his pants quite clearly.'
+		'You look at him with some doubt: "I don''t know Shulga, people might see."'
+		'He reassures you: "Don''t worry <<$pcs_nickname>>, you''ll be fine. we''ll keep an eye out, and there''s no one here now right? Just take it in your mouth. I know you''re good at it, you can finish me off quickly."'
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse giving him a blowjob (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				minut +=1
+				gs 'stat'
+				if pav_slut >= 125:
+					'You adamantly shake your head. "Sorry Shulga, but it''s not gonna happen. Just give me a cigarette please."'
+					'He takes a long drag off the cigarette then crushes it out on the railing. "Buy your own cigarettes slut!" Dan laughs at that and then they both walk into his apartment.'
+					act 'Leave': gt 'pod_ezd', 'etaj_3'
+				else
+					'You adamantly shake your head. "Sorry Shulga, but it''s not gonna happen. Just give me a cigarette please."'
+					'He sighs dramatically and then pulls a pack out of his pocket and hands you one. You happily take it and light it up.'
+					act 'Chat with Vasily':
+						*clr & cla
+						minut +=5
+						pcs_mood +=5
+						npc_rel['A11'] +=1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+						'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+						act 'Leave': gt 'pod_ezd', 'etaj_3'
+					end
+					act 'Chat with Dan':
+						*clr & cla
+						minut +=5
+						pcs_mood +=5
+						npc_rel['A10'] +=1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+						'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. Sometimes you get the feeling he''s mocking you, but he''s never impolite in a direct manner so you let it slide.'
+						act 'Leave': gt 'pod_ezd', 'etaj_3'
+					end
+				end
+			end
+		else
+			act 'Refuse giving him a blowjob (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Suck him off quickly': gt 'pod_ezd', 'danvas_smoke_bj'
+	else
+		'You see Vasily and Dan standing in the stairwell, smoking a cigarette. You approach them and ask: "Hi guys, do you have a cigarette for me? I would really use a smoke right now."'
+		'Vasily nods and offers you one. You happily take it and light it up.'
+		act 'Chat with Vasily':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A11'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+		act 'Chat with Dan':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A10'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. Sometimes you get the feeling he''s mocking you, but he''s never impolite in a direct manner so you let it slide.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+	end
+end
+
+if $ARGS[0] = 'danvas_smoke_bj':
+	*clr & cla
+	menu_off = 1
+	gs 'boyStat', 'A11'
+	npc_rel['A10'] += 1
+	npc_rel['A11'] += 1
+	gs 'fame', 'pav', 'sex', 2
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/danvas1.jpg"></center>'
+	'You sigh, and squat between Dan and Vasily. While you take Vasily''s <<dick>>cm <<$dick_girth>> cock out of his pants you say, "Okay Shulga, if it''s quick. Just promise you''ll tell me if you see or hear anyone, okay?" He nods his head in understanding.'
+	'You know you have to be quick about this, so take his <<dick>>cm <<$dick_girth>> cock in your mouth without a second thought. Using all the tricks you know you massage his balls and stroke his shaft with your delicate fingers while you suck and lick the head of his dick. Then Dan pulls his dick out and takes ahold of your hand and places it on his dick, you start stroking it while sucking off Vasily.'
+	gs 'arousal', 'bj', 5, 'group'
+	gs 'arousal', 'hj', 5, 'group'
+	minut -= 5
+	gs 'stat'
+	act 'Suck Dan too':
+		*clr & cla
+		gs 'boyStat', 'A11'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/danvas2.jpg"></center>'
+		'You switch your attention to Dan and take his <<dick>>cm <<$dick_girth>> cock in your mouth in your mouth and start sucking it, while you keep stroking Vasily''s dick with your hand. The both start moaning loudly as you suck their dicks.'
+		gs 'arousal', 'bj', 5, 'group'
+		gs 'arousal', 'hj', 5, 'group'
+		minut -= 5
+		gs 'stat'
+		act 'Suck both of them':
+			*clr & cla
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/danvas3.jpg"></center>'
+			'You can tell they are both starting to get close, so you start quickly switching between sucking one and jerking the other, then back again. You hear Vasily mutter. "I''m about to cum."'
+			gs 'arousal', 'bj', 5, 'group'
+			gs 'arousal', 'hj', 5, 'group'
+			minut -= 5
+			gs 'stat'
+			act 'Take their cum':
+				*clr & cla
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/danvas4.jpg"></center>'
+				'You open your mouth and start jerking both of them, Vasily is the first one to shoot his load all over you face with some of it going into your mouth, just a few seconds later Dan''s starts cumming on your face and in your mouth as well. Once you milked the last of their cum out of their cocks you stand up and start to reach into your purse to get something to clean their cum off your face. As you do Vasily grabs you hand and stops you. "Leave the cum on your face <<$pcs_nickname>>."'
+				'You give him a curious look. "Why?" You ask.'
+				'Dan answers. "Because it is fucking hot as hell, to see a girl covered in your cum."'
+				gs 'arousal', 'hj', 5, 'group'
+				gs 'arousal', 'hj', 5, 'group'
+				minut -= 5
+				gs 'cum_call','mouth', 'A10'
+				gs 'cum_call','face', 'A11'
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Wear their cum':
+					*clr & cla
+					gs 'fame', 'pav', 'sex', 2
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/cumface.jpg"></center>'
+					'You leave their cum on your face, which they seem to really enjoy. They put their dicks away and button up their pants. You chat with them for a bit more, with their cum dripping down your face, before they tell you they need to get going and go into Vasily''s apartment.'
+					act 'Leave': gt 'pod_ezd', 'etaj_3'
+				end
+				gs 'willpower', 'humiliation', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'Clean your face (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/vassmoke.jpg"></center>'
+						'You clean their cum off your face, while they put their dicks away and button up their pants. You chat with them for a bit more, before they tell you they need to get going and go into Vasily''s apartment.'
+						act 'Leave': gt 'pod_ezd', 'etaj_3'
+					end
+				else
+					act 'Clean your face (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'smoke_vitdanvas':
+	*clr & cla
+	menu_off = 1
+	siga += 1
+	gs 'drugs','smoke'
+	minut +=5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/vitdanvas.jpg"></center>'
+	if pav_slut >= 150:
+		'When you walk over, before you can even say a word they give you a look of disgust and Vitek says. "Get lost slut, or we will feed you to some really rough guys to pull a train on you." Not wanting to test if he is serious you quickly move on.'
+		act 'Leave': gt 'pod_ezd', 'etaj_3'
+	else
+		'You see Vitek, Vasily and Dan standing in the stairwell, smoking a cigarette. You approach them and ask: "Hi guys, do you have a cigarette for me? I would really use a smoke right now."'
+		'Vasily nods and offers you one. You happily take it and light it up.'
+		act 'Chat with Vitek':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A9'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vitek/vitek.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+		act 'Chat with Vasily':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A11'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. When it''s gone, you thank him for the cigarette and turn to leave.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+		act 'Chat with Dan':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A10'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+			'You spend the next 5 minutes smoking a cigarette with him, talking about trivial things. Sometimes you get the feeling he''s mocking you, but he''s never impolite in a direct manner so you let it slide.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+	end
+end
+
+if $ARGS[0] = 'lena_chat':
+	*clr & cla
+	menu_off = 1
+	minut +=5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/lena.jpg"></center>'
+	if pav_slut >= 125:
+		'As you walk over she gives you a look of pure disgust. "Get the fuck away from me you filthy whore." Knowing it won''t do any good to try and talk to her, you walk away.'
+		act 'Leave': gt 'pod_ezd', 'etaj_3'
+	else
+		'You take a seat next to Lena. "Hey what are you doing?" You ask her.'
+		'She takes a drink. "Trying to find my fucking brother, he isn''t answering his phone and I thought he would be over here at Shulga''s place but his dad says they aren''t here so... I''m waiting to see if they show up." She tells you.'
+		'"Anything wrong?" You ask.'
+		'She gives you a look but what ever it is, she doesn''t seem to want to talk about it. "No I just need to talk to him."'
+		act 'Chat with Lena':
+			*clr & cla
+			minut +=5
+			pcs_mood +=5
+			npc_rel['A20'] +=1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/lena.jpg"></center>'
+			'You spend the next 5 minutes talking to her as she smokes a cigarette and drinks. It''s mostly trivial things you talk about, and once she finishes her cigarette, she drops the butt on the ground and stands up. "Fuck it! I''m tired of waiting for him. Anyways I need to get going." And with that she walks down the stairs.'
+			act 'Leave': gt 'pod_ezd', 'etaj_3'
+		end
+	end
+end
+
+if $ARGS[0] = 'gopnik_group_chat':
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+	if pav_slut >= 125:
+		'As you walk over several of them give you a look of pure disgust. "Get the fuck away from me you filthy whore." One of them says. Then Dan adds. "Unless you want to be our entertainment." This gets a harsh cruel laugh at the rest. Knowing it won''t do any good to try and talk to them and could lead to a gang rape or worse, you walk away.'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+	elseif grupTipe ! 4:
+		'"Hey guys, what are you doing?" You greet the group as you approach.'
+		'One of the older guys looks at you and then the rest. "Who the fuck is this bitch?"'
+		'Vasily answers before you can. "She is just some girl we go to school with." With that he gets up and walks over to you and leads you back to the stairs. "You should get going <<$pcs_nickname>>, this is no place for you." With that he prods you to go down the stairs.'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+	else
+		'You take a seat next to Lena and Lera. "Hey guys whats up?" You ask them.'
+		'Lera leans over and kisses you on the lips. "Just hanging out and having fun." She slurs obviously she is pretty drunk already, her breath smells like a distillery.'
+		'Vasily offers you one of the beers. "Here <<$pcs_nickname>>."'
+		gs 'willpower', 'drink', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Decline the beer (<<will_cost>> Willpower)':
+				*clr & cla
+				minut += 15
+				grupvalue[4] -= 2
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+				'You shake your head no. "No thanks, I just wanted to chat."'
+				'Dan snatches the beer out of Vasily''s hand that he was offering you. "Fine by us pussy, means more beer for me." This gets a laugh from the rest. Everyone drinks, smokes and talks, you engage in the talk a bit. But you get the feeling of being partially ignored as they rarely respond to you much and mostly just ignore that you are there.'
+				act 'Leave': gt 'pod_ezd', 'etaj_5'
+			end
+		else
+			act 'Decline the beer (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Take the beer':
+			*clr & cla
+			minut += 5
+			grupvalue[4] += 1
+			gs 'drugs', 'alcohol', 'beer'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+			'You take the offered beer and take a swig of it. Soon you are all engage in a a variety of conversations, just hanging out and having fun. Many of them tell jokes or share funny stories that they experienced.'
+			act 'Leave': gt 'pod_ezd', 'etaj_5'
+			act 'Take another beer':
+				*clr & cla
+				minut += 5
+				gs 'drugs', 'alcohol', 'beer'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+				'You grab another beer and take a swig of it. You share one of your stories about your little brother a few years ago at your grandparents when he fell face first into some mud and every time he tired to get back up, he just fell down again, until he was wallowing in the mud trying to get up. All of them bust out laughing at that.'
+				act 'Leave': gt 'pod_ezd', 'etaj_5'
+				act 'Take another beer':
+					*clr & cla
+					minut += 5
+					gs 'drugs', 'alcohol', 'beer'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+					'You grab another beer and take a swig of it. You listen to each of them share varies stories of their own, or talk about some things they want to do over the weekend.'
+					act 'Leave': gt 'pod_ezd', 'etaj_5'
+					act 'Take another beer':
+						*clr & cla
+						minut += 5
+						gs 'drugs', 'alcohol', 'beer'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+						'You grab another beer and take a swig of it. You share one of your stories about your sister, about how a couple of years ago your family went to the lake. Your sister disappeared for a couple of hours and when it was time to leave she had not returned. So the whole family went looking for her, you went with your mother and the two of you found Anya skinning dipping in a secluded area of the beach. When you got home your mother spanked your sister so hard she couldn''t sit down the rest of the day.'
+						'Several laugh at that, a few of them comment your sister is hot and one of the older guys said he fucked her one time when she was drunk at Rex''s party.'
+						act 'Leave': gt 'pod_ezd', 'etaj_5'
+						act 'Take another beer':
+							*clr & cla
+							minut += 5
+							gs 'drugs', 'alcohol', 'beer'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/gopniks.jpg"></center>'
+							'You grab another beer and take a swig of it. Thing seem to be winding down, several people are pretty drunk and not talking much anymore, a couple of the boys are trying to chat up the girls. Then one of the guys starts hitting on Lena and Vitek jumps up and grabs him. Soon they are struggling before they are pulled apart. Vitek yells. "Stay the fuck away from my sister."'
+							'The other guy holds up his hands. "Hey I was just talking to her."'
+							'Lena gets up pissed off and shoves Vitek. "Stop being such a fucking asshole, we were just talking. I can take care of myself." With that she storms off, with Lera in tow. Vitek glares at the other guy and then the party breaks up and everyones goes their own way.'
+							act 'Leave': gt 'pod_ezd', 'etaj_5'
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'home_movie1':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3_2.jpg"></center>'
+	'Suddenly she gets up and turns around, leaning forward against the wall and sticking her ass up in the air as much as she can. The guy not holding the camera immediately understands the invitation, and rams his dick up her snatch and begins to fuck her roughly. The girl moans happily, thoroughly enjoying the fucking she''s getting.'
+	gs 'arousal', 'voyeur_sex', 3
+	gs 'stat'
+	act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3_3.jpg"></center>'
+		'The man holding the camera is tired of being left out, and he asks his friend to swing her around she can use her mouth at the same time. He does, and tells the girl to lean against the other man''s chest while she sucks him off. The girl does, and from the look in her eyes you can tell she''s thrilled by all this.'
+		'After about five minutes the body of the guy behind her tenses, and from his grunting you can only assume he finished right in her pussy.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3_4.jpg"></center>'
+			'Now that the first guy is spent, she devotes her full attention to the second guy. Assuming he must be close she drops to her haunches without even being asked to, and as if on cue the second guy shoots his load onto her tongue, which she happily shows off to the camera for a few seconds before letting it run out of her mouth and rubbing it all over her cute breasts.'
+			gs 'arousal', 'voyeur_sex', 3
+			gs 'stat'
+			act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev3_5.jpg"></center>'
+				'Then she turns around and leans over, showing off her semen-glazed pussy, all the while giving the camera a seductive smile. She''s hot you wouldn''t mind a copy of that video!'
+				'It looks like they''re finished, and they begin to gather their things. You quickly hide behind a pillar so they don''t see you when they leave.'
+				gs 'arousal', 'voyeur_sex', 3
+				gs 'arousal', 'end'
+				gs 'stat'
+				act 'Leave': gt 'pod_ezd', 'etaj_5'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'home_movie2':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_2.jpg"></center>'
+	'One of the guys boldly walks up to the girl, his dicking hanging out of his pants already. She unashamedly squats before him and takes the dick in her mouth, giving him a skillful blowjob while the other guy keeps filming everything. Are they shooting a porn video!?'
+	gs 'arousal', 'voyeur_sex', 3
+	gs 'stat'
+	act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_3.jpg"></center>'
+		'While she''s doing her best to make the first guy feel good with her mouth, the second guy decides he wants in and also drops his pants, not missing any of the action with his camera. She seemed to be expecting this already, and tries to take both of the cocks in her mouth at the same time now.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_4.jpg"></center>'
+			'The girl then stands up straight and gets between the two guys, presenting her ass to one of them while she leans over to take the dick of the other back in her mouth. Soon she''s being spit-roasted, taking in dicks on both ends.'
+			gs 'arousal', 'voyeur_sex', 3
+			gs 'stat'
+			act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_5.jpg"></center>'
+				'She greedily bucks her hips back against the guy behind her, and the sounds of her sopping pussy getting pounded by his hard dick over and over are quite hard to ignore in the stairwell. At the same time she''s sucking the large cock of the camera man, with a defiant look in her eyes.'
+				gs 'arousal', 'voyeur_sex', 3
+				gs 'stat'
+				act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev4_6.jpg"></center>'
+					'When the boys are reaching their orgasms, she gets on her haunches in front of them and closes her eyes in anticipation. After their rain of cum has settled on her face she carefully opens her eyes again, and crap! She''s looking right at you!'
+					'You quickly run down the stairs, and listen if they''re following you. They don''t, and moments later you hear a door open and close above you. Phew, that was close...'
+					gs 'arousal', 'voyeur_sex', 3
+					gs 'arousal', 'end'
+					gs 'stat'
+					act 'Leave': gt 'pod_ezd', 'etaj_5'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'home_movie3':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_2.jpg"></center>'
+	'After a moment she decides that one cock is not enough and, with a lewd voice, asks: "Please, I need more cocks, let me suck yours too."'
+	'The other guy is happy to oblige, and soon she is struggling to take both cocks in her mouth. You can tell this is definitely not the first time she has done this.'
+	gs 'arousal', 'voyeur_sex', 3
+	gs 'stat'
+	act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_3.jpg"></center>'
+		'Suddenly, the boys pull away from the girl. They tell her: "Alright, time to fuck. Show your ass to the camera, Maria."'
+		'She obediently does, pulling her ass cheeks aside to show the boys her puckered anus. It doesn''t look very tight, but does look ready for anal sex, maybe they had been planning this?'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'stat'
+		act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_4.jpg"></center>'
+			'The guy not holding the camera moves up behind her, and slides his cock between her wet pussy lips. The girl moans eagerly, and begins to grind her hips against him. The guy just stands still with a grin on his face, happy to see his partner being so eager for his cock.'
+			gs 'arousal', 'voyeur_sex', 3
+			gs 'stat'
+			act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_5.jpg"></center>'
+				'After a while, the couple changes position and you see the guy rubbing his dick against her ass. As you expected, his cock slides in her ass quite easily, and the guy takes the initiative now and begins to thrust his dick deeper inside her ass while she tries to steady herself against the wall.'
+				gs 'arousal', 'voyeur_sex', 3
+				gs 'stat'
+				act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_6.jpg"></center>'
+					'After watching and filming the couple having sex for several minutes, the camera guy couldn''t resist any more. He tells her: "Maria, suck me off while he fucks you."'
+					'She happily takes his dick in her mouth and begins to suck him off skillfully, while the first guy keeps fucking her asshole. The camera guy struggles to keep his camera steady, while the girl''s body is shivering all over - she must be orgasming!'
+					gs 'arousal', 'voyeur_sex', 3
+					gs 'stat'
+					act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_7.jpg"></center>'
+						'The guys tell her to get on her knees, and eagerly jerk off over her while the camera guy films the jets of cum land on her face.'
+						gs 'arousal', 'voyeur_sex', 3
+						gs 'stat'
+						act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+						act 'Continue':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_8.jpg"></center>'
+							'When they''re both spent, the girl poses for the camera, proudly showing off the amount of sperm she caught in her mouth before swallowing it all. Then she wipes the rest of the cum towards her mouth, and licks her lips and fingers playfully.'
+							gs 'arousal', 'voyeur_sex', 3
+							gs 'stat'
+							act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+							act 'Continue':
+								*clr & cla
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev2_9.jpg"></center>'
+								'The three of them quickly brush up and get dressed while they put the camera away. Realizing they might see you if you stay here, you quickly walk down the stairs.'
+								gs 'arousal', 'voyeur_sex', 3
+								gs 'arousal', 'end'
+								gs 'stat'
+								act 'Leave': gt 'pod_ezd', 'etaj_5'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'home_movie4':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev1_2.jpg"></center>'
+	'Suddenly you see the guy holding the camera reach down undoes pants, before telling her to take his cock out and give him a blowjob. She happily does and takes the large cock in her mouth, while the guy behind her is still pounding her. He slaps her ass a few times, knowing her moans will make the other guy feel great.'
+	gs 'arousal', 'voyeur_sex', 3
+	gs 'stat'
+	act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_5'
+	act 'Stay hidden and keep watching':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/ev1_3.jpg"></center>'
+		'The guys switch places now, and the other guy now holds the camera while the girl keeps sucking on one cock while getting fucked by the other. He makes sure to zoom in on her face while the other guy spanks her hard, trying to provoke a cute reaction for the video.'
+		'After a few minutes you have seen enough, and let them enjoy their debauchery in peace.'
+		gs 'arousal', 'voyeur_sex', 3
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_5'
+	end
+end
+
+if $ARGS[0] = 'lena_show':
+	menu_off = 1
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_1.jpg"></center>'
+	'As you walk around a corner in the stairwell, you see Yelena Kotov, a girl from your class. She''s taking off her panties in front of several guys. If her brother Vitek could see this, he''d probably be beating the crap out of them right now he''s really protective of his sister.'
+	gs 'arousal', 'voyeur', 3
+	gs 'stat'
+	act 'Leave': gt 'pod_ezd', 'etaj_4'
+	act 'Hide and watch them':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_2.jpg"></center>'
+		'Lena turns her back to the guys next, and pulls up her skirt slightly. She shows off her well-toned ass, slowly wagging it as she asks seductively over her shoulder: "Do you like what you see, boys?"'
+		gs 'arousal', 'voyeur', 3
+		gs 'stat'
+		act 'Leave': gt 'pod_ezd', 'etaj_4'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_3.jpg"></center>'
+			'One of the guys has a lewd grin on his face as he gets an idea, and tells Lena to strike a pose as he pulls his phone out of his pocket. He begins to take photos of Lena, while the other guys encourage her to show more.'
+			gs 'arousal', 'voyeur', 3
+			gs 'stat'
+			act 'Leave': gt 'pod_ezd', 'etaj_4'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_4.jpg"></center>'
+				'Lena really gets into it, posing seductively for the camera now while she lets her skirt ride up a little more. You can tell the stares of the guys turn her on a lot, and you realize Vitek''s little sister is not as innocent as she looks.'
+				gs 'arousal', 'voyeur', 3
+				gs 'stat'
+				act 'Leave': gt 'pod_ezd', 'etaj_4'
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_5.jpg"></center>'
+					'Lena spreads her legs further, really showing off her pussy to the camera now. The guys are getting quite aroused now, and a few of them are rubbing their groins uncomfortably.'
+					gs 'arousal', 'voyeur', 3
+					gs 'stat'
+					act 'Leave': gs 'arousal', 'end' & gt 'pod_ezd', 'etaj_4'
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/ev4_6.jpg"></center>'
+						'Lena turns her back to the guys again, her skirt pulled up so far now that she''s showing off all her holes to the camera.'
+						'Then she decides the photo shoot is over, and asks them: "So boys, who wants to go first?"'
+						'While the guys enthusiastically gather around her you realize you should probably go, before someone notices you.'
+						gs 'arousal', 'voyeur', 3
+						gs 'arousal', 'end'
+						gs 'stat'
+						act 'Leave': gt 'pod_ezd', 'etaj_4'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'sex_ev1':
+	*clr & cla
+	menu_off = 1
+	minut += 2
+	if podwhoreQW < 3: podwhoreQW += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_1.jpg"></center>'
+	'One of the boys is content to just keep smoking, but the other one grows more bold and approaches you. He starts pulling at your clothes with one hand while his other hand starts massaging your ass.'
+	'The other boy who is still smoking grins as he watches his friend pull at your clothes. He says nothing, deciding to see how far they can push you, and simply commands you: "Show us your tits, slut."'
+	gs 'willpower', 'exhib', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Pull away and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gt 'pod_ezd', 'etaj_2'
+		end
+	else
+		act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Show them your boobs':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_2.jpg"></center>'
+		'You don''t have the courage to refuse, and do as he says, showing them your tits.'
+		'This brings an evil grin to his face: "Well well, look at that. You really are a obedient little slut, aren''t you <<$pcs_nickname>>? Now turn your back to my friend and bend over, he''s going to fuck you now."'
+		gs 'arousal', 'flash', 3, 'sub', 'exhibitionism'
+		gs 'stat'
+		gs 'willpower', 'anal', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Pull away and leave (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gt 'pod_ezd', 'etaj_2'
+			end
+		else
+			act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Continue to obey':
+			*clr & cla
+			gs 'fame', 'pav', 'sex', 2
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_3.jpg"></center>'
+			'You meekly turn your back to the guy and bend over as you were told, he pulls your clothes away until he exposes your bare ass.'
+			if analplugin = 1:
+				analplugin = 0
+				'He runs his hand over your butt plug for a second, and then pulls it out while he tells his friend: "Dude, she''s got a plug up her butt! This slut likes it in the ass!"'
+			end
+			if tampon = 1:
+				'He runs his hand over your ass and down to your pussy, feeling the string from the tampon he pulls his hand away. "Fuck man, she''s got a tampon plugging up her twat." You feel yourself blushing. His friend looks over, shrugs and says. "She''s got another hole, use that one." The one standing behind you slaps you hard on the ass. "Hell yeah! You hear that slut? We''re going to fuck you up the ass." He says as he gives your ass another hard slap.'
+				if lubri > 0:
+					lubri -= 1
+					'You realize he''s going to fuck your ass now!'
+					'You quickly interrupt him: "Wait! I have some lubricant in my purse, use that! It''ll feel better for both of us!" you say in a pleading voice.'
+					'<<$boydesc[2]>> grunts and grabs the lube out of your purse and he spreads some lube on his cock with his fingers before he moves his fingers to your clenched sphincter and slips two of his lubricated fingers in and out of your ass quickly, to give you the barest amount of lubrication.'
+					'His friend smirks at the two of you, and says: "I guess it''s true <<$pcs_nickname>> really is a buttslut, trained and ready to get fucked up her ass any where, any time."'
+				else
+					'The <<$boydesc[2]>> spits on your ass and uses his fingers to rub his spit on your anus.'
+					'You realize he''s going to fuck your ass now!'
+				end
+				gs 'arousal', 'anal_finger', 3,'sub'
+				gs 'stat'
+				gt 'pod_ezd', 'sex_ev1_anal'
+			end
+			'With you bent over, <<$boydesc[2]>> does not waste any time, and immediately rams his <<dick[2]>>cm <<$dick_girth[2]>> into your pussy before it is hardly wet. He drives his <<dick[2]>>cm <<$dick_girth[2]>> balls deep as he begins to roughly fuck your pussy.'
+			'After a couple of minutes of fucking you roughly <<$boydesc[2]>> turns to his friend and says: "Man, I''m not feeling anything, it''s so loose. It feels like her pussy has been ploughed by every cock in town."'
+			*nl
+			'His friend walks over to you and roughly grabs your chin with his hand, forcing you to look up at him as he asks you in a firm voice: "Do you fuck guys every day?" Without waiting for a answer he nods and absentmindedly waves his hand at his friend: "Try her other hole, it should be tighter."'
+			if lubri > 0:
+				lubri -= 1
+				pod_ezd_lube = 1
+				'You realize he''s going to fuck your ass now!'
+				'You quickly interrupt him: "Wait! I have some lubricant in my purse, use that! It''ll feel better for both of us!" you say in a pleading voice.'
+				'<<$boydesc[2]>> grunts and grabs the lube out of your purse and he spreads some lube on his cock with his fingers before he moves his fingers to your clenched sphincter and slips two of his lubricated fingers in and out of your ass quickly, to give you the barest amount of lubrication.'
+				'His friend smirks at the two of you, and says: "I guess it''s true <<$pcs_nickname>> really is a buttslut, trained and ready to get fucked up her ass any where, any time."'
+			else
+				'The <<$boydesc[2]>> spits on your ass and uses his fingers to rub his spit on your anus. You realize he''s going to fuck your ass now!'
+			end
+			gs 'arousal', 'anal_finger', 3,'sub'
+			gs 'stat'
+			act 'Continue':gt 'pod_ezd', 'sex_ev1_anal'
+		end
+	end
+end
+
+if $ARGS[0] = 'sex_ev1_anal':
+	*clr & cla
+	menu_off = 1
+	gs 'arousal', 'anal', 3,'dick[2]','sub'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_4.jpg"></center>'
+	'The <<$boydesc[2]>> rubs the head of his <<dick[2]>>cm <<$dick_girth[2]>> against your anus for a second, before slowly pushing it in and slowly sliding his cock balls deep in your ass.'
+	'<<$boydesc[2]>> grins at his friend as he pounds his <<dick[2]>>cm <<$dick_girth[2]>> cock balls deep in your ass: "You''re right man, her ass is much tighter."'
+	'He accelerates his thrusting, his balls are slapping against your bare pussy as he brutally fucks your asshole. The sounds must be clearly audible throughout the stairwell, you just hope no one comes to investigate and find you getting violently sodomized. You do your best to stifle your groans and moans of pain and pleasure by biting your lips.'
+	gs 'gopsex', 'gg_sex_orgasm'
+	act 'Say nothing and let keep ripping up your ass': gt 'pod_ezd', 'sex_ev1_anal1'
+	gs 'willpower', 'anal', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Suggest you''ll give them a blowjob instead (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'arousal', 'bj', 3,'dick[2]','sub'
+			gs 'arousal', 'bj', 3,'dick[1]','sub'
+			minut -= 3
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_4.jpg"></center>'
+			'Several thoughts race through your mind as your being brutally assfucked. You quickly dismiss the thoughts of getting away; there''s no way the guys will just let you go now. Your tactic switches to the next-most desirable option: making them cum as quick as possible before anyone comes along and finds you getting assfucked in the stairwell.'
+			'While <<$boydesc[2]>> is still pounding your ass, you do your best to give the other guy a seductive smile as you say: "We need to wrap this up, boys. How about I suck you both off quickly now and you can both cum in my mouth? You can fuck my ass some other time?"'
+			*nl
+			if pav_slut >= 125:
+				'<<$boydesc[1]>> glares at you when you make your request. "What you think your ass is too good for us or something? Huh is that it bitch?" He walks over and slaps you in the face, glancing at his friend. "Fuck this slut harder!" Which is friend is more than happy to do, then he looks back to you. "Tell him how much you love him fucking your ass, then beg me to fuck it next. If you don''t I will call up everyone of my friends and they will all be taking a turn fucking your ass." You feel a chill of fear run through you as you realize he means it, so you do as he tells you. Looking over your shoulder at the boy behind you. "I love feeling your dick in my ass." Then you look back to the boy in front of you. "Please fuck my ass, please."'
+				act 'Carry on letting them fuck you':gt 'pod_ezd', 'sex_ev1_anal1'
+			else
+				'He looks at you a moment as if considering your offer and then shurgs. "Ok slut, if you want to eat our cum that badly."'
+				act 'Get them to cum':gt 'pod_ezd', 'sex_ev1_bj'
+			end
+		end
+	else
+		act 'Suggest you''ll give them a blowjob instead (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+end
+
+if $ARGS[0] = 'sex_ev1_anal1':
+	*clr & cla
+	menu_off = 1
+	gs 'cum_call','mouth',$boy[2],1
+	gs 'cum_call','anus',$boy[1],1
+	gs 'arousal', 'bj', 3,'dick[1]','sub'
+	npc_sex[$boy[1]] += 1
+	npc_sex[$boy[2]] += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_6.jpg"></center>'
+	'<<$boydesc[2]>> begins to reach a frenzied pace, you can tell he is about to cum.'
+	'His friend <<$boydesc[1]>> who had been watching speaks up. "Alright enough of that, it''s my turn. I don''t want your sloppy seconds." You glance over at him as he walks over pulling out his <<dick[1]>>cm <<$dick_girth[1]>> cock, you feel a little shudder of excitement run through your body at the thought of having your ass fucked by such a big dick. <<$boydesc[2]>> does as he friend says and pulls out of you and starts jerking off. "Fuck man I was just about to pop my load in her."'
+	*nl
+	'<<$boydesc[1]>> lines his dick up with one hand, while his other hand holds your hip and says to his friend."Jerk off in the bitches mouth then." <<$boydesc[2]>> grins at the idea and moves around in front of you. "Open your mouth and stick out your tongue slut." You obey him, opening your mouth wide and sticking out your tongue.'
+	*nl
+	'Meanwhile <<$boydesc[1]>> slips the head of his <<dick[1]>>cm <<$dick_girth[1]>> dick in your ass and he lets out a moan of pleasure."Oh yeah her ass is still tight, this feels good." He reaches up with his other hand to take a firm grip on both your hips, he jerks you back as he drives forward, burying his <<dick[1]>>cm <<$dick_girth[1]>> cock balls deep in your ass. You gasp in a mixture of pain and pleasure, just as <<$boydesc[2]>> starts cumming, while <<$boydesc[1]>> starts pounding your ass hard and fast. Thick heavy spurts of cum splatter the inside your mouth and on your tongue. <<$boydesc[2]>> grins down at you and says in a firm voice. "Now swallow it whore." You do as your told and swallow down his cum, opening your mouth after to show him.'
+	*nl
+	'<<$boydesc[2]>> uses the opening you give him to shove his dick in your mouth and use your mouth to clean his dick, laughing as he does. Once <<$boydesc[2]>> is done with your mouth <<$boydesc[1]>> reaches up and grabs you by your hair twisting his hand, pulling your hair and head back painfully, while he continues to pound your ass furiously with his <<dick[1]>>cm <<$dick_girth[1]>> cock. After several more minutes of this he grunts and his body spasms, he stops moving leaving himself buried balls deep in you, filling your ass with his cum. After he''s done he pulls his cock out of your and pulls his pants up. He looks over at you with disdain. "Get the fuck out of here, we''re done with you slut."'
+	act 'Leave': gt 'pod_ezd', 'etaj_2'
+end
+
+if $ARGS[0] = 'sex_ev1_bj':
+	*clr & cla
+	menu_off = 1
+	gs 'arousal', 'bj', 2,'dick[2]'
+	gs 'arousal', 'bj', 1,'dick[1]'
+	gs 'cum_call','face',$boy[1],1,'','',20
+	gs 'cum_call','mouth',$boy[2],1,'','',20
+	gs 'cum_call','face',$boy[2],1,'','',20
+	gs 'cum_call','mouth',$boy[1],1,'','',20
+	npc_sex[$boy[1]] += 1
+	npc_sex[$boy[2]] += 1
+	gs 'arousal', 'end'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev1_5.jpg"></center>'
+	'The boys think on it a moment before they happily agree. The one behind you pulls his cock out of your ass, as <<$boydesc[2]>> walks over and pulls out his <<dick[2]>>cm <<$dick_girth[2]>> dick. You quickly get down on your knee''s grabbing their cocks in your hands and start sucking them off in turns. Stroking the one you don''t currently have in your mouth with your hands, as you switch back and forth between sucking their cocks. You try to ignore the taste of your own ass when you suck off the guy who was just fucking your ass.'
+	*nl
+	'You try to use every trick you know to get them to cum as fast as possible and it works: Within minutes, both of the boys are shooting their jism all over your face and into your mouth. You lick their cum off your lips and wink at them before quickly collecting your things and leaving, before they realize you owe them a buttfuck now.'
+	act 'Leave': gt 'pod_ezd', 'etaj_2'
+end
+
+if $ARGS[0] = 'sex_ev2':
+	*clr & cla
+	menu_off = 1
+	if podwhoreQW < 3: podwhoreQW += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_1.jpg"></center>'
+	'One of the boys is content to just keep smoking, but the other one grows more bold and approaches you. He stops in front of you with his arms crossed. He doesn''t look like he''ll take no for an answer when he orders you: "Take off your clothes, slut."'
+	gs 'willpower', 'exhib', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Pull away and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gt 'pod_ezd', 'etaj_2'
+		end
+	else
+		act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Do as he says':
+		*clr & cla
+		gs 'arousal', 'flash', 3,'sub'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_2.jpg"></center>'
+		'You don''t have the courage to refuse, so you slowly take off your jacket and begin to undo your pants. His hands exploring your body as you undress.'
+		'"<<$boydesc[2]>>, I told you man! Look how submissive <<$pcs_nickname>> is. She''s going to do everything we say... isn''t that right slut? Show us your tits!"'
+		act 'Nod obediently and show him your boobs':
+			*clr & cla
+			gs 'arousal', 'flashlite', 3, 'sub'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_3.jpg"></center>'
+			'You nod obediently and pull up your shirt and take off your bra, showing him your <<$titsize>> breasts. He immediately puts his hands on your tits, and pinches your nipples firmly.'
+			'He grins at your involuntary moans: "I know, slut, I know... you love it when guys play with your tits. Don''t worry, we''ll take good care of you."'
+			'The older guy of the two looks at his younger friend and tells him: "<<$boydesc[2]>>, tell her to suck us both. Don''t worry, she''ll do it."'
+			'The younger guy hesitates for a moment, but then decides to listen to his friend. He walks over to you and pulls his <<dick[2]>>cm <<$dick_girth[2]>> dick out of his pants as he tells you: "Slut, get on your knees and start sucking my dick!"'
+			gs 'willpower', 'bj', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Pull away and leave (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'resist'
+					gt 'pod_ezd', 'etaj_2'
+				end
+			else
+				act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Suck their dick':
+				*clr & cla
+				gs 'fame', 'pav', 'sex', 2
+				gs 'arousal', 'bj', 3,'dick[2]', 'sub'
+				gs 'arousal', 'bj', 3,'dick[1]', 'sub'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_4.jpg"></center>'
+				'You''re too far in to start being reluctant now, so you just drop to your knees and take <<$boydesc[2]>>''s <<dick[2]>>cm <<$dick_girth[2]>> cock in your mouth, ignoring the looks of the two guys.'
+				'The <<$boydesc[1]>> quickly takes out his <<dick[1]>>cm <<$dick_girth[1]>> cock and offers it to you as well, and you alternate sucking on the two hard cocks at your disposal. You take the one you''re not sucking in your hand and gently masturbate it to keep it hard, and also to make sure the owner doesn''t feel left out.'
+				act 'Continue':
+					*clr & cla
+					gs 'arousal', 'vaginal', 3,'dick[1]', 'sub'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_5.jpg"></center>'
+					'The <<$boydesc[1]>> tells you to get up: "Enough of that, slut. Get up and turn around, so I can fuck your pussy now."'
+					'You get up and turn around as you do he pushes you forward bending you over in front of him. He slowly pushes his <<dick[1]>>cm <<$dick_girth[1]>> cock inside of you, it easily slides into your wet pussy as he begins to fuck you.'
+					gs 'gopsex', 'gg_sex_orgasm'
+					act 'Continue':
+						*clr & cla
+						gs 'arousal', 'bj', 3,'dick[2]', 'sub'
+						gs 'arousal', 'vaginal', 5,'dick[1]', 'sub'
+						minut -=3
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_6.jpg"></center>'
+						'He looks at his friend in disbelief and scoffs: "<<$boydesc[2]>>, for fuck''s sake man. Don''t just stand there, give her something to suck on!"'
+						'The younger guy nods and walks up to you, rubbing his dick against your lips, smearing them with his precum for a few seconds before you open your mouth and allow it in. He''s a bit rough with you, sometimes shoving his <<dick[2]>>cm <<$dick_girth[2]>> cock a bit further down your throat than you''re comfortable with. You do your best to suppress your gag reflex and after a while you get into a decent pace and dutifully serve the two random guys as good as you can.'
+						gs 'gopsex', 'gg_sex_orgasm'
+						'After a few minutes you feel your muscles getting sore, and you tell the guys you''re getting tired and are not very comfortable in this position.'
+						'The younger kid must''ve felt inspired by his friend. He slaps you in the face while you''re still sucking on his dick and tells you: "Whores don''t get to be comfortable. Keep sucking."'
+						act 'Continue':
+							*clr & cla
+							gs 'arousal', 'bj', 2,'dick[2]', 'sub'
+							gs 'arousal', 'vaginal', 3,'dick[1]', 'sub'
+							minut -=2
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_7.jpg"></center>'
+							'Despite his tough talk, after awhile the guys take pity on you. They let you lean on the railing and give your mouth some rest while the older guy pounds your wet pussy from behind, as you begin to moan in pleasure. From the increased power of his thrusts, you can tell he''s about to blow his load. While the younger boy is standing next to the two of you, watching and jerking off.'
+							gs 'gopsex', 'gg_sex_orgasm'
+							gs 'gopsex','hide','accview_ggsex'
+							gs 'stat'
+							act 'Continue':
+								*clr & cla
+								gs 'arousal', 'hj', 3,'dick[2]'
+								gs 'cum_call','face',$boy[1],1,'','',20
+								gs 'cum_call','mouth',$boy[2],1,'','',20
+								gs 'cum_call','face',$boy[2],1,'','',20
+								gs 'cum_call','mouth',$boy[1],1,'','',20
+								pcs_hairbsh = 0
+								npc_sex[$boy[1]] += 1
+								npc_sex[$boy[2]] += 1
+								gs 'arousal', 'end'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev2_8.jpg"></center>'
+								'Mere moments later, <<$boydesc[1]>> moans and suddenly pulls out of you. He puts his free hand on your shoulder and forces you to kneel down, just in time to take both of their loads on your face. The guys now done with you, pull up their pants and ignore you. Their cum is still slowly running down your face, as they start talking like your not even there.'
+								gs 'fame', 'pav', 'sex', 4
+								gs 'stat'
+								act 'Leave': gt 'pod_ezd', 'etaj_2'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'sex_ev3':
+	*clr & cla
+	menu_off = 1
+	if podwhoreQW < 3: podwhoreQW +=1
+	minut +=2
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_1.jpg"></center>'
+	'One of the boys smirks at you, with an impatient look on his face: "What are you waiting for, whore? Show us your tits!"'
+	gs 'willpower', 'exhib', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Pull away and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gt 'pod_ezd', 'etaj_2'
+		end
+	else
+		act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Show them your tits':
+		*clr & cla
+		gs 'arousal', 'flashlite', 3
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_2.jpg"></center>'
+		'You quickly pull up your shirt and take your bra off, not wanting to make him any angrier. He reaches and roughly grabs one of your bare breasts, playing with your nipple.'
+		'He continues to roughly squeezes your boobs with both his hands: "That''s more like it, slut. Now strip and show us your ass!"'
+		gs 'willpower', 'exhib', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Pull away and leave (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gt 'pod_ezd', 'etaj_2'
+			end
+		else
+			act 'Pull away and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Strip naked for them':
+			*clr & cla
+			gs 'arousal', 'flash', 3
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_3.jpg"></center>'
+			'You rush to obey and stripping your clothes off and turning around so they can see your bare ass.'
+			if analplugin = 1:
+				'The guy grins as he tugs at your butt plug: "<<$boydesc[2]>>, look at this whore! She has a plug in her ass already... you were just hoping for someone to find you wearing this, weren''t you? Don''t worry, we''ll replace that with something much better in a minute. You can wear it for a little while longer though, it looks good in you."'
+			end
+			'After he plays with your bare ass cheeks for a while, he pushes you face first against the wall. "Now I''m going to fuck you like the slut you are."'
+			act 'Get fucked':
+				*clr & cla
+				gs 'fame', 'pav', 'sex', 2
+				gs 'arousal', 'vaginal', 3,'dick[1]'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_4.jpg"></center>'
+				'<<$boydesc[1]>> immediately rams his <<dick[1]>>cm <<$dick_girth[1]>> dick in your wet pussy, as begins to fuck you roughly. You feel like you''re just a piece of meat to him, but you can''t help but moan in pleasure and feel your pussy getting wetter by the moment.'
+				'After a couple minutes or so, he pulls your head back by your hair: "Your pussy is way too loose, slut. I''m going to use your ass now."'
+				if analplugin = 1:
+					analplugin = 0
+					'He closes his fingers around your butt plug and gives it a few exploratory tugs, before pulling it out slowly. He mutters: "I hope this thing didn''t loosen your ass too much, whore."'
+				end
+				if lubri > 0:
+					lubri -= 1
+					agape = 1
+					pcs_horny += 20
+					'You quickly interrupt him: "Wait! I have some lubricant, use that! It''ll feel better for both of us!"'
+					'You give him the lubricant, and he spreads some onto his cock with his fingers before he moved them to your clenched sphincter and slips two of his fingers inside of your ass to spread the lubricant around.'
+					'He smirks and says: "I guess it''s true... <<$pcs_nickname>> really is a skilled buttslut, trained and ready to get fucked in her ass at any time, any where. She''ll even provide the lube. Nice tight ass, by the way."'
+				elseif lubri = 0:
+					agape = 2
+					pcs_horny += 10
+				end
+				'After a few seconds of grinding the head of his <<dick[1]>>cm <<$dick_girth[1]>> cock against your asshole, he finally slides it in. Slamming it balls deep in your ass he begins to fuck you in a quick and furious pace, with little regard to how it feels for you.'
+				if mesec > 0:
+					pcs_horny = 0
+					pcs_mood -= 10
+					'<br><font color = red><b>Even though the sex feels good, you''re still on your period. The menstrual blood slowly flows from your vagina as you get your ass fucked, and the blood on your fingers makes you feel disgusted to the point that you no longer want to stimulate yourself.</b></font>'
+				elseif mesec <= 0 and pcs_horny >=70:
+					$orgasm_or = 'yes'
+					$orgasm_txt = 'You really don''t want to let the guys see you''re close to having your own orgasm from their rough fucking, and try to hold it back as long as you can. You fail, and moan loudly as you orgasm while he savagely fucks your ass.'
+					gs 'arousal', 'anal', 3
+					'The boys laugh: "<<$pcs_nickname>> even orgasms from anal sex, amazing! She really must be the biggest slut in Pavlovsk!"'
+				end
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					gs 'arousal', 'anal', 3
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_5.jpg"></center>'
+					'You start to get into it, as groans of pain and moans of pleasure escape your lips. You eagerly buck your hips back against his, encouraging him to fuck your ass harder in an attempt to hopefully make him cum faster.'
+					if mesec > 0:
+						pcs_horny = 0
+						pcs_mood -= 10
+						'<br><font color = red><b>Even though the sex feels good, you''re still on your period. The menstrual blood slowly flows from your vagina as you get your ass fucked, and the blood on your fingers makes you feel disgusted to the point that you no longer want to stimulate yourself.</b></font>'
+					elseif mesec <= 0 and pcs_horny >=70:
+						$orgasm_or = 'yes'
+						gs 'arousal', 'masturbation', 3
+						minut -= 3
+						$orgasm_txt = 'You move one hand down to your soaking pussy and begin to masturbate furiously, completely forgetting about the situation you''re in. Without holding back at all, you loudly moan as your body spasms. Your ass is squeezing the guy''s dick tightly, there''s no way he did not notice you orgasming just now.'
+						'The guy groans at his friend: "Whoa dude, she''s orgasming from getting fucked in her ass!", while he keeps ramming his <<dick>>cm <<$dick_girth>> dick into your ass.'
+					end
+					'His friend is looking at you getting fucked from across the hallway. You can see he''s stroking his dick, content to just watch you get your ass fucked.'
+					gs 'gopsex','hide','accview_ggsex'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						gs 'arousal', 'hj', 2,'dick[2]'
+						gs 'cum_call','face',$boy[2],1
+						pcs_hairbsh = 0
+						gs 'arousal', 'bj', 2,'dick[1]'
+						gs 'cum_call','mouth',$boy[1],1
+						gs 'arousal', 'end'
+						gs 'fame', 'pav', 'sex', 4
+						gs 'stat'
+						npc_sex[$boy[1]] += 1
+						npc_sex[$boy[2]] += 1
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/event/sex/sex_ev3_6.jpg"></center>'
+						'When they''re both close to orgasming, they tell you to get on your knees.'
+						'The older guy orders you: "Take it all in your mouth, slut. Don''t swallow it until we tell you to."'
+						'You nod, just as the first guy is shooting his sperm all over your face. You do your best to catch as much of it as you can in your mouth, and seconds later the second guy follows. You open mouth to the guys, showing them your cum coated mouth. After about a minute of this the older one smirks to the younger buy and then gives you the nod to swallow their cum.'
+						'The older one shoos you away: "Good job, slut. You can go now, we''re done here."'
+						'You quickly gather your things and leave before they decide to come back for seconds.'
+						act 'Leave': gt 'pod_ezd', 'etaj_2'
+					end
+				end
+			end
+		end
+	end
+end
+
+--- pod_ezd ---------------------------------
+

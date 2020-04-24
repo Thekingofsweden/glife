@@ -1,0 +1,695 @@
+# gadukino
+
+if $ARGS[0] = '':
+	$loc = 'gadukino'
+	$metka = ''
+	$location_type = 'public_outdoors'
+	CLOSE ALL
+	gs 'gadukino_event', 'sound'
+
+	$menu_loc = 'gadukino'
+	$menu_arg = ''
+	menu_off = 0
+
+	!exec before everything
+	!lower chance (1/3 to 1/12) and once per day by illume
+	! 10% chance of meeting Mitka once per day in the village when Sveta is not the village boys slut or whole villages whore
+	mitkarand = rand(1,10)
+	if mitkaday ! daystart and hour >= 7 and hour < 20 and mitkarand = 1 and (npc_QW['A63'] < 11 or gadriver_gang > 2):
+		*clr & cla
+		menu_off = 1
+		minut += 5
+		gs 'stat'
+		'<center><b><font color = maroon>Mitka Shkvoryen</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big63.jpg"></center>'
+		if StoryLine = 1:
+			'As you walk through the village, you are approached by Mitka, your childhood friend.'
+		else
+			if npc_rel['A63'] = 0:
+				'In the village you are approached by a boy about your age.'
+			else
+				'In the village you are approached by Mitka.'
+			end
+		end
+
+		act 'Say hello':gt 'mitka'
+	else
+		! checks for events first before showing regular street actions
+		! Sveta is the boys slut and not the whole villages whore yet
+		if npc_QW['A63'] = 20 and hour >= 7 and hour < 20 and month >= 4 and month <= 10 and gadboyday ! daystart and week > 5 and gadriver_gang < 1: gt 'gadukino_event', 'gadriver_gang'
+		! Sveta decision on whether to be the whole villages whore or not
+		if gadriver_gang = 1 and hour >= 7 and hour < 20 and gadboyday ! daystart: gt 'gadukino_event', 'gang_apologise'
+		! Sveta decided not to be the whole villages whore
+		if gadriver_gang = 3 and hour >= 7 and hour < 20 and gadboyday ! daystart: gt 'gadukino_event', 'mitka_apologise'
+		if gadriver_gang = 4 and mirasex = 1 and miralick = 0 and hour >= 8 and hour <= 20 and gadboyday ! daystart: gt 'gadukino_event', 'mira_apologise'
+		! Sveta decided to be the whole villages whore - each boy will only fuck Sveta once per day
+		if gadriver_gang = 2 and hour >= 7 and hour < 20 and month >= 4 and month <= 10 and gadboyday ! daystart:
+			mitkarand = rand(1,12)
+			! 33% chance one of the village boys will demand sex from Sveta
+			if mitkarand <= 4:
+				! 25% chance for more than 1 boy
+				if mitkarand = 4:
+					if mitkaday ! daystart and kolyambaday ! daystart:
+						gt 'gadukino_event', 'gadukino_2boys', '1'
+					elseif mitkaday ! daystart and vasyanday ! daystart:
+						gt 'gadukino_event', 'gadukino_2boys', '2'
+					elseif kolyambaday ! daystart and vasyanday ! daystart:
+						gt 'gadukino_event', 'gadukino_2boys', '3'
+					elseif mitkaday ! daystart:
+						gt 'gadukino_event', 'gadukino_mitka'
+					elseif kolyambaday ! daystart:
+						gt 'gadukino_event', 'gadukino_kolyamba'
+					elseif vasyanday ! daystart:
+						gt 'gadukino_event', 'gadukino_vasyan'
+					end
+				! 75% chance for only 1 boy
+				else
+					if mitkaday ! daystart:
+						gt 'gadukino_event', 'gadukino_mitka'
+					elseif kolyambaday ! daystart:
+						gt 'gadukino_event', 'gadukino_kolyamba'
+					elseif vasyanday ! daystart:
+						gt 'gadukino_event', 'gadukino_vasyan'
+					end
+				end
+			! 17% chance for Mira to demand sex from Sveta
+ 			elseif mitkarand <= 6:
+				! Sveta is the boys slut and Mira is not and they have already had sex together
+				if npc_QW['A63'] >= 11 and mirasex = 1 and npc_QW['A60'] < 11 and miraday ! daystart: gt 'meadow','mira_lesb_talk4'
+			end
+		end
+		gs 'stat'
+
+		'<center><h2>Gadukino</h2></center>'
+		if month >= 4 and month <= 10:
+			if hour >= 6 and hour < 22:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/street.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/street_night.jpg"></center>'
+			end
+		else
+			if hour >= 8 and hour < 18:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/street_winter.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/street_winter_night.jpg"></center>'
+			end
+		end
+		*nl
+		'A small village with many old wooden houses and even more in various states of disrepair. It has certainly seen better times.'
+		if car > 0 and cardrive = 23: '<a href="exec:GS ''carF'',''start''">Your <<$car>></a> is close by.'
+		if StoryLine = 1 and grandmaQW['block'] = 0:
+			'Several small farms are scattered around the outskirts of the village, one of which belongs to <a href="exec:minut += 5 & gt ''gaddvor''">your grandparents</a>.'
+			act 'Go to your grandparent''s house': minut += 5 & gt 'gaddvor'
+		end
+		if npc_rel['A60'] > 0 and metmira = 1:
+			'Just down the road '+iif(StoryLine=1,'from your grandparents house ','')+'is <a href="exec:minut += 5 & gt ''miroslavahome'', ''start''">Mira''s house</a>.'
+			act 'Go to Mira''s house': minut += 5 & gt 'miroslavahome', 'start'
+		end
+		*nl
+
+		if month >= 6 and month <= 9:
+			if hour >= 6 and hour <= 16:
+				'An old farm truck is parked halfway off one of the roads nearby. The farmer who owns it will buy <a href="exec: gt ''gadukino'',''collection_point''">mushrooms and berries</a> from the locals to sell back in the city. He makes multiple trips from Gadukino to the city each day to ensure the freshest produce so he can be found from 6 am to 4 pm.'
+			else
+				'This time of year, a truck usually comes by multiple times per day between 6 am and 4 pm to purchase mushrooms and berries from the locals.'
+			end
+		else
+			'During the summer, a truck usually comes into town from the city to buy fresh mushrooms and berries from the locals. It''s not the right season for it right now though.'
+		end
+
+		!Looks like no reference to Gadmarket exists. Adding it...FinnMacha
+		*nl
+		if hour >= 8 and hour < 20:
+			'In the center of the village is a small grass covered square where villagers gather to meet and discuss or argue politics or village life.'
+			'One of the buildings facing the square has a sign saying <a href="exec: minut += 5 & gt ''gadmarket''">General Store</a>. A sign in the door proclaims it "OPEN". It looks like the only place in the village to buy goods.'
+			act 'Go to the general store': minut += 5 & gt 'gadmarket'
+		else
+			'In the center of the village is a small grass covered square where villagers gather to meet and discuss or argue politics or village life.'
+			'One of the building facing the square has a sign saying General Store. A sign in the door proclaims it "CLOSED". It looks like the only place in the village to buy goods.'
+		end
+
+		act 'Walk to the forest road (0:10)':minut += 10 & gt 'gadroad'
+		act 'Walk to the highway (0:15)':minut += 15 & nroad = 10 & gt 'road'
+		if hour >= 6 and hour < 20:
+			act 'Walk around the village (0:15)':
+				*clr & cla
+				minut += 15
+				menu_off = 1
+				gs 'stat'
+
+				temp = rand(1,100)
+				! 50% chance of mira events if you already found the meadow and are still friends with mira
+				if temp >= 50 and Mira_no = 0 and MiraLoc = 0:
+					gt 'gadukino', 'mira_events'
+				! 50% chance of other random 1 picture flavour events
+				else
+					gt 'gadukino', 'other_events'
+				end
+			end
+		end
+		if month >= 6 and month <= 9 and hour >= 6 and hour <= 16: act 'Sell mushrooms and berries': gt 'gadukino','collection_point'
+		!!Succubus active hunting, can only hunt successfully once a day, but can try until success
+		if (hour <= 5 or hour >= 21) and succubusQW = 5 and suchuntday ! daystart:
+			act 'Go Hunting (this can take a lot of time)': suchunt = 1 & gt 'gadukino', 'succubus_hunt'
+		end
+	end
+end
+
+if $ARGS[0] = 'collection_point':
+	*clr & cla
+	menu_off = 1
+	minut += 1
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+	*nl
+	'Parked halfway off the road is an old, unmarked truck. The back doors are open and inside is a farmer looking to buy any mushrooms or berries the locals find while out in the nearby woods.'
+	'Some find it odd that they''re operating out of a truck, but you imagine it''s cheaper to maintain than a shop and it lets them get around to other villages like this one to buy their mushrooms and berries, too.'
+	'There is a small sign hanging off of one of the back doors, which says:'
+	'"Buying: mushrooms 25<b>₽</b>/kg, berries 25<b>₽</b>/kg"'
+
+	act 'Go back to the village center':minut += 1 & gt 'gadukino'
+	if boletus > 0 and bilberry > 0:
+		act 'Sell all your mushrooms and berries':
+			*clr & cla
+			minut += 10
+			money += boletus*25+bilberry*25
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your mushrooms and berries for <<boletus*25+bilberry*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':boletus = 0 &  bilberry = 0 & gt 'gadukino','collection_point'
+		end
+	end
+	if boletus > 0:
+		act 'Sell all your mushrooms':
+			*clr & cla
+			minut += 10
+			money += boletus*25
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your mushrooms for <<boletus*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':boletus = 0 & gt 'gadukino','collection_point'
+		end
+	end
+	if bilberry > 0:
+		act 'Sell all your berries':
+			*clr & cla
+			minut += 10
+			money += bilberry*25
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/collection_point.jpg"></center>'
+			'You decide to sell your berries for <<bilberry*25>> <b>₽</b>.'
+			gs 'stat'
+
+			act'Continue':bilberry = 0 & gt 'gadukino','collection_point'
+		end
+	end
+end
+
+if $ARGS[0] = 'succubus_hunt':
+	cla
+	minut += 30
+	menu_off = 1
+	*nl
+	'At this hour of the night, the village is only illuminated by the light of the moon. You know this will be to your advantage. No one will be able to see you coming... That is, if there were anyone out at night. You prowl the village looking for prey, but as the minutes pass, your frustration grows.'
+	if rand(1,100) < 70:
+		minut += 30
+		pcs_mood -= 5
+		*nl
+		'God, this place is dull! After searching for an hour, you find no one; not even a stray cat seems to be out and about tonight. You give up reluctantly, pondering how else you are going to feed tonight.'
+		act 'Continue': gt 'gadukino'
+	else
+		'You are getting really antsy to feed, and after finding absolutely no one outside, you decide that breaking into someone''s house, risky as it is, is still better than going hungry.'
+		*nl
+		!Another rand_check here to choose the scene?
+		'You break the lock of the first house you see and go inside. You sneak around the house, looking for a meal, but there''s nobody there. This entire night is a bust... Well, since you''re here, you might as well try and see if there''s any regular food that helps with your hunger, even though you doubt it.'
+		'You head to the kitchen for a midnight snack, and as you tear through the fridge, eating whatever looks appetizing, you hear a man curse.'
+		'"Shit, what the hell happened to my door?!"'
+		'You freeze on the spot. You didn''t think anybody would actually come home while you were still here, but now that they did, maybe you can still salvage this mess.'
+
+		act 'Strip':
+			*clr
+			cla
+			gs 'clothing', 'strip'
+			gs 'underwear', 'remove'
+			!Just took a guess at where this image might go - Adjust src accordingly
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/succubus/kitchennude.jpg"></center>'
+			'Heavy footsteps echo through the corridor, approaching the kitchen, and with nowhere to hide, you decide to strip instead. You are here to feed, after all, and if he sees you nude, surely he will forget what he is angry about.'
+			'When the man enters the dark kitchen, his first reaction is about what you''d expect: "Who the hell are you!?"'
+			'You give him a good look at your body; according to your plan, that should be enough to calm him down. Unfortunately, he doesn''t seem to be aware of the plan, cause he is having none of it.'
+			'"Have you been eating my food?! Get the hell out of my house!"'
+			*nl
+			'He grabs you and starts dragging you towards the door. You protest and try in vain to seduce him, wondering how anyone could resist your charms like this. Then you remember that you are stronger than him - weird how easily superhuman strength can slip your mind.'
+			'As soon as you resist his pull, he grinds to a halt, confused by the fact that he can''t move you further. With the tables turned, you grab him and half-drag, half-throw him into his own living room where he lands on his back, stunned by the fact that this woman so easily overpowered him.'
+			'You pull his pants off and, already nude yourself, lower your pussy to his cock. He may have played the angry man, but the fact that it stands at attention soothes your bruised ego - your seduction efforts didn''t go completely unnoticed - and you plunge yourself down on top of him.'
+
+			act 'Feed on him':
+				*clr
+				cla
+				!Taken directly from 'succubus'
+				scrand = rand(0,3)
+				scfeed = succublvl + rand(1,4)
+				if scfeed = 2:
+					$scxcum = 'twice'
+				else
+					$scxcum = 'multiple times'
+				end
+				stat['vaginal'] += 1
+				guy += 1
+				pcs_horny = 0
+				orgasm += 1 + scfeed
+				! This seems appropriate. Reducing it, but otherwise leaving it in. Potentially worth revisiting
+				pcs_willpwr += scfeed
+				succubxp += 6
+				sexnutrition += 30 * scfeed
+				sucabscum = 1
+				minut += 15 + (20 * scfeed) / succublvl
+				'<center><img <<$set_imgh>> src="images/pc/body/succubusself.jpg"></center>'
+
+				'You ride him hard, desperate to get your hungry pussy the nourishment it requires.'
+				if scrand < succublvl:
+					'Your seduction and succubus powers were strong enough to get your victim hard, but they weren''t enough to make him forget about his situation: He is giving you hateful looks, clearly pissed about his door and food and, oh yeah, the fact you are raping him, but you simply ignore that.'
+					'All you need is his sperm. You could care less about his happiness, and if he wants to complain about a woman like you fucking his brains out, that''s his problem. Just as you''re thinking that, your powers surge and force him to come, unloading his jizz deep into your waiting cunt.'
+					*nl
+					'You don''t know how long you go at it with him exactly, but after coming inside you <<$scxcum>>, and thus making you come too, he runs out of energy and falls unconscious. You lift yourself off of your passed-out plaything and head for the kitchen to collect your clothes as well as one last snack, feeling wonderfully relaxed after getting your fix.'
+					'Then you head out the back door, making sure to break the handle on the way out - you''re nothing if not consistent.'
+				else
+					'He was resisting you initially, but after a while, your powers break any resistance he had in him. By the time his first orgasm hits and he shoots his sperm into your needy cunt, he would have betrayed his own mother, much less broken his front door and laid his fridge at your feet, just to be inside you a little longer.'
+					'However unsavory the first few minutes of your meeting, this state of bliss you share with him pushes that memory in the far back of your minds and lets both of you enjoy the hard ride you''re giving him.'
+					*nl
+					'You don''t know how long you go at it with him exactly, but after coming inside you <<$scxcum>>, and thus making you come too, he runs out of energy and falls unconscious. You lift yourself off of your passed-out plaything, patting his head affectionately, and head for the kitchen to collect your clothes as well as one last snack, feeling wonderfully relaxed after getting your fix. There''s nothing better than sex with a willing subject.'
+					'Then you head out the back door. For a split second, you consider breaking that door too... but why add insult to injury when he has pleased you so?'
+				end
+				killvar 'scfeed' & killvar 'scrand'
+				gs 'stat'
+				act 'Leave':
+					gs 'underwear', 'wear'
+					gs 'clothing', 'wear_last_worn'
+					gt 'gadukino'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'mira_events':
+	! never met mira before
+	if npc_rel['A60'] = 0 and npc_QW['A60'] = 0:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/miroslava.jpg"></center>'
+		'Walking around the village you notice a young girl around your own age. You do not recognize her from the last time you were at the village. She is pulling on a rope attached to the collar on a small calf. The calf grunts with displeasure, shakes her head and refuses to move any further.'
+		act 'Walk away': gt 'gadukino'
+		act 'Help her':
+			*clr & cla
+			metmira = 1
+			npc_rel['A60'] += 10
+			minut += 15
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/mira.jpg"></center>'
+			'You decide to lend a hand to help the girl with the calf. You are lonely in the village, and maybe this girl, if you get to know her, could make your trips to Gadukino less boring. You walk over to the girl and introduce yourself and ask if she wants help. She nods and resumes pulling on the rope, while you walk over behind the calf and give it a load slap on the rump. The calf is surprised and immediately moves forward away from you. The girl smiles in thanks and tells you her name is Miroslava, but everyone calls her Mira.'
+			'Together you are able to guide the calf back into its pen. Mira turns out to be quite a sociable girl and conversationalist. You learn that her family was recently forced to move to the village from the city. Her father''s huge gambling debts to some questionable men forced him to eventually sell the family''s property in the city to pay them back. Mira is having a rough time adjusting to the life in a small village. She misses the apartment in the center of the city and the money to buy nice dresses and makeup with. After selling everything and paying off the debt, her father was told to leave the city "or else...".'
+			'They were left quite poor and could only afford to buy a house in this run-down, dust-covered village.'
+			if StoryLine = 1:
+				'You walk with her and chat until you reach her house, which turns out to be just down the road from your grandparent''s place. Mira invites you to come and visit her any time. She is just as bored in the village as you are.'
+			else
+				'You walk with her and chat until you reach her house, which is close by to the center of the village. Mira invites you to come and visit her at any time. She is just as bored in the village as you are.'
+			end
+
+			act 'Finish your walk': gt 'gadukino'
+		end
+	else
+		*clr & cla
+		! mira 2nd wish - pose as prostitute - one time event to fire so check for this first before repeatable mira events
+		if npc_QW['A60'] = 15 and temper >= 10 and sunWeather = 1 and miraprost = 0:
+			'<center><img <<$set_imgh>> src="images/characters/village/mira/miraqw7.jpg"></center>'
+			'Walking through the village, you notice Mira, digging in her vegetable garden. She stands with her ass high in the air, and to your amazement, she isn''t wearing panties. You get a good look at her pussy lips...'
+
+			act 'Walk away': gt 'gadukino'
+			gs 'willpower', 'prostitution', 'force'
+			if will_cost <= pcs_willpwr:
+				act 'Approach Mira (<<will_cost>> Willpower)':
+					*clr & cla
+					minut += 15
+					gs 'willpower', 'prostitution', 'force'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mira0,<<rand(0,5)>>.jpg"></center>'
+					'You quietly sneak up to her, but she notices your approach and turns around, her hands pull her skirt back into place, blushing. You stare at her for a few seconds silently, and then ask, "Why don''t you have any panties on?" Mira, her eyes darting about, shifting her weight from foot to foot, explaining hesitantly, "Well what happened is, well it''s very hot and I thought it would feel better without panties." You interrupt her with an upraised hand as you get an idea for your second wish... You remind her she still owes you two wishes and you''re ready to collect your second wish. You tell Mira to sit down and she reluctantly agrees. When she is finally sitting, you order her to show you her pussy. Mira grumbles and glares at you, but eventually sighs and slowly lifts up her skirt, giving you a good look at her crotch.'
+
+					act 'Watch':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/mirawish2.jpg"></center>'
+						'You enjoy the view, then snap your fingers as an amazing idea comes to mind for your second wish. Mira says she thought her second wish was over, but you wouldn''t make it that easy. You ask if she is thinking about backing out of granting your wishes, but Mira says no, she will go through with them. You smile and tell her to follow you.'
+
+						act 'Lead her to the road':
+							*clr & cla
+							minut += 45
+							gs 'arousal', 'voyeur', 2, 'exhibitionism', 'lesbian', 'dom'
+							gs 'stat'
+
+							'<center><img <<$set_imgh>> src="images/characters/village/mira/mirawish2_1.jpg"></center>'
+							'You lead her out to the main road. You tell Mira, that she is to pose as a prostitute and attempt to get a customer or two. This is your second wish. You want Mira to become a prostitute and fulfill the desires of anyone who asks for her services. Mira looks shocked but nods that she will do it, Mira looks around the area and seeing no one else watching begins to pose by the roadside for passing cars...'
+
+
+							act 'Wait for a car...':
+								*clr & cla
+								minut += 30
+								pcs_horny += 20
+								miraprost += 1
+								npc_QW['A60'] = 16
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/miraprost.jpg"></center>'
+								'It isn''t long before Mira''s first customer pulls up in a nice vehicle. She takes a deep breath, looks you in the eyes, winks and approaches the vehicle and starts talking to the driver.'
+								'You can''t hear what she is saying but after only a few minutes the door opens and Mira steps into the vehicle. It pulls away, but doesn''t go far. You see it pull off the main road and head down a dirt road. Smiling and wanting to see the action, you run into the woods trying to head off the vehicle.'
+								gs 'stat'
+
+								act 'Watch her with the customer':
+									if rand(0,1) = 0:
+										*clr & cla
+										'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1.mp4"></video></center>'
+										'You walk up and look into the car. You see Mira giving one hell of a blowjob to her first customer. Her head is bobbing up and down on his 17cm cock.'
+										gs 'arousal', 'voyeur_sex', 5, 'exhibitionism'
+										gs 'stat'
+
+										act 'Hide':
+											*clr & cla
+											'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1_1.mp4"></video></center>'
+											'You duck for cover as the guy suddenly gets out of the car and opens the passenger door, grabs Mira''s head and starts forcing his cock deep into her throat.'
+											gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+											gs 'stat'
+
+											act 'Keep watching':
+												*clr & cla
+												'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost1_2.mp4"></video></center>'
+												'Eventually, the guy grunts and cums all over Mira''s face and into her mouth. The nicely dressed man pulls Mira out of the car, hands her a few bills and then drives off.'
+												'Mira walks back towards town counting the money he gave her as she absentmindedly licks the cum as it drips down her face. She smiles at you and shows you the money as you join her.'
+												gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+												gs 'stat'
+
+												act 'Walk back to the village together':
+													*clr & cla
+													minut += 10
+													miraloc = 0
+													gs 'arousal', 'end'
+													gs 'stat'
+
+													gt 'gadukino'
+												end
+											end
+										end
+									else
+										*clr & cla
+										'<center><video autoplay loop src="images/characters/village/mira/miraprost2.mp4"></video></center>'
+										'You walk up and look into the van. You see Mira showing her first customer her tits and rubbing her pussy. You see a hungry gleam in the guy''s eyes, which Mira returns right back.'
+										gs 'arousal', 'voyeur_sex', 20, 'exhibitionism'
+										gs 'stat'
+
+										act 'Keep watching':
+											*clr & cla
+											'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost2_1.mp4"></video></center>'
+											'Mira and the guy jump into the back of the van and you watch as he starts fucking her wet pussy. His hand covers her mouth as she screams in ecstasy. The guy pounds his 20cm cock deep into her pussy. From Mira''s grunts of partial ecstasy, partial pain, you know the guy is hitting or entering her cervix.'
+											gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+											gs 'stat'
+
+											act 'Hide':
+												*clr & cla
+												'<center><video autoplay loop src="images/characters/village/mira/sex/miraprost2_2.mp4"></video></center>'
+												'You have to duck behind some bushes as they move outside the van. The guy continues to pound into Mira''s pussy until he cums...and cums...and cums. '
+												'After the wild sex, Mira and the guy sit in the van and talk for a bit. He gives her a nice wad of cash and she starts walking to the village. Seeing you, she smiles and says thanks.'
+												gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+												gs 'stat'
+
+												act 'Walk back to the village together':
+													*clr & cla
+													minut += 10
+													miraloc = 0
+													gs 'arousal', 'end'
+													gs 'stat'
+
+													gt 'gadukino'
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			else
+				act 'Approach Mira (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+
+		! mira slut events
+		elseif npc_QW['A60'] >= 11 and temper >= 10 and sunWeather = 1 and miraday ! daystart:
+			miraday = daystart
+
+			if pcs_horny > 50 and rand(0,1) = 0:
+				gs 'miroslava', 'miraclothes'
+				*nl
+				'You meet Mira, who is heading to the river to get some water, seeing you she decides to stop and chat with you for a few minutes.'
+
+				act 'Walk away': gt 'gadukino'
+				gs 'willpower', 'exhib', 'force'
+				if will_cost <= pcs_willpwr:
+					act 'You''re feeling naughty (<<will_cost>> Willpower)':
+						*clr & cla
+						if mirasextimes < 50:
+							temp = rand(0,3)
+							if temp = 0:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually and rests her hands on the bench, giving you a view of her bare pussy. She isn''t even wearing any panties!'
+							elseif temp = 1:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp1.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually sits down on the fence and slightly spreads her legs, showing you her bare pussy. She isn''t even wearing any panties!'
+							elseif temp = 2:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp2.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually, sits down on the fence and, looking at you with a gleam in her eyes and a mischievous smile, she pulls aside panties showing off her wet pussy...'
+							elseif temp = 3:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp5.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually and gets on her hands and knees on the bench. She quickly glances around before pulling up her skirt and arching her back, showing you her naked pussy. She isn''t even wearing any panties!'
+							end
+							npc_rel['A60'] += 1
+							gs 'willpower', 'exhib', 'force'
+							gs 'willpower', 'pay', 'force'
+							gs 'arousal', 'voyeur', 5
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Finish your walk':	gt 'gadukino'
+						else
+							temp = rand(0,1)
+							if temp = 0:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp3.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually and sits down on a nearby fence. Mira glances around and spreads her legs... You are surprised to see, she isn''t wearing panties and her gaping pussy is oozing cum. She must have just been fucked.'
+								'"Who did that to you?" you ask her. Mira just smiles devilishly and tells you that it''s a secret.'
+							elseif temp = 1:
+								'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasp4.jpg"></center>'
+								*nl
+								'You ask Mira to show you her pussy. She smiles casually and squats down... You immediately notice how much her cunt and asshole gape. She must have just been fucked in both holes.'
+								'"Who did that to you?" you ask her. Mira just smiles devilishly and tells you that it''s a secret.'
+							end
+							npc_rel['A60'] += 1
+							gs 'willpower', 'exhib', 'force'
+							gs 'willpower', 'pay', 'force'
+							gs 'arousal', 'voyeur', 10
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Finish your walk':	gt 'gadukino'
+						end
+					end
+				else
+					act 'You''re feeling naughty (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+
+			else
+				*clr & cla
+
+				temp = rand(0,7)
+				if temp = 0:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad5.jpg"></center>'
+					'Walking through the village, you notice that behind a shed Vasyan and Mira are having sex. Mira moans as she rides his cock and it seems as if she''s oblivious to anything around her. But you''re not sure you can say the same about Vasyan... So, you decide not to risk being caught peeking and leave the couple alone.'
+				elseif temp = 1:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad6.jpg"></center>'
+					'Walking through the village, you notice that behind a shed Vasyan and Mira are having sex. Mira moans as she rides his cock and it seems as if she''s oblivious to anything around her. But you''re not sure you can say the same about Vasyan... So, you decide not to risk being caught peeking and leave the couple alone.'
+				elseif temp = 2:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad7.jpg"></center>'
+					'Walking through the village, you notice Kolyamba and Mira hiding behind some bushes. She''s squatting before him, passionately sucking on his cock...'
+				elseif temp = 3:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad8.jpg"></center>'
+					'Walking through the village, you notice behind the bushes Mira with Vasyan and Kolyamba. Mira is butt naked on all fours and taking turns sucking the boys members...'
+				elseif temp = 4:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirahorny.jpg"></center>'
+					'Walking through the village, you see Mira. She sits on the fence intensely rubbing her pussy, as if no one is watching...'
+				elseif temp = 5:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad9.jpg"></center>'
+					'Walking through the village, you notice Mira behind a fence with Kolyamba. She squirms and moans, but dutifully exposes her bare butt to Kolyamba, who is trying to shove a bottle in her...'
+				elseif temp = 6:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasexgad10.jpg"></center>'
+					'Walking through the village, you see Mira, facing Mitka with her pants down and sticking her fingers in her ass...'
+				elseif temp = 7:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mirasexgad11.jpg"></center>'
+					'Walking through the village, you meet Mira. You notice she is not wearing panties and the white thread of a tampon is sticking out of her pussy...'
+				end
+				gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+				gs 'arousal', 'end'
+				gs 'stat'
+
+				act 'Finish your walk': gt 'gadukino'
+			end
+		! mira owes sveta wishes already
+		elseif npc_QW['A60'] >= 4 and npc_QW['A60'] < 11 and temper >= 10 and sunWeather = 1 and miraday ! daystart:
+			miraday = daystart
+			! mira first wish done
+			if npc_QW['A60'] >= 6:
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad2.jpg"></center>'
+				'Walking through the village, you happen to notice Mira fucking Mitka. Mitka slowly grinds his cock deep into Mira''s pussy. You see Mira shudder under him as she climaxed. She moaned and raked his back with her fingernails as she squirted and continued to cum. Mitka increased his pace and started to roughly hammer his cock into her dripping pussy. With his left hand he reached for Mira''s right tit and started to squeeze it without mercy. Mira just squeals and laughs.'
+				gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+				gs 'stat'
+
+				act 'Walk away': gt 'gadukino'
+				gs 'willpower', 'voyeur', 'self'
+				if will_cost <= pcs_willpwr:
+					act 'Continue watching (<<will_cost>> Willpower)':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad3.jpg"></center>'
+						if rand(0,1) = 0:
+							'They are so absorbed in fucking each other senseless that they ignoring everything else, so you decide to quietly continue to watch. Within a few minutes you see Mitka begin to pick up the pace and he started to drive his cock faster and faster into Mira''s pussy until he grunts like a pig and dumps a huge load of cum into Mira''s pussy which is again squirting. After a few minutes of them just laying together holding each other and gasping for breath, they slowly begin to kiss and laugh as they freshen up. You smile and rub your own dripping snatch before moving away.'
+						else
+							'They are so absorbed in fucking each other senseless that they ignoring everything else, so you decide to quietly continue to watch. You see Mitka pull his cock out of Mira''s dripping pussy and he drives it deep into her ass, barebacked. Mira let''s out a short scream of protest as Mitka continues to drive his cock into her asshole until his pubes rub up against her ass. Mira writhes under his brutal onslaught. After only a few minutes, Mitka starts to slap her ass leaving bright red marks. Mitka begins to shudder from his thrusts into her ass. Finally, Mitka leans back with his dick still embedded balls deep in Mira''s asshole and lets out a bestial growl as he begins to cum...'
+						end
+						gs 'willpower', 'voyeur', 'self'
+						gs 'willpower', 'pay', 'self'
+						gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+						gs 'arousal', 'end'
+						gs 'stat'
+
+						act 'Finish your walk': gt 'gadukino'
+					end
+				else
+					act 'Continue watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+
+			! mira first wish not done
+			elseif npc_QW['A60'] >= 4:
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad.jpg"></center>'
+				'Walking through the village, you happen to notice Mira, sucking Mitka''s cock in the backyard. She wraps her lips around it, almost completely taking the dick into her mouth. Sometimes she glances to the side...'
+				gs 'arousal', 'voyeur_sex', 10, 'exhibitionism'
+				gs 'stat'
+
+				act 'Walk away': gt 'gadukino'
+				gs 'willpower', 'voyeur', 'self'
+				if will_cost <= pcs_willpwr:
+					act 'Continue watching (<<will_cost>> Willpower)':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/characters/village/mira/sex/mirasexgad1.jpg"></center>'
+						if rand(0,1) = 0:
+							'A couple of times you think, she''s about to notice you watching, but she never does, continuing to suck Mitka''s cock. Finally, he tilts his head back and Mira, quickly seeing this takes his dick in her hand and directs it into in her mouth, taking a mouth full of sperm. She greedily swallows it all, and licks Mitka''s cock clean before tucking it back into his pants. You see she is about to rise from her knees, so you hastily depart.'
+						else
+							'Until she finally spots you watching her. You see she blushes crimson, but she does not stop sucking, only occasionally shifts her eyes in your direction. You continue to watch as if not seeing anything unusual, as Mira''s head bobs up and down continuing to suck Mitka''s cock. Finally, he tilts his head back and Mira, quickly seeing this takes his dick in her hand and directs it into in her mouth, taking a mouth full of sperm. She greedily swallows it all, and licks Mitka''s cock clean before tucking it back into his pants. You smile at Mira with the most peaceful of expressions and walk away...'
+						end
+						gs 'willpower', 'voyeur', 'self'
+						gs 'willpower', 'pay', 'self'
+						gs 'arousal', 'voyeur_sex', 5, 'exhibitionism'
+						gs 'arousal', 'end'
+						gs 'stat'
+
+						act 'Finish your walk': gt 'gadukino'
+					end
+				else
+					act 'Continue watching (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+
+			end
+		! quest not far along enough yet so just talking to mira or already watched mira have sex today
+		else
+			temp = rand(0,1)
+			if temp = 0:
+				*clr & cla
+				npc_rel['A60'] += 1
+				minut += 10
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/mira2.jpg"></center>'
+				'You meet Mira and her little calf. You both pause and start laughing, remembering how you first met.'
+
+				act 'Finish your walk': gt 'gadukino'
+			elseif temp = 1:
+				*clr & cla
+				npc_rel['A60'] += 1
+				minut += 10
+				gs 'stat'
+				if npc_QW['A60'] = 0:
+					'<center><img <<$set_imgh>> src="images/characters/village/mira/mira1.jpg"></center>'
+				else
+					gs 'miroslava','miraclothes'
+				end
+				'You meet Mira, who is heading to the river to get some water, seeing you she decides to stop and chat with you for a few minutes.'
+
+				act 'Finish your walk': gt 'gadukino'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'other_events':
+	temp = rand(1,5)
+	if temp = 1:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadlol.jpg"></center>'
+		'Walking through the village, you see two old women, sawing boards...'
+
+		act 'Finish your walk': gt 'gadukino'
+	elseif temp = 2:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadlol1.jpg"></center>'
+		'Walking through the village, you see two old women, carrying boards...'
+
+		act 'Finish your walk': gt 'gadukino'
+	elseif temp = 3:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		if temper >= 15:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadlol3.jpg"></center>'
+			'Walking through the village, you see local elders. They kindly smile in your face, and as soon as you pass by, immediately start whispering among themselves...'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadlol2.jpg"></center>'
+			'Walking through the village, you see local elders. They, as if on command, all huddle together and stare, as you walk by them...'
+		end
+
+		act 'Finish your walk': gt 'gadukino'
+	elseif temp = 4:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadlol4.jpg"></center>'
+		'Walking through the village, a group of young boys, who look no older than 13 or 14, are playing in the road. Two of the older boys sit on an old, beat up dirt bike. You''re not even sure it works, but the kids are having fun playing on it nonetheless.'
+
+		act 'Finish your walk': gt 'gadukino'
+	elseif temp = 5:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/village/walk.jpg"></center>'
+		'You kill some time walking through the village.'
+
+		act 'Finish your walk': gt 'gadukino'
+	end
+end
+
+--- gadukino ---------------------------------
+

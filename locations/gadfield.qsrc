@@ -1,0 +1,640 @@
+# gadfield
+
+!MiraLoc tells us where Mira is Located
+!----------------------------------------------
+!MiraLoc = 0 (Mira at home)
+!MiraLoc = 1 (Mira at river)
+!MiraLoc = 2 (Mira at meadow)
+!MiraLoc = 3 (Mira at forest)
+!MiraLoc = 4 (Mira at field)
+!MiraLoc = 5 (Mira with gop)
+!---------------------------------------------
+
+if $ARGS[0] = 'field':
+	$loc = 'gadfield'
+	$metka = 'field'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadfield'
+	$menu_arg = 'field'
+	menu_off = 0
+
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	'<center><H4>Field</H4></center>'
+	if month >= 4 and month <= 10:
+		if hour >= 6 and hour < 22:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadfield.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadfield_night.jpg"></center>'
+		end
+		if hour >= 9 and hour <= 17 and npc_qw['A221'] = 0 and storyline = 1: gs 'grigory', 'meet' & exit
+	else
+		if hour >= 8 and hour < 18:
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadfield_winter.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/gadfield_winter_night.jpg"></center>'
+		end
+	end
+
+	'A field outside the village.'
+
+	if grigory_flower > 0 and grigory_flower < 10: gt 'grigory', 'flower5'
+	if flowerday ! daystart and grigory_flower = 10: gt 'grigory', 'flower6'
+	if flowerday ! daystart and grigory_flower > 10: gt 'grigory', 'flower8'
+	if hour >= 9 and hour <= 19 and week < 6:'Grandfather''s horse <a href="exec: gt ''gadfield'',''horse''">Desperado</a> is grazing the field.'
+	if hour >= 9 and hour <= 19 and grandpaQW['chore_herd_cattle'] = 0:'You notice a large <a href="exec: gt ''gadfield'',''cow''">herd of cows</a> in the middle of the field.'
+	if hour >= 6 and hour <= 20 and grandpaQW['chore_herd_cattle'] = 1:'You see the <a href="exec: gt ''gadfield'',''cow''">herd of cows</a> out in the middle of the field.'
+	if hour >= 7 and hour <= 20 and grandpaQW['chore_bale_hay'] = 1:'You see a crowd of people working on the field.'
+
+	act 'Head back to the road (0:10)':minut += 10 & gt'gadroad'
+	
+	if hour >= 7 and hour <= 13 and grandpaQW['chore_bale_hay'] = 1:
+		act 'Spend the day helping to bale hay (6:00)':
+			gs 'food', 'm_meal'
+			*clr & cla
+			menu_off = 1
+
+			if npc_rel['A60'] >= 15:
+				npc_rel['A60'] += 1
+				'<center><img <<$set_imgh>> src="images/characters/village/mira/haying_time_mira.jpg"></center>'
+				'Most of the village has shown up to help out with the hay. Mira is there too, and you both partake in the activities. You are really enjoying yourself, and working alongside Mira makes the day fly by. By the end of the day, you are both exhausted, but smiling.'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/haying_time.jpg"></center>'
+				'Almost all of the villagers have shown up to help out with the fresh cut hay. You spend most of the day working hard and sweating as you help gather the fresh-cut hay. It is difficult, but you get a great workout and end the day feeling exhausted, but quite satisfied.'
+			end
+
+			gs 'exercise', 'tier1', 360, 'stren_exp', 'vital_exp'
+			if sunWeather = 1:pcs_tan += 1
+			grandpaQW['chore_bale_hay'] = 2
+			hndiwrk_exp += rand(0,8)
+			gs 'stat'
+
+			act 'Continue':gt'gadfield','field'
+			act 'Return back to your grandfather (0:30)': minut += 30 & gt 'gadhouse', 'grandpa'
+		end
+	end
+
+end
+
+if $ARGS[0] = 'horse':
+	$loc = 'gadfield'
+	$metka = 'horse'
+	$location_type = 'public_outdoors'
+
+	$menu_loc = 'gadfield'
+	$menu_arg = 'horse'
+	menu_off = 0
+
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/horse.jpg"></center>'
+	'Your grandfather''s horse Desperado.'
+
+	act 'Go back to the field':gt'gadfield','field'
+
+	if hour = 19:
+		act 'Lead the horse home (1:00)':
+			*clr & cla
+			menu_off = 1
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/horse_field.jpg"></center>'
+			'You spot your grandfather''s horse wandering loose in the field and decide to help out by taking Desperado home. Reaching for the bridle, you start leading Desperado towards the village.'
+			minut += 60
+			grandmaQW['help_amount'] += rand(0,1)
+			hndiwrk_exp += rand(0,3)
+			gs 'stat'
+
+			act 'Continue':gt'gadfield','horse'
+		end
+	end
+end
+
+if $ARGS[0] = 'cow':
+	$loc = 'gadfield'
+	$metka = 'cow'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadfield'
+	$menu_arg = 'cow'
+	menu_off = 0
+
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+	temp = rand(1,5)
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow.jpg"></center>'
+	'The cattle herd is standing in the middle of the field. Some of the cows are munching on grass, others are just staring idly around.'
+	if mira = 1: MiraLoc = 41 & '<a href="exec: gt ''miroslava'', ''Start''">Mira</a> is standing next to you.'
+
+	if grandpaQW['chore_herd_cattle'] = 0:act 'Leave them be':gt'gadfield','field'
+	if hour = 19 and grandpaQW['chore_herd_cattle'] = 0:
+		act 'Lead the cows home (1:00)':
+			*clr & cla
+			menu_off = 1
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_field.jpg"></center>'
+			'Seeing the cow herd on the field, you decide to help your grandfather bring the cows home...'
+			minut += 60
+			grandmaQW['help_amount'] += 1
+			hndiwrk_exp += rand(0,3)
+			gs 'stat'
+
+			act 'Continue':gt'gadfield','cow'
+		end
+	end
+	if grandpaQW['chore_herd_cattle'] = 1:
+		if hour < 10:
+			act 'Wait until the herd is gathered':
+				*clr & cla
+				menu_off = 1
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_wait.jpg"></center>'
+				if grandpaQW['chore_herd_cattle_experience'] = 0:'Some time flies by while waiting for the locals to finish bringing their cows to the field.'
+				if grandpaQW['chore_herd_cattle_experience'] = 1:'Some time flies by while waiting for the locals and their children to finish bringing their cows to the field.'
+
+				if hour >= 9:minut += 20
+				if hour < 9:minut += 60
+				hndiwrk_exp += rand(0,4)
+				gs 'stat'
+
+				act 'Continue':gt'gadfield','cow'
+			end
+		end
+		if hour >= 10 and hour < 13:
+			act 'Herd cows with your grandfather (1:00)':
+				*clr & cla
+				menu_off = 1
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow'+rand(1,4)+'.jpg"></center>'
+				'You spend an hour herding the cows, watching out for any stragglers and driving them back to the herd. Instead of letting your grandfather do all the work, you roll up the sleeves and try to do most of the work yourself.'
+
+				minut += 60
+				if temper >= 25 and sunWeather = 1:
+					pcs_hydra -= 12
+					pcs_stam -= 8
+					gs 'sweat', 'add', 10
+				else
+					pcs_hydra -= 6
+					gs 'sweat', 'add', 5
+					pcs_stam -= 5
+				end
+				grandpaQW['chore_herd_cattle_experience'] = 1
+				if rand(0,1) = 1:grandmaQW['help_amount'] += rand(0,1)
+				hndiwrk_exp += rand(0,3)
+				gs 'stat'
+
+				act 'Continue':gt'gadfield','cow'
+			end
+
+			if mira = 0:
+				act 'Go for a run in the field (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_run.jpg"></center>'
+					'Since the cows are all behaving, you decide to spend some time jogging around the field.'
+
+					frost = 0
+					minut += 60
+					fat -= 5
+					run_exp += 1
+					gs 'sweat', 'add', 10
+					pcs_mood += 5
+					pcs_stam -= 8
+					if temper >= 25 and sunWeather = 1:
+						pcs_hydra -= 24
+						gs 'sweat', 'add', 12
+					else
+						pcs_hydra -= 18
+						gs 'sweat', 'add', 10
+					end
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow'
+				end
+			end
+			if temper >= 15 and sunWeather = 1 and mira = 0:
+				act 'Tan (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_sun.jpg"></center>'
+					'It''s sunny and warm outside, and since the cows are behaving, you decide to work on your tan for an hour.'
+					minut += 60
+					pcs_mood += 10
+					pcs_tan += 1
+					gs 'sweat', 'add', 5
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow'
+				end
+				if pcs_sleep < 40:
+					act 'Take a nap (1:00)':
+						*clr & cla
+						menu_off = 1
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_lying.jpg"></center>'
+						'You feel drowsy watching the cows stand around, so you lie down on the grass. You doze off and wake up about an hour later.'
+
+						minut += 60
+						pcs_mood += 10
+						pcs_sleep+= 9
+						if temper >= 25 and sunWeather = 1:pcs_hydra -= 12
+						gs 'stat'
+
+						act 'Continue':gt'gadfield','cow'
+					end
+				end
+				act 'Pick flowers (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_flowers.jpg"></center>'
+					'Keeping one eyes on the cattle, you spend an hour wandering the field, picking flowers.'
+					minut += 60
+					pcs_mood += 20
+					pcs_stam -= 4
+					if temper >= 25 and sunWeather = 1:
+						pcs_hydra -= 8
+						gs 'sweat', 'add', 5
+					else
+						pcs_hydra -= 5
+						gs 'sweat', 'add', 3
+					end
+					gs 'stat'
+
+
+					act 'Continue':gt'gadfield','cow'
+				end
+				act 'Read a book (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_book'+rand(1,2)+'.jpg"></center>'
+					minut += 60
+					if temper >= 25 and sunWeather = 1:pcs_hydra -= 6
+					if pcs_nerd > 0:
+						lastread = totminut
+						lastreadday = daystart
+						pcs_nerd += 1
+						blizoruk += 1
+						pcs_mood = 100
+						if pcs_stren > 1: stren_deg -= 1
+						if pcs_vital > 5: vital_deg -= 1
+						 'You start reading a book you brought with you. You are so engrossed in the story you forget about the time.'
+					else
+						blizoruk += 1
+						pcs_mood += 10
+						'While reading the book, time flies by cause you are really engaged in the books'' plot.'
+					end
+					gs 'stat'
+
+					act 'Close the book':gt'gadfield','cow'
+				end
+			end
+		end
+		if hour >= 13 and hour < 16:
+			*clr & cla
+			menu_off = 1
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_go.jpg"></center>'
+			'Looking at his watch, Grandpa turns to you and says, "It''s about lunchtime, which means it''s time to take the herd to the watering hole." You begin to gather the cows and lead them to the river.'
+
+			if temper >= 25 and sunWeather = 1:
+				pcs_hydra -= 12
+				pcs_stam -= 8
+				gs 'sweat', 'add', 10
+			else
+				pcs_hydra -= 6
+				gs 'sweat', 'add', 5
+				pcs_stam -= 5
+			end
+			grandmaQW['help_amount'] += 1
+			minut += 60
+			hndiwrk_exp += rand(0,3)
+			gs 'stat'
+
+			act 'Herd the cows nearer to the river (0:15)': minut += 15 & gt'gadfield','cow2'
+		end
+	end
+end
+
+!MiaLoc tells us where Mira is Located
+!----------------------------------------------
+!MiraLoc = 0 (Mira at home)
+!MiraLoc = 1 (Mira at river)
+!MiraLoc = 2 (Mira at meadow)
+!MiraLoc = 3 (Mira at forest)
+!MiraLoc = 4 (Mira at field)
+!MiraLoc = 5 (Mira with gop)
+!---------------------------------------------
+
+if grandpaQW['chore_herd_cattle'] = 1 and npc_rel['A60'] >= 15 and mira = 0 and sunWeather = 1 and hour >= 10 and temp = 1 and Mira_no = 0 and(npc_QW['A63'] < 13 or npc_QW['A60'] >= 10 or mirasex > 1):
+	*clr & cla
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/characters/village/mira/mira2.jpg"></center>'
+	'While keeping an eye on the cow herd, you see Mira in the distance, approaching. You happily wave to her.'
+	'"Hi, <<$pcs_nickname>>. I wanted to visit you and brought water with me," she says nearing you. "Have you missed me?"'
+	minut += 5
+	npc_rel['A60'] += 1
+	mira = 1
+	gs 'stat'
+
+	act 'Continue':pcs_hydra +=40 & gt'gadfield','cow'
+end
+
+if $ARGS[0] = 'cow2':
+	$loc = 'gadfield'
+	$metka = 'cow2'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadfield'
+	$menu_arg = 'cow2'
+	menu_off = 0
+
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	'<center><H4>River</H4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_river.jpg"></center>'
+
+	'The cattle herd is near the river. Some of the cows are munching on grass, some are drinking from the river, and some are just standing or lying around.'
+
+	if mira = 1: MiraLoc = 42 & '<a href="exec: gt ''miroslava'', ''Start''">Mira</a> is sitting next to you.'
+	if temper >= 15 and sunWeather = 1:'"You can go for a swim if you want, <<$pcs_nickname>>. I''ll keep an eye on the herd," says your grandfather.'
+
+	if grandpaQW['chore_herd_cattle'] = 1:
+		if hour < 16:
+			act 'Herd cows with your grandfather (1:00)':
+				*clr & cla
+				menu_off = 1
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow'+rand(1,4)+'.jpg"></center>'
+				'You spend an hour herding the cows, watching out for any stragglers and driving them back to the herd. Instead of letting your grandfather do all the work, you roll up the sleeves and try to do most of the work yourself.'
+
+				minut += 60
+				if temper >= 25 and sunWeather = 1:
+					pcs_hydra -= 12
+					pcs_stam -= 8
+					gs 'sweat', 'add', 10
+				else
+					pcs_hydra -= 6
+					gs 'sweat', 'add', 5
+					pcs_stam -= 5
+				end
+				grandpaQW['chore_herd_cattle_experience'] = 1
+				if rand(0,1) = 1:grandmaQW['help_amount'] += rand(0,1)
+				hndiwrk_exp += rand(0,3)
+				gs 'stat'
+
+				act 'Continue':gt'gadfield','cow2'
+			end
+			if temper >= 15 and sunWeather = 1 and mira = 0:
+				act 'Swim (0:15)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_river.jpg"></center>'
+					'You spend a few minutes spashing around in the river, which feels cool and refreshing.'
+					if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+					minut += 15
+					cumspclnt = 4 & gs 'cum_cleanup'
+					pcs_stam -= 3
+					pcs_mood += 5
+					if willday_swim ! daystart: willday_swim = daystart & pcs_willpwr += 1
+					if pcs_stren < 30:stren_exp += 1
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow2'
+				end
+				act 'Tan (0:30)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_sun.jpg"></center>'
+					'You lie down to sunbathe by the river, while Grandpa looks after the herd.'
+					minut += 30
+					gs 'sweat', 'add', 10
+					pcs_mood += 5
+					pcs_tan += 1
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow2'
+				end
+				act 'Read a book (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_book'+rand(1,2)+'.jpg"></center>'
+					minut += 60
+					if temper >= 25 and sunWeather = 1:pcs_hydra -= 12
+					if pcs_nerd > 0:
+						lastread = totminut
+						lastreadday = daystart
+						pcs_nerd += 1
+						blizoruk += 1
+						pcs_mood = 100
+						if pcs_stren > 1: stren_deg -= 1
+						if pcs_vital > 5: vital_deg -= 1
+						'You start reading a book you brought with you. You are so engrossed in the story you forget about the time.'
+					else
+						blizoruk += 1
+						pcs_mood += 10
+						'While reading the book, time flies by cause you are really engaged in the books'' plot.'
+					end
+					gs 'stat'
+
+					act 'Close the book':gt 'gadfield','cow2'
+				end
+			end
+		end
+		if hour >= 16 and hour < 19:
+			*clr & cla
+			menu_off = 1
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_go.jpg"></center>'
+			'Looking at his watch, Grandpa says that it''s time to drive the herd over near the forest. The two of you begin to gather the herd and drive them toward the forest.'
+			
+			minut += 60
+			if temper >= 25 and sunWeather = 1:
+				pcs_hydra -= 12
+				pcs_stam -= 8
+				gs 'sweat', 'add', 10
+			else
+				pcs_hydra -= 6
+				gs 'sweat', 'add', 5
+				pcs_stam -= 5
+			end
+			if rand(0,1) = 1:grandmaQW['help_amount'] += rand(0,1)
+			hndiwrk_exp += rand(0,3)
+			gs 'stat'
+
+			act 'Herd the cows nearer to the forest (0:30)': minut += 15 & gt'gadfield','cow3'
+		end
+	end
+end
+
+if $ARGS[0] = 'cow3':
+	$loc = 'gadfield'
+	$metka = 'cow3'
+	$location_type = 'secluded'
+
+	$menu_loc = 'gadfield'
+	$menu_arg = 'cow3'
+	menu_off = 0
+
+	gs 'gadukino_event', 'sound'
+	gs'stat'
+
+	'<center><H4>Field near the forest</H4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_forest.jpg"></center>'
+
+	'The cattle herd is grazing in a field near the forest.'
+
+	if mira = 1: MiraLoc = 43 & '<a href="exec: gt ''miroslava'', ''Start''">Mira</a> is sitting next to you.'
+
+	if grandpaQW['chore_herd_cattle'] = 1:
+		if hour < 19:
+			act 'Herd cows with your grandfather (1:00)':
+				*clr & cla
+				menu_off = 1
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow'+rand(1,4)+'.jpg"></center>'
+				'You spend an hour herding the cows, watching out for any stragglers and driving them back to the herd. Instead of letting your grandfather do all the work, you roll up the sleeves and try to do most of the work yourself.'
+
+				minut += 60
+				if temper >= 25 and sunWeather = 1:
+					pcs_hydra -= 12
+					pcs_stam -= 8
+					gs 'sweat', 'add', 10
+				else
+					pcs_hydra -= 6
+					gs 'sweat', 'add', 5
+					pcs_stam -= 5
+				end
+				grandpaQW['chore_herd_cattle_experience'] = 1
+				if rand(0,1) = 1:grandmaQW['help_amount'] += rand(0,1)
+				hndiwrk_exp += rand(0,3)
+				gs 'stat'
+
+				act 'Continue':gt'gadfield','cow3'
+			end
+			if mira = 0:
+				act 'Go for a run in the field (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_run.jpg"></center>'
+					'Since the cows are all behaving, you decide to spend some time jogging around the field.'
+
+					frost = 0
+					minut += 60
+					fat -= 5
+					run_exp += 1
+					gs 'sweat', 'add', 10
+					pcs_mood += 5
+					pcs_stam -= 8
+					if temper >= 25 and sunWeather = 1:
+						pcs_hydra -= 24
+						gs 'sweat', 'add', 12
+					else
+						pcs_hydra -= 18
+						gs 'sweat', 'add', 10
+					end
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow3'
+				end
+			end
+			if temper >= 15 and sunWeather = 1 and mira = 0:
+				act 'Tan (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_sun.jpg"></center>'
+					'It''s sunny and warm outside, and since the cows are behaving, you decide to work on your tan for an hour.'
+					minut += 60
+					pcs_mood += 10
+					pcs_tan += 1
+					gs 'sweat', 'add', 5
+					gs 'stat'
+
+					act 'Continue':gt'gadfield','cow3'
+				end
+				if pcs_sleep < 40:
+					act 'Take a nap (1:00)':
+						*clr & cla
+						menu_off = 1
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_lying.jpg"></center>'
+						'You feel drowsy watching the cows stand around, so you lie down on the grass. You doze off and wake up about an hour later.'
+
+						minut += 60
+						pcs_mood += 10
+						pcs_sleep+= 9
+						if temper >= 25 and sunWeather = 1:pcs_hydra -= 12
+						gs 'stat'
+
+						act 'Continue':gt'gadfield','cow3'
+					end
+				end
+				act 'Pick flowers (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_flowers.jpg"></center>'
+					'Keeping one eyes on the cattle, you spend an hour wandering the field, picking flowers.'
+					minut += 60
+					pcs_mood += 20
+					pcs_stam -= 4
+					if temper >= 25 and sunWeather = 1:
+						pcs_hydra -= 8
+						gs 'sweat', 'add', 5
+					else
+						pcs_hydra -= 5
+						gs 'sweat', 'add', 3
+					end
+					gs 'stat'
+
+
+					act 'Continue':gt'gadfield','cow3'
+				end
+				act 'Read a book (1:00)':
+					*clr & cla
+					menu_off = 1
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/village/graze_cow_book'+rand(1,2)+'.jpg"></center>'
+					minut += 60
+					if temper >= 25 and sunWeather = 1:pcs_hydra -= 6
+					if pcs_nerd > 0:
+						lastread = totminut
+						lastreadday = daystart
+						pcs_nerd += 1
+						blizoruk += 1
+						pcs_mood = 100
+						if pcs_stren > 1: stren_deg -= 1
+						if pcs_vital > 5: vital_deg -= 1
+						 'You start reading a book you brought with you. You are so engrossed in the story you forget about the time.'
+					else
+						blizoruk += 1
+						pcs_mood += 10
+						'While reading the book, time flies by cause you are really engaged in the books'' plot.'
+					end
+					gs 'stat'
+
+					act 'Close the book':gt 'gadfield','cow3'
+				end
+			end
+		end
+		if hour >= 19:
+			*clr & cla
+			menu_off = 1
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/cow_go_home.jpg"></center>'
+			'As sunset approaches, Grandpa says that it is late and time to drive the herd home. You hurry and gather up the cows and drive them back towards the village.'
+
+			if temper >= 25 and sunWeather = 1:
+				pcs_hydra -= 12
+				pcs_stam -= 8
+				gs 'sweat', 'add', 10
+			else
+				pcs_hydra -= 6
+				gs 'sweat', 'add', 5
+				pcs_stam -= 5
+			end
+			minut += 60
+			mira = 0
+			grandpaQW['chore_herd_cattle'] = 0
+			grandmaQW['help_amount'] += 2
+			hndiwrk_exp += rand(0,3)
+			gs 'stat'
+
+			act 'Back to the village':gt'gadukino'
+		end
+	end
+end
+
+--- gadfield ---------------------------------
+

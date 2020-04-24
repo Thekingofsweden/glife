@@ -1,0 +1,85 @@
+# crossfit_north_record
+
+menu_off = 1
+
+if $ARGS[0] = 'view_records':
+	*clr & cla
+	gs 'crossfit_north_record', 'update_box_records'
+
+	'<center><img <<$set_imgh>> src="<<$crossfit_north_image_dir>>records.jpg"></center>'
+	'You look at the board outlining the personal records'
+	'<center><table border=1><tr><th>Workout</th><th>Personal Best</th><th>Box Record (Women)</th><th>Box Record Holder</th></tr>'
+	record_table_counter = 0
+	:recordloop
+	if record_table_counter < ARRSIZE('$crossfit_wods'):
+		$crossfit_wod = $crossfit_wods[record_table_counter]
+		'<tr><td><<$crossfit_wod>></td><td>' & func('crossfit_north_record', 'recordstring', $crossfit_wod, personal_wod_record[$crossfit_wod]) & '</td><td>' & func('crossfit_north_record', 'recordstring', $crossfit_wod, box_wod_record[$crossfit_wod])  & '</td><td> <<$box_wod_record_holder[$crossfit_wod]>></td></tr>'
+		record_table_counter += 1
+		jump 'recordloop'
+	end
+	'</table></center>'
+	killvar 'record_table_counter'
+	killvar '$crossfit_wod'
+	act 'Go back':
+		gt $loc, $metka
+	end
+end
+
+if $ARGS[0] = 'recordstring':
+	if ARGS[2] = 0:
+		$result = 'No score yet'
+	else
+		wod_score = wod_min_score[$ARGS[1]] + (wod_max_score[$ARGS[1]] - wod_min_score[$ARGS[1]]) * ARGS[2] / 100
+		if $wod_type[$ARGS[1]] = 'for_time':
+			$result = '<<wod_score/60>> minutes and <<wod_score - (wod_score/60)*60>> seconds'
+		end
+		if $wod_type[$ARGS[1]] = 'for_rounds':
+			$result = '<<wod_score/100>> rounds and <<wod_score - (wod_score/100)*100>>% of the last one'
+		end
+	end
+end
+
+if $ARGS[0] = 'update_box_records':
+	if last_box_record_update = 0 or last_box_record_update + 30 < daystart:
+		number_of_box_record_updates = 30
+	else
+		number_of_box_record_updates = daystart - last_box_record_update
+	end
+	last_box_record_update = daystart
+	current_record_update_count = 0
+
+	:recordupdateloop
+	if current_record_update_count < number_of_box_record_updates:
+		gs 'crossfit_north_record', 'box_records'
+		current_record_update_count += 1
+		jump 'recordupdateloop'
+	end
+	killvar 'current_record_update_count'
+	killvar 'number_of_box_record_updates'
+end
+
+if $ARGS[0] = 'box_records':
+	crossfit_record_it = 0
+	:recordgeneratorloop
+	if crossfit_record_it < ARRSIZE('$crossfit_wods'):
+
+		$crossfit_wod = $crossfit_wods[crossfit_record_it]
+		new_record_wod_time = max(1,(100 - (100 * (rand(40,100) + rand(0,100) + rand(0,100) + rand(0,100)) / 400)))
+
+		if box_wod_record[$crossfit_wod] = 0 or box_wod_record[$crossfit_wod] > new_record_wod_time:
+			box_wod_record[$crossfit_wod] = new_record_wod_time
+			!! record holder changes only in 1/3rd of the cases from previous holder, or if sveta is record holder
+			if rand(1,3) = 1 OR $box_wod_record_holder[$crossfit_wod] = '' OR $box_wod_record_holder[$crossfit_wod] = $pcs_nickname:
+				gs 'npcrnamefile', 'rusFemale'
+				$box_wod_record_holder[$crossfit_wod] = $npctempgn[1]
+			end
+		end
+		crossfit_record_it += 1
+		jump 'recordgeneratorloop'
+	end
+	killvar 'crossfit_record_it'
+	killvar 'new_record_wod_time'
+	killvar '$crossfit_wod'
+end
+
+--- crossfit_north_record ---------------------------------

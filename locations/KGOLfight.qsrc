@@ -1,0 +1,320 @@
+# KGOLfight
+minut += 1
+gs 'stat'
+
+if otkathirki > 0:otkathirki -= 1
+
+if KGHP < KGHPMAX and KGOLhirka > 0 and otkathirki <= 0:
+	kghneed = KGHPMAX - KGHP
+	otkathirki = 3
+
+	if KGOLhirka >= kghneed:
+		KGOLhirka -= kghneed
+		KGHP = KGHPMAX
+	else
+		KGHP = KGOLhirka
+		KGOLhirka = 0
+	end
+end
+
+if KGOLdist < 0:KGOLdist = 0
+
+if KGOLtimer > 0:
+	KGOLtimer -= 1
+
+	if KGOLtimer <= 0:
+		KGOLbrona -= KGOLbronaMod
+		KGOLbronaMod = 0
+		KGOLstren -= KGOLstrenMod
+		KGOLstrenMod = 0
+		KGOLspeed -= KGOLspeedMod
+		KGOLspeedMod = 0
+		KGOLvital -= KGOLvitalMod
+		KGOLvitalMod = 0
+		KGOLintel -= KGOLintelMod
+		KGOLintelMod = 0
+		KGOLwpower -= KGOLwpowerMod
+		KGOLwpowerMod = 0
+	end
+end
+
+if unvis > 0:'You are invisible'
+if poison > 0:poison -= 1 & KGHPV -= KGOLspell4 * 10 & 'The poison causes damage to the enemy <<KGOLspell4 * 10>>'
+if firecircle > 0:firecircle -= 1 & KGHPV -= KGOLspell9 * 50 & 'Circle of fire causes damage to the enemy <<KGOLspell9 * 50>>'
+
+'Life <<KGHP>>, the mana <<KGMana>>'
+'<<$KGname>> Life <<KGHPV>>mana <<KGManaV>>'
+
+if KGOLhirka > 0:'Hirka can restore automatically <<KGOLhirka>> health units'
+if otkathirki > 0:'Hirka retrace through <<otkathirki>> moves.'
+
+'Distance <<KGOLdist>>'
+
+if KGOLtimer > 0:'Obkast will act more <<KGOLtimer>> Rounds'
+if KGOLcooldown > 0:'Rollback skills completed by <<KGOLcooldown>> Rounds'
+!!end of fight
+
+if KGHP <= 0:
+	KGOLloss += 1
+	poison = 0
+	firecircle = 0
+	pcs_mana -= 100
+	'You lost the fight'
+
+	act 'Go to Rep.':gt 'KGOLgame'
+
+	exit
+end
+
+if KGHPV <= 0:
+	poison = 0
+	firecircle = 0
+	KGOLWin += 1
+	KGOLmoney += KGOLPrizeM
+	KGOLexp += KGOLPrizeExp
+	pcs_mana += 100
+	'<<$KGname>> fell. You win the fight.'
+	'You got <<KGOLPrizeM>> coins and <<KGOLPrizeExp>> experience'
+
+	if KGOLennumBoss = 1 and boss5lvl = 0:boss5lvl = 1 & KGOLhirka += 5000 & 'With boss tumbled small hirka'
+	if KGOLennum = 0 and KGOLmqw = 1:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 1 and KGOLmqw = 3:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 2 and KGOLmqw = 5:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 3 and KGOLmqw = 7:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 4 and KGOLmqw = 9:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 5 and KGOLmqw = 11:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+	if KGOLennum = 6 and KGOLmqw = 13:KGOLqwvip += 1 & 'Another mob zafarmlen quest for'
+
+	act 'Disengage':gt 'KGOLgame'
+
+	exit
+end
+
+!!initiative
+KGOLiniV = rand(KGOLspeedV / 2, KGOLspeedV * 2)
+KGOLini = rand(KGOLspeed / 2, KGOLspeed * 2)
+
+	if KGOLini = KGOLiniV:
+		hodrand = rand(0, 1)
+
+		if hodrand = 0:KGOLini = 1 & KGOLiniV = 0
+		if hodrand = 1:KGOLini = 0 & KGOLiniV = 1
+	end
+
+	if KGOLini > KGOLiniV:KGOLiniSUM += 1
+	if KGOLini < KGOLiniV:KGOLiniSUM -= 1
+	if KGOLiniSUM > 3:KGOLini = 0 & KGOLiniV = 1 & KGOLiniSUM = 0
+	if KGOLiniSUM < -3:KGOLini = 1 & KGOLiniV = 0 & KGOLiniSUM = 0
+
+	!!moves
+	if KGOLini > KGOLiniV or unvis > 0:
+		'Now your turn'
+
+		if KGOLklass = 1:
+			!!warrior
+			if KGOLdist < 3:
+				act 'Attack':
+					cla
+					KGOLpower = KGOLstren + KGOLwpower
+					dynamic $KGOLatk
+
+					act 'Further':gt $curloc
+				end
+
+				if KGOLspell > 0 and KGMana >= KGOLspell * 10:
+					act 'Powerful blow (<<KGOLspell * 10>> mana)':
+						cla
+						KGMana -= KGOLspell
+						KGOLpower = KGOLstren + KGOLwpower+(KGOLspell * 100)
+						dynamic $KGOLatk
+
+						act 'Further':gt $curloc
+					end
+				end
+
+				if KGOLspell2 > 0 and KGMana >= KGOLspell2 * 10:
+					act 'Multiple shot (<<KGOLspell2 * 10>> mana)':
+						cla
+						KGMana -= KGOLspell2
+						KGOLpower = KGOLstren + KGOLwpower
+						KGLOloop = KGOLspell2 + 1
+						dynamic $KGOLatkKGOLspell2
+
+						act 'Further':gt $curloc
+					end
+				end
+
+				if KGOLspell3 > 0 and KGMana >= KGOLspell3 * 10 and KGOLcooldown <= 0:
+					act 'Increase armor (<<KGOLspell3 * 10>> mana)':
+						cla
+						KGMana -= KGOLspell3
+						KGOLbronaMod += KGOLspell3 * 5
+						KGOLtimer += KGOLspell3 + 1
+						KGOLcooldown += KGOLspell3 + 3
+
+						act 'Further':gt $curloc
+					end
+				end
+			end
+
+		elseif KGOLklass = 2:
+			!!thief
+			if KGOLdist < 5:
+				act 'Attack':
+					cla
+					KGOLpower = KGOLstren + KGOLwpower
+					dynamic $KGOLatk
+
+					act 'Further':gt $curloc
+				end
+
+				if KGOLspell4 > 0 and KGMana >= KGOLspell4 * 10:
+					act 'Sneaky shot (<<KGOLspell4 * 10>> mana)':
+						cla
+						KGMana -= KGOLspell4
+						KGOLpower = KGOLstren + KGOLwpower+(KGOLspell5 * 100)
+						dynamic $KGOLatk
+
+						act 'Further':gt $curloc
+					end
+				end
+
+				if KGOLspell5 > 0 and KGMana >= KGOLspell5 * 10:
+					act 'Poison Blade (<<KGOLspell5 * 10>>mana)':
+						cla
+						KGMana -= KGOLspell5
+						KGOLpower = KGOLstren + KGOLwpower
+						dynamic $KGOLatkPoison
+
+						act 'Further':gt $curloc
+					end
+				end
+
+				if KGOLspell6 > 0 and KGMana >= KGOLspell6 * 10 and KGOLcooldown <= 0:
+					act 'Invisibility (<<KGOLspell6 * 10>> mana)':
+						cla
+						KGMana -= KGOLspell6
+						unvis += KGOLspell6 + 1
+						KGOLcooldown += KGOLspell6 + 3
+
+						act 'Further':gt $curloc
+					end
+				end
+			end
+		elseif KGOLklass = 3:
+			!!magican
+			act 'Attack':
+				cla
+				KGOLpower = KGOLintel + KGOLwpower
+				dynamic $KGOLatk
+
+				act 'Further':gt $curloc
+			end
+
+			if KGOLspell7 > 0 and KGMana >= KGOLspell7 * 10:
+				act 'Faerboll (<<KGOLspell7 * 10>> mana)':
+					cla
+					KGMana -= KGOLspell7
+					KGOLpower = rand(KGOLspell7 * 100, KGOLspell7 * 200)
+					dynamic $KGOLatkFB
+
+					act 'Further':gt $curloc
+				end
+			end
+
+			if KGOLspell8 > 0 and KGMana >= KGOLspell8 * 10:
+				act 'Dropping (<<KGOLspell5 * 10>> mana)':
+					cla
+					KGMana -= KGOLspell5
+					KGOLdist += rand(KGOLspell5 * 10, KGOLspell5 * 50)
+					'You flung the enemy and now the distance between you <<KGOLdist>> meter'
+
+					act 'Further':gt $curloc
+				end
+			end
+
+			if KGOLspell9 > 0 and KGMana >= KGOLspell9 * 10 and KGOLcooldown <= 0:
+				act 'Circle of fire (<<KGOLspell9 * 10>> mana)':
+					cla
+					KGMana -= KGOLspell9
+					firecircle += KGOLspell9 + 1
+					KGOLcooldown += KGOLspell9 + 3
+					'Everything around you is burning hellfire'
+
+					act 'Further':gt $curloc
+				end
+			end
+		elseif KGOLklass = 4:
+			!!priest
+			act 'Attack':
+				cla
+				KGOLpower = KGOLintel + KGOLwpower
+				dynamic $KGOLatk
+
+				act 'Further':gt $curloc
+			end
+		elseif KGOLklass = 5:
+			!!archer
+			act 'Attack':
+				cla
+				KGOLpower = KGOLspeed + KGOLwpower
+				dynamic $KGOLatk
+
+				act 'Further':gt $curloc
+			end
+		else
+			!!barbarian
+			if KGOLdist < 2:
+				act 'Attack':
+					cla
+					KGOLpower = KGOLstren + KGOLwpower
+					dynamic $KGOLatk
+
+					act 'Further':gt $curloc
+				end
+			end
+		end
+
+		if KGOLdist > 0:
+			act 'Flee to the enemy':
+				KGOLdist -= rand(KGOLspeed/20, KGOLspeed/10)
+				gt $curloc
+			end
+		end
+
+		act 'Flee from the enemy':
+			KGOLdist += rand(KGOLspeed/20, KGOLspeed/10)
+			gt $curloc
+		end
+
+		if KGOLpotionH > 0:
+			act 'Drink a health potion':
+				KGOLpotionH -= 1
+			KGHP += 100
+			gt $curloc
+		end
+	end
+
+	if KGOLpotionM > 0:
+		act 'Drink the potion mana':
+			KGOLpotionM -= 1
+			KGMana += 100
+			gt $curloc
+		end
+	end
+else
+	'Now opponents'
+
+	if KGOLdist <= KGOLneedDist:
+		'<<$KGname>> attacks you'
+		dynamic $KGOLatkV
+	else
+		KGOLdist -= rand(KGOLspeedV/20, KGOLspeedV/10)
+		'<<$KGname>> running toward you'
+	end
+
+	act 'Further':gt $curloc
+end
+
+--- KGOLfight ---------------------------------
+

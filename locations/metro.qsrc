@@ -1,0 +1,234 @@
+# metro
+
+if $ARGS[0] = 'start':
+	CLOSE ALL
+	$menu_loc = 'metro'
+	$menu_arg = 'start'
+	menu_off = 0
+	if sound = 0:PLAY 'sound/metro' + rand(1,4) + '.mp3',30
+	'<center><b><font color="maroon">Metro station</font></b></center>'
+	if $loc = 'street':
+		'<center><b><font color="maroon">Residential Area</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/platresident.jpg"></center>'
+	elseif $loc = 'down':
+		'<center><b><font color="maroon">City Center</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/platcenter.jpg"></center>'
+	elseif $loc = 'Nord':
+		'<center><b><font color="maroon">City Industrial Region</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/platindust.jpg"></center>'
+!!new locations for the metro, you will have to see how the code works and for now the island will be commented out until we add that area of the city
+	elseif $loc = 'psiklin':
+		'<center><b><font color="maroon">City Suburbs</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/platsuburb.jpg"></center>'
+	elseif $loc = 'island': 
+		'<center><b><font color="maroon">Vasilievsky Island</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/platisland.jpg"></center>'
+	end
+
+	'The metro fare costs 16 <b>₽</b>.'
+	clr
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	if workDisk = 3 and konvert = 1:
+		badrand = rand(0, 100)
+		if badrand >= 80:konvert = 0
+	end
+
+	act 'Leave the Metro station':
+		minut += 5
+		gt $loc, $metka
+	end
+	
+	if money >= 16:
+		if $loc ! 'street':
+			act 'Go to the <b>Residential Area</b> (16 <b>₽</b>)':
+				$loc = 'street'
+				$metka = ''
+				money -= 16
+				minut += 10
+				gt 'metro', 'vagon'
+			end
+		end
+
+		if $loc ! 'down':
+			act 'Go to the <b>City Center</b> (16 <b>₽</b>)':
+				$loc = 'down'
+				$metka = ''
+				money -= 16
+				minut += 10
+				gt 'metro', 'vagon'
+			end
+		end
+
+		if $loc ! 'Nord':
+			act 'Go to the <b>City Industrial Region</b> (16 <b>₽</b>)':
+				$loc = 'Nord'
+				$metka = ''
+				money -= 16
+				minut += 10
+				gt 'metro', 'vagon'
+			end
+		end
+
+		if $loc ! 'psiklin':
+			act 'Go to the <b>City Suburbs</b> (16 <b>₽</b>)':
+				$loc = 'psiklin'
+				$metka = 'start'
+				money -= 16
+				minut += 10
+				gt 'metro', 'vagon'
+			end
+		end
+
+		if $loc ! 'island':
+			act 'Go to the <b>Vasilievsky Island</b> (16 <b>₽</b>)':
+				$loc = 'island'
+				$metka = ''
+				money -= 16
+				minut += 10
+				gt 'metro', 'vagon'
+			end
+		end
+	else
+	'You don''t have enough money to pay for the metro.'
+	end
+	
+	if pusher = 1 and dealer = 0:
+		dealer = 1
+		'You see a tall, emaciated man leaning against the wall next to tracks, looking very shady.<br>He notices you looking and beckons you to come closer.'
+		act 'Talk to the man':gt 'metro', 'dealer'
+	elseif dealer ! 0:
+		'You see the dealer lurking around the station.'
+		act 'Buy drugs':gt 'metro', 'shop'
+	end
+end
+
+if $ARGS[0] = 'vagon':
+	*clr & cla
+	CLOSE ALL
+	if sound = 0:PLAY 'sound/metro1.mp3',30
+	gs 'stat'
+	gs 'themes', 'indoors'
+	menu_off = 1
+
+	'<center><b><font color="maroon">Metro car</font></b></center>'
+	if hour < 7 or hour >=22:
+		if rand(0, 100) >= 70:gt 'metro_events', 'frot'
+		if rand(0,1) = 0:
+			metro_busy = 0
+		else
+			metro_busy = 1
+		end
+	elseif (hour >= 9 and hour < 16) or (hour >= 18 and hour < 22):
+		if rand(0, 100) >= 80:gt 'metro_events', 'frot'
+		if rand(0,1) = 0:
+			metro_busy = 1
+		else
+			metro_busy = 2
+		end
+	else
+		if rand(0, 100) >= 90:gt 'metro_events', 'frot'
+		if rand(0,1) = 0:
+			metro_busy = 2
+		else
+			metro_busy = 3
+		end
+	end
+
+	if metro_busy = 0:
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/metroempty.jpg"></center>'
+		'The car is almost completely empty, one or two other passengers are in the car with you. It seems a bit odd and a little creepy seeing the car this empty. You have practically the whole car to yourself and pick the cleanest spot to sit.'
+	elseif metro_busy = 1:
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/metro.jpg"></center>'
+		'The car is mostly empty, leaving you a choice of seats. You easily find a place for yourself, leaving you plenty of room to get comfortable. The few other people on the car, mind their own business, leaving you to your own thoughts.'
+	elseif metro_busy = 2:
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/metrofull<<rand(1,5)>>.jpg"></center>'
+		'The car is full of people, all of the seats are taken, but only a few people are forced to stand. You easily find a place for yourself, at least it is not packed, leaving you plenty of room to get comfortable.'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/shared/metro/metropacked.jpg"></center>'
+		'The car is packed with people, most of them are forced to stand, as there is not enough seats. It is so tightly packed that people are crammed tight up against each other either in the seats or standing up. You manage to squeeze yourself in among the people, you can feel other bodies pressed up tightly against yours, it is very uncomfortable and hot.'
+	end
+
+	if sosedQW >= 1:
+		if hour = 7 or hour = 15:
+			sosedMetroRand = rand(0, 100)
+
+			if sosedMetroRand >= 60 and sosedMetroDay ! daystart:'You notice your neighbor <a href="exec:gt ''TimofeiMetro''">Timothy</a>, in the metro car.'
+		end
+	end
+
+	if (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1:
+		if hour >= 7 and hour <= 21:
+			pcs_mood -= 10
+			'Several passengers are shocked, noticing the cum smears on you.'
+		end
+	end
+
+	act 'Get out of the car':
+		if hour < 7 or hour >=22:
+			if rand(0, 100) >= 70:gt 'metro_events', 'station'
+		elseif (hour >= 9 and hour < 16) or (hour >= 18 and hour < 22):
+			if rand(1,100) >= 80:gt 'metro_events', 'station'
+		else
+			if rand(1,100) >= 90:gt 'metro_events', 'station'
+		end			
+		gt 'metro', 'start'
+	end
+end
+
+if $ARGS[0] = 'shop':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<b>What''s it gonna be?</b>'
+	'He shows you a small box filled with red and blue pills. There is about two dozen of each pill inside.'
+	act 'Leave':gt 'metro','start'
+	if money >= 1000:
+		'<a href="exec:money -= 1000 & mentats_have += 20 & gt ''metro'', ''shop''">Buy neuroboosters</a> 1000 <b>₽</b>'
+	else
+		'Buy neuroboosters 1000 <b>₽</b> (You do not have enough money)'
+	end
+	'Uses left: <<mentats_have>>'
+	'A pillbox with 10 orange pills inside, the description is removed from the box.'
+	if money >= 500:
+		'<a href="exec:money -= 500 & steroid_have += 10 & gt ''metro'', ''shop''">Buy steroids</a> 500 <b>₽</b>'
+	else
+		'Buy steroids 500 <b>₽</b> (You do not have enough money)'
+	end
+	'Uses left: <<steroid_have>>'
+	'Paste tube with two pictures of a woman. In latter one she sports an enormous bust.'
+	if money >= 500:
+		'<a href="exec:money -= 500 & bcream_have += 5 & gt ''metro'', ''shop''">Buy breast cream</a> 500 <b>₽</b>'
+	else
+		'Buy breast cream 500 <b>₽</b> (You do not have enough money)'
+	end
+	'Uses left: <<bcream_have>>'
+	if MagikDostup = 0:
+		'Packet of pink chewing gums. There are 10 in one package.'
+		if money >= 200:
+			'<a href="exec:money -= 200 & aphrodisiac_have += 10 & gt ''metro'', ''shop''">Buy aphrodisiacs</a> 200 <b>₽</b>'
+		else
+			'Buy aphrodisiacs 200 <b>₽</b> (You do not have enough money)'
+		end
+		'Uses left: <<aphrodisiac_have>>'
+	end
+	if money >= 250:
+		'Buy enough <a href="exec:money -= 250 & joint += 5 & gt ''metro'', ''shop''">weed</a> for 5 joints for 250 <b>₽</b>'
+	elseif money >= 500:
+		'Buy enough <a href="exec:money -= 250 & joint += 5 & gt ''metro'', ''shop''">weed</a> for 5 joints for 250 <b>₽</b>'
+		'Buy enough <a href="exec:money -= 500 & joint += 10 & gt ''metro'', ''shop''">weed</a> for 5 joints for 500 <b>₽</b>'
+	else
+		'Buy a enough weed for 5 joints for 250 <b>₽</b> (You do not have enough money)'
+	end
+end
+
+if $ARGS[0] = 'dealer':
+	*clr & cla
+	menu_off = 1
+	'He sizes you up with suspicion.<br><b>"Hey miss, saw you buying Lady in the park."</b> <br>He clears his throat and spits onto the tracks.<b> "That shit will mess you up."</b><br>He opens his coat and you flinch thinking he is going to flash you, but instead you see he is wearing a business suit beneath.<br>He gestures at numerous pockets lining insides of his coat. They are filled to bursting with various packages, pills and ampules.<br><b>"Here, my products are of a much better quality. You''ll have a great times and I guarantee they won''t kill you."</b>'
+	act 'Continue':gt 'metro','shop'
+end
+
+--- metro ---------------------------------
+

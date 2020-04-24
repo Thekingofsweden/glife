@@ -1,0 +1,714 @@
+# femcyc
+
+!! important values for pillcon
+!!at 7000 pillcon sveta will begin slowing down the build up of hormone to release eggs - see cyc1
+!!at 20000 pillcon sveta will very rarely even build up hormone to release eggs but its random so it can still happen anyways - see cyc1 and cyc2
+!!at 26000 pillcon sveta only has a 1/400 chance of even releasing an egg at all even if she does build up enough hormone - see cyc2
+!!at 38000 pillcon sveta no longer has periods at all and cannot get pregnant anymore -- see cyc3
+
+!! I have to initialize the variables somewhere, maybe in preCUST?
+if Luth_Max = 0: LutH_Max = rand(312,360) & !! 13-15 days including ovulation
+if Foch_Max = 0: FocH_Max = rand(312,360) & !! 13-15 days including menstruation
+
+if $ARGS[0] = '':
+	!{Hourly reduction in semen potency}
+	!{First it sets the array index to the first index, then it checks to be sure the array tracking the age is less than 144 hours. If it is 144 hours old, it kills that index, which should shift the index up. If it is less than 144 hours old, it sets a current potency drop. The drop is 2x or 3x regularly, but during ovulation it is only 1x, to represent the better environment from fertile cervical mucus.}
+	!{144 hours was selected due to that being approximately the maximum amount of time sperm is viable in the womb (120 would be more accurate, but there is leeway). PLEASE DO NOT CHANGE IT.}
+	!{The potency drop may seem small in game-time, but is meant to be a reasonable approximation to real life. Avoid unprotected sex within 5 days of ovulation if you want to mitigate your risk.}
+	!{the 'rcntorgzm' variable is set to determine whether Sveta has orgasmed within the last hour. If she has, a small potency boost for the guys she has slept with in that hour.}
+
+	if rcntorgzm = 1:
+		if rcntorgzmtmp = 1: rcntorgzm = 0 & rcntorgzmtmp = 0
+		if rcntorgzmtmp = 0: rcntorgzmtmp = 1
+	end
+
+	cumarr_idx = 0
+
+	:cumarrloop
+	if cumarr_idx < arrsize('$cumarrnam'):
+		if cumarrcpt[cumarr_idx] > 0 and cumarrage[cumarr_idx] < 144:
+			if rcntorgzm = 1 and cumarrcpt[cumarr_idx] < cumarrppt[cumarr_idx] and cumarrage[cumarr_idx] < 1: cumarrcpt[cumarr_idx] += cumarrppt[cumarr_idx] / 12
+			cumpdrop = cumarrcpt[cumarr_idx] / (144 - cumarrage[cumarr_idx])
+			if cycle ! 2: cumpdrop += cumpdrop * rand(0, 2)
+			cumarrcpt[cumarr_idx] -= cumpdrop
+			if cumarrcpt[cumarr_idx] <= 0:
+				gs 'cum_cleanup', 'cleanwomb', cumarr_idx
+			else
+				cumarrage[cumarr_idx] += 1
+				cumarr_idx += 1
+			end
+		else
+			gs 'cum_cleanup', 'cleanwomb', cumarr_idx
+		end
+
+		jump 'cumarrloop'
+
+	end
+
+	!!Succubus absorption of sperm in womb
+	if succubusflag = 1:
+		if arrsize('cumarrppt') > 0:
+			succycletmp = 0
+			:sucvagabs
+			if cumarrdel[succycletmp] = 0:
+				if cumarrcpt[succycletmp] > 10000:
+					sexnutrition += 30 * succublvl
+					succubxp += 3
+				elseif cumarrcpt[succycletmp] < 3000 and cumarrcpt[succycletmp] > 1000:
+					sexnutrition += 5 * succublvl
+					succubxp += 2
+				elseif cumarrcpt[succycletmp] =< 1000:
+					 sexnutrition += succublvl
+				else
+					sexnutrition += 25 * succublvl
+					succubxp += 3
+				end
+				gs 'cum_cleanup', 'cleanwomb', succycletmp
+				sucabscum = 1
+			else
+				succycletmp += 1
+			end
+			if succycletmp < arrsize('cumarrppt'): jump 'sucvagabs'
+		end
+		killvar 'succycletmp'
+	end
+
+	cumarrtemp = 0
+	cumcondslip = 0
+	cumcondslip_aware = 0
+	if arrsize('sparrvol') > 0:
+		:cumspaloop
+		!!Succubus absorption for internal locations other than womb
+		if succubusflag = 1:
+			if sparrloc[cumarrtemp] = 3 or sparrloc[cumarrtemp] = 12:
+				sexnutrition += 25*succublvl
+				succubxp += 3
+				sucabscum = 1
+				if sparrvol[cumarrtemp] > 0: sparrvol[cumarrtemp] = 0
+			end
+		end
+		!!{if sparrloc[cumarrtemp] = 0 or sparrloc[cumarrtemp] = 3 or sparrloc[cumarrtemp] = 12:
+			sexnutrition += 30*succublvl
+			sparrvol[cumarrtemp] -= 30*succublvl
+			if sparrvol[cumarrtemp] < 0: sexnutrition += sparrvol[cumarrtemp] & sparrvol[cumarrtemp] = 0
+		end}
+		!!{ Process spatter until it has volume or is too old in vagina. }
+		if sparrvol[cumarrtemp] > 0 or (sparrloc[cumarrtemp] = 0 and sparrage[cumarrtemp] < 10):
+			sparrtmpv = arrsize('$cumarrnam')
+			if sparrloc[cumarrtemp] = 17:
+				sparrtmpv = arrpos('cumarrcnt',sparrcnt[cumarrtemp])
+				if sparrtmpv >= 0:
+					!!'Found guy id <<sparrtmpv>>'
+					if sparrage[cumarrtemp] < 4:
+						cumarrcpt[sparrtmpv] += sparrppt[cumarrtemp]/5
+					elseif sparrage[cumarrtemp] < 10:
+						cumarrcpt[sparrtmpv] += sparrppt[cumarrtemp]/30
+					end
+				end
+			elseif sparrloc[cumarrtemp] = 0:
+				sparrtmpv = arrpos('cumarrcnt',sparrcnt[cumarrtemp])
+				if sparrtmpv >= 0:
+					!!'Found guy id' & sparrtmpv
+					if sparrage[cumarrtemp] < 4:
+						cumarrcpt[sparrtmpv] += sparrppt[cumarrtemp]/40
+					elseif sparrage[cumarrtemp] < 10:
+						cumarrcpt[sparrtmpv] += sparrppt[cumarrtemp]/60
+					end
+				end
+			elseif sparrslc[cumarrtemp] = 1 and sparrage < 5:
+				if sparrloc[cumarrtemp] = 1:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 1
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				end
+			elseif sparrslc[cumarrtemp] = 3 and sparrage < 5:
+				if sparrloc[cumarrtemp] = 2:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 3
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				elseif sparrloc[cumarrtemp] = 4:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 2
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				end
+			elseif sparrslc[cumarrtemp] = 5 and sparrage < 5:
+				if sparrloc[cumarrtemp] = 3:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 2
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				elseif sparrloc[cumarrtemp] = 5:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 3
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				elseif sparrloc[cumarrtemp] = 6:
+					cumarrcpt[sparrtmpv] = sparrppt[cumarrtemp]*sparrvol[cumarrtemp]/sparrage[cumarrtemp]/1000
+					cumarrppt[sparrtmpv] = sparrppt[cumarrtemp]
+					$cumarrnam[sparrtmpv] = $sparrnam[cumarrtemp]
+					cumarrage[sparrtmpv] = sparrage[cumarrtemp]
+					cumarrdel[sparrtmpv] = 3
+					cumarrkno[sparrtmpv] = -1
+					cumarrcon[sparrtmpv] = 0
+					cumarrcnt[sparrtmpv] = sparrcnt[cumarrtemp]
+				end
+			end
+
+			if sparrloc[cumarrtemp] = 0 or sparrloc[cumarrtemp] = 3 or sparrloc[cumarrtemp] = 12:
+				sparrvol[cumarrtemp] -= sparrage[cumarrtemp]/2
+				if sparrvol[cumarrtemp] < 0:sparrvol[cumarrtemp] = 0
+			end
+			if sparrloc[cumarrtemp] = 0 and cumsumvag > 60: sparrslc[cumarrtemp] = 1
+			if sparrloc[cumarrtemp] = 3 and cumsumass > 60: sparrslc[cumarrtemp] = 1
+			if sparrloc[cumarrtemp] = 17:
+				cumcondslip += 1
+				if sparridt[cumarrtemp] >= 0:
+					cumcondslip_aware = 1
+				end
+				if sparrage[cumarrtemp] > 48:
+					cumcondslip_aware = 1
+					if pcs_health > 100: pcs_health -= rand(3,sparrage[cumarrtemp] - 45)
+					'<br><b><font color="red">You feel nauseous.</font></b>'
+				end
+			end
+			if sparrloc[cumarrtemp] ! 0 and sparrloc[cumarrtemp] ! 3 and sparrloc[cumarrtemp] ! 12 and isprok = 0 and sparrage < 5: sparrslc[cumarrtemp] += 1
+			sparrage[cumarrtemp] += 1
+			cumarrtemp += 1
+			ctemp[0] += sparrvol[cumarrtemp]
+			if sparrloc[cumarrtemp] = 0: ctemp[1] += sparrvol[cumarrtemp]
+			if sparrloc[cumarrtemp] = 3: ctemp[2] += sparrvol[cumarrtemp]
+		else
+			gs 'cum_cleanup', 'cleandeposit', cumarrtemp
+		end
+		if cumarrtemp < arrsize('sparrvol'): jump 'cumspaloop'
+		cumsumbod = ctemp[0]
+		cumsumvag = ctemp[1]
+		cumsumass = ctemp[2]
+		KILLVAR 'ctemp'
+	end
+	!!	Breastcycle. Every breast related change with lactation happens in here.
+	if cheat_NoLactation > 0:
+		gs 'lact_lib','lactate_optout'
+	else
+		gs 'lact_lib','breastcycle'
+	end	
+
+	if cycle <= 0:
+		gs 'femcyc', 'cyc0'
+	elseif cycle = 1:
+		gs 'femcyc', 'cyc1'
+	elseif cycle = 2:
+		gs 'femcyc', 'cyc2'
+	elseif cycle = 3:
+		gs 'femcyc', 'cyc3'
+	elseif cycle = 4:
+		gs 'femcyc', 'cyc4'
+	elseif cycle = 5:
+		gs 'femcyc', 'preg'
+	end
+
+	dynamic $d_cycreport_update
+end
+
+
+!{Menstruation to Follicular. Verifies that the cycle is in the bloody phase. It then checks to see if you are done bleeding. If you are, it starts the Follicular phase. There is a small chance your follcular phase will be anywhere from a day to 3 days short, done by the random release of a boosted EggRH. Otherwise, it just starts it clean.}
+
+if $ARGS[0] = 'cyc0':
+	if mesec <= 0:
+		lastmens = daystart
+		cycle = 1
+		mesec = 0
+		if rand(0,1000) = 1000:
+			EggRH = rand(20,80)
+		else
+			EggRH = 0
+		end
+		FocH += EggRH
+	else
+		mesec -= 1
+		FocH += 1
+	end
+end
+
+
+!{Follicular to Ovulation. It checks to see if you are on the Follicular phase. If you are, it checks to see if you are ready to ovulate. If you arent, it increases your ovulation ticker by 1, then gives a random chance to increase it again. Then it checks to see if you have ovarian problems, and if you do, decreases your ovulation ticker. When all that is done, it checks to see if you have any birth control chemical, and if its above a certain amount, it reduces your ovulation ticker.}
+
+if $ARGS[0] = 'cyc1':
+	FertEgg = 0
+	if FocH <= FocH_Max:
+		if pillcon <= 7000: EggRH += 1
+		if rand(0,9) = 0: EggRH += 1
+		FocH += 1
+		temprand = rand(0,9) - sterileov + tempovbonus
+		if temprand < 0:
+			EggRH -= 1
+		elseif temprand > 9:
+			EggRH += 1
+		end
+	else
+		!! the setting of the max_time can be here although it can be changed in the future
+		LutH_Max = rand(312,360) & !! 13-15 days including ovulation
+		!{If you are ready to ovulate, it creates a chance to double ovulate. That chance is increased by your age. Then it does the same for a triple ovulation. Then it sets the ovulation tag, ovulation hour count, and begins a ticker for the life of the eggs.}
+		Temprand = rand(0,20)
+		Temprand += age/15
+		Temprand -= pillcon/1000
+		if temprand > 20:
+			EggRH += 205
+			Temprand = rand(0,20)
+			Temprand += age/15
+			if temprand > 20: EggRH += 410
+		end
+		FocH = 0
+		lastovulation = daystart
+		Ovulate = 24 + rand(0,20)
+		cycle = 2
+		ferteggage = 0
+	end
+end
+
+
+!!{Fertilization.}
+
+if $ARGS[0] = 'cyc2':
+	can_sz = arrsize('$cumarrnam')
+	if Ovulate > 0 and can_sz > 0 and UnfertEgg > 0:
+		KILLVAR 'cumtime'
+		KILLVAR 'cumfthname'
+		KILLVAR '$wombpotfath'
+		$cumfthname[0] = 'unknown'
+		cumtime[0] = 0
+		can_idx = 0
+		cum_total = 0
+!!{Compute array of unique fathers known to PC and another two arrays of unique total fathers and their individual sperm totals from all entries in cumarrcpt for that father. Also tally all cum present.}
+		:FatherCumAnalyze
+			!! If the current DNA is new (no occurence in the womb array), it is added to the end of $wombDNA array, and added the amount of cum to the end of cumamount array.
+			!! If exists, just increase the amount of cum in the womb.
+
+			!! $wombDNA: sperm in womb potent enough to cause pregnancy
+			!! wombAmount: how potent is the sperm of a guy
+			!! $wombName: the name of the NPC
+			y = arrsize('$wombDNA')
+			if arrpos('$wombDNA',$npc_dna[$cumarrnam[can_idx]]) = -1:
+				!! New guy, create place for him at the end of the array, storing his DNA, sperm amount and name
+				$wombDNA[y] = $npc_dna[$cumarrnam[can_idx]]
+				wombAmount[y] = cumarrcpt[can_idx]
+				$wombName[y] = $cumarrnam[can_idx]
+
+			else
+				!! This DNA is in the womb, but does it belong to the same guy?
+				x = 0
+				z = 0
+				:LocalizeLoop
+					if $wombDNA[x] = $npc_dna[$cumarrnam[can_idx]] and $wombName[x] = $cumarrnam[can_idx]: wombAmount[x] += cumarrcpt[can_idx] & z = 1
+				if z = 0 and x < (y - 1):x += 1 & jump 'LocalizeLoop'
+				killvar 'x'
+				if z = 0:
+					!! Since the DNA and the stored name does not match at the same time, it means this is a twin situation where the twin is not in array, so put him in
+					$wombDNA[y] = $npc_dna[$cumarrnam[can_idx]]
+					$wombName[y] = $cumarrnam[can_idx]
+					wombAmount[y] = cumarrcpt[can_idx]
+				end
+				killvar 'z'
+			end
+			killvar 'y'
+
+			if cumarrkno[can_idx] = 1 and arrpos('$wombpotfath', $cumarrnam[can_idx]) < 0:$wombpotfath[arrsize('$wombpotfath')] = $cumarrnam[can_idx]
+
+			!! If the guy is a known/possible element (PC know about the sex, it was actual sex, condom/pill was not used or condom was broken, etc.), he can be considered as father.
+			if instr('14570',str(cumarrcon[can_idx])) > 0 and cumarrdel[can_idx] = 0 and cumarrkno[can_idx] >= 0:
+				!! If guy is recorded already, increase his cumtime, else record him for the first time.
+				if arrpos('$cumfthname', $cumarrnam[can_idx]) = -1:
+					$cumfthname[arrsize('$cumfthname')] = $cumarrnam[can_idx]
+					cumtime[arrsize('$cumfthname')] = 1
+				else
+					cumtime[arrpos('$cumfthname', $cumarrnam[can_idx])] += 1
+				end
+			end
+
+			cum_total += cumarrcpt[can_idx]
+
+		if can_idx < can_sz:can_idx += 1 & jump 'FatherCumAnalyze'
+
+		!! setting the default believed father if there is no difficult choice or there is no choice
+		if arrsize('$cumfthname') = 2 and cumtime[0] = 0:
+			$wombpotfath[0] = $cumfthname[1]
+		elseif arrsize('$cumfthname') = 1:
+			$wombpotfath[0] = $cumfthname[0]
+		end
+
+!!{Create lotto of potential fathers based on each potential fathers sperm as a percentage of the total. The higher percentage of sperm from a given father, the more lotto entries he will have.}
+		KILLVAR '$cumfathlotto'
+		cfw_idx = 0
+		cfw_sz = arrsize('wombAmount')
+		:FathLottoLoop
+		if cfw_idx < cfw_sz:
+			cfl_ct = (wombAmount[cfw_idx] * 100) / cum_total
+			if cfl_ct < 1: cfl_ct = 1
+			cfl_idx = arrsize('$cumfathlotto')
+			:FathLottoAdd
+			if cfl_ct > 0:
+				$cumfathlotto[cfl_idx] = $wombName[cfw_idx]
+				$cumfatherDNA[cfl_idx] = $wombDNA[cfw_idx]
+				cfl_idx += 1
+				cfl_ct -= 1
+				jump 'FathLottoAdd'
+			end
+			cfw_idx += 1
+			jump 'FathLottoLoop'
+		end
+		killvar '$wombDNA'
+		killvar '$wombName'
+		killvar 'wombAmount'
+		cfl_sz = arrsize('$cumfathlotto')
+
+		egg_idx = 0
+		egg_sz = UnfertEgg
+		if cheat_NoPregnancy = 1:egg_idx = egg_sz
+		:FertLoop
+		if egg_idx < egg_sz:
+!!{fert_thresh is the chance this specific egg is fertilized. Its modified by being on the pill, being sterilized, the brood curse, and so on. If it computes to less than the cum total calculated above, the egg is fertilized by a father randomly drawn from the lotto array.}
+			fert_thresh = rand(1,250000)
+			if pillcon < 0: pillcon = 0
+			!!fert_thresh += pillcon
+			if steriletu = 1: fert_thresh += fert_thresh*30
+			if fert_thresh > 0 and broodcurse > 0: fert_thresh = fert_thresh / 2
+			if fert_thresh <= cum_total:
+				lotto_idx = rand(0, cfl_sz-1)
+				UnfertEgg -= 1
+				FertEgg += 1
+				nextbaby = arrsize('$ChildFath')
+				polkid[nextbaby] = rand(0, 1)
+				$kidname[nextbaby] = 'unborn'
+				kidage[nextbaby] = 0
+				daykid[nextbaby] = 0
+				monthkid[nextbaby] = 0
+				yearkid[nextbaby] = 0
+				Babyptype[nextbaby] = 0
+				$kid_dna[nextbaby] = func('DNA', 'generate', $pcs_dna, $npc_dna[$cumfathlotto[lotto_idx]])
+				$ChildFath[nextbaby] = $cumfathlotto[lotto_idx]
+				$ChildFathDNA[nextbaby] = $cumfatherDNA[lotto_idx]
+				if arrsize('$wombpotfath') = 1:
+					$ChildThFath[nextbaby] = $wombpotfath[0]
+				else
+					$ChildThFath[nextbaby] = 'unknown'
+				end
+				hairkid[nextbaby] = rand(0, 3)
+				eyeskid[nextbaby] = rand(0, 3)
+				ChildConType[nextbaby] = cumarrcon[nextbaby]
+				if fertegg > 1:
+					$childtype[nextbaby] = 'fraternal twin'
+					$childtype[nextbaby-1] = 'fraternal twin'
+				else
+					$childtype[nextbaby] = ''
+				end
+			end
+			egg_idx += 1
+			jump 'FertLoop'
+		end
+		killvar 'temp'
+		tempovbonus = 0
+	end
+
+!!{Ovulation to Luteal. It checks to see if you are on the ovulation cycle. If you are, it checks you for your pillcon. If it is high enough, no egg is released. Under high concentrations of pill chemical, ovulation ticks away quicker. Otherwise, it checks to see if your ovulation hormone is high enough, and if it is it gives you an egg and drops a good chunk down on your ovulation hormone. if its still high, it drops another egg. Then it checks your ovulation hours. If its down to 0, it starts the Luteal phase. Otherwise, it adds an hour to the egg age and reduces the ovulation window by an hour.}
+	if pillcon > 26000 and rand(0,400) ! 0: EggRH = 0
+	:OviLoop
+	If EggRH > ((UnfertEgg + FertEgg) * 150):
+		UnfertEgg += 1
+		EggRH -= (200 * UnfertEgg)
+		jump 'OviLoop'
+	end
+	If ovulate <= 0:
+		cycle = 3
+		UnfertEgg = 0
+	end
+	if fertegg = 1 and ferteggage < 330:
+		if rand(0,(2000 - age*20)) = 0:
+			fertegg += 1
+			nextbaby = arrsize('$ChildFath')
+			polkid[nextbaby] = polkid[nextbaby-1]
+			$kidname[nextbaby] = 'unborn'
+			kidage[nextbaby] = 0
+			daykid[nextbaby] = 0
+			monthkid[nextbaby] = 0
+			yearkid[nextbaby] = 0
+			Babyptype[nextbaby] = Babyptype[nextbaby-1]
+			$ChildFath[nextbaby] = $ChildFath[nextbaby-1]
+			$ChildFathDNA[nextbaby] = $ChildFathDNA[nextbaby-1]
+			$kid_dna[nextbaby] = $kid_dna[nextbaby-1]
+			hairkid[nextbaby] = hairkid[nextbaby-1]
+			eyeskid[nextbaby] = eyeskid[nextbaby-1]
+			cumarrcon[nextbaby] = cumarrcon[nextbaby-1]
+			$childtype[nextbaby] = 'identical twin'
+			$childtype[nextbaby-1] = 'identical twin'
+		end
+	end
+	ferteggage += 1
+	Ovulate -= 1
+	LutH += 1
+end
+
+
+!{Luteal to Menstration or Pregnancy. First it verifies this is the Luteal phase. Then it adds an hour to the age of the eggs. Then if there is a fertized egg, it rolls a random chance. if the egg age is low, it checks for risk of an entopic pregnancy. This is increased with older age and if you have a tubal ligation sterilization.}
+!{If there is an ectopic pregnancy, it sets the first unborn baby in the array to this. Ectopic pregnancies occur when the fertilized egg implants "too early" after fertlization (and therefore in the fallopian tube). The risk is higher with age, but this is also a common complication with certain forms of birth control, notably tubal ligation. Each egg could be different. It then removes the fertilized egg, adds an embryo, Then it adds some pregnancy hormone if you arent already pregnant, and calls you officially pregnant.}
+!{Otherwise, it adds your womb sterility factor to the imp_rand. Then it checks if your imp_rand crosses a threshold for implantation. Younger women implant easier. It then sets the next baby to the next unimplanted baby in your kid array. It registers the kid as a normal pregnancy, removes a fertilized egg and adds an embryo. Then it adds some pregnancy hormone if you arent already pregnant, and calls you officially pregnant.}
+
+if $ARGS[0] = 'cyc3':
+	if fertegg = 1 and ferteggage < 330:
+		if rand(0,(2000 - age*20)) = 0:
+			fertegg += 1
+			nextbaby = arrsize('$ChildFath')
+			polkid[nextbaby] = polkid[nextbaby-1]
+			$kidname[nextbaby] = 'unborn'
+			kidage[nextbaby] = 0
+			daykid[nextbaby] = 0
+			monthkid[nextbaby] = 0
+			yearkid[nextbaby] = 0
+			Babyptype[nextbaby] = Babyptype[nextbaby-1]
+			$ChildFath[nextbaby] = $ChildFath[nextbaby-1]
+			$ChildFathDNA[nextbaby] = $ChildFathDNA[nextbaby-1]
+			$kid_dna[nextbaby] = $kid_dna[nextbaby-1]
+			hairkid[nextbaby] = hairkid[nextbaby-1]
+			eyeskid[nextbaby] = eyeskid[nextbaby-1]
+			cumarrcon[nextbaby] = cumarrcon[nextbaby-1]
+			$childtype[nextbaby] = 'identical twin'
+			$childtype[nextbaby-1] = 'identical twin'
+		end
+	end
+	ferteggage += 1
+	implant_idx = 0
+	implant_sz = arrsize('Babyptype')
+
+	:implant_loop
+	if implant_idx < implant_sz:
+
+		if Babyptype[implant_idx] = 0:
+			imp_rand = rand(0,120000)
+
+			if ferteggage < 120 and broodcurse <= 0:
+				imp_rand += 170
+				imp_rand -= age * 10
+				if steriletu = 1: imp_rand -= 200
+
+				if imp_rand <= 0:
+					Babyptype[implant_idx] = 2
+					FertEgg -= 1
+					babyembryo += 1
+					PregChem = rand(10,30)
+					if preg = 0: preg = 1
+					implant_day = daystart
+					implant_hour = hour
+
+				end
+
+			else
+				imp_rand += sterilewb
+				imp_rand -= tempwbbonus
+				if broodcurse > 0 and ferteggage >= 120: imp_rand = 0
+
+				if imp_rand <= (1200 - (age * 7)):
+					Babyptype[implant_idx] = 1
+					FertEgg -= 1
+					babyembryo += 1
+					PregChem = rand(10,30)
+					if preg = 0: preg = 1
+					implant_day = daystart
+					implant_hour = hour
+
+				end
+				tempwbbonus = 0
+
+			end
+
+		end
+
+		implant_idx += 1
+		jump 'implant_loop'
+
+	end
+
+!!{Then, it progresses the Luteal phase. It checks to see if you are pregnant. If you are, it ends the cycle and sets preg if your Luteal hormone is at the max as well as cleans out any unimplanted eggs. Otherwise, it just progresses pregnancy chemical and Luteal Hormone. If you arent pregnant, it checks your Luteal hormone. If its at the maximum, it adds 3-5 days of bleeding, clears out your unimplanted eggs, and clears out your Luteal hormone, or ends your cycle if you are past your menopausal age. Otherwise it will just progress the Luteal hormone.}
+	if LutH > LutH_Max:
+		rej_idx = 0
+		rej_sz = arrsize('Babyptype')
+		:lutcycloop
+		if rej_idx < rej_sz:
+			if Babyptype[rej_idx] = 0:
+				KILLVAR 'polkid',tempbabyi
+				KILLVAR '$kidname',tempbabyi
+				KILLVAR 'kidage',tempbabyi
+				KILLVAR 'daykid',tempbabyi
+				KILLVAR 'monthkid',tempbabyi
+				KILLVAR 'yearkid',tempbabyi
+				KILLVAR 'Babyptype',tempbabyi
+				KILLVAR '$ChildFath',tempbabyi
+				KILLVAR '$ChildThFath',tempbabyi
+				KILLVAR 'hairkid',tempbabyi
+				KILLVAR 'eyeskid',tempbabyi
+				KILLVAR 'cumarrcon',tempbabyi
+				FertEgg -= 1
+			end
+			rej_idx += 1
+			jump 'lutcycloop'
+		end
+		LutH = 0
+		if preg = 1:
+			cycle = 5
+		elseif menoage <= age:
+			KILLVAR '$wombpotfath'
+			killvar '$cumfthname'
+			killvar '$cumfthusedname'
+			killvar 'cumtime'
+			cycle = 6
+		else
+			KILLVAR '$wombpotfath'
+			killvar '$cumfthname'
+			killvar '$cumfthusedname'
+			killvar 'cumtime'
+			!! the setting of the max_time can be here although it can be changed in the future
+			FocH_Max = rand(312,360) & !! 13-15 days including menstruation
+			temprand = rand(0,10)
+			if pillcon >= 38000 or rand(1,24) = 1:
+				EggRH = 0
+				cycle = 1
+				mesec = 0
+			else
+				cycle = 0
+				killvar 'abortionbirthdate'
+				if cyccustom = 1: daylastperiod = daystart
+				firstmens = daystart
+				temprand = rand(0,10)
+				if temprand = 0 and pillcon < 10000:
+					mesec = rand(104,136) & !! 120
+				elseif temprand < 9 and pillcon < 15000:
+					mesec = rand(76,104) & !!  96
+				elseif pillcon < 20000:
+					mesec = rand(52,76) & !! 72
+				else
+					mesec = rand(44,52) & !! 48
+				end
+			end
+		end
+	else
+		if preg = 1:PregChem += 1+pregspeedcheat
+		if rand(0,100) < 100: LutH += 1
+	end
+end
+
+!{Recovery to Follicular. It checks to see if you are in the recovery phase after a pregnancy. If you are, it checks to see if you still have recovery hormone. If you dont, it sets you into the follicular phase with a chance of a boosted Egg releasing hormone. Otherwise it decreases your recovery hormone with a chance to decrease it twice.}
+
+if $ARGS[0] = 'cyc4':
+	if RecovH <= 0:
+		cycle = 1
+		if cyccustom = 1:
+			knowpregloss = 0
+			knowpregrecover = 0
+		end
+		if rand(0,1000) = 1000:
+			EggRH = rand(20,80)
+		else
+			EggRH = 0
+		end
+		FocH = EggRH
+	else
+		RecovH -= 1
+		if rand(0,10) = 0: RecovH -= 1
+	end
+end
+
+
+!{Pregnancy Progression. It checks to see if you are in the pregnancy phase of a cycle. If you are, it progresses your pregnancy chemical. Then it gives a fluxuation of possible due dates. If you cross the due date threshold, you enter labor, marked by preg = 2. Other milestones will also be placed in here, including body deformations. Right now this is mostly an empty placeholder.}
+
+if $ARGS[0] = 'preg':
+	if fertegg = 1 and ferteggage < 330:
+		if rand(0,(2000 - age*20)) = 0:
+			babyembryo += 1
+			PregChem += rand(10,30)
+			nextbaby = arrsize('$ChildFath')
+			polkid[nextbaby] = polkid[nextbaby-1]
+			$kidname[nextbaby] = 'unborn'
+			kidage[nextbaby] = 0
+			daykid[nextbaby] = 0
+			monthkid[nextbaby] = 0
+			yearkid[nextbaby] = 0
+			Babyptype[nextbaby] = Babyptype[nextbaby-1]
+			$ChildFath[nextbaby] = $ChildFath[nextbaby-1]
+			hairkid[nextbaby] = hairkid[nextbaby-1]
+			eyeskid[nextbaby] = eyeskid[nextbaby-1]
+			cumarrcon[nextbaby] = cumarrcon[nextbaby-1]
+			$childtype[nextbaby] = 'identical twin'
+			$childtype[nextbaby-1] = 'identical twin'
+		end
+	end
+	PregChem += (1+pregspeedcheat)
+	temprand = rand(-400,800)
+	temprand -= (babyembryo-1)*588
+	if PregChem > 6573 + temprand and preg ! 2:
+		'A sharp pain pierces your abdomen, and you feel something flow down your legs. Your water has broken!'
+		!!	switch on lactation if not already active.
+		if lactation['active'] < 1: func('lact_lib','lact_switch')
+		$cycreport_txt = 'In labour'
+		arrmodtmp =arrsize('$ChildFath')
+		arrmodtmp -= (babyembryo+1)
+		:babyfinalpreploop
+		if arrmodtmp < arrsize('$ChildFath') and daykid[arrmodtmp] = 0:
+			daykid[arrmodtmp] = 42
+			$ChildThFath[arrmodtmp] = $wombthfath
+			arrmodtmp += 1
+			jump 'babyfinalpreploop'
+		end
+		KILLVAR '$wombpotfath'
+		KILLVAR '$wombthfath'
+		preg = 2
+		pregminut = totminut + 1440
+		if babyembryo > 1:
+			'Your babies are coming...'
+		else
+			'Your baby is coming...'
+		end
+		if PregChem < 3885:
+			'Way too early!'
+		elseif PregChem < 5229:
+			'Very early!'
+		elseif PregChem < 6069:
+			'Early.'
+		elseif PregChem > 6959:
+			'Late.'
+		elseif PregChem > 7245:
+			'Very Late!'
+		end
+		'You need to get to a clinic.'
+	end
+	if PregChem > 2203:
+		if pregchem > 2853 or kid > 0:
+			if rand(0,7) = 0: dynamic $d_pregmovement
+		else
+			if rand(0,500) = 0: dynamic $d_pregmovement
+		end
+	end
+end
+
+--- femcyc ---------------------------------
+

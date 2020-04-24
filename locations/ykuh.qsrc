@@ -1,0 +1,161 @@
+# ykuh
+
+$metka = ''
+$loc = 'ykuh'
+$locclass = 'kitr'
+$menu_loc = 'ykuh'
+$menu_arg = ''
+menu_off = 0
+*clr & cla
+gs 'stat'
+
+'<center><b><font color="maroon">Kitchen</font></b></center>'
+'<center>A well stacked kitchen containing all the necessities to make whatever meal you please.</center>'
+
+if ymanrem[6] = 0:'<center><img <<$set_imgh>> src="images/locations/city/suburb/mansion/ynill.jpg"></center>'
+if ymanrem[6] = 1:'<center><img <<$set_imgh>> src="images/locations/city/suburb/mansion/yrem.jpg"></center>'
+if ymanrem[6] = 2:'<center><img <<$set_imgh>> src="images/locations/city/suburb/mansion/ykun.jpg"></center>'
+if ymanrem[6] = 2:''
+
+if dirttarelka > 0 and fairy >= dirttarelka:
+	cltarelka += dirttarelka
+	fairy -= dirttarelka
+	dirttarelka = 0
+	'You washed the dirty dishes in the dishwasher.'
+elseif fairy < dirttarelka:
+	'You can''t use the dishwasher. You have no detergent.'
+end
+
+if cltarelka > 0:
+	'You have <b><<cltarelka>></b> clean plates left.'
+else
+	'<b><font color="red">You don''t have any clean plates left.</font></b>'
+end
+
+if dirttarelka > 0:'There are <b><<dirttarelka>></b> dirty dishes in the sink. <a href="exec:dynamic $dirtarm">Wash the dishes</a>.'
+
+if fairy > 0:
+	'Under the sink is some dishwashing detergent, which is enough for <b><<fairy>></b> times.'
+else
+	'<b><font color="red">You have nothing to wash dishes with. You should buy some detergent.</font></b>'
+end
+
+if eda > 0:
+	if cltarelka = 0 or edahot > 0:$edagot = ''
+	if cltarelka > 0 and edahot = 0:$edagot = '<a href="exec:dynamic $edagotd">Cook a meal (0:30)</a>'
+
+	'There''s enough food for <b><<eda>></b> servings. <<$edagot>>'
+elseif edaD = 0 and eda = 0:
+	'<b><font color="red">The fridge is empty, you have nothing to eat.</font></b>'
+end
+
+act 'Leave the room':minut += 1 & gt 'ymans'
+
+if edahot > 0:'<a href="exec:dynamic $edahotd">There''s a warm meal on the table.</a>'
+
+if pranik > 0:
+	'You have <<pranik>> tea biscuits.'
+	act 'Drink tea with biscuits (0:05)':
+		cla
+		*clr
+		minut += 5
+		pranik -= 1
+		pcs_health += 30
+		pcs_mood += 20
+		pcs_energy += 20
+		pcs_hydra += 60
+		cumspclnt = 2
+		gs 'cum_cleanup'
+		pcs_breath = 0
+		fat += 4
+		frost = 0
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/shared/food/food.jpg"></center>'
+		'You drank tea with tea biscuits, it''s sweet and very bad for your figure, but they''re so good you can''t resist.'
+
+		act 'Get up from the table':gt $curloc
+	end
+end
+
+dynamic $edaD
+
+dynamic $fatdel
+
+act 'Drink':
+	cla
+	minut += 5
+
+	if pcs_hydra >= 100:
+		'You are not thirsty.'
+	elseif pcs_hydra < 80:
+		pcs_hydra += 30
+		cumspclnt = 2
+		gs 'cum_cleanup'
+		pcs_breath = 0
+		'You gladly drink a glass of water.'
+	end
+
+	act 'Get up from the table':gt $curloc
+end
+
+if husband > 0 and husbanday > 0 and huseatday ! daystart and eda >= 2:
+	act 'Cook a meal for your husband, 2 servings (1:00)':
+		cla
+		*clr
+		husband += 5
+		eda -= 2
+		minut += 60
+		huseatday = daystart
+		pcs_mood -= 15
+		'<center><img <<$set_imgh>> src="images/shared/home/kitchen/cook.jpg"></center>'
+		'You made some delicious food for your husband.'
+
+		act 'Put the food on the table':gt $curloc
+	end
+end
+
+if lekarstvo > 0:
+	if lekarstvo > 1:'You have <<lekarstvo>> pills left.' else 'You have one pill left.'
+	if sick > 0 and lekarday ! daystart:
+		act 'Take a pill':
+			cla
+			*clr
+			minut += 5
+			lekarday = daystart
+			lekarstvo -= 1
+			sick -= sick * 20 / 100
+			'<center><img <<$set_imgh>> src="images/locations/shared/apartment/event/sick/lekr1.jpg"></center>'
+			'You took a pill.'
+
+			act 'Move away':gt $curloc
+		end
+	end
+end
+
+if vitamin > 0:
+	if vitamin > 1:'You have <<vitamin>> vitamin pills left.' else 'You have one vitamin pill left.'
+
+	if vitaminday ! daystart:
+		act 'Take a vitamin pill':
+			cla
+			*clr
+			minut += 5
+			vitaminday = daystart
+			vitamin -= 1
+			frost = 0
+
+			if KandidozOnce = 1:Kandidoz -= 2
+			if GerpesOnce = 1:Gerpes -= 2
+			if SifacOnce = 1 and Sifilis >= 10:Sifilis -= rand(0, 1)
+
+			pcs_skin += 1
+
+			'You took a vitamin pill.'
+
+			act 'Move away':gt $curloc
+		end
+	end
+end
+
+--- ykuh ---------------------------------
+

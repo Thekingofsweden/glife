@@ -1,0 +1,607 @@
+# mirror
+
+
+if $ARGS[0] = 'start':
+	menu_off = 1
+	*clr & cla
+	$mirrorloc = 'mirror'
+	gs 'stat' &! It should be here, because some of the strigs have to be initialized
+	if player_avatar = 1:
+		'<center><img <<$set_imgh>> src="images/avatar.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+	end
+	
+	if autohairbrush = 1 and pcs_hairbsh = 0 : xgt 'mirror', 'brush'
+	
+	if mirror_steam ! hour: mirror_steam = 100
+	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour: gt'mirror','steam'
+
+	*nl
+	if daystart < 10 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror, you see a strange woman''s face looking back at you that exactly copies all your actions. You can hardly accept the idea that this is now you.'
+	if daystart >= 10 and daystart < 30 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror you see a woman''s face to which you have become accustomed to. But sometimes, you get the feel that this is not your face.'
+	'<<$hair>>'
+	'<<$pcs_makeup>>. Your<<$pcdesc_eyesizeinsertive>> eyes are <<$pcdesc_eyecolour>> <<$pcs_lashes>>, and you have <<$pcdesc_fulllipswordy>>.'
+	'<<$skin>>'
+	'<<$pcs_apprnc>>'
+
+	if curly > 0 and defcurly = 0: '<br>Your curly hair will last for another <<curly>> days.'
+	if straight > 0 and defcurly = 1: '<br>Your straightened hair will last for another <<straight>> days.'
+	if hbraids > 0: '<br>Your braided hair will last for another <<hbraids>> days.'
+	if pcs_haircol ! nathcol:
+		if dyefade > 0 and dyefade < 7: '<br>Your hair dye is beginning to fade and your roots are showing.'
+		if dyefade = 0: '<br>Your hair dye has faded and looks terrible.'
+	end
+	
+	!!!!!!!! Maruda Hair Mod
+	if hscrunch < 1:hscrunchw = 0
+	if hpingrip < 1:hpingripw = 0
+	if hscrunch < 2:hpigtail = 0
+	
+	if pcs_hairlng > 41 and hscrunch >= 1 and hbraids = 0:
+		*nl
+		if hscrunchw = 0 and hpingripw = 0: 'As you have a scrunchy, you can arrange your hair into a <a href="exec:hscrunchw = 1 & gs ''mirror'', ''start''">ponytail</a>. You have <<hscrunch>> scrunchies left.'
+		if hscrunchw = 1: 'Remove the <a href="exec:hscrunchw = 0 & gs ''mirror'', ''start''">scrunchie</a> to get rid of the ponytail.'
+	end
+
+	if pcs_hairlng > 41 and hpingrip >= 1 and hbraids = 0:
+		if hscrunchw = 0 and hpingripw = 0: 'You have several clips, pins and grips for you hair. Hence, you can <a href="exec:hpingripw = 1 & gs ''mirror'', ''start''">updo your hair</a>. You have <<hpingrip>> hair accessories at your disposal.'
+		if hpingripw = 1: 'Let your hair <a href="exec:hpingripw = 0 & gs ''mirror'', ''start''">flow free</a>.'
+	end
+
+	if pcs_hairlng > 80 and hscrunch >= 2 and hbraids = 0:
+		if hscrunchw = 0 and hpingripw = 0: 'You can use two hair ties to make yourself some <a href="exec:hpigtail = 1 & hscrunchw = 2 & gs ''mirror'', ''start''">pigtails</a>.'
+		if hscrunchw = 2: '<a href="exec:hpigtail = 0 & hscrunchw = 0 & gs ''mirror'', ''start''">Remove</a> your scrunchies and let your hair flow free again.'
+	end
+	
+	if canBraidHair = 1 and hscrunch >= 1 and hBraids = 0 and (pcs_hairlng > 80 and pcs_hairlng <= 800) and hscrunchw = 0 and hpingripw = 0 and hscrunchw = 0:
+		'You can spend half an hour <a href="exec:hbraids = 15 & minut += 30 & gs ''mirror'', ''start''">braiding</a> your hair, just the way your sister taught you.'
+	end
+
+	if hbraids > 0:
+		'Take half an hour removing your <a href="exec:hbraids = 0 & minut += 30 & gs ''mirror'', ''start''">braid</a>.'
+	end
+	!!!!!!!! Maruda Hair Mod
+
+	if kosmetica > 0: *nl 'Cosmetics: <<kosmetica>>' else *nl 'You have no makeup.'
+	if lipbalm > 0: *pl ' | Lip gloss: <<lipbalm>>' else *pl ' You have no lip gloss left.'
+	if falselashesplain > 0: *nl 'False lashes: <<falselashesplain>>' else *nl 'You have no false lashes left.'
+	if falselashesmink > 0: *pl ' | Mink lashes: <<falselashesmink>>' else *pl ' You have no mink lashes left.'
+	*nl
+
+	$makeupLight =   'You subtly apply some neutral tones, with a light application of makeup to bring out your natural beauty.'
+	$makeupNatural = 'You apply some mildly vibrant tones and colors of makeup to cover your minor imperfections and enhance your best features.'
+	$makeupHeavy =   'You apply some deeper, richer shades of makeup, thick enough to cover most imperfections, while drawing attention to your eyes and lips.'
+
+	! WD: Cheat Unused ~ 'AutoHapri'
+	if pcs_hairbsh = 0 and AutoHapri = 1:
+		minut += 3
+		pcs_hairbsh = 1
+		'You brush your hair.'
+	end
+
+	!! WD: Cheat Unused ~ 'AutoMakeup'
+	if pcs_makeup = 1 and kosmetica > 0 and AutoMakeup = 1:
+		pcs_makeup = AutoMakeupType
+		makupskl_exp += rand(1,3)
+		if kosmetica < 3 and pcs_makeup = 4:pcs_makeup = 3
+		if kosmetica < 2 and pcs_makeup = 3:pcs_makeup = 2
+		if kosmetica < 1 and pcs_makeup ! 1:
+			pcs_makeup = 1
+			'You have no make-up left.'
+		else
+			if pcs_makeup = 2:
+				*pl $makeupLight
+				minut -= 3
+				kosmetica -= 1
+			end
+
+			if pcs_makeup = 3:
+				*pl $makeupNatural
+				minut -= 5
+				kosmetica -= 2
+			end
+
+			if pcs_makeup = 4:
+				*pl $makeupHeavy
+				minut -= 10
+				vidageday -= 1
+				kosmetica -= 3
+			end
+		end
+	end
+
+	*nl
+	if umbrella = 0: 'WARNING: Makeup will run in the rain unless you buy an umbrella.'
+
+	act 'Move away from the mirror':gt 'mirror','fin'
+	
+	if pcs_hairbsh = 0: act 'Brush your hair': xgt 'mirror', 'brush'
+	
+	! WD: Cheat Unused ~ 'AutoLipBalm'
+
+	!! Added the makeup setting.
+
+	if pcs_makeup = 1 and kosmetica > 0:
+		act 'Apply makeup':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/pc/mop.jpg"></center>'
+			'You consider for a moment which look you want to go for.'
+			*nl
+			act 'Change your mind': gt 'mirror', 'start'
+			
+			if kosmetica > 0:
+				act 'Light make-up':
+					cla
+					minut += 3
+					makupskl_exp += rand(1,3)
+					kosmetica -= 1
+					pcs_makeup = 2
+					'<<$makeupLight>>'
+					act 'Continue': gt 'mirror', 'start'
+				end
+			end
+
+			if kosmetica > 1:
+				act 'Vibrant make-up':
+					cla
+					minut += 5
+					makupskl_exp += rand(1,3)
+					kosmetica -= 2
+					pcs_makeup = 3
+					'<<$makeupNatural>>'
+					act 'Continue': gt 'mirror', 'start'
+				end
+			end
+
+			if kosmetica > 2:
+				act 'Thick make-up':
+					cla
+					minut += 10
+					makupskl_exp += rand(1,3)
+					kosmetica -= 3
+					vidageday -= 1
+					pcs_makeup = 4
+					'<<$makeupHeavy>>'
+					act 'Continue': gt 'mirror', 'start'
+				end
+			end
+		end
+	elseif kosmetica <= 0:
+		'You don''t have any makeup to apply.'
+	end
+
+	if AutoLipBalm = 1:	gs 'mirror','applyLipbalm'
+	if lipbalm > 0 and pcs_lipbalm <= 0:
+		act 'Apply lip balm':
+			cla
+			gs 'mirror','applyLipbalm'
+			act 'View results':gt 'mirror', 'start'
+		end
+	end
+	
+	if falselashesplain > 0 and pcs_lashes < 3 and lashextensionstyle <= 0:
+		act 'Apply false lashes':
+			cla
+			gs 'mirror','applyLashesplain'
+			act 'View results':gt 'mirror', 'start'
+		end
+	end
+	
+	if falselashesmink > 0 and pcs_lashes < 4 and lashextensionstyle <= 0:
+		act 'Apply mink lashes':
+			cla
+			gs 'mirror','applyLashesmink'
+			act 'View results':gt 'mirror', 'start'
+		end
+	end
+	
+!	if (pcs_makeup <= 1 and kosmetica > 0) or (lipbalm > 0 and pcs_lipbalm <= 0 and pcs_hairbsh = 0):
+!		act 'Do the works': gt 'mirror', 'works'
+!	end
+	act 'Manage your custom make-up routines': dynamic $createcustroutine
+	!!New makeup setting
+	!!This imforms the person what makeup they have pre selected
+	!! 0 - none, 1 - light, 2 - moderate, 3 - heavy
+
+!	'Select level for auto make-up: <a href="exec:makeupSetting = 0 & gt ''mirror'', ''start''">none</a>, <a href="exec:makeupSetting = 1 & gt ''mirror'', ''start''">light</a>, <a href="exec:makeupSetting = 2 & gt ''mirror'', ''start''">vibrant</a>, <a href="exec:makeupSetting = 3 & gt ''mirror'', ''start''">thick</a>.'
+!
+!	if makeupSetting = 0:
+!		'Currently you have no make-up set.'
+!	elseif makeupSetting = 1:
+!		'Currently the level you have set is for light make-up.'
+!	elseif makeupSetting = 2:
+!		'Currently the level you have set is for vibrant make-up.'
+!	elseif makeupSetting = 3:
+!		'Currently the level you have set is for thick make-up.'
+!	end
+
+	if $routine1 ! '':
+		'Make-up routine 1 is called ''<<$routine1custname>>'' and consists of : '
+		if mid($routine1,1,1) = 0:'No make-up'
+		if mid($routine1,1,1) = 1:'Light make-up'
+		if mid($routine1,1,1) = 2:'Vibrant make-up'
+		if mid($routine1,1,1) = 3:'Thick make-up'
+		if mid($routine1,2,1) = 0:'No Lipbalm'
+		if mid($routine1,2,1) = 1:'Lipbalm'
+		if mid($routine1,3,1) = 0:'No fake lashes'
+		if mid($routine1,3,1) = 1:'Normal fake lashes'
+		if mid($routine1,3,1) = 2:'Mink fake lashes'
+		''
+	end
+
+	if $routine2 ! '':
+		'Make-up routine 2 is called ''<<$routine2custname>>'' and consists of : '
+		if mid($routine2,1,1) = 0:'No make-up'
+		if mid($routine2,1,1) = 1:'Light make-up'
+		if mid($routine2,1,1) = 2:'Vibrant make-up'
+		if mid($routine2,1,1) = 3:'Thick make-up'
+		if mid($routine2,2,1) = 0:'No Lipbalm'
+		if mid($routine2,2,1) = 1:'Lipbalm'
+		if mid($routine2,3,1) = 0:'No fake lashes'
+		if mid($routine2,3,1) = 1:'Normal fake lashes'
+		if mid($routine2,3,1) = 2:'Mink fake lashes'
+		''
+	end
+
+	if $routine3 ! '':
+		'Make-up routine 3 is called ''<<$routine3custname>>'' and consists of : '
+		if mid($routine3,1,1) = 0:'No make-up'
+		if mid($routine3,1,1) = 1:'Light make-up'
+		if mid($routine3,1,1) = 2:'Vibrant make-up'
+		if mid($routine3,1,1) = 3:'Thick make-up'
+		if mid($routine3,2,1) = 0:'No Lipbalm'
+		if mid($routine3,2,1) = 1:'Lipbalm'
+		if mid($routine3,3,1) = 0:'No fake lashes'
+		if mid($routine3,3,1) = 1:'Normal fake lashes'
+		if mid($routine3,3,1) = 2:'Mink fake lashes'
+		''
+	end
+
+	if $routine4 ! '':
+		'Make-up routine 4 is called ''<<$routine4custname>>'' and consists of : '
+		if mid($routine4,1,1) = 0:'No make-up'
+		if mid($routine4,1,1) = 1:'Light make-up'
+		if mid($routine4,1,1) = 2:'Vibrant make-up'
+		if mid($routine4,1,1) = 3:'Thick make-up'
+		if mid($routine4,2,1) = 0:'No Lipbalm'
+		if mid($routine4,2,1) = 1:'Lipbalm'
+		if mid($routine4,3,1) = 0:'No fake lashes'
+		if mid($routine4,3,1) = 1:'Normal fake lashes'
+		if mid($routine4,3,1) = 2:'Mink fake lashes'
+		''
+	end
+	
+	gs 'stat'	
+end &! --- start ---
+
+
+$createcustroutine = {
+
+	cls & cla
+	'Select make-up level'
+	'<a href="exec:makeupSetting = 0 & dynamic $createcustroutine">none</a>, <a href="exec:makeupSetting = 1 & dynamic $createcustroutine">light</a>, <a href="exec:makeupSetting = 2 & dynamic $createcustroutine">vibrant</a>, <a href="exec:makeupSetting = 3 & dynamic $createcustroutine">thick</a>.'
+	if makeupSetting = 0:
+		'Currently you have no make-up set.'
+	elseif makeupSetting = 1:
+		'Currently the level you have set is for light make-up.'
+	elseif makeupSetting = 2:
+		'Currently the level you have set is for vibrant make-up.'
+	elseif makeupSetting = 3:
+		'Currently the level you have set is for thick make-up.'
+	end
+	'Select other improvements :'
+	if custlipbalm = 0:
+		'<a href="exec:custlipbalm = 1 & dynamic $createcustroutine">No Lipbalm</a>'	
+	else
+		'<a href="exec:custlipbalm = 0 & dynamic $createcustroutine">Lipbalm</a>'	
+	end	
+	if custlashes = 0:
+		'<a href="exec:custlashes = 1 & dynamic $createcustroutine">No fake lashes</a>'	
+	elseif custlashes = 1:
+		'<a href="exec:custlashes = 2 & dynamic $createcustroutine">Normal fake lashes</a>'	
+	else
+		'<a href="exec:custlashes = 0 & dynamic $createcustroutine">Mink fake lashes</a>'	
+	end	
+	
+	$routine = str(makeupSetting) + str(custlipbalm) + str(custlashes)
+	
+	act 'Exit':gt 'mirror','start'
+	
+	if $routine1 ! '':
+		act 'Remove <<$routine1custname>>':
+			killvar '$routine1'
+			killvar '$routine1custname'
+			dynamic $createcustroutine
+		end
+			
+		act 'Rename <<$routine1custname>>':
+			$routine1custname = input ("Name the routine")
+			dynamic $createcustroutine
+		end
+	end
+	if $routine2 ! '':
+		act 'Remove <<$routine2custname>>':
+			killvar '$routine2'
+			killvar '$routine2custname'
+			dynamic $createcustroutine
+		end
+			
+		act 'Rename <<$routine2custname>>':
+			$routine2custname = input ("Name the routine")
+			dynamic $createcustroutine
+		end
+	end
+	if $routine3 ! '':
+		act 'Remove <<$routine3custname>>':
+			killvar '$routine3'
+			killvar '$routine3custname'
+			dynamic $createcustroutine
+		end
+			
+		act 'Rename <<$routine3custname>>':
+			$routine3custname = input ("Name the routine")
+			dynamic $createcustroutine
+		end
+	end
+	if $routine4 ! '':
+		act 'Remove <<$routine4custname>>':
+			killvar '$routine4'
+			killvar '$routine4custname'
+			dynamic $createcustroutine
+		end
+		act 'Rename <<$routine4custname>>':
+			$routine4custname = input ("Name the routine")
+			dynamic $createcustroutine
+		end
+	end
+	act 'Save routine':
+		if $routine1 = '':
+			$routine1 = $routine
+			$routine1custname = 'routine 1'
+			dynamic $createcustroutine
+		elseif $routine2 = '':
+			$routine2 = $routine 
+			$routine2custname = 'routine 2'
+			dynamic $createcustroutine
+		elseif $routine3 = '':
+			$routine3 = $routine 
+			$routine3custname = 'routine 3'
+			dynamic $createcustroutine
+		elseif $routine4 = '':
+			$routine4 = $routine
+			$routine4custname = 'routine 4'
+			dynamic $createcustroutine
+		else
+			'max 4 routines allowed, please remove one before adding a new one'
+		end
+	end
+}
+
+if $ARGS[0] = 'steam':
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/shared/home/bathroom/mirror1.jpg"></center>'
+	'<center>The mirror is heavily misted. It must be wiped or left to cool.</center>'
+	gs 'stat'
+	act 'Wipe the mirror':
+		*clr & cla
+		minut += 1
+		mirror_steam = 100
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/shared/home/bathroom/mirror2.jpg"></center>'
+		'<center>You wipe the mirror with a towel.</center>'
+		act 'Look in the mirror':gt 'mirror','start'
+	end
+	act 'Move away from the mirror':gt 'mirror','fin'
+end
+
+if $routine1 ! '' and pcs_makeup < 2:
+	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour:
+
+	else
+		act 'Apply <<$routine1custname>>':gt 'mirror','works',mid($routine1,1,1),mid($routine1,2,1),mid($routine1,3,1)
+	end
+end
+if $routine2 ! '' and pcs_makeup < 2:
+	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour:
+
+	else
+		act 'Apply <<$routine2custname>>':gt 'mirror','works',mid($routine2,1,1),mid($routine2,2,1),mid($routine2,3,1)
+	end
+end
+if $routine3 ! '' and pcs_makeup < 2:
+	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour:
+
+	else
+		act 'Apply <<$routine3custname>>':gt 'mirror','works',mid($routine3,1,1),mid($routine3,2,1),mid($routine3,3,1)
+	end
+end
+if $routine4 ! '' and pcs_makeup < 2:
+	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour:
+
+	else
+		act 'Apply <<$routine4custname>>':gt 'mirror','works',mid($routine4,1,1),mid($routine4,2,1),mid($routine4,3,1)
+	end
+end
+
+if $ARGS[0] = 'brush':
+	menu_off = 1
+	*clr & cla
+	minut += 3
+	pcs_hairbsh = 1
+	if player_avatar = 1:
+		'<center><img <<$set_imgh>> src="images/avatar.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+	end
+	'You brush your hair.'
+	if $mirrorloc = 'mirror':
+		act 'Finish': gt 'mirror', 'start'
+	else
+		act 'Finish': gt 'mirror', 'fin'
+	end
+end
+
+if $ARGS[0] = 'works':
+	cla
+	if kosmetica <= 0:
+		'You don''t have any makeup.'
+	elseif pcs_makeup = 1 and kosmetica >= $ARGS[1]:
+		*clr
+		'<center><img <<$set_imgh>> src="images/pc/mop.jpg"></center>'
+		*nl
+		'You consider for a moment which look you want to go for.'
+		*nl
+		if $ARGS[1] = 1:
+			'Without thinking, you instantly apply a subtle amount of makeup to your face.'
+			minut += 3
+			makupskl_exp += rand(1,3)
+			kosmetica -= 1
+			pcs_makeup = 2
+			'<<$makeupLight>>'
+		elseif $ARGS[1]= 2:
+			'Without thinking, you instantly apply a moderate amount of makeup to your face.'
+			minut += 5
+			makupskl_exp += rand(1,3)
+			kosmetica -= 2
+			pcs_makeup = 3
+			'<<$makeupNatural>>'
+		elseif $ARGS[1] = 3:
+			'Without thinking, you instantly apply a heavy amount of makeup to your face.'
+			minut += 10
+			makupskl_exp += rand(1,3)
+			kosmetica -= 3
+			vidageday -= 1
+			pcs_makeup = 4
+			'<<$makeupHeavy>>'
+		end
+	elseif kosmetica < $ARGS[1]:
+		'You don''t have enough makeup to apply your chosen option.'
+	end
+	if pcs_hairbsh = 0:
+		minut += 3
+		pcs_hairbsh = 1
+		'You brush your hair.'
+	end
+	if $ARGS[2] = 1:gs 'mirror','applyLipbalm'
+	if $ARGS[3] = 2 and falselashesmink >= 1 and pcs_lashes < 4 and lashextensionstyle <= 0:gs 'mirror','applyLashesmink'
+	if $ARGS[3] = 1 and falselashesplain >= 1 and pcs_lashes < 3 and lashextensionstyle <= 0:gs 'mirror','applyLashesplain'
+	cla
+	act 'View results':gt 'mirror', 'start'
+end &! --- works ----
+
+if $ARGS[0] = 'applyLipbalm':
+	if lipbalm > 0 and pcs_lipbalm <= 0:
+		minut += 1
+		lipbalm -= 1
+		lipkoef += rand(0, 1)
+		if lipkoef > 50:
+			lipkoef = 0
+			pcs_lip += 1
+		end
+		pcs_lipbalm += 8
+		'You apply some moisturizing balm on your lips.'
+	end
+end &! --- applyLipbalm ---
+
+if $ARGS[0] = 'applyLashesmink':
+	if falselashesmink > 0 and pcs_lashes < 4:
+		minut += 15
+		falselashesmink -= 1
+		if false_lashes >= 1 and pcs_lashes = 3:'You remove your old, plain lashes first.'
+		false_lashes = 1
+		pcs_lashes = 4
+		'You spend a good bit of time affixing your lavish, mink lash strips.'
+	end
+end &! --- applyLashesmink ---
+
+if $ARGS[0] = 'applyLashesplain':
+	if falselashesplain > 0 and pcs_lashes < 3:
+		minut += 15
+		falselashesplain -= 1
+		false_lashes = 1
+		pcs_lashes = 3
+		'You spend a fair bit of time carefully trimming and affixing your flirtatious false lashes.'
+	end
+end &! --- applyLashesplain ---
+
+if $ARGS[0] = 'fin':
+	killvar '$makeupLight'
+	killvar '$makeupNatural'
+	killvar '$makeupHeavy'
+	killvar '$routine'
+	killvar '$mirrorloc'
+	menu_off = 0
+	gt $locM, $metkaM
+end &! --- fin ----
+
+if $ARGS[0] = 'd_bag_mirror':
+	*clr & cla
+	gs 'stat'
+	'<center><h1>Compact Mirror</h1></center>'
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	'<center><table cellspacing="0" cellpadding="20" valign="top"><tr>'
+	'<td cellspacing="0" cellpadding="0" valign="top">'
+	'You have '+iif(kosmetitka > 0, '<b><<kosmetitka>></b>', 'no')+' cosmetic applications and '+iif(salfetka > 0, '<b><<salfetka>></b>', 'no')+' tissues left in your purse.'
+	*nl
+	if pcs_hairbsh = 0: '<a href="exec: pcs_hairbsh = 1 & gs ''stat'' & gs ''din_bad'', ''d_bag''">Brush your hair</a>'
+	if salfetka > 0 and pcs_makeup ! 1: '<center><a href="exec: salfetka -= 1 & pcs_makeup = 1 & gt ''mirror'', ''d_bag_mirror''"><b>Remove your makeup</b></a>'
+	if kosmetitka > 0 and pcs_makeup = 1:
+		'<a href="exec: minut += 3 & makupskl_exp += rand(1,3) & pcs_makeup = 2 & kosmetitka -= 1 & gt ''mirror'', ''d_bag_mirror''"><b>Put on light makeup</b></a>'
+		!!Remove this coment and uncomment the next line to restore the ability to put on any typ of makeup
+		!!'<center><a href="exec: gt ''mirror'', ''kosmetitka_apply'' "><b>Put on makeup</b></a></center>'
+	elseif salfetka > 0 and pcs_makeup = 0 and ((makeupSetting = 1 and kosmetitka >= 1) or (makeupSetting = 2 and kosmetitka >= 2) or (makeupSetting = 3 and kosmetitka >= 3)):
+		'a href="exec: gt ''mirror'', ''kosmetitka_fix'' "><b>Fix your makeup</b></a>'
+	elseif (kosmetitka = 0 or salfetka = 0) and pcs_makeup = 0:
+		'You need portable makeup and tissues to fix your makeup.'
+	end
+	'</td></tr></table></center>'	
+	act 'Finish': gt 'din_bad', 'd_bag'
+end
+
+if $ARGS[0] = 'kosmetitka_apply':
+	*clr & cla
+	'<center><h1>Compact Mirror</h1></center>'
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	'<center><table cellspacing="0" cellpadding="20" valign="top"><tr>'
+	'<td cellspacing="0" cellpadding="0" valign="top">'
+	gs 'stat'
+
+	if kosmetitka >= 1: '<a href="exec: minut += 3 & makupskl_exp += rand(1,3) & pcs_makeup = 2 & kosmetitka -= 1 & gt ''mirror'', ''d_bag_mirror''"><b>Light make-up</b></a>'
+	if kosmetitka >= 2: '<a href="exec: minut += 5 & makupskl_exp += rand(1,3) & pcs_makeup = 3 & kosmetitka -= 2 & gt ''mirror'', ''d_bag_mirror''"><b>Natural make-up</b></a>'
+	if kosmetitka >= 3: '<a href="exec: minut += 10 & makupskl_exp += rand(1,3) & pcs_makeup = 4 & kosmetitka -= 3 & gt ''mirror'', ''d_bag_mirror''"><b>Heavy make-up</b></a>'
+	'</td></tr></table></center>'
+	act 'Finish': gt 'mirror', 'd_bag_mirror'
+end
+
+if $ARGS[0] = 'kosmetitka_fix':
+	*clr & cla
+	'<center><h1>Compact Mirror</h1></center>'	
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	salfetka -= 1
+	makupskl_exp += rand(1,3)
+	if makeupSetting = 1:
+		minut += 3		
+		kosmetitka -= 1
+		pcs_makeup = 2
+		'<center>You carefully fix your makeup and restore the neutral and light tones that bring out your natural beauty.</center>'
+	elseif makeupSetting = 2:
+		minut += 5
+		kosmetitka -= 2
+		pcs_makeup = 3
+		'<center>You carefully fix your makeup and restore the mildly vibrant tones and colors that cover your minor imperfections and enhance your best features.</center>'			
+	elseif makeupSetting = 3:
+		minut += 10
+		kosmetitka -= 3
+		vidageday -= 1
+		pcs_makeup = 4
+		'<center>You carefully fix your makeup and restore the deeper, richer shades, thick enough to cover most imperfections, while drawing attention to your eyes and lips.</center>'
+	end
+
+	gs 'stat'
+	
+	act 'Continue': gt 'mirror', 'd_bag_mirror'
+end
+
+--- mirror ---------------------------------
+

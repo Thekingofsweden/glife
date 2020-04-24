@@ -1,0 +1,126 @@
+# zaprF
+
+if $ARGS[0] = 'start':
+
+	$metka = 'start'
+	$loc = 'zaprF'
+	$menu_loc = 'zaprF'
+	$menu_arg = 'start'
+	menu_off = 0
+	$location_type = 'public_outdoors'
+	cla & *clr
+	gs 'stat'
+	'<center><b>Gas Station</b></center>'
+	if hour < 8 or hour > 21:
+		'<center><img <<$set_imgh>> src="images/locations/shared/gas/gazprom_night.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/shared/gas/gazprom_day.jpg"></center>'
+	end
+	'The local gas station, the cheap pumps are limited in functionality and will always fill the tank up completely.'
+	*nl
+	'When the weather is nice sometimes girls will offer a car washing service for some tips, there''s no structure to it so you could always try it.'
+	'The petrol price is 30 <b>₽</b> per liter.'
+	*nl
+
+	act 'Leave':
+		if cardrive = 6:
+			minut += 5
+			gt 'nord'
+		elseif cardrive = 21:
+			minut += 5
+			gt 'pavCommercial'
+		elseif litltown = 0:
+			minut += 5
+			gt 'nord'
+		elseif litltown = 1:
+			minut += 5
+			gt 'pavCommercial'
+		end
+	end
+
+	if temper < 10:
+		'It''s too cold outside to wash cars. You''re more likely to get ill than make money. Maybe try again when the weather is warmer?'
+	elseif sunWeather = 0:
+		'You can''t wash cars if it''s raining outside! Maybe try again on a sunny day?'
+	elseif hour < 8:
+		'It''s too early to wash cars.'
+	elseif hour >= 21:
+		'It''s too late to wash cars.'
+	else
+		act 'Wash car windows (1:00)':gt 'zaprFWash', 'start'
+	end
+	act 'Go to the toilet':gt 'zaprF', 'toilet'
+
+	if car > 0 and cardrive = 6 or cardrive = 21:
+		'Your <a href="exec: gs ''carF'', ''start''"><<$car>></a> is parked here.'
+		act 'Buy a canister able to contain up to 5 liters of gasoline for 150 <b>₽</b>':
+			cla
+			kanistra += 1
+			money -= 150
+			'You bought a canister of gasoline. (It was automatically put in the trunk)'
+
+			act 'Disengage from the pump':gt 'zaprF', 'start'
+		end
+	end
+
+	zprbenz = 40 - benz
+
+	if benz < 40 and car > 0 and cardrive = 6 or benz < 40 and car > 0 and cardrive = 21:
+		zprbenz = 40 - benz
+
+		if zprbenz * 30 <= money:
+			act 'Fill the tank with petrol':
+				cla
+				*clr
+				benz = 40
+				zprpay = zprbenz * 30
+				money -= zprpay
+
+				! WD: Uninitialised ~ 'pol'
+				! if pol > 0:'<center><img <<$set_imgh>> src="images/locations/shared/gas/zapr1.jpg"></center>'
+
+				'<center><img <<$set_imgh>> src="images/locations/shared/gas/zapr1.jpg"></center>'
+
+				'You filled the tank and paid <<zprpay>> <b>₽</b>.'
+
+				act 'Disengage from the pump':gt 'zaprF', 'start'
+			end
+		else
+			'You do not have enough money to refuel.'
+		end
+	end
+end
+
+if $ARGS[0] = 'toilet':
+	CLOSE ALL
+	gs 'themes', 'indoors'
+	cla & *clr
+	$metka = 'toilet'
+	$loc = 'zaprF'
+	$location_type = 'bathroom'
+	$locM = 'zaprF'
+	$metkaM = 'toilet'
+	minut += 2
+	$menu_loc = 'zaprF'
+	$menu_arg = 'toilet'
+	menu_off = 0
+	gs 'stat'
+
+	'<center><h4>Gas station toilet</h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/bathroom/toilet.jpg"></center>'
+	'You are in a dirty gas station toilet. At least it provides some privacy.'
+
+	act 'Leave the restroom':gt 'zaprF', 'start'
+
+	act 'Look in the mirror': gt 'mirror', 'start'
+	if pcs_hairbsh = 0: act 'Brush your hair': gt 'mirror', 'brush'
+
+	dynamic $tampon
+	dynamic $quickwash
+	dynamic $basin
+	dynamic $publicpan
+	gs 'din_van', 'pblc_pee'
+end
+
+--- zaprF ---------------------------------
+

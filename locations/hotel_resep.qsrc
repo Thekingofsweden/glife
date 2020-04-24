@@ -1,0 +1,1316 @@
+# hotel_resep
+if $ARGS[0] = '':
+	*clr & cla
+	$menu_loc = 'hotel_resep'
+	$menu_arg = ''
+	menu_off = 0
+	gs'stat'
+	'<center><H4>Hotel reception</H4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+	if pavHotelMaid = 0:
+		'The same cute brunette as always is manning the reception desk. You wonder if she ever takes a break at all.'
+	else
+		'<<$receptionName>> is manning the reception desk yet again. You wonder if she ever takes a break at all.'
+	end
+
+	act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+
+	if GermanQW < 1:
+		act 'Ask about the maid job':
+			menu_off = 1
+			*clr & cla
+			if GermanQW = 0:GermanQW = 1
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+			'You approach the reception desk, and ask the girl: "Excuse me... I hear you are often looking for maids? I would like to come work as a maid here."'
+			'She nods understandingly, and takes a quick look at your figure: "We do often need maids, that''s true. I''d hire you in an instant, but unfortunately it''s not up to me. You should go see Herman Leonidovich, the hotel manager. He''s usually in his office between 12:00 and 14:00. I bet he will hire you! Good luck when you go see him!"'
+
+			act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+		end
+	end
+
+	if hotelcollect > 0:
+		act 'Collect your money':
+			cla
+			hotelcollect = 0
+			money += maidtime * 375
+			'She quickly checks the computer and then gives you <<maidtime*375>> <b>₽</b> for all the shifts you worked in the hotel.'
+			maidtime=0
+
+			if maidHotelCount >= rand(8,10) and nichHotelReferral = 0:
+				'"You are doing a good job as our maid. Did you ever think about working as a maid full-time? I know of a person who''s living in the city and is looking for a live-in maid. The job also pays well."'
+				'She hesitates for a second.'
+				'"I could write you a referral. He wouldn''t invite you for a job interview without one. But the boss wouldn''t like me referring his maids to another employer. That''s why I require you to pay me 5.000 <b>₽</b> for my troubles. Just look at it as a small fee. Just tell me if you want the job and have the money."'
+				nichHotelReferral = 1
+				act 'Thank her for the offer and step away from the reception desk':gt'HotelHole','skip_resepevent'
+			else
+				act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+			end
+		end
+	end
+
+	if proshotelopen = 1 and proshotelday ! daystart:
+		act'Ask for "The Peacock"':
+			*clr & cla
+			menu_off = 1
+			if pavhotprosQW = 6:
+				pavhotprosQW = 7
+				PavlinQW = 1
+			end
+			gs'stat'
+
+			if pavlevent = 1:
+				'You are too scared of <<$npc_nickname[''A217'']>> at the moment to meet him in a private place.'
+				act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+				exit
+			elseif pcs_makeup <= 1 or pcs_hairbsh < 1 or pcs_sweat > 26:
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+				'"<<$npc_nickname[''A217'']>> expects you to be clean, made-up and with your hair looking nice. I can''t let you go up looking like this." She says.'
+				act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+				exit
+			else
+				'You approach <<$receptionName>> and ask for ''The Peacock''.'
+				gt 'hotel_resep', 'pavgenpros'
+			end
+		end
+	end
+
+	if nichHotelReferral = 1:
+		act 'Ask about the live-in maid job':
+			*clr & cla
+			menu_off = 1
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+			'You approach the reception desk, and ask the girl: "About the job you told me about ... I''d like to get your referral."'
+			'"Great. Do you have my fee of 5.000 <b>₽</b> with you?"'
+
+			act 'No':
+				cla & *nl
+				'"Actually I don''t."'
+				'"Too bad. I''m afraid I can''t help you unless you pay me. Just come back as soon as you have the money."'
+				act 'Step away from the reception desk':gt'HotelHole','skip_resepevent'
+			end
+
+			if money >= 5000:
+				act 'Yes, pay her the money':
+					cla & *nl
+					money -= 5000
+					nichHotelReferral = 2
+					gs 'stat'
+					'You give her the money and she swiftly puts it into her purse. Then she hands you your referral. It says that you are a experienced, wellbehaved and diligent maid. It is written on the official paper of the hotel and even has the signature of the manager on it.'
+					'"Don''t worry, the signature is legit. The boss signs everything I hand him."'
+					'She also hands you a small card with an address on it.'
+					'"This is the address. You can get there easily from the city center of St. Petersburg. Just go there in the late afternoon and present your referral. You also have to wear a maid uniform. If you don''t own one you can buy one at the G&M-Store. And make sure you look presentable in every way. I heard this man is a perfectionist. Good luck!"'
+					act 'Thank her and step away':gt'HotelHole','skip_resepevent'
+				end
+			end
+		end
+	end
+
+	act'Rent a room':
+		menu_off = 1
+		*clr & cla
+		gs'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+		if pavHotelMaid = 0:
+			'The girl behind the desk smiles at you and asks: "Hello miss! Would you like to rent a room?"'
+		else
+			'<<$receptionName>> smiles at you and asks: "Hello <<$pcs_nickname>>! Would you like to rent a room?"'
+		end
+		if hotelroom > 0:
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+			'She looks in the computer: "I see you already have a room here. As it is already booked and paid for the only way to change it to a different room, would be to cancel your existing booking. To do so without notice would forfeit your payment, I would advise against this, but you may do so if you wish."'
+			act'Yes, cancel your booking':hotelroom=0 & gt'HotelHole'
+			act'No':gt'HotelHole'
+		elseif hotelroom = 0:
+			act 'Yes':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+				'She smiles at you happily: "Excellent! We have the following rooms available right now:"'
+				'Standard room - 500 <b>₽</b> / night;'
+				'Luxury room - 1500 <b>₽</b> / night;'
+				'and the Royal Suite - 10000 <b>₽</b> / night.'
+				act'Normal room':
+					*clr
+					cla
+					hotelroom1day=input ("For how long would you like to stay?")
+					if hotelroom1day<0:set hotelroom1day=0
+					if hotelroom1day*500>money:msg'You can''t afford to stay in the hotel for that long.'&gt'HotelHole'
+					if hotelroom1day*500<=money and hotelroom1day ! 0:
+						money-=hotelroom1day*500
+						hotelroom=1
+						hotelroom1day = daystart + hotelroom1day
+						if pavHotelMaid = 0:
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you miss, I hope you enjoy your stay!"'
+						else
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you <<$pcs_nickname>>, I hope you enjoy your stay!"'
+						end
+						act'Step away from the reception desk':gt'HotelHole'
+					end
+					if hotelroom1day = 0:gt'HotelHole'
+				end
+
+				act'Luxury room':
+					*clr
+					cla
+					hotelroom1day=input ("For how long would you like to stay?")
+					if hotelroom1day<0:set hotelroom1day=0
+					if hotelroom1day*1500>money:msg'You can''t afford to stay in the hotel for that long.'&gt'HotelHole'
+					if hotelroom1day*1500<=money and hotelroom1day ! 0:
+						money-=hotelroom1day*1500
+						hotelroom=2
+						hotelroom1day = daystart + hotelroom1day
+						if pavHotelMaid = 0:
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you miss, I hope you enjoy your stay!"'
+						else
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you <<$pcs_nickname>>, I hope you enjoy your stay!"'
+						end
+						act'Step away from the reception desk':gt'HotelHole'
+					end
+					if hotelroom1day = 0:gt'HotelHole'
+				end
+
+				act'Royal suite':
+					*clr
+					cla
+					hotelroom1day=input ("For how long would you like to stay?")
+					if hotelroom1day<0:set hotelroom1day=0
+					if hotelroom1day*10000>money:msg'You can''t afford to stay in the hotel for that long.'&gt'HotelHole'
+					if hotelroom1day*10000<=money and hotelroom1day ! 0:
+						money-=hotelroom1day*10000
+						hotelroom=3
+						hotelroom1day = daystart + hotelroom1day
+						if pavHotelMaid = 0:
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you miss, I hope you enjoy your stay!"'
+						else
+							'You count the money and give it to her. She gives you the key to your room in return. She says happily: "Thank you <<$pcs_nickname>>, I hope you enjoy your stay!"'
+						end
+						act'Step away from the reception desk':gt'HotelHole'
+					end
+					if hotelroom1day = 0:gt'HotelHole'
+				end
+				act 'Step away from the reception desk':gt'HotelHole'
+			end
+			act'No, thank you':gt'HotelHole'
+		end
+	end
+end
+
+if $ARGS[0] = 'pavlbar':
+	menu_off = 1
+	*clr & cla
+	gs'stat'
+	'You stand up, put your clothes back on and step out of the room.'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
+	'You go to the bar and see <<$npc_nickname[''A217'']>> sitting in a boot in the corner of the bar.'
+	if pavprosmmf = 1:
+		'"They sure left with a big smile on their faces. Good job <<$pcs_nickname>>." He tells you as he hands you 1200 <b>₽</b>.'
+		act 'Continue': gt 'hotel_resep', 'pavlbarcont'
+	elseif pavprosff = 1:
+		if pavproslate = 1:
+			'"You''re late." He tells you as he looks at his watch.'
+			'"I-I just needed to clean up." You stammer, trying to placate him.'
+			'He looks you over, noticing your messy hair and your lack of makeup.'
+			'"Don''t make a habit out of being late." He tells you as he hands you 900 <b>₽</b>."'
+			act 'Continue': gt 'hotel_resep', 'pavlbarcont'
+		else
+			'He looks you over, noticing your messy hair and your smeared makeup.'
+			'"You look like someone used your face to have a lot of fun." He tells you with a smirk as he hands you 900 <b>₽</b>."'
+			act 'Continue': gt 'hotel_resep', 'pavlbarcont'
+		end
+	elseif custangry = 1 and custleft = 0:
+		act 'Go to <<$npc_nickname[''A217'']>>':
+			cla
+			if rand(0,5) = 0:
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly, noticing your wince as you sit down. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He hurt me. H-He raped me. He even forced himself into my ass."'
+				'<<$npc_nickname[''A217'']>> stands up and leans over you. He looks furious. "That was an important customer. He came here to complain about your behaviour. You had better learn to please your customers or there''s going to be hell to pay." He hisses at you.'
+				'Not wanting to suffer through another manhandling, you hang your head meekly and stammer: "I-I''m sorry <<$npc_nickname[''A217'']>>. I-I didn''t know..."'
+				'"You can forget about getting paid for this. Now get out of my sight."'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			else
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly, noticing your wince as you sit down. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He hurt me. H-He raped me. He even forced himself into my ass."'
+				'<<$npc_nickname[''A217'']>> stands up and marches out the door. He looks furious. Unsure what to do you remain seated and wait for him to return.'
+				'"He''s nowhere to be seen." He says angrily as he returns to the table. "That bastard didn''t pay to fuck your ass. If he shows his face again I''ll deal with him."'
+				'"Here''s your money. Next time you come to me if things get out of hand."'
+				gs 'hotel_resep', 'getpaidpros'
+				gs 'stat'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			end
+		end
+	elseif custangry = 1 and custleft = 1:
+		act 'Go to <<$npc_nickname[''A217'']>>':
+			cla
+			if rand(0,5) = 0:
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He hurt me. So I fought back and told him to leave."'
+				'<<$npc_nickname[''A217'']>> stands up and leans over you. He looks furious. "That was an important customer. He came here to demand his money back. You had better learn to please your customers or there''s going to be hell to pay." He hisses at you.'
+				'Not wanting to suffer through another manhandling, you hang your head meekly and stammer: "I-I''m sorry <<$npc_nickname[''A217'']>>. I-I didn''t know..."'
+				'"You can forget about getting paid for this. Now get out of my sight."'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			else
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly, noticing your wince as you sit down. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He hurt me. So I fought back and told him to leave."'
+				'<<$npc_nickname[''A217'']>> stands up and marches out the door. He looks furious. Unsure what to do you remain seated and wait for him to return.'
+				'"He''s nowhere to be seen." He says angrily as he returns to the table. "That bastard even tried to get his money back. If he shows his face again I''ll deal with him."'
+				'"Here''s your money. Next time you come to me if things get out of hand."'
+				gs 'hotel_resep', 'getpaidpros'
+				gs 'stat'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			end
+		end
+	elseif custangry = 0 and custleft = 1:
+		act 'Go to <<$npc_nickname[''A217'']>>':
+			cla
+			if rand(0,5) = 0:
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He threw me into the wall. So I started screaming and told him to leave."'
+				'<<$npc_nickname[''A217'']>> stands up and leans over you. He looks furious. "That was an important customer. He came here to demand his money back. You had better learn to please your customers or there''s going to be hell to pay." He hisses at you.'
+				'Not wanting to suffer through another manhandling, you hang your head meekly and stammer: "I-I''m sorry <<$npc_nickname[''A217'']>>. I-I didn''t know..."'
+				'"You can forget about getting paid for this. Now get out of my sight."'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			else
+				'As you approach him he looks none too pleased. You sit down next to him gingerly.'
+				'"Explain yourself." He says sternly, noticing your wince as you sit down. His hands are clenched into fists on the table.'
+				'"H-He refused to use a condom. We argued and then he... He threw me into the wall. So I started screaming and told him to leave."'
+				'<<$npc_nickname[''A217'']>> stands up and marches out the door. He looks furious. Unsure what to do you remain seated and wait for him to return.'
+				'"He''s nowhere to be seen." He says angrily as he returns to the table. "That bastard even tried to get his money back. If he shows his face again I''ll deal with him."'
+				'"Here''s your money. Next time you come to me if things get out of hand."'
+				gs 'hotel_resep', 'getpaidpros'
+				gs 'stat'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			end
+		end
+	else
+		'He hands you 750 <b>₽</b>.'
+		act 'Continue': gt 'hotel_resep', 'pavlbarcont'
+	end
+end
+
+if $ARGS[0] = 'pavlbarcont':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
+	if npc_rel['A217'] = -1:
+		gs 'hotel_resep', 'getpaidpros'
+		gs 'stat'
+		'You refuse to even take a look at him. You swipe the money from his hand and walk away.'
+		act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+		exit
+	end
+	if npc_rel['A217'] = 15:
+		minut += 10
+		PavlinQW = 8
+		npc_rel['A217'] = 20
+		gs 'hotel_resep', 'getpaidpros'
+		gs 'stat'
+		'You tell <<$npc_nickname[''A217'']>> that you were basically assraped by the client.'
+		'"What the fuck, he did not pay for that!!!"'
+		'<<$npc_nickname[''A217'']>> storms out to find the client.'
+		'<br>'
+		'...'
+		'<br>'
+		'10 minutes later he returns, you can see his fists are covered in blood.'
+		'"You are lucky I caught up with him, why did you allow this to happen? You should have checked with me before offering your ass to a client."'
+		'"But I..." You wanted to explain that you did not offer anything but were forced into it.'
+		'"If I had known you were in to the more kinky stuff I would have charged more for you."'
+		'"Today I obviously can''t pay you extra but if you want to earn an extra buck in the future, let me know and I will arrange some of my more kinky clients for you."'
+		act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+		exit
+	end
+
+	if npc_rel['A217'] > 6:
+		gs 'hotel_resep', 'getpaidpros'
+		gs 'stat'
+		'"This was not what we agreed to." You say. "I need more..."'
+		'"Sure, you can have more, but you need to do some extra work for that."'
+		'<<$npc_nickname[''A217'']>> takes your hand and moves it towards his crotch.'
+		
+		gs 'willpower', 'bj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Be content with what you have (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'bj', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'You wiggle your hand free from his grip, take the money and get up.'
+				'"This is really the last time you screwed me over." You say.'
+				'<<$npc_nickname[''A217'']>> is not really worried. He is confident you''ll be back.'
+				'He leans back in his chair and checks out your ass while you are leaving.'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			end
+		else
+			act 'Be content with what you have (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Do the extra work':
+			*clr & cla
+			gs 'fame', 'pav', 'prostitute', 1
+			if npc_rel['A217'] >= 10:
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin_bj.jpg"></center>'
+				'"Fine" you say. You open his fly and take out his half-erect penis.'
+				'"Why don''t you use your mouth today?"'
+				'You look around to make sure nobody is watching you and then move your head towards his penis.'
+				'After a few minutes he tells you he is coming. You don''t want to make a mess here so you just keep it in your mouth and swallow all the spunk.'
+				'You sit straight again and look at <<$npc_nickname[''A217'']>>.'
+				gs 'arousal', 'bj', 5, 'prostitution'
+				swallow +=1
+			else
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin_hj.jpg"></center>'
+				'"Fine" you say. You open his fly and take out his half-erect penis.'
+				'After two minutes of stroking you can feel him cumming all over your hand.'
+				gs 'arousal', 'hj', 5, 'prostitution'
+			end
+			'With a stupid grin on his face he reaches in his pocket and hands you an extra 250 <b>₽</b>.'
+			money += 250
+			gs 'arousal', 'end'
+			gs 'stat'
+			if npc_rel['A217'] <= 15 or npc_rel['A217'] > 19:npc_rel['A217'] += 1
+			act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+		end
+	end
+
+	if npc_rel['A217'] <= 5:
+		'You are sure the money he received from the customer was more than double this amount but you don''t feel like arguing.'
+		'You thank him and go back to the hotel lobby'
+		npc_rel['A217'] += 1
+		gs 'hotel_resep', 'getpaidpros'
+		gs 'stat'
+		act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+		exit
+	end
+
+	if npc_rel['A217'] = 6 and pavlevent = 0:
+		'You are sure the money he received from the customer was more than double this amount'
+		'You bring up the issue: "Actually <<$npc_nickname[''A217'']>>, I believe I should get more money, I am doing all the work here and I know these guys pay you much more than this."'
+		' Where <<$npc_nickname[''A217'']>> was still sitting there with a big smile a moment before, the moment you mentioned the money a gloom came over his face. This only lasted a few moments and then his smile reappeared.'
+		'"You are right <<$pcs_firstname>>, come with me to my car I''ll give you a bonus today."'
+		'You are excited at the prospect of finally getting the money you earned but you are unsure if you can trust <<$npc_nickname[''A217'']>>.'
+		minut += 5
+		
+		gs 'willpower', 'misc', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Take no chances, accept the amount for today (<<will_cost>> Willpower)':
+				*clr & cla
+				PavlinQW = 2
+				gs 'willpower', 'misc', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'hotel_resep', 'getpaidpros'
+				gs 'stat'
+				'<br>"Actually, I have no time for this today, I have a doctor''s appointment in a few minutes. Next time I will expect that bonus."'
+				'"Sure <<$pcs_firstname>>, no problem."'
+				act'Go back to the hotel lobby':gt'HotelHole','skip_resepevent'
+			end
+		else
+			act 'Take no chances, accept the amount for today (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Follow him outside':
+			minut += 15
+			*clr & cla
+			'You follow <<$npc_nickname[''A217'']>> outside and around the building towards the parking lot.'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin_violent.jpg"></center>'
+			'Once you turned the corner and are out of sight from the street <<$npc_nickname[''A217'']>> suddenly grabs you by the shoulders and throws you against the wall'
+			'You are stunned and want to say something when suddenly <<$npc_nickname[''A217'']>> hits you with his fist in your face'
+			'"WHO DO YOU THINK YOU ARE, BITCH? You work for ME, I decide how much money you get. YOU UNDERSTAND ME?"'
+			'He is screaming and after every sentence he hits you in the face again.'
+			!only check for strength at the moment, might change later
+			!TODO: Maybe add actual fight once the fighting system rework is finished
+			if pcs_stren > 60:
+				PavlinQW = 3
+				'You try to defend yourself and start hitting back. He did not expect this and is startled for a moment.'
+				'You see an opening and take advantage of it.'
+				'With a swift movement you are able to push your knee in his groin.'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin_violent3.jpg"></center>'
+				'This brings <<$npc_nickname[''A217'']>> to his knees, catching his breath.'
+				'You take this opportunity to turn around and run away.'
+				'"Screw you , bitch, I will get you for this" is the last thing you hear before you are back on the street.'
+				pavldom = 1
+			else
+				'You are terrified and the only thing you dare to say is "I am sorry <<$npc_nickname[''A217'']>>. It won''t happen again."'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin_violent2.jpg"></center>'
+				'"You are damn right it won''t happen again." He waves the money in your face and then puts it in his pocket.'
+				'"Now Get out of my sight." He grabs you and throws you in the direction of the street.'
+				'You quickly crawl on your feet and run away.'
+				PavlinQW = 4
+			end
+
+			gs 'pain', 8,'head','hit'
+			pavlevent = 1
+			pavldaystart = daystart
+			npc_rel['A217'] = 3
+			fingal = 1
+			gs 'stat'
+
+			act'Run away':gt'pavtrain'
+		end
+	end
+	exit
+end
+
+if $ARGS[0] = 'getpaidpros':
+	if pavprosmmf = 1:
+		money += 1200
+	elseif pavprosff = 1:
+		money += 900
+	else
+		money += 750
+	end
+end
+
+if $ARGS[0] = 'pavgenpros':
+	pavprosmmf = 0
+	pavprosff = 0
+	pavproslate = 0
+	custangry = 0
+	custleft = 0
+	mmfextrapay = 0
+	mmfcond = 0
+
+	if pavproscount < 20:
+		custrand = 9
+	else
+		custrand = rand(0,9)
+	end
+	if pavprosnofemales = 1:
+		if custrand = 1:
+			custrand = 0
+		end
+	end
+	if hour >= 12 and hour < 20:
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
+		'She nods and waves to <<$npc_nickname[''A217'']>> who is sitting in the lobby'
+		'<<$npc_nickname[''A217'']>> comes over and greets you.'
+		'"Are you ready to do some work <<$pcs_firstname>>?"'
+		'Without bothering to wait for you to respond he gets up from the table and heads to the elevator.'
+		'"OK, let''s go to the room"'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/resep.girl0,'+rand(0,10)+'.jpg"></center>'
+		'She picks up the phone and says: "<<$npc_nickname[''A217'']>>, I have <<$pcs_nickname>> here for you... Sure I''ll send her right up."'
+		'She gives you a subtle smile and tells you <<$npc_nickname[''A217'']>> is waiting for you in room 305'
+	end
+	act 'Go to room 305':
+		*clr & cla
+		gs'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
+		if hour >= 12 and hour < 20:
+			'You enter the room with <<$npc_nickname[''A217'']>>.'
+			'"You just sit down on the bed." He tells you as he takes out his phone and walks back into the hallway.'
+			'Within a minute he steps back into the room.'
+		else
+			'You go to the room and knock on the door. <<$npc_nickname[''A217'']>> opens the door.'
+			'"You just sit down on the bed." He tells you.'
+		end
+		if custrand = 0:
+			'"I just informed the customers, they will be here shortly."'
+			'"Wait, customers?" You start.'
+			'"It''s two guys. They want to fuck you together and are paying extra for the privilege. I expect you to see to all of their needs. I''ll let them settle the details with you."'
+			act 'Perform your duty': gt 'hotel_resep', 'clientselect'
+		elseif custrand = 1:
+			cla
+			'"I just informed the customer, she''ll be here shortly."'
+			if firstfemalecust = 0:
+				firstfemalecust = 1
+				'"Wait, she?" You start.'
+				'"What?" He interrupts you angrily.'
+				gs 'willpower', 'prostitution', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'I don''t do female customers (<<will_cost>> Willpower)':
+						cla
+						pavprosnofemales = 1
+						custrand = 9
+						gs 'willpower', 'prostitution', 'resist', 'hard'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						'"I-I''m sorry... That just won''t work for me." You start stammering trying to convince him. "She''ll notice right away."'
+						'He looks at you angrily and sighs. "Damn it <<$pcs_nickname>>, I don''t appreciate you fucking up my schedule. Fine. There''s a guy coming over to the room next door. I''ll get my girl in there to switch with you. Come with me.'
+						'He enters the room and leaves you in the hallway to talk with the other girl. After a minute a cute girl about your own age comes out of the door and tells you: "He''s waiting for you inside." Before leaving into the room you just exited.'
+						'"You''re lucky the guy wasn''t here yet. He should arrive any second."'
+						act 'Perform your duty': gt 'hotel_resep', 'clientselect'
+					end
+				else
+					act 'I don''t do female customers (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+				act 'Agree to serve a female client':
+					cla
+					'"N-Nothing..." You stammer. "There''s no problem."'
+					act 'Perform your duty': gt 'hotel_resep', 'clientselect'
+				end
+			else
+				act 'Perform your duty': gt 'hotel_resep', 'clientselect'
+			end
+		else
+			'"I just informed the customer, he''ll be here shortly."'
+			act 'Perform your duty': gt 'hotel_resep', 'clientselect'
+		end
+	end
+end
+
+if $ARGS[0] = 'clientselect':
+	cla
+	if custrand = 0:
+		'Indeed not one minute later there''s a knock on the door, <<$npc_nickname[''A217'']>> opens it and has a short conversation with the customers. He gets handed a wad of cash before he allows them in the room.'
+		'"I''ll be waiting in the hotel bar, meet me there when you are done girl." <<$npc_nickname[''A217'']>> says as he leaves the room.'
+		act 'Perform your duty': gt 'hotel_resep', 'pavgenprosmmf'
+	elseif custrand = 1:
+		'Indeed not one minute later there''s a knock on the door, <<$npc_nickname[''A217'']>> opens it and has a short conversation with the customer. He gets handed a wad of cash before he allows her in the room.'
+		'"I''ll be waiting in the hotel bar, meet me there when you are done girl." <<$npc_nickname[''A217'']>> says as he leaves the room.'
+		act 'Perform your duty': gt 'hotel_resep', 'pavgenprosff'
+	else
+		'Indeed not one minute later there''s a knock on the door, <<$npc_nickname[''A217'']>> opens it and has a short conversation with the customer. He gets handed a wad of cash before he allows him in the room.'
+		'"I''ll be waiting in the hotel bar, meet me there when you are done girl." <<$npc_nickname[''A217'']>> says as he leaves the room.'
+		act 'Perform your duty': gt 'hotel_resep', 'pavgenprosmf'
+	end
+end
+
+if $ARGS[0] = 'pavgenprosmf':
+	menu_off = 1
+	*clr & cla
+	proshotelday = daystart
+	pavproscount += 1
+	guy += 1
+	gs 'fame', 'pav', 'prostitute', rand(2,4)
+	gs'stat'
+	gs 'npcgeneratec', '0', '', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+	'The customer introduces himself as <<$boydesc>>.'
+	'Then you both get undressed and you start doing your job.'
+	picrand = rand(0, 14)
+	'<center><video autoplay loop src="images/shared/sex/blowjob/bj<<picrand>>.mp4"></video></center>'
+	gs 'dinsex','bj_random'
+
+	!! The lower values for customerrand will mean that he wants to use a condom and can be persuaded otherwise if Sveta is dominant enough.
+	!! Higher values mean the customer will want sex without a condom.
+	!! If customerrand = 9 Sveta is in for something unpleasant, depending on choices.
+	customerrand = rand(0, 9)
+
+	if customerrand < 3:
+		if prezik > 0:
+			prezik -= 1
+			'<<$boydesc>> holds your head and pulls his dick out of your mouth saying: "Put one of those condoms on me, it''s time to test that pussy of yours."'
+			gs 'dinsex', 'pc_puts_condom'
+			act 'Continue': gt 'hotel_resep', 'vaginalmf'
+		else
+			'<<$boydesc>> holds your head and pulls his dick out of your mouth saying: "Put a condom on me, it''s time to test that pussy of yours."'
+			'"I don''t have any." You tell him.'
+			
+			gs 'willpower', 'foreplay', 'force'
+			if will_cost <= pcs_willpwr:
+				act 'It feels a lot better without a condom (<<will_cost>> Willpower)':
+					cla
+					'He eyes you critically for a moment before giving in. "Fine, if that''s what you want."'
+					gs 'willpower', 'foreplay', 'force'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gs 'dinSex', 'std_trigger'
+					act 'Continue': gt 'hotel_resep', 'vaginalmf'
+				end
+			else
+				act 'It feels a lot better without a condom (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Let him to use a condom':
+				cla
+				'"The safer the better it feels. You''re lucky I brought some." He tells you as he grabs a condom from his pocket.'
+				gs 'dinsex', 'boy_puts_his_condom'
+				act 'Continue': gt 'hotel_resep', 'vaginalmf'
+			end
+		end
+	elseif customerrand < 7:
+		if prezik > 0:
+			prezik -= 1
+			'You move his dick out of your mouth and tell him to put on a condom and fuck you.'
+			gs 'dinsex', 'boy_puts_condom'
+			act 'Continue': gt 'hotel_resep', 'vaginalmf'
+		else
+			'You move his dick out of your mouth and tell him to fuck you.'
+			'"What about a condom?" He asks you.'
+			'"I don''t have any." You tell him.'
+			gs 'willpower', 'foreplay', 'force'
+			if will_cost <= pcs_willpwr:
+				act 'It feels a lot better without a condom (<<will_cost>> Willpower)':
+					cla
+					'He eyes you critically for a moment before giving in. "Fine, if that''s what you want."'
+					gs 'willpower', 'foreplay', 'force'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gs 'dinSex', 'std_trigger'
+					act 'Continue': gt 'hotel_resep', 'vaginalmf'
+				end
+			else
+				act 'It feels a lot better without a condom (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Let him to use a condom':
+				cla
+				'"Well, I don''t fuck without one, good thing I brought some." He tells you as he grabs a condom from his pocket.'
+				gs 'dinsex', 'boy_puts_his_condom'
+				act 'Continue': gt 'hotel_resep', 'vaginalmf'
+			end
+		end
+	elseif customerrand < 8:
+		if prezik > 0:
+			'You move his dick out of your mouth and tell him to put on a condom and fuck you.'
+			'"I''d much rather fuck you raw. I hate condoms." He tells you with a pleading look in his eyes. "How about if I pay you an extra 300 to do it without?"'
+			act 'Agree':
+				cla
+				'"Fine." You say, holding out your hand.'
+				'He grabs his wallet and hands you 300 <b>₽</b> "There, now let''s try that pussy of yours.'
+				money += 300
+				gs 'stat'
+				gs 'dinSex', 'std_trigger'
+				act 'Continue': gt 'hotel_resep', 'vaginalmf'
+			end
+			gs 'willpower', 'foreplay', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse (<<will_cost>> Willpower)':
+					cla
+					'"You''ll get nothing but a blowjob if you don''t put on a condom." You tell him sternly.'
+					'"Fine, give me one." He says a bit dejected, holding out his hand.'
+					gs 'willpower', 'foreplay', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					gs 'dinsex', 'boy_puts_condom'
+					act 'Continue': gt 'hotel_resep', 'vaginalmf'
+				end
+			else
+				act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			'You move his dick out of your mouth and tell him to fuck you.'
+			gs 'dinSex', 'std_trigger'
+			act 'Continue': gt 'hotel_resep', 'vaginalmf'
+		end
+	elseif customerrand < 9:
+		if prezik > 0:
+			'You move his dick out of your mouth and tell him to put on a condom and fuck you.'
+			'"I''d much rather fuck you raw. I hate condoms." He tells you.'
+			act 'Agree':
+				cla
+				'"Uhm. Ok then." You say, not quite sure how you should deal with this.'
+				'"There, now let''s try that pussy of yours.'
+				gs 'dinSex', 'std_trigger'
+				act 'Continue': gt 'hotel_resep', 'vaginalmf'
+			end
+			gs 'willpower', 'prostitution', 'self'
+			if will_cost <= pcs_willpwr:
+				act 'Ask for more money (<<will_cost>> Willpower)':
+					cla
+					'"That''ll cost you an extra 300 honey." You tell him sweetly.'
+					'"Fine." He grabs his wallet and hands you 300 <b>₽</b> "There, now let''s try that pussy of yours.'
+					money += 300
+					gs 'willpower', 'prostitution', 'self'
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gs 'dinSex', 'std_trigger'
+					act 'Continue': gt 'hotel_resep', 'vaginalmf'
+				end
+			else
+				act 'Ask for more money (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			gs 'willpower', 'foreplay', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse (<<will_cost>> Willpower)':
+					cla
+					'"You''ll get nothing but a blowjob if you don''t put on a condom." You tell him sternly.'
+					'"Fine, give me one." He says a bit dejected, holding out his hand.'
+					gs 'willpower', 'foreplay', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					gs 'dinsex', 'boy_puts_condom'
+					act 'Continue': gt 'hotel_resep', 'vaginalmf'
+				end
+			else
+				act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			'You move his dick out of your mouth and tell him to fuck you.'
+			gs 'dinSex', 'std_trigger'
+			act 'Continue': gt 'hotel_resep', 'vaginalmf'
+		end
+	else
+		if prezik > 0:
+			'You move his dick out of your mouth and tell him to put on a condom and fuck you.'
+			'"No, I''m going to fuck you raw. I hate condoms." He tells you angrily.'
+			act 'Agree':
+				cla
+				'You are afraid he''s going to hurt you if you don''t let him fuck you without a condom.'
+				'"Uhm. Ok then." You say, not quite sure how you should deal with this.'
+				'"That''s better, now let''s try that pussy of yours.'
+				gs 'dinSex', 'std_trigger'
+				act 'Continue': gt 'hotel_resep', 'vaginalmf'
+			end
+			gs 'willpower', 'prostitution', 'self'
+			if will_cost <= pcs_willpwr:
+				act 'Ask for more money (<<will_cost>> Willpower)':
+					cla
+					gs 'willpower', 'prostitution', 'self'
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					custangry = 1
+					'"That''ll cost you an extra 300 honey." You tell him sweetly.'
+					'He grabs you by the arm and starts shaking you. "I''ve already paid for you. Do you need me to knock some sense into you or are you going to be a good little whore?"'
+					gs 'willpower', 'sex', 'resist'
+					if will_cost <= pcs_willpwr:
+						act 'Fight back (<<will_cost>> Willpower)':
+							cla
+							gs 'willpower', 'sex', 'resist'
+							gs 'willpower', 'pay', 'resist'
+							gs 'stat'
+							!TODO: Maybe add actual fight once the fighting system rework is finished
+							if pcs_stren > 60:
+								'You shove him away from you with all your strength, making him trip up with his pants around his ankles.'
+								'"Get the fuck out!" You scream at him angrily.'
+								'He just sits there with a stunned expression on his face. After a moment he starts getting dressed again.'
+								'"Fucking crazy whore." Is the last thing you hear before he slams the door on his way out.'
+								custleft = 1
+								act'Go to the bar':gt 'hotel_resep','pavlbar'
+							else
+								'You try to shove him away from you but you may as well have tried to push against a brick wall.'
+								'"You''re going to regret that." He says as he shoves you on the bed roughly.'
+								gs 'dinSex', 'std_trigger'
+								act 'Continue': gt 'hotel_resep', 'vaginalmf'
+							end
+						end
+					else
+						act 'Fight back (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+					act 'Submit':
+						cla
+						'"N-No... I-I''ll be good." You whimper.'
+						'"That''s more like it, whore." He tells you coldly as he shoves you on the bed.'
+						gs 'dinSex', 'std_trigger'
+						act 'Continue': gt 'hotel_resep', 'vaginalmf'
+					end
+				end
+			else
+				act 'Ask for more money (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			gs 'willpower', 'foreplay', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Refuse (<<will_cost>> Willpower)':
+					cla
+					'"You''ll get nothing but a blowjob if you don''t put on a condom." You tell him, standing your ground.'
+					'"Fucking whore." He shouts as he shoves you hard.'
+					'You hit the back of your head against the wall and suddenly you start seeing red.'
+					'"Get the fuck out." You start screaming at the top of your lungs. "If I ever see you again I''ll kill you."'
+					'It isn''t until you hear the door slam behind him that you realise just how much noise you are making.'
+					'You sit down on the bed and delicately probe the back of your head, wincing each time you brush the spot where your head hit the wall. Luckily there doesn''t seem to be any blood.'
+					custleft = 1
+					gs 'pain', 5, 'head', 'Slam'
+					gs 'willpower', 'foreplay', 'resist'
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					act'Go to the bar':gt 'hotel_resep','pavlbar'
+				end
+			else
+				act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			'You move his dick out of your mouth and tell him to fuck you.'
+			gs 'dinSex', 'std_trigger'
+			act 'Continue': gt 'hotel_resep', 'vaginalmf'
+		end
+	end
+end
+
+if $ARGS[0] = 'vaginalmf':
+	gs 'dinsex','vaginal_sex'
+	picrand = rand(1, 5)
+	'<center><img <<$set_imgh>> src="images/shared/sex/vag/miss/vagmis<<picrand>>.jpg"></center>'
+	gs 'arousal', 'bj', 30, 'prostitution'
+	gs 'dinSex', 'std_trigger_oral'
+	gs 'arousal', 'vaginal', 30
+	gs 'arousal', 'end'
+	gs 'stat'
+	if npc_rel['A217'] = 15:
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/shared/sex/anal/doggy/anal1.mp4"></video></center>'
+			'"Wow your pussy is great, but I really want to try out this sweet little asshole." <<$boydesc>> says.'
+			'"No way, we didn''t agree to this."'
+			'"I don''t care bitch <<$npc_nickname[''A217'']>> still owes me a favor, so you are going to lie there and take it."'
+			'You try to get away but <<$boydesc>> pins you down and guides his cock towards your ass.'
+			'"At least use some lube..."'
+			'Before you can finish your sentence <<$boydesc>> has already penetrated your anus and is thrusting with all his might.'
+			'You aren''t ready for it and start screaming your lungs out.'
+			'Luckily he doesn''t last long and after 30 seconds he blows his load in your ass.'
+			gs 'arousal', 'anal', 30, 'prostitution','sub','rough'
+			gs 'arousal', 'end'
+			if succubusflag = 1:
+				scfeed = succublvl + rand(1,4)
+				sexnutrition += 30 * scfeed
+				succubxp += 6
+			end
+			gs 'stat'
+			act'Go to the bar':gt 'hotel_resep','pavlbar'
+		end
+	elseif custangry = 1:
+		act 'Continue':
+			*clr & cla
+			'<center><video autoplay loop src="images/shared/sex/anal/doggy/anal1.mp4"></video></center>'
+			'"Wow your pussy is great, but I really want to try out this sweet little asshole." <<$boydesc>> says.'
+			'"No way, we didn''t agree to this."'
+			'"I don''t care whore. You are bought and paid for. So you are going to lie there and take it."'
+			'You try to get away but <<$boydesc>> pins you down and guides his cock towards your ass.'
+			'"At least use some lube..."'
+			'Before you can finish your sentence <<$boydesc>> has already penetrated your anus and is thrusting with all his might.'
+			'You aren''t ready for it and start screaming your lungs out.'
+			'Luckily he doesn''t last long and after 30 seconds he blows his load in your ass.'
+			gs 'arousal', 'anal', 30, 'prostitution','sub','rough'
+			gs 'arousal', 'end'
+			if succubusflag = 1:
+				scfeed = succublvl + rand(1,4)
+				sexnutrition += 30 * scfeed
+				succubxp += 6
+			end
+			gs 'stat'
+			act'Go to the bar':gt 'hotel_resep','pavlbar'
+		end
+	elseif rand(0,5) = 0:
+		act 'Continue':
+			*clr & cla
+			'"Wow your pussy is great, but I really want to try out this sweet little asshole." <<$boydesc>> says.'
+			'"No way, we didn''t agree to this."'
+			'"Oh, come on. You''ll love it."'
+			if pcs_ass > 10: '"I bet you''re a little buttslut, aren''t you?" He says with a grin.'
+			act 'Allow it':
+				cla
+				if pcs_ass < 10:
+					'"O-Ok, but be gentle." You tell him as you present your ass to him.'
+				else
+					'"Only if you do it properly. You''re lucky I actually do love a nice slow assfuck." You tell him as you present your ass to him.'
+				end
+				act 'Continue': gt 'hotel_resep', 'analmf'
+			end
+			gs 'willpower', 'prostitution', 'self'
+			if will_cost <= pcs_willpwr:
+				act 'Ask for more money (<<will_cost>> Willpower)':
+					cla
+					'"That''ll cost you an extra 500 honey." You tell him sweetly.'
+					'"Fine." He grabs his wallet and hands you 500 <b>₽</b> "There, now let''s try that ass of yours.'
+					money += 500
+					gs 'willpower', 'prostitution', 'self'
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					act 'Continue': gt 'hotel_resep', 'analmf'
+				end
+			else
+				act 'Ask for more money (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+	else
+		gs 'dinsex','sexcum'
+		act'Go to the bar':gt 'hotel_resep','pavlbar'
+	end
+end
+
+if $ARGS[0] = 'analmf':
+	'<center><video autoplay loop src="images/shared/sex/anal/doggy/anal4.mp4"></video></center>'
+	gs 'dinSex','boy_wants_anal','','lubri'
+	gs 'dinsex','analsex'
+	gs 'arousal', 'anal', 30, 'prostitution','sub'
+	gs 'arousal', 'masturbate', 30, 'prostitution','sub'
+	minut -= 30
+	gs 'arousal', 'end'
+	if succubusflag = 1:
+		scfeed = succublvl + rand(1,4)
+		sexnutrition += 30 * scfeed
+		succubxp += 6
+	end
+	gs 'stat'
+	act'Go to the bar':gt 'hotel_resep','pavlbar'
+end
+
+if $ARGS[0] = 'pavgenprosmmf':
+	menu_off = 1
+	*clr & cla
+	proshotelday = daystart
+	pavproscount += 1
+	guy += 1
+	pav_prostitute += rand(2,4)
+	pavprosmmf = 1
+
+	gs 'npcgeneratec', 0, '', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+	gs 'npcgeneratec', 0, '', rand(18,40)
+	gs 'boyStat', $npclastgenerated,'1'
+
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf01.jpg"></center>'
+	'The customers introduce themselves as <<$boydesc[0]>> and <<$boydesc[1]>>. "I''m <<$pcs_nickname>>. You tell them.'
+	'"We''ve just booked you for the next hour. So let''s have some fun. <<$npc_nickname[''A217'']>> said we should agree on a price to fuck both of your holes with you. Oh, and I hope you won''t insist on condoms."'
+	if prezik > 0:
+		gs 'willpower', 'foreplay', 'force'
+		if will_cost <= pcs_willpwr:
+			act 'Insist on condoms (<<will_cost>> Willpower)':
+				cla
+				mmfextrapay = 1
+				mmfcond = 1
+				gs 'willpower', 'foreplay', 'force'
+				gs 'willpower', 'pay', 'force'
+				gs 'stat'
+				'"I''m afraid I have to insist on condoms boys." You tell them. "But don''t worry, fucking my ass and pussy is on the menu. Well, for an extra 1000 <b>₽</b> it is at least.'
+				'You catch the look that passes between them. After a moment you see <<$boydesc[1]>> nod while <<$boydesc[0]>> takes out his wallet and throws the money on the bed.'
+				act 'Continue': gt 'hotel_resep', 'sexmmf'
+			end
+		else
+			act 'Insist on condoms (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+	gs 'willpower', 'prostitution', 'self'
+	if will_cost <= pcs_willpwr:
+		act 'Ask for 1000 <b>₽</b> (<<will_cost>> Willpower)':
+			cla
+			mmfextrapay = 1
+			mmfcond = 0
+			gs 'willpower', 'prostitution', 'self'
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+			'"I don''t normally let my customers fuck my ass and without condoms at that. Hmm, maybe I''ll make an exception for you guys for an extra thousand." You tell them coyly. <<$boydesc[0]>> immediately takes out his wallet and throws the money on the bed.'
+			gs 'dinSex', 'std_trigger'
+			act 'Continue': gt 'hotel_resep', 'sexmmf'
+		end
+	else
+		act 'Ask for 1000 <b>₽</b> (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Allow it':
+		cla
+		mmfcond = 0
+		'"I don''t normally let my customers fuck my ass and without condoms at that. Hmm, but I''ll make an exception for you guys." You tell them coyly.'
+		gs 'dinSex', 'std_trigger'
+		act 'Continue': gt 'hotel_resep', 'sexmmf'
+	end
+end
+
+if $ARGS[0] = 'sexmmf':
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf01.jpg"></center>'
+	'You can feel yourself getting wet at the idea of taking both of their cocks at the same time. "So what do you guys have there for me?" You say as you start undressing and step in between them.'
+	'They waste no time getting their cocks out. You are pleased to see they are already hard for you. "Hmm, they look tasty." You tell them as you pull your tits out and squat between them.'
+	'"Open your mouth." <<$boydesc[0]>> orders you and the second your lips part he puts his cock into your mouth. "And don''t forget about <<$boydesc[1]>>."'
+	'"Mmm-Mmm." You nod around his <<dick[0]>>cm <<$dick_girth[0]>> dick as you put your hand on <<$boydesc[1]>>''s balls and start massaging them, while you keep sucking.'
+	gs 'arousal', 'bj', 10, 'prostitution', 'sub', 'group'
+	gs 'arousal', 'hj', 10, 'prostitution', 'sub', 'group'
+	minut -= 10
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf02.jpg"></center>'
+		'It doesn''t take long before <<$boydesc[1]>> pulls you to your feet and guides you onto the bed saying: "Time to fuck that pussy of yours."'
+		if mmfcond = 1:
+			if prezik > 0:
+				gs 'dinsex', 'boy_puts_condom', '<<$boydesc[1]>> takes your '+iif(preziktype = 2,'sabotaged ','')+ 'condom and puts it on his <<dick[1]>>cm <<$dick_girth[1]>> dick.'
+			else
+				gs 'dinsex', 'boy_puts_his_condom', '<<$boydesc[1]>>'
+			end
+		end
+		'The three of you position yourselves on the bed and you pull your damp panties to the side.'
+		'<<$boydesc[1]>> grabs you by the hair and says: "What a little slut you are. You''re sopping wet already and we haven''t even touched your pussy yet. You want it bad don''t you?"'
+		'"Y-Yes. I want it. I need it so bad. Please fuck me." You start begging, sensing that''s what he wants to hear.'
+		'You moan loudly as he buries his <<dick[1]>>cm <<$dick_girth[1]>> dick deep inside you. "Wow you''re loud. Here, suck on this." He says as he presses your head down on <<$boydesc[0]>>''s cock again.'
+		'He fucks your dripping pussy furiously while you suck <<$boydesc[0]>> off. Occasionally taking his full <<dick[0]>>cm down your throat.'
+		gs 'arousal', 'vaginal', 10, 'prostitution', 'sub', 'group'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf03.jpg"></center>'
+			'"I think it''s about time she earned her bonus. Come here and ride my cock." <<$boydesc[0]>> says as he pulls you off his cock and leans back.'
+			if mmfcond = 1:
+				if prezik > 0:
+					gs 'dinsex', 'boy_puts_condom'
+				else
+					gs 'dinsex', 'boy_puts_his_condom'
+				end
+			end
+			'You quickly grab some lube and put some on your hand before handing it to <<$boydesc[1]>>, saying: "Let me get my ass ready for you."'
+			'After you ease yourself onto <<$boydesc[0]>>''s dick and start riding him slowly, you start rubbing the lube on your asshole. Then you push one of your fingers inside, making you moan from the pleasure of having both your holes stuffed.'
+			'When you feel ready for it you add a second finger, streching your asshole a bit and start moving them in and out at a steady pace.'
+			'You look over your shoulder and see <<$boydesc[1]>> standing there looking impatient. His now glistening cock rock hard and waiting.'
+			'Not wanting to try your luck with him you pull your fingers out of your ass and use both your hands to spread it open invitingly. "Please, I want you in my ass now." You beg him, knowing how he reacted to you acting submissive before.'
+			'A moment later you feel the tip of his cock press against your asshole. "Please?" You ask him one last time and he immediately does as you ask and pushes his tip inside, making you moan loudly again from mixed pain and pleasure.'
+			'After giving you a moment to adjust he starts fucking your ass, going deeper each time he pushes himself inside you. A couple of strokes later the pain resides and all you feel is pleasure as you start moving on <<$boydesc[0]>>''s cock again, taking both as deep as you can.'
+			'You give into your own lusts and start to lose yourself in the overwhelming pleasure when suddenly <<$boydesc[1]>> slaps your ass, jolting you to a sudden stop as your mind needs a second to work through the sensations.'
+			'"He wants me to ask for more." You think to yourself and you start moving again, meeting their thrusts as you start to beg him: "Please spank my ass. I love it when you... Uhhh... More..." As his hand smacking your ass from time to time just makes you hornier than ever.'
+			gs 'arousal', 'anal_finger', 20, 'prostitution', 'sub', 'group'
+			gs 'arousal', 'vaginal', 20, 'prostitution', 'sub', 'group'
+			anal_slip += 4
+			gs 'arousal', 'anal', 20, 'prostitution', 'sub', 'group'
+			minut -= 40
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf04.jpg"></center>'
+				'When you feel <<$boydesc[1]>> slide his cock out of your ass completely you can''t help but let out a whimper of regret.'
+				'"You''re not going to make me cum just yet. We still have 20 minutes left." He says, looking at the clock. "And <<$boydesc[0]>> hasn''t had the pleasure of feeling your ass on his cock yet."'
+				if mmfcond = 1:
+					'As you slide your dripping pussy off of <<$boydesc[0]>>''s cock and turn around to ride him with your ass, <<$boydesc[1]>> stands up on the bed next to you and removes his condom before putting his dick in front of your face.'
+				else
+					'As you slide your dripping pussy off of <<$boydesc[0]>>''s cock and turn around to ride him with your ass, <<$boydesc[1]>> stands up on the bed next to you and you know he wants you to taste your own ass on his dick.'
+				end
+				'You lower yourself onto his <<$dick_girth[0]>> cock and slowly slide down all the way before opening your mouth for <<$boydesc[1]>>, who immediately shoves himself into your mouth.'
+				'You keep sucking as you work your ass up and down, losing yourself in the overwhelming pleasure again.'
+				gs 'arousal', 'anal', 20, 'prostitution', 'sub', 'group'
+				minut -= 10
+				gs 'stat'
+				if mmfcond = 0:
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf05.jpg"></center>'
+						'After a while <<$boydesc[0]>> grabs your hips and holds you in place as he fucks your ass hard and deep. You do your best to keep sucking <<$boydesc[1]>> off but you mostly just moan around his cock.'
+						'Noticing that his friend is getting close he starts urging him on: "Let her have it. Fill her slutty little asshole up."'
+						'Knowing that he wants you to be a wanton slut for them you start moaning even louder as the furious pounding persists.'
+						'A minute later you are rewarded for your efforts as you feel his hot spurts of cum spray deep inside your asshole. <<$boydesc[0]>> pumps your ass a few more times before holding himself balls deep inside you as you feel the last bit of cum spray into your intestines.'
+						'When he finally pulls out a stream of his cum flows down onto him from your full ass.'
+						gs 'arousal', 'anal', 5, 'prostitution', 'sub', 'group'
+						gs 'cum_call', 'anus', $boy[0], 1
+						if succubusflag = 1:
+							scfeed = succublvl + rand(1,4)
+							sexnutrition += 30 * scfeed
+							succubxp += 6
+						end
+						gs 'stat'
+						act 'Continue':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf06.jpg"></center>'
+							'"You want my cum too?" <<$boydesc[1]>> asks you as he pulls his dick out of your mouth and starts jerking it over your face and tits.'
+							'Knowing what he expects next you look up at his face with pleading eyes and say: "Please let me taste it. I want to taste your wonderful cum." And open your mouth for him.'
+							'This seems to drive him over the edge and he immediately starts shooting his load on your face, aiming for your mouth before switching targets and coating your tits in his cum too.'
+							'"Hmm... Wonderful." You tell him as you run your finger through it and slowly lick it.'
+							'After a minute the guys get up from the bed and start getting dressed. "Damn that was hot. Totally worth it." <<$boydesc[0]>> tells his friend as they move to the door, "See you around someday <<$pcs_nickname>>." and close it behind them.'
+							if mmfextrapay = 1:
+								'You roll over and start collecting the money. "That was pretty amazing and I even made good money." You think to yourself.'
+							else
+								'"That was pretty amazing." You think to yourself.'
+							end
+							gs 'arousal', 'bj', 5, 'prostitution', 'sub', 'group'
+							gs 'arousal', 'end'
+							gs 'cum_call', 'face', $boy[1], 1, '', 10000, 15
+							gs 'cum_call', 'breasts', $boy[1], 1, '', 10000, 15
+							gs 'cum_call', 'mouth', $boy[1], 1, '', 10000, 10
+							money += 1000
+							gs 'stat'
+							act'Go to the bar':gt 'hotel_resep','pavlbar'
+						end
+					end
+				else
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/mmf06.jpg"></center>'
+						'After a while <<$boydesc[0]>> grabs your hips and holds you in place as he fucks your ass hard and deep. You do your best to keep sucking <<$boydesc[1]>> off but you mostly just moan around his cock.'
+						'It doesn''t take long before he starts moaning and you realize he came in the condom.'
+						'"You want my cum too?" <<$boydesc[1]>> asks you as he pulls his dick out of your mouth and starts jerking it over your face and tits.'
+						'Knowing what he expects next you look up at his face with pleading eyes and say: "Please let me taste it. I want to taste your wonderful cum." And open your mouth for him.'
+						'This seems to drive him over the edge and he immediately starts shooting his load on your face, aiming for your mouth before switching targets and coating your tits in his cum too.'
+						'"Hmm... Wonderful." You tell him as you run your finger through it and slowly lick it.'
+						'After a minute the guys get up from the bed and start getting dressed. "Damn that was hot. Totally worth it." <<$boydesc[0]>> tells his friend as they move to the door, "See you around someday <<$pcs_nickname>>." and close it behind them.'
+						if mmfextrapay = 1:
+							'You roll over and start collecting the money. "That was pretty amazing and I even made good money." You think to yourself.'
+						else
+							'"That was pretty amazing." You think to yourself.'
+						end
+						gs 'arousal', 'bj', 5, 'prostitution', 'sub', 'group'
+						gs 'arousal', 'end'
+						gs 'cum_call', 'face', $boy[1], 1, '', 10000, 15
+						gs 'cum_call', 'breasts', $boy[1], 1, '', 10000, 15
+						gs 'cum_call', 'mouth', $boy[1], 1, '', 10000, 10
+						money += 1000
+						gs 'stat'
+						act'Go to the bar':gt 'hotel_resep','pavlbar'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'pavgenprosff':
+	menu_off = 1
+	*clr & cla
+	proshotelday = daystart
+	pavproscount += 1
+	girl += 1
+	pav_prostitute += rand(2,4)
+	pavprosff = 1
+
+	gs 'npcgeneratec', 1, '', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff01.jpg"></center>'
+	'The customer introduces herself as <<$boydesc>>. "I''m <<$pcs_nickname>>." You tell her.'
+	'"I''ve just booked you for the next hour. So let''s have some fun.'
+	'"Now get on your knees and let me have a look at you." She says in a sweet voice.'
+	'You obediently sit down on your knees and say in a teasing voice: "Do you like what you see <<$boydesc>>?"'
+	'She slowly walks around you, giving you a critical inspection. Then she leans in and starts pulling on your top, exposing your breasts. "I can work with this." She whispers in your ear as she starts kneeding your breasts.'
+	gs 'arousal', 'foreplay', 5, 'prostitution'
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff02.jpg"></center>'
+		'<<$boydesc>> pulls your top off completely leaving you in only your panties.'
+		'"Go stand on the bed and put your hand up against the wall." She orders you.'
+		'As you get up on the bed, you try to move your ass as seductively as you can. Once you are standing on the bed with your hands against the wall you look over your shoulder to see <<$boydesc>> pull off her own top before moving up behind you. The hunger is clearly visible in her eyes.'
+		'She immediately starts running her hands over your back. Slowly moving down to your ass. Occasionally rubbing between your legs over the fabric of your panties. Her touches turn you on so much that you can feel your pussy getting wetter and wetter.'
+		'It doesn''t take long before she notices how damp your panties are getting. "Does my little plaything like my attentions?" She whispers in your ear as she slowly starts pulling your panties off.'
+		'"Yes <<$boydesc>>." You let out in a low moan as her hand gently strokes over your now bared pussy.'
+		gs 'arousal', 'foreplay', 5, 'prostitution'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff03.jpg"></center>'
+			'"Lie down <<$pcs_nickname>>." She tells you and you immediately comply.'
+			'When you are on your back she kneels down besides you and pushes your legs open, revealing just how wet your pussy is already.'
+			'<<$boydesc>>''s fingers immediately find their way to your pussy as she starts playing with you again. You close your eyes and let out a needy moan as you feel one of her fingers push inside of you, probing around delicately.'
+			'When you feel her finger leave your by now soaked pussy you open your eyes to see her lick your juices off. "Do you want a taste too?" She asks you as she leans in and brushes your lips with her fingertips.'
+			'In response you just open your mouth and look her in the eye as she puts her finger inside it so you can suck on it.'
+			gs 'arousal', 'vaginal_finger', 5, 'prostitution'
+			gs 'stat'
+			act 'Continue':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff04.jpg"></center>'
+				'<<$boydesc>> pulls her finger out of your mouth and trails it down over your body until it''s resting on your pussy.'
+				'She just smiles at you expectantly as she keeps her hand still. "Please." You beg her and that is all it takes to get her to play with your pussy again.'
+				'She presses down with her other hand down on your stomach and slips a second finger inside you. The extra pressure makes it feel even better and you let out a loud moan.'
+				'"Do you want me to go faster?" She asks you with a grin on her face. She clearly knows you''d let her do just about anything to you at this point.'
+				'"P-Please fuck my pussy." You beg her again and <<$boydesc>> starts building up the pace. Within a minute her fingers are plunging in and out of your pussy rapidly and the room is filled with the sound of it, at least when your moans don''t drown it out.'
+				'You feel your orgasm approach rapidly as her fingers keep hitting just the right spot. As it starts crashing over you, you grab her wrist and hold her fingers as deep inside you as you can. Grinding on her wriggling fingers as you let it wash over you.'
+				orgasm += 1
+				gs 'arousal', 'vaginal_finger', 10, 'prostitution'
+				gs 'stat'
+				act 'Continue':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff05.jpg"></center>'
+					'When you open your eyes again you notice that <<$boydesc>> has taken off the rest of her clothes already.'
+					'"Now it''s my turn." She says as she moves over and straddles your face. You can see she''s already soaking wet.'
+					'With one hand you start stroking her gently before you spread her pussy. You feel her shudder on top of you as your next exhalation hits her clit directly.'
+					'"Come on, I want to feel that sweet tongue of yours." She moans. Obliging her you start running your tongue all over her pussy, occasionally exploring as deep as you can in her pussy.'
+					'Each time you hear her moan you can''t stop yourself from licking her even faster.'
+					gs 'arousal', 'cuni_give', 5, 'prostitution'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff06.jpg"></center>'
+						'It doesn''t take long before <<$boydesc>> grabs you by the hair and presses her pussy down on your mouth while she uses her other hand to massage her breasts.'
+						'You find your way to her clit and start sucking on it hard. Within seconds she starts bucking on top of you violently. By the time she rolls off, your face is smeared with her juices.'
+
+						gs 'arousal', 'cuni_give', 5, 'prostitution'
+						gs 'arousal', 'end'
+						if succubusflag = 1:
+							scfeed = succublvl + rand(1,4)
+							sexnutrition += 30 * scfeed
+							succubxp += 6
+						end
+						pcs_makeup = 0
+						pcs_hairbsh = 0
+						gs 'stat'
+						act 'Continue':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ff07.jpg"></center>'
+							'While <<$boydesc>> is regaining her breath you start getting up off the bed.'
+							'She opens her eyes and starts giggling. "Oh <<$pcs_nickname>>, dear, I seem to have made a mess of your makeup."'
+							'"I can''t say I mind how that happened..." You tell her as she gets up herself and starts walking to the bathroom.'
+							'"I could use a shower." She says, looking over her shoulder before disappearing into the bathroom and leaving the door open.'
+							act 'Follow her':gt 'hotel_resep', 'ffshower'
+							act 'Wait for her to finish showering':
+								cla
+								'You drop down on the bed and close your eyes for a second.'
+								'A moment later you feel a hand on your shoulder gently shaking you. "You should wake up <<$pcs_nickname>>, it''s time to leave."'
+								act'Go to the bar':gt 'hotel_resep','pavlbar'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'ffshower':
+	menu_off = 1
+	pcs_makeup = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower01.jpg"></center>'
+	'You can hear the water start running before you get to the bathroom door yourself. <<$boydesc>> is already enjoying the hot water, looking at you with a big smile on her face.'
+	'"Come here, the water is just the right temperature." She says as she steps back making room for you.'
+	'Her wet, naked body looks delicious. You eagerly step under the stream of hot water next to her and press your body against hers.'
+	'Within moments the two of you are making out passionately. Enjoying the feeling of each other''s wet skin.'
+	if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+	gs 'arousal', 'kiss', 5, 'prostitution'
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower02.jpg"></center>'
+		'<<$boydesc>> turns you around and presses you against the protective glass of the shower. As your boobs get flattened, you instinctively press your ass back against her and spread your legs.'
+		'You can feel her stiff nipples pressed against your back as she starts kissing your neck, occasionally moving up to nibble on your earlobe, and moves one of her hands between your legs, immediately slipping a finger inside.'
+		'The pleasure of her delicate fingers makes your mind go blank and you can''t do anything but lean against the glass and let it wash over you.'
+		gs 'arousal', 'vaginal_finger', 5, 'prostitution'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower03.jpg"></center>'
+			'"Not yet <<$pcs_nickname>>" She whispers in your ear as she pulls her hand back. "This time I get to cum first." And pushes you down on your knees.'
+			'She grabs your head and pushes her pussy firmly onto your mouth. You start alternating between sucking on her clit and fucking her as deep as you can with your tongue while she slowly grinds her pussy on your face.'
+			'It looks like she was already close again as it doesn''t take very long before she starts: "Ooh... That''s... Aaah" Before she starts to cum on your face again as you enjoy listening to her breathless gasping.'
+			'After several seconds of her trembling on her feet she sinks down. Unable to keep standing and still panting visibly from her orgasm.'
+			'You glance at the clock and see that an hour has almost passed.'
+			gs 'arousal', 'cuni_give', 10, 'prostitution'
+			gs 'stat'
+			gs 'willpower', 'cuni', 'self'
+			if will_cost <= pcs_willpwr:
+				act 'Ask her to return the favour (<<will_cost>> Willpower)':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower04.jpg"></center>'
+					pavproslate = 1
+					'When she raises her eyes to yours again you can practically feel your own desire spark through your pussy again. "Screw <<$npc_firstname[''A217'']>>. It won''t matter if I''m a little late." You think to yourself.'
+					'"Please... Would you..." You start and <<$boydesc>> starts laughing: "Eager, I like that. Get up."'
+					'You stand up and press yourself against the shower wall, opening your legs for her. "I really wouldn''t mind another taste." She says as she slowly starts licking your pussy.'
+					'"You do taste wonderful." She says, smiling up at you as her hand slowly slides up along the inside of your leg. When it reaches your pussy she looks up at you with a boyish grin on her face.'
+					'"Oh, P-Please. Your hands are... Aah" You can''t even complete your sentence as she pushes her fingers deep inside you, making you moan loudly.'
+					'<<$boydesc>> starts licking your clit while her fingers never stop moving in and out of your soaked pussy.'
+					'Suddenly your mind goes blank as your orgasm hits you hard. You can feel your entire body tremble as the waves wash over you.'
+					'Unable to stay on your feet you let yourself slide down to the floor next to <<$boydesc>>.'
+					gs 'arousal', 'kiss', 5, 'prostitution'
+					gs 'willpower', 'cuni', 'self'
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					act 'Continue':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower05.jpg"></center>'
+						'"I wish we could do this forever." You tell <<$boydesc>> as you give her one last passionate kiss before getting up and grabbing a towel.'
+						'As she steps out of the shower after you, you pick up another towel and hand it to her.'
+						'"That was pretty incredible. I''ll make sure to ask for you when I''m in town again." She says as she puts her clothes back on.'
+						'"I''d love that. My... My clients usually aren''t as gentle with me as you were. I-I liked it. A lot." You say a bit abashed.'
+						'"See you next time then sweetie" She says and walks out of the hotelroom. "And remember to keep this our little secret."'
+						orgasm += 1
+						noShampoo = 1
+						dynamic $showerdin
+						gs 'arousal', 'kiss', 5, 'prostitution'
+						gs 'stat'
+						act'Go to the bar':gt 'hotel_resep','pavlbar'
+					end
+				end
+			else
+				act 'Ask her to return the favour (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Out of time':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/prostitution/ffshower05.jpg"></center>'
+				'"I wish we had more time." You tell <<$boydesc>> as you give her one last passionate kiss before getting up and grabbing a towel.'
+				'As she steps out of the shower after you, you pick up another towel and hand it to her.'
+				'"That was pretty incredible. I''ll make sure to ask for you when I''m in town again." She says as she puts her clothes back on.'
+				'"I''d love that. My... My clients usually aren''t as gentle with me as you were. I-I liked it. A lot." You say a bit abashed.'
+				'"See you next time then sweetie" She says and walks out of the hotelroom. "And remember to keep this our little secret."'
+				noShampoo = 1
+				dynamic $showerdin
+				gs 'arousal', 'kiss', 5, 'prostitution'
+				gs 'stat'
+				act'Go to the bar':gt 'hotel_resep','pavlbar'
+			end
+		end
+	end
+end
+
+--- hotel_resep ---------------------------------
+

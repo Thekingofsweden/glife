@@ -1,0 +1,297 @@
+# stol
+
+if $ARGS[0] = 'start':
+	*clr & cla
+	menu_off = 1
+	'<center><h1>Desk</h1></center>'
+	'<center><img <<$set_imgh>> src="images/shared/home/bedroom/stol.jpg"></center>'
+	*nl
+	gs 'stat'
+	'Bric-a-brac drawer.'
+
+	if lubri > 0:'Lubricant, enough for <<lubri>> time(s).'
+	if krem > 0:'Sunblock, enough for <<krem>> more application(s).'
+	if abonement > 0:'Fitness center subscription, valid for <<abonement>> more visit(s)'
+	if dildo > 0:'Realistic Dildo.'
+
+	if mentats_have > 0:
+		'<a href="exec:dynamic $use_mentats & gt ''stol'', ''start''"><b>Take neurobooster pill.</b></a> Uses left: <<mentats_have>>. Warning on the box says not to take more than one per day.'
+	end
+	if steroid_have > 0:
+		'<a href="exec:dynamic $use_steroids & gt ''stol'', ''start''"><b>Take steroids.</b></a> Uses left: <<steroid_have>>.'
+	end
+	if aphrodisiac_have > 0:
+		'<a href="exec:dynamic $use_aphrodisiac & gt ''stol'', ''start''"><b>Chew aphrodisiac gum.</b></a> Uses left: <<aphrodisiac_have>>.'
+	end
+
+	act 'Close the drawer':	gt $loc, $metka
+	
+	act 'Check birth control': gt 'stol', 'bc'
+	
+	killvar '$stol_loc_temp'
+	if strapon = 1:
+		if dildo + middildo + largedildo + bigdildo + extradildo + superdildo + maddildo > 0:
+			act 'Check out your strapon harness': $stol_loc_temp = 'start' & gt 'stol', 'strapon'
+		else
+			act 'Check out your strapon harness': '<br>You don''t have any dildos to attach to your strapon harness'
+		end
+	end
+	
+	if siga > 0:
+        act 'Hide some cigarettes in your drawer':
+            cla
+            cigIN = input ("How many cigarettes do you want to hide in your drawer? (Your purse contains <<siga>> cigarettes.)")
+
+            if cigIN <= 0 or cigIN > siga:
+                'You can''t put this amount into the drawer.'
+            else
+                stolcigarettes += cigIN
+                siga -= cigIN
+            end
+
+            gt 'stol', 'start'
+        end
+    end
+
+	if stolcigarettes > 0:
+        act 'Take some cigarettes from your drawer':
+            cla
+            cigOUT = input ("How many cigarettes do you want to put in your purse? (There are <<stolcigarettes>> cigarettes here.)")
+
+            if cigOUT <= 0 or cigOUT > stolcigarettes:
+                'You can''t take this amount from your drawer.'
+            else
+                stolcigarettes -= cigOUT
+                siga += cigOUT
+            end
+
+            gt 'stol', 'start'
+        end
+    end
+
+	if money > 0:
+		act 'Put some money in the drawer':
+			cla
+			stolIN = input ("How much money you want to put in the desk drawer? (Your purse contains <<money>> <b>₽</b>.)")
+
+			if stolIN <= 0 or stolIN > money:
+				!!'Not correct operation.'
+			else
+				stolmoney += stolIN
+				money -= stolIN
+			end
+
+			gt 'stol', 'start'
+		end
+	end
+
+	if stolmoney > 0:
+		act 'Take some money from the desk.':
+			cla
+			stolOUT = input ("How much money do you want to put in your purse? (There is <<stolmoney>> <b>₽</b> here.)")
+
+			if stolOUT <= 0 or stolOUT > stolmoney:
+				!!'Not correct operation.'
+			else
+				stolmoney -= stolOUT
+				money += stolOUT
+				!!'You debited <<kartaOUT>> <b>₽</b>, now on your account <<karta>> <b>₽</b>.'
+			end
+
+			gt 'stol', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'stolPar':
+	*clr & cla
+	menu_off = 1
+	gs'stat'
+	'<center><h1>Desk</h1></center>'
+	'<center><img <<$set_imgh>> src="images/shared/home/bedroom/stol.jpg"></center>'
+	*nl
+	'You sit down at your desk.'
+	
+	act 'Get up':gt $loc, $metka
+	act 'Check your birth control': gt 'stol', 'bc'
+	
+	if mentats_have > 0: '<a href="exec:dynamic $use_mentats & gt ''stol'', ''stolPar''"><b>Take neurobooster pill.</b></a> Uses left: <<mentats_have>>. Warning on the box says not to take more than one per day.'
+	if steroid_have > 0: '<a href="exec:dynamic $use_steroids & gt ''stol'', ''stolPar''"><b>Take steroids.</b></a> Uses left: <<steroid_have>>.'
+	if aphrodisiac_have > 0: '<a href="exec:dynamic $use_aphrodisiac & gt ''stol'', ''stolPar''"><b>Chew aphrodisiac gum.</b></a> Uses left: <<aphrodisiac_have>>.'
+	
+	gs 'willpower', 'misc', 'self', iif(grupTipe = 4 and traits['nerd_status'] = 0, 'hard', iif(traits['nerd_status'] > 0, 'easy', 'medium'))
+	if traits['nerd_status'] = 2: will_cost = will_cost / 2
+	if lernHome > 0 and (will_cost <= pcs_willpwr or traits['nerd_status'] = 3):
+		'<br>You have to your homework. Finishing everything will take <<lernHome>> hours.'
+		act 'Do your homework (1:00'+iif(traits['nerd_status'] = 3, '', ' and <<will_cost>> Willpower')+')':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/shared/apartment/homework.jpg"></center>'
+			minut += 60
+			pcs_mood += 5 * traits['nerd_status']
+			lernHome -= 1
+			lern += 1
+			gs 'willpower', 'misc', 'self', iif(grupTipe = 4, 'hard', iif(traits['nerd_status'] > 0, 'easy', 'medium'))
+			if traits['nerd_status'] = 2: will_cost = will_cost / 2
+			if traits['nerd_status'] < 3: gs 'willpower', 'pay', 'self'
+			gs'stat'
+			'It took you one hour to '+iif(lernHome = 0, 'complete', 'do a part of')+' your homework.'
+			
+			act 'Continue':gt 'stol', 'stolPar'
+		end
+	elseif lernHome > 0 and will_cost > pcs_willpwr:
+		act 'Do your homework (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	
+	will_cost = will_cost * lernHome
+	if lernHome > 1 and (will_cost <= pcs_willpwr or traits['nerd_status'] = 3):
+		act 'Finish all of your homework (<<lernHome>>:00'+iif(traits['nerd_status'] = 3, '', ' and <<will_cost>> Willpower')+')':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/shared/apartment/homework.jpg"></center>'
+			'It took you <<lernHome>> hours to complete your homework.'
+			minut += 60 * lernHome
+			pcs_mood += 5 * traits['nerd_status'] *lernHome
+			lern += 1 + lernHome/2
+			lernHome = 0
+			if traits['nerd_status'] < 3: gs 'willpower', 'pay', 'self'
+			gs'stat'
+			
+			act 'Continue':gt 'stol', 'stolPar'
+		end
+	elseif lernHome > 1 and will_cost > pcs_willpwr:
+		act 'Finish all of your homework (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+
+	killvar '$stol_loc_temp'
+	if strapon = 1:
+		if dildo + middildo + largedildo + bigdildo + extradildo + superdildo + maddildo > 0:
+			act 'Check out your strapon harness': $stol_loc_temp = 'stolPar' & gt 'stol', 'strapon'
+		else
+			act 'Check out your strapon harness': '<br>You don''t have any dildos to attach to your strapon harness'
+		end
+	end
+	
+	if siga > 0:
+        act 'Hide some cigarettes in your drawer':
+            cla
+            cigIN = input ("How many cigarettes do you want to hide in your drawer? (Your purse contains <<siga>> cigarettes.)")
+
+            if cigIN <= 0 or cigIN > siga:
+                'You can''t put this amount into the drawer.'
+            else
+                stolcigarettes += cigIN
+                siga -= cigIN
+            end
+
+            gt 'stol', 'stolPar'
+        end
+    end
+
+	if stolcigarettes > 0:
+        act 'Take some cigarettes from your drawer':
+            cla
+            cigOUT = input ("How many cigarettes do you want to put in your purse? (There are <<stolcigarettes>> cigarettes here.)")
+
+            if cigOUT <= 0 or cigOUT > stolcigarettes:
+                'You can''t take this amount from your drawer.'
+            else
+                stolcigarettes -= cigOUT
+                siga += cigOUT
+            end
+
+            gt 'stol', 'stolPar'
+        end
+    end
+	
+	if money > 0:
+		act 'Hide some money in your drawer':
+			cla
+			stolIN = input ("How much money you want to hide in your drawer? (Your purse contains <<money>> <b>₽</b>.)")
+
+			if stolIN <= 0 or stolIN > money:
+				'You can''t put this amount into the drawer.'
+			else
+				stolmoney += stolIN
+				money -= stolIN
+			end
+
+			gt 'stol', 'stolPar'
+		end
+	end
+
+	if stolmoney > 0:
+		act 'Take some money from your drawer':
+			cla
+			stolOUT = input ("How much money do you want to put in your purse? (There is <<stolmoney>> <b>₽</b> here.)")
+
+			if stolOUT <= 0 or stolOUT > stolmoney:
+				'You can''t take this amount from your drawer.'
+			else
+				stolmoney -= stolOUT
+				money += stolOUT
+				if stolmoney > 0: 'You have <<stolmoney>> <b>₽</b> hiden in your drawer.'
+			end
+
+			gt 'stol', 'stolPar'
+		end
+	end
+end
+
+if $ARGS[0] = 'strapon':
+!! use gs 'boyStat', 'D<<strapnumber>>' to recall which dildo is attached
+	*clr
+	'<center><h1>Desk</h1></center>'
+	'<center><img <<$set_imgh>> src="images/shared/home/bedroom/stol.jpg"></center>'
+	*nl
+	if strapnumber = 0: 'Your strapon harness doesn''t have a dildo attached to it.'
+	*nl
+	if dildo = 1: iif(strapnumber = 1, 'Your 10cm dildo is attached to your strapon harness.', '<a href="exec:strapnumber = 1 & gt ''stol'', ''strapon''">Attach</a> your 10cm long dildo.')
+	if middildo = 1: iif(strapnumber = 2, 'Your 15cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 2 & gt ''stol'', ''strapon''">Attach</a> your 15cm long dildo.')
+	if largedildo = 1: iif(strapnumber = 3, 'Your 20cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 3 & gt ''stol'', ''strapon''">Attach</a> your 20cm long dildo.')
+	if bigdildo = 1: iif(strapnumber = 4, 'Your 25cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 4 & gt ''stol'', ''strapon''">Attach</a> your 25cm long dildo.')
+	if extradildo = 1: iif(strapnumber = 5, 'Your 30cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 5 & gt ''stol'', ''strapon''">Attach</a> your 30cm long dildo.')
+	if superdildo = 1: iif(strapnumber = 6, 'Your 35cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 6 & gt ''stol'', ''strapon''">Attach</a> your 35cm long dildo.')
+	if maddildo = 1: iif(strapnumber = 7, 'Your 40cm dildo is attached to your strapon harness.','<a href="exec:strapnumber = 7 & gt ''stol'', ''strapon''">Attach</a> your 40cm long dildo.')
+	act 'Back': gt 'stol', $stol_loc_temp
+end
+
+if $ARGS[0] = 'bc':
+	*clr & cla
+	'<center><h1>Desk</h1></center>'
+	'<center><img <<$set_imgh>> src="images/shared/home/bedroom/stol.jpg"></center>'
+	*nl
+	gs 'stat'
+	gs 'din_bad'
+	'In the drawer of your desk, you store your birth control.'
+	if prezik + prezikcount + preziksabo > 0:
+		if preziktype = 2 or preziksabo > 0:
+			'You have <<iif(preziktype = 2, prezikcount, prezikcount+prezik)>> normal, and <<iif(preziktype = 2, prezik+preziksabo, preziksabo)>> sabotaged <a href="exec:dynamic $din_Table_Condom_Menu"><b>condoms.</b></a>'
+		elseif preziktype < 2 and preziksabo = 0:
+			'You have <<prezik+prezikcount>> <a href="exec:dynamic $din_Table_Condom_Menu"><b>condoms.</b></a>'
+		end
+		*nl
+	else
+		'You are out of condoms.'
+	end
+	if tabletki > 0 and pillsleft[ptype] > 0:
+		'You have <<tabletki>> unopened packages of <a href="exec:dynamic $d_tabletkiedt">birth control pills</a> and <<pillsleft[ptype]>> pills left in your opened package.</b>'
+	elseif tabletki	= 0 and pillsleft[ptype] > 0:
+		'You have <<pillsleft[ptype]>> <a href="exec:dynamic $d_tabletkiedt">birth control pills</a> left.</b>'
+	elseif tabletki > 0 and pillsleft[ptype] = 0:
+		'You have <<tabletki>> unopened packages of <a href="exec:dynamic $d_tabletkiedt">birth control pills</a>.'
+	else
+		'You are out of birth control pills.'
+	end
+	if morning_after_pill > 0:
+		if morning_after_pill = 1:
+			'You have one <a href="exec:gs''medical_din'',''morning_after_pill''">morning after pill</a>.'
+		else
+			'You have <b><<birth_control[''morning_after'']>></b> <a href="exec:gs''medical_din'',''morning_after_pill''">morning after pills</a>.'
+		end
+	else
+		'You have no morning after pills.'
+	end
+	act 'Close the drawer':gt $loc, $metka
+end
+
+--- stol ---------------------------------
+

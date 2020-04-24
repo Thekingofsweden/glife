@@ -1,0 +1,139 @@
+# bouling
+
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+	$sexloc = 'bouling'
+	*clr & cla
+	$loc = 'bouling'
+	$metka = 'start'
+	$menu_loc = 'bouling'
+	$menu_arg = 'start'
+	menu_off = 0
+	$location_type = 'public_indoors'
+	gs 'stat'
+	'<center><b>Bowling</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/bowling/boul.jpg"></center>'
+
+	act 'Leave':gt 'torgcentr'
+
+	if hour >= 8 and hour <= 20 and money >= 300:
+		act 'Play (300 <b>₽</b>) (1:00)':
+			menu_off = 1
+			minut += 60
+			boulvar = 0
+			boulingnav += rand(0,3)
+			boulrand = rand(0,9)
+			gs 'npcgeneratec', 0, 'Bowling Player', rand(18,40)
+			$boy[0] = $npclastgenerated
+			$boydesc[0] = $npc_usedname[$npclastgenerated]
+			gs 'npcgeneratec', 0, 'Bowling Player', rand(18,40)
+			$boy[1] = $npclastgenerated
+			$boydesc[1] = $npc_usedname[$npclastgenerated]
+			gs 'stat'
+				
+			act 'Leave': gt 'bouling'
+				
+			if boulrand = 0:
+				killvar 'boulrand'
+				'You see two guys and they challenge you to a game.'
+				act 'Gamble (2000 <b>₽</b>)':boulvar = 1 & gt 'bouling', 'randwin'
+				gs 'willpower', 'sex', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Refuse and play a normal game (<<will_cost>> Willpower)':
+						gs 'willpower', 'sex', 'resist', 'hard'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt 'bouling', 'randwin'
+					end
+				else
+					act 'Refuse and play a normal game (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			elseif boulrand = 1:
+				killvar 'boulrand'
+				'You meet two girls and they suggest challenging two guys to a game: Prize 5000 <b>₽</b>, lose and they have sex with you.'
+				act 'Play':boulvar = 2 & gt 'bouling', 'randwin'
+				gs 'willpower', 'sex', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Refuse and play a normal game (<<will_cost>> Willpower)':
+						gs 'willpower', 'sex', 'resist', 'hard'
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt 'bouling', 'randwin'
+					end
+				else
+					act 'Refuse and play a normal game (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			elseif boulrand > 1:
+				killvar 'boulrand'
+				gt 'bouling', 'randwin' 
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'randwin':
+	cla
+
+	if boulingnav < 10:boulwin = rand(0, 10)
+	if boulingnav >= 10 and boulingnav < 20:boulwin = rand(0, 12)
+	if boulingnav >= 20 and boulingnav < 30:boulwin = rand(0, 14)
+	if boulingnav >= 30 and boulingnav < 40:boulwin = rand(0, 16)
+	if boulingnav >= 40 and boulingnav < 50:boulwin = rand(0, 18)
+	if boulingnav >= 50 and boulingnav < 60:boulwin = rand(0, 20)
+	if boulingnav >= 60 and boulingnav < 70:boulwin = rand(0, 22)
+	if boulingnav >= 70 and boulingnav < 80:boulwin = rand(0, 24)
+	if boulingnav >= 80 and boulingnav < 90:boulwin = rand(0, 26)
+	if boulingnav >= 90:boulwin = rand(0, 28)
+
+	if boulwin > 10 and boulvar = 0:
+		money += 300
+		'You won and received 300 <b>₽</b>.'
+
+		act 'Leave': gt 'bouling'
+	elseif boulwin > 10 and boulvar = 1:
+		money += 2000
+		'You won and received 2,000 <b>₽</b>.'
+
+		act 'Leave': gt 'bouling'
+	elseif boulwin > 10 and boulvar = 2:
+		money += 5000
+		'You won and received 5,000 <b>₽</b>.'
+
+		act 'Leave': gt 'bouling'
+	elseif boulwin <= 10 and boulvar = 0:
+		money -= 300
+		'You lost and paid 300 <b>₽</b>.'
+		act 'Leave': gt 'bouling'
+	elseif boulwin <= 10 and boulvar = 1:
+		picrand = 14
+
+		if money >= 2000:
+			'You lose and have to pay 2,000 <b>₽</b>.'
+			
+			gs 'willpower', 'sex', 'self', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'Offer sex instead (<<will_cost>> Willpower)':
+					gs 'willpower', 'sex', 'self', 'hard'
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					xgt 'sexdvoe', 'var'
+				end
+			else
+				act 'Offer sex instead (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Pay': money -= 2000 & gt 'bouling'
+		else
+			'You lost, but you do not have money to pay, only one thing for it.'
+
+			act 'Offer sex instead':xgt 'sexdvoe', 'var'
+		end
+	elseif boulwin <= 10 and boulvar = 2:
+		picrand = 11
+		'You lose, open those legs.'
+
+		act 'Pay':gt 'sexorg', 'var'
+	end
+	killvar 'boulwin'
+end
+
+--- bouling ---------------------------------
+

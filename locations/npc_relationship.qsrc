@@ -1,0 +1,228 @@
+#npc_relationship
+
+!{ Interface to the Relationship system.  This system determines the relationship or reputation that the NPC has for the PC
+
+Methods are:
+1) modify => adds value to this relationship.  Can be integer(positive or negative) or string with 'like', 'love', 'adore', 'dislike','hate','loathe'
+    params: NPCID, value
+2) set => sets relationship to a specific value (used to initialize?)
+    params: NPCID, value
+3) check => like willpower checks, this is used to see if the NPC passes a given threshhold.
+    params: value, NPCID1,NPCID2,NPCID3....
+    result: number of NPCs that passed the check
+
+$ARGS[1] determines the Method being used:
+
+'modify' =>
+	$ARGS[1] => NPCID - This is NPC identifier thisis acting one, for example 'A29' is the PC''s mother.
+	 ARGS[2] => integer for how much to change the relationship  can be positive or negative
+	  or
+	$ARGS[2] => if third value is a string, the writer doesn't need to know the numberic values, but can use generic amounts
+		'like'    => moves relationship positively a small amount
+		'love'    => moves relationship positively a moderate amount
+		'adore'   => moves relationship positively a large amount
+		'dislike' => moves relationship negatively a small amount
+		'hate'    => moves relationship negatively a moderate amount
+		'loathe'  => moves relationship negatively a large amount
+	examples:
+		gs 'npc_relationship', 'modify', 'A29', 2
+		gs 'npc_relationship', 'modify', 'A29', 'hate'
+
+'set' =>
+	$ARGS[1] => NPCID - This is NPC identifier thisis acting one, for example 'A29' is the PC''s mother.
+	 ARGS[2] => integer to set this NPC's relationship to a specific value.
+	  or
+	$ARGS[2] => if third value is a string, the writer doesn't need to know the numberic values, but can use generic amounts
+		'unknown'     => NPC don''t know PC
+		'aquaintance' => NPC knows PC, but not much else
+		'friend'      => NPC is friends and will probably react favorably
+		'bestie'      => NPC is a best friend
+		'loved'       => NPC will die to protect PC
+	examples:
+		gs 'npc_relationship', 'set', 'A29', 90
+		gs 'npc_relationship', 'set', 'A29', 'loved'
+
+'check' =>
+	 ARGS[1] => Relationship level to check for.  Should be integer 1 - 100
+	$ARGS[2-9] => List of NPCIDs to check, , for example 'A29' is the PC''s mother.
+	examples:
+		!Check if one of Mother, Aunt Ludmilla, or Grandma have at least 50 relationship:
+			if func('npc_relationship', 'check', 50, 'A29', 'A30', 'A31') > 0:
+		!Check if all of Mother, Aunt Ludmilla, or Grandma have at least 50 relationship:
+			if func('npc_relationship', 'check', 50, 'A29', 'A30', 'A31') > 2:
+		!Also if you don't like a function, if sets variable npc_rel_check like WillPower
+			gs 'npc_relationship', 'check', 50, 'A29', 'A30', 'A31'
+			if npc_rel_check > 0:
+}
+
+if $ARGS[0] = 'modify':
+	!Handle if value is numeric
+	if $ARGS[2] = '':
+		npcRelSetVal = ARGS[2]
+	!Handle cases where value is a string to be interpreted
+	elseif $ARGS[2] = 'like':
+		npcRelSetVal = rand(1,2)
+	elseif $ARGS[2] = 'love':
+		npcRelSetVal = rand(3,4)
+	elseif $ARGS[2] = 'adore':
+		npcRelSetVal = rand(5,6)
+	elseif $ARGS[2] = 'dislike':
+		npcRelSetVal = 0-rand(1,2)
+	elseif $ARGS[2] = 'hate':
+		npcRelSetVal = 0-rand(3,4)
+	elseif $ARGS[2] = 'loathe':
+		npcRelSetVal = 0-rand(5,6)
+	!Handle default value
+	else
+		npcRelSetVal = 0
+	end
+	!Make sure the new value fits within correct range
+	npcRelSetVal += npc_rel[$ARGS[1]]
+	if npcRelSetVal > 100: npcRelSetVal=100
+	if npcRelSetVal < 0: npcRelSetVal = 0
+	!Set to new value
+	npc_rel[$ARGS[1]] = npcRelSetVal
+	killvar 'npcRelSetVal'
+end
+
+
+if $ARGS[0] = 'set':
+	!Handle if value is numeric
+	if $ARGS[2] = '':
+		npcRelSetVal = ARGS[2]
+	!Handle cases where value is a string to be interpreted
+	elseif $ARGS[2] = 'unknown':
+		npcRelSetVal = 0
+	elseif $ARGS[2] = 'aquaintance':
+		npcRelSetVal = 20
+	elseif $ARGS[2] = 'friend':
+		npcRelSetVal = 50
+	elseif $ARGS[2] = 'bestie':
+		npcRelSetVal = 70
+	elseif $ARGS[2] = 'loved':
+		npcRelSetVal = 90
+	!Handle default value
+	else
+		npcRelSetVal = 0
+	end
+	!Make sure the new value fits within correct range
+	if npcRelSetVal > 100: npcRelSetVal=100
+	if npcRelSetVal < 0: npcRelSetVal = 0
+	!Set to new value
+	npc_rel[$ARGS[1]] = npcRelSetVal
+	killvar 'npcRelSetVal'
+end
+
+
+if $ARGS[0] = 'check':
+	!Value we are checking against
+	npcRelSetVal = ARGS[1]
+	npc_rel_check = 0
+	!Loop through remaining $ARGS entries and count up number of successful compares
+	i=2
+	:npcRelCheck000
+	if $ARGS[i] ! '':
+		if npc_rel[$ARGS[i]] >= npcRelSetVal:
+			npc_rel_check += 1
+		end
+		i+=1
+		jump 'npcRelCheck000'
+	end
+	result = npc_rel_check
+	killvar 'npcRelSetVal'
+end
+
+
+!! ---------- default value setups -----------
+
+!! Family and friends
+if $ARGS[0] = 'default_family_friends':
+	if $ARGS[1] = 'cursedschoolboy':
+		gs 'npc_relationship', 'set', 'A28', 60	& ! stepdad (Vladimir)
+		gs 'npc_relationship', 'set', 'A29', 60	& ! mother (Natasha)
+		gs 'npc_relationship', 'set', 'A30', 50	& ! aunt Luda
+		gs 'npc_relationship', 'set', 'A31', 50	& ! grandma (Elena)
+		gs 'npc_relationship', 'set', 'A32', 50	& ! grandpa (Zlatek)
+		gs 'npc_relationship', 'set', 'A33', 70	& ! Anya
+		gs 'npc_relationship', 'set', 'A34', 50	& ! Kolka
+		
+		npc_rel['A11'] = 40		& ! Vasily Shulgin
+	else
+	 !! schoolgirl
+		gs 'npc_relationship', 'set', 'A28', 50	& ! stepdad (Vladimir)
+		gs 'npc_relationship', 'set', 'A29', 50	& ! mother (Natasha)
+		gs 'npc_relationship', 'set', 'A30', 50	& ! aunt Luda
+		gs 'npc_relationship', 'set', 'A31', 50	& ! grandma (Elena)
+		gs 'npc_relationship', 'set', 'A32', 50	& ! grandpa (Zlatek)
+		gs 'npc_relationship', 'set', 'A33', 70	& ! Anya
+		gs 'npc_relationship', 'set', 'A34', 50	& ! Kolka
+		
+		gs 'npc_relationship', 'set', 'A11', 60	& ! Vasily Shulgin
+		!! default friendship of 40 with Mitka 20 with Kolyamba and Vasyan in Gadukino
+		gs 'npc_relationship', 'set', 'A63', 40
+		gs 'npc_relationship', 'set', 'A62', 20
+		gs 'npc_relationship', 'set', 'A61', 20
+	end
+end
+
+
+! Adds relationship based on group types ass passed in
+!
+! Variable 'sg_setting_gend' can be set for specific gender selection. 1=Male, 2=Female
+! Required Parameters, these are relationships for each of these groups:
+!	ARGS[1] = coolkid
+!	ARGS[2] = jock
+!	ARGS[3] = nerd
+!	ARGS[4] = gopnik
+!	ARGS[5] = outcast
+!	ARGS[6] = teacher
+if $ARGS[0] = 'socialgroup_setting_internal':
+	r = 1
+	:socialgroup_loop
+		if sg_setting_gend = 0 or npc_gender['A<<r>>'] = sg_setting_gend-1:
+			i = 1
+			:socialgroup_loop2
+			!! Loop through ARGS[1-6], updating relationship if needed
+			if i <= 6:
+				!
+				if npc_grupTipe['A<<r>>'] = i and ARGS[i] ! 0:
+					gs 'npc_relationship', 'modify', 'A<<r>>', ARGS[i]
+				end
+				i += 1
+				jump 'socialgroup_loop2'
+			end
+		end
+		r += 1
+	if r <= aarraynumber :jump 'socialgroup_loop'
+	killvar 'i'
+	killvar 'r'
+	killvar 'sg_setting_gend'
+end
+
+if $ARGS[0] = 'socialgroup_setting':
+	!All Genders
+	sg_setting_gend = 0
+	gs 'npc_relationship', 'socialgroup_setting_internal', ARGS[1], ARGS[2], ARGS[3], ARGS[4], ARGS[5], ARGS[6]
+end
+
+if $ARGS[0] = 'socialgroup_setting_boys':
+	!Males
+	sg_setting_gend = 1
+	gs 'npc_relationship', 'socialgroup_setting_internal', ARGS[1], ARGS[2], ARGS[3], ARGS[4], ARGS[5], ARGS[6]
+end
+
+if $ARGS[0] = 'socialgroup_setting_girls':
+	!Females
+	sg_setting_gend = 2
+	gs 'npc_relationship', 'socialgroup_setting_internal', ARGS[1], ARGS[2], ARGS[3], ARGS[4], ARGS[5], ARGS[6]
+end
+
+if $ARGS[0] = 'defaultfriendship':
+	r = 1
+	:default_friendship_loop
+		if npc_grupTipe['A<<r>>'] = 1 or npc_grupTipe['A<<r>>'] = 2 or npc_grupTipe['A<<r>>'] = 3 or npc_grupTipe['A<<r>>'] = 4 or npc_grupTipe['A<<r>>'] = 5: gs 'npc_relationship', 'set', 'A<<r>>', 30
+		r += 1
+	if r <= aarraynumber :jump 'default_friendship_loop'
+end
+
+--- npc_relationship ---------------------------------

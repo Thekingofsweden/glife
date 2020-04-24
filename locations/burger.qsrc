@@ -1,0 +1,867 @@
+# burger
+
+if $ARGS[0] = 'start':
+	$metka = 'start'
+	$loc = 'burger'
+	$menu_loc = 'burger'
+	$menu_arg = 'start'
+	menu_off = 0
+	*clr & cla
+	$location_type = 'public_indoors'
+	CLOSE ALL
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Diner Bystroeshka</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/burger.jpg"></center>'
+	'A bright advertising on the wall reads, "The most nutritious food in the county"'
+	'There is a <a href="exec:gt ''butoilet''">WC</a> for visitors.'
+
+	if BistroBoss > 0:'<a href="exec:gt ''burger'', ''boss''">The Office of the Director</a> Anatoly Borisovich'
+
+	act 'Leave the diner': minut += 1 & gt 'down'
+
+	act 'Order from the menu (0:05)':gs 'food_menu'
+	if money >= 315: act 'Order take-out (0:20) (315<b>₽</b>)':money -= 315 & gt 'food', 'f_food'
+
+	if IvanPodstavaQW = 2: act 'Go into the office to Anatoly Borisovich':gt 'burger', 'office'
+
+	if posuda = 0:
+		act 'Ask about work':gt 'burger', 'apply'
+	elseif posuda >= 3 and posudaA = 0:
+		act 'Go to the manager':gt 'burger', 'manager'
+	end
+
+	if posuda >= 1 and posudaday ! daystart and NoBistroWork = 0 and PersSecWork = 0: act 'Wash the dishes for 70 <b>₽</b> (1:00)':gt 'burger', 'dishes'
+
+	if posudaA >= 1 and posudaAday ! daystart and hour < 10 and NoBistroWork = 0 and PersSecWork = 0: act 'Wash the floor for 70 <b>₽</b> (1:00)':gt 'burger', 'floor'
+end
+
+if $ARGS[0] = 'office':
+	$menu_loc = 'burger'
+	$menu_arg = 'office'
+	menu_off = 0
+	*clr & cla
+	gs 'stat'
+	minut += 5
+	'You go to the office of the owner. He is sitting at his desk, dealing with your papers. Anatoly Borisovich looks at you and says, "Well? Do you have any news?"'
+
+	act 'Leave':gt 'burger', 'start'
+
+	if money >= 650000:
+		act 'Repay the debt (650,000 <b>₽</b>)':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			money -= 650000
+			IvanPodstavaQW = 5
+			gs 'stat'
+			'You get the money out and hand it over to Anatoly Borisovich. He counts it and promises not to prosecute you anymore.'
+
+			act 'Leave':gt 'burger', 'start'
+		end
+	end
+
+	if IvanEvidence = 1:
+		act 'Show proof':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			IvanPodstavaQW = 6
+			IvanKvartira = 0
+			IvanEvidence = 0
+			gs 'stat'
+			'You show the recording, where Ivan confesses and promises to return the money, to Anatoly Borisovich. Anatoly Borisovich takes the record and says, that he understands and will take the statement to the police.'
+
+			act 'Leave':gt 'burger', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'apply':
+	$menu_loc = 'burger'
+	$menu_arg = 'apply'
+	menu_off = 0
+	cla
+	minut += 5
+	'You go into the manager''s office where you meet a smart girl. She begins to tell you, that you can work almost every day, "Come in any time, run the snack bar and wash the dishes for 1:00. You will get 70 <b>₽</b> immediately on hand."'
+
+	act 'Refuse and leave':gt 'burger', 'start'
+
+	act 'Accept work':
+		cla
+		menu_off = 1
+		posuda = 1
+		'You agree to work.'
+
+		act 'Leave':gt 'burger', 'start'
+	end
+end
+
+if $ARGS[0] = 'manager':
+	$menu_loc = 'burger'
+	$menu_arg = 'manager'
+	menu_off = 0
+	cla
+	minut += 5
+	'You go to the office of the manager. The girl tells the manager that you are doing good work and offers you another part-time job, "You can wash the floors in the morning, from 8 to 9. 1 hour of cleaning floors will get you 70 <b>₽</b> immediately on hand."'
+
+	act 'Refuse and leave':gt 'burger', 'start'
+
+	act 'Agree to work':
+		cla
+		menu_off = 1
+		posudaA = 1
+		soplakTimes = 0
+		soplakTimes1 = 0
+		'You agree to work.'
+
+		act 'Leave':gt 'burger', 'start'
+	end
+end
+
+if $ARGS[0] = 'dishes':
+	menu_off = 1
+	*clr & cla
+	posudaday = daystart
+	minut += 60
+	posuda += 1
+	pcs_mood -= 15
+	money += 70
+	gs 'sweat', 'add', 10
+
+	if bistroQW = 10:bistroQW = 0
+
+	'<center><img <<$set_imgh>> src="images/shared/home/kitchen/dirt.jpg"></center>'
+	'You clean the food residue and grease from the dirty dishes for an hour. Afterwards you are given 70 <b>₽</b> for your work.'
+
+	if pcs_apprnc >= 80 and posuda >= 7 and bistroQW < 10:
+		if bistroQW = 1:
+			'Out of the his office comes the owner of the bistro smiling at you. "<<$pcs_nickname>>. My offer still stands. Would you like to go to a restaurant?"'
+		elseif bistroQW = 0:
+			bistroQW = 1
+			'Out of the his office comes the owner of the bistro and nearly bumps into you.'
+			'"Oh, sorry. How could I not see such a charming girl."'
+			'"Don''t worry", you respond with a smile.'
+			'"Have we met? I am Anatoly Borisovich."'
+			'"<<$pcs_nickname>>."'
+			'Anatoly takes your hand and kisses it.'
+			'"Would you like to dine somewhere outside of this hole?"'
+		end
+
+		gs 'willpower', 'misc', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gt 'burger', 'start'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			*clr & cla
+			bistroQW = 10
+			'"Let''s go to the shop first and pick up a gorgeous dress for you. You are not allowed in the restaurant with anything else." says Anatoly while walking you to his car.'
+
+			act 'Get in the car':
+				*clr & cla
+				minut += 15
+				bistroQW = 20
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/shared/car.jpg"></center>'
+				'In the car Anatoly takes your hand and doesn''t let go for the whole ride.'
+				'You arrive at a very expensive boutique with a french name.'
+				'Anatoly tells you to pick out a dress.'
+				'After showing him a few dresses, he chooses one and tells you to go to the dressing room.'
+
+				act 'Go into the fitting room':
+					*clr & cla
+					minut += 15
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/butic.jpg"></center>'
+					'You undress and begin to inspect the dress.'
+					'Suddenly Anatoly comes into the dressing room.'
+					'"Sorry, I could not resist to take a look at your beauty."'
+					'Looking at the dresses, Anatoly says, '
+					'"I think you should take this one. It is the most expensive one. And I think, <<$pcs_nickname>>, you should be very thankful for such a gift."'
+					'Anatoly''s eyes point at his pants showing what he wants from you.'
+
+					act 'Give him a blowjob':
+						*clr & cla
+						bistroQW = 50
+						guy += 1
+						swallow += 1
+						gs 'boyStat', 'A74'
+						gs 'cum_call', 'mouth', 'A74', 1
+						average[23] = 1
+						averageH[23] = 160
+						averageB[23] = pcs_hips
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj.jpg"></center>'
+						'You squat down in front of Anatoly, he unbuttons his pants and pulls out his penis. You lean over his hard cock and kiss it, feeling its warmth. You run your tongue along his cock finally putting it in your big wet mouth and start to suck his dick.'
+						'Soon Anatoly groans and you feel a spurt of warm liquid like in your mouth. You are giving your best to swallow all of his cum, trying not to choke. Anatoly straightens his clothes and leaves.'
+						'You feel a little woozy as you walk out of the dressing room and look for Anatoly.'
+						'He smiles and gestures to the seller who takes the dress.'
+
+						gs 'arousal', 'bj', 15, 'sub'
+						gs 'stat'
+
+						act 'Exit from the boutique':
+							*clr & cla
+							minut += 15
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/shared/car.jpg"></center>'
+							'"Whew, <<$pcs_nickname>>. I''m a little tired. Let''s go to a restaurant some other time." Anatoly tells you, taking you by the hand as he leads you to his car. You quickly get to your home and Anatoly says goodbye to you.'
+
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Out of the car':gt 'street'
+						end
+					end
+
+					act 'Hesitate':
+						*clr & cla
+						minut += 15
+						gs 'stat'
+						'You hesitate, not sure what to do. Anatoly Borisovich takes you by the shoulders and pushes you down, making you squat in front of him helplessly. He unbuttons his pants and pulls out his already hard dick.'
+
+						act 'Look at him frightened':
+							*clr & cla
+							minut += 1
+							bistroQW = 50
+							guy += 1
+							average[24] = 1
+							averageH[24] = 160
+							averageB[24] = pcs_hips
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr.jpg"></center>'
+							'You look up at him startled as you notice the hot head of his cock resting on your lips. Anatoly pushes his dick to your lips. "Don''t shy baby, lick it with your tongue."'
+
+							act 'Start licking':
+								*clr & cla
+								minut += 2
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr1.jpg"></center>'
+								'You hesitantly stick out your tongue and lick the purple head again and again. Soon you are running your tongue along the whole length of his cock, wetting it with your saliva.'
+
+								act 'Keep licking his dick':
+									*clr & cla
+									gs 'stat'
+									'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr2.jpg"></center>'
+									'You continue to lick his dick and Anatoly Borisovich puts his hand on the back of your head pushing your head into is groin. You feel his cock fill up your mouth almost completely as your wet lips part to take in the hot and firm flesh of his member. "That''s it baby, suck it now." says Anatoly Borisovich as he starts moving his hips, slowly fucking your mouth. You wrap your lips tightly around his member, trying not to choke as his thrusts become more and more forceful.'
+
+									gs 'arousal', 'bj', 2, 'sub', 'deepthroat'
+									gs 'stat'
+
+									act 'Suck his dick':
+										*clr & cla
+										minut += 2
+										swallow += 1
+										gs 'boyStat', 'A74'
+										sexpartkno = 1
+										sexvolume = 13
+										spafinloc = 12
+										gs 'cum_manage'
+										facial += 1
+										sexpartkno = 1
+										sexvolume = 27
+										spafinloc = 11
+										gs 'cum_manage'
+										gs 'stat'
+										'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr3.jpg"></center>'
+										'You actively suck his dick and feel your jaw getting tired. Suddenly a hot jet shoots into your mouth. Surprised you release his member from your mouth an a jet of sperm hits you on the nose. Semen spills out of your mouth and hangs on your chin. Anatoly Borisovich takes your head and sticks his member back in your mouth to clean of the sperm.'
+
+										gs 'arousal', 'bj', 2, 'sub'
+										gs 'stat'
+
+										act 'Sit on the floor':
+											*clr & cla
+											minut += 2
+											gs 'stat'
+											cumspclnt = 11
+											gs 'cum_cleanup'
+											'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr4.jpg"></center>'
+											'Finally Anatoly Borisovich stops, puts his cleaned off dick back in his pants and starts to button them up. You sit on the floor stunned with semen dripping from your face. You feel taste the distinct flavor of semen in your mouth. Anatoly Borisovich helps you back to your feet and quickly walks out of the dressing room. You try to clean the traces of sperm from your face.'
+
+											act 'Exit out of the dressing':
+												*clr & cla
+												minut += 2
+												gs 'stat'
+												!!'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/pr4.jpg"></center>'
+												'You come out of the dressing room, your face red with shame. You feel like everyone is already aware of the fact that you just sucked a dick in a public place. Anatoly Borisovich tells the saleswoman that he will buy the dress for you and pays. The saleswoman wraps the dress for you and you feel her gaze on your face as she gives you the package.'
+
+												act 'Exit from the boutique':
+													*clr & cla
+													minut += 15
+													gs 'stat'
+													'<center><img <<$set_imgh>> src="images/locations/city/shared/car.jpg"></center>'
+													'You walk out of the boutique with Anatoly Borisovich. "Whew, <<$pcs_nickname>>. I''m a little tired. Let''s go to a restaurant some other time." Anatoly tells you, taking you by the hand as he leads you to his car. You quickly get to your home and Anatoly says goodbye to you.'
+
+													gs 'arousal', 'end'
+													gs 'stat'
+
+													act 'Out of the car':gt 'street'
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+
+					gs 'willpower', 'bj', 'resist', 'medium'
+					if will_cost <= pcs_willpwr:
+						act 'Thank you very much. (Deny) (<<will_cost>> Willpower)':
+							*clr & cla
+							gs 'willpower', 'pay', 'resist'
+							gs 'stat'
+							'You grin and say, "Thank you very much." Anatoly flushes and says emphatically, "You know what I mean." He unbuttons his pants and pulls out his hard member.'
+							'You laugh, "Oh yes, I understand perfectly. You can wear this dress yourself, if you think I''m spreading my legs for every fat cat, who fancies himself the king of the world. So don''t insult my intelligence and put your ugly dick back in your pants. If you think I am going to suck you off for buying me a dress you are a bigger idiot than I thought. Wo do you think you are? Casanova? Are you fucking serious?"'
+							'Antaloy''s face turns red with anger and begins to threaten you, "Yes I am, I''ll fire you!"'
+							'You laugh in his face, "Oh I''m scared. Alright fire me and then use this dress as a rag to wash the dishes."'
+							'Anatoly pale, flushed and hissing angrily jumps out of the fitting followed by your loud laughter.'
+
+							act 'Leave':
+								minut += 1
+								gt 'down'
+							end
+						end
+					else
+						act 'Thank you very much. (Deny) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end	
+				end
+			end
+		end
+
+		exit
+	elseif bistroQW = 20:
+		bisrand = rand(0, 10)
+
+		if bisrand = 10:'Out of the office of the owner comes Anatoly Borisovich. Upon seeing you he turns away with an arrogant expression.'
+	elseif bistroQW = 56:
+		'When you''re finished you are suddenly approached by the manager Ivan. "Okay <<$pcs_nickname>>. I''m sorry. I was wrong about you. I do not know what got into me. We are currently looking for an Assistant Manager. I think you can do it. You have the nature for it. Well? What do you say?"'
+
+		act 'Yes':
+			*clr & cla
+			gs 'stat'
+			'You agree with the proposal to become Ivan''s assistant manager. Ivan immediately beams at you with happiness. "Well then, here is your first work assignment. Here are the keys to the Anatoly Borisovich''s office. Take them with you when you go home. Go to his office, open the safe and take the envelope in there. Do not forget to close the safe afterwards. Bring the envelope to me. Did you understand everything? Then go!"'
+
+			act 'I changed my mind':
+				*clr & cla
+				bistroQW = 57
+				gs 'stat'
+				'You refuse Ivan''s offer and notice a flash of annoyance on his face. Disappointed he says to you. "Well, the offer stands."'
+
+				act 'Leave':gt 'burger', 'start'
+			end
+
+			act 'Take the key and go into Anatoly Borisovich''s office':
+				*clr & cla
+				bistroQW = 111
+				gs 'stat'
+				'Taking key from Ivan you go to the office of the owner. You open the door, enter the office and go to the safe. When you open the safe you see some documents and a thick envelope.'
+
+				act 'Look in the envelope':
+					*clr & cla
+					$burgerIvanText = 'You look into the envelope. Then you close the safe and head to the exit.'
+					gs 'stat'
+					'You look into the envelope and see a thick wad of money. You guess, that it amounts to about half a million. A surprised whistle escapes your mouth.'
+
+					act 'Take the envelope to Ivan':
+						*clr & cla
+						IvanPodstavaDay = daystart
+						IvanPodstavaQW = 1
+						NoBistroWork = 1
+						gs 'stat'
+						'Coming out of the office, you see Ivan standing in the corridor at the cooler talking on the cell phone. Seeing you, he waves you over. You come up and give the envelope to Ivan. He quickly picks it up and puts it in his jacket pocket. After that, he nods. You can go. You want to give him the keys to the office, but Ivan shakes his head and closing his hand tells you. "Take them home with you. Come back tomorrow, we shall discuss the details of your new appointment."'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+				end
+
+				act 'Take the envelope to Ivan':
+					*clr & cla
+					$burgerIvanText = 'You take the envelope, close the safe and head out.'
+					IvanPodstavaDay = daystart
+					IvanPodstavaQW = 1
+					NoBistroWork = 1
+					gs 'stat'
+					'Coming out of the office, you see Ivan standing in the corridor at the cooler talking on the cell phone. Seeing you, he waves you over. You come up and give the envelope to Ivan. He quickly picks it up and puts it in his jacket pocket. After that, he nods. You can go. You want to give him the keys to the office, but Ivan shakes his head and closing his hand tells you. "Take them home with you. Come back tomorrow, we shall discuss the details of your new appointment."'
+
+					act 'Leave':gt 'burger', 'start'
+				end
+			end
+		end
+
+		act 'No':
+			*clr & cla
+			bistroQW = 57
+			gs 'stat'
+			'You refuse Ivan''s offer and notice his face flashing with a shadow of annoyance. Disappointed he says to you. "Well, the offer stands."'
+			act 'Leave':gt 'burger', 'start'
+		end
+
+		exit
+	elseif bistroQW = 50:
+		'During your work, you learned that Anatoly Borisovich is away on business affairs and Ivan is replacing him as the manager. When you are getting ready to go to work Ivan comes out of the manager''s office and says in a conspiratorial tone, "Well <<$pcs_nickname>>, you obviously do not want to work for a couple of pennies? Come to me for special work. Special work for special Salary."'
+
+		act 'Go to the manager''s office':
+			*clr & cla
+			minut += 15
+			bistroQW = 55
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj1.jpg"></center>'
+			'You go into the office and close the door. Ivan is sitting in a chair in front of you seemingly at ease, lounging in it. As you go over to the manager waiting for what he would do, he sneers at you and deftly grabs you by the hand pulling you towards him.'
+
+			act 'Bend over':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj2.jpg"></center>'
+				'You bend over and come face to face with Ivan, he whispers, unbuttoning his pants, "Get to work with your mouth, baby"'
+
+				act 'Use your mouth':
+					*clr & cla
+					guy += 1
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj3.jpg"></center>'
+					'Still standing in front of Ivan you bend over even more gently lick his member with your tongue, again and again. Finally your lips wrap around his cock and begin to suck it. His curly pubes tickle your nose with every movement, as you put his whole member in your mouth.'
+					'Ivan finally lets out a loud moan and without warning begins to cum in your mouth. A Jet of hot liquid hits you in the mouth. Your eyes widen, but you continue to suck his seed-spewing dick until finally you have a mouth full of semen. As your mouth can not contain it anymore it emerges on your lips and runs down Ivan''s member.'
+
+					gs 'arousal', 'bj', 3, 'sub', 'prostitution'
+					gs 'stat'
+
+					act 'Swallow cum and clean his cock':
+						*clr & cla
+						minut += 2
+						swallow += 1
+						gs 'boyStat', 'A76'
+						gs 'cum_call', 'mouth', 'A76', 1
+						money += 500
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj4.jpg"></center>'
+						'You squat in front of the manager and swallow his sperm before licking the remnants of his semen off of the still standing, but quickly lowering penis.'
+						'Finally Ivan sinks back, completely satisfied and gives you 500 <b>₽</b> for the work you have done.'
+
+						gs 'arousal', 'end'
+						gs 'stat'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+				end
+			end
+
+			gs 'willpower', 'sex', 'resist', 'medium'
+			if will_cost <= pcs_willpwr:
+				act 'Leave (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					bistroQW = 56
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj1.jpg"></center>'
+					'You escape from Ivan''s hands who was not expecting such a reaction. He glares at you, "You suck off Borisovich but get squeamish with his deputy?" You are taken aback by these words. How does he know about what happened in the fitting room. Apparently your thoughts are reflected on your face and Ivan chuckles. "Yes Borisovich himself bragged about it. If you thought, Borisovich wouldn''t tell anyone you''re an idiot. But I won''t tell anyone. And I''m offering you a decent reward. So, be a good girl and show me what you can do with this mouth of yours. "'
+					gs 'willpower', 'bj', 'resist', 'medium'
+					if will_cost <= pcs_willpwr:
+						act 'That''s bullshit! (<<will_cost>> Willpower)':
+							*clr & cla
+							gs 'willpower', 'pay', 'resist'
+							gt 'burger', 'start'
+						end
+					else
+						act 'That''s bullshit! (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end	
+					act 'Use your mouth':
+						*clr & cla
+						bistroQW = 55
+						guy += 1
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj3.jpg"></center>'
+						'Still standing in front of Ivan you bend over even more gently lick his member with your tongue, again and again. Finally your lips wrap around his cock and begin to suck it. His curly pubes tickle your nose with every movement, as you put his whole member in your mouth.'
+						'Ivan finally lets out an audible moan and without warning begins to cum in your mouth. A Jet of hot liquid hits you in the mouth. Your eyes widen, but you continue to suck his seed-spewing dick until finally you have a mouth full of semen. You can not contain it anymore and as it emerges on your lips and runs down Ivan''s member.'
+
+						gs 'arousal', 'bj', 3, 'sub', 'deepthroat', 'prostitution'
+						gs 'stat'
+
+						act 'Swallow his cum and clean his cock':
+							*clr & cla
+							minut += 2
+							swallow += 1
+							gs 'boyStat', 'A76'
+							gs 'cum_call', 'mouth', 'A76', 1
+							money += 500
+							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj4.jpg"></center>'
+							'You squat in front of the manager and swallow his sperm as you began to lick the remnants of his semen off of the still standing, but quickly lowering penis.'
+							'Finally Ivan sinks back, completely satisfied and gives you 500 <b>₽</b> for the work you have done.'
+
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Leave':gt 'burger', 'start'
+						end
+					end
+				end
+			else
+				act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+
+			exit
+		end
+	elseif bistroQW = 55:
+		'Ivan approaches you and says, "I''ll see you in my office."'
+
+		act 'Go to the manager''s office':
+			*clr & cla
+			bistroQW = 60
+			'You go into the office where Ivan is sitting at the table and motions you to get under it. You immediatly understand what he wants from you.'
+
+			act 'Crawl under the table':
+				*clr & cla
+				swallow += 1
+				gs 'boyStat', 'A76'
+				gs 'cum_call', 'mouth', 'A76', 1
+				money += 500
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bjud.jpg"></center>'
+				'You crawl under the table and Ivan pulls out his penis in front of your face. You wrap your lips around it and begin to suck trying to get it into your mouth as deeply as possible. It is cramped and uncomfortable under the table, but you cope with it and after a few minutes of skilfully sucking him off you get Ivan to release his semen into your mouth. You quickly start to swallow, trying to avoid getting your clothes dirty.'
+				'Afterwards, Ivan takes out 500 <b>₽</b> and hands them to you.'
+
+				gs 'arousal', 'bj', 3, 'sub', 'prostitution'
+				gs 'arousal', 'end'
+				gs 'stat'
+
+				act 'Leave':gt 'burger', 'start'
+			end
+		end
+	elseif bistroQW = 60:
+		'Ivan is nowhere to be seen and he has not approached you, so you decide to check his office.'
+
+		act 'Go to the manager''s office':
+			*clr & cla
+			bistroQW = 65
+			'You come to the office, but it is closed. The deputy manager comes over to you and tells you with a chuckle, "What <<$pcs_nickname>>? Can''t work without a dick? I know all about you and our general manager. But he is not here until the end of the week. And if you do not want me to tell other people how you earn a living, then you will go to the office and serve me."'
+
+			act 'Nod obediently':
+				*clr & cla
+				swallow += 1
+				facial += 1
+				gs 'boyStat', 'A75'
+				gs 'cum_call', 'mouth', 'A75', 1
+				gs 'cum_call', 'face', 'A75', 1
+				guy += 1
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj21.jpg"></center>'
+				'You go into the office and kneel before the deputy manager. He takes out his member and puts it in your face showering you with the smell of his unwashed crotch. You lick the salty cock and, with a sigh of despair, begin to suck him. The pimply jerk lasts just a few of your movements and begins to violently cum in your mouth. You can''t keep all his semen in your mouth and it runs down your lips.'
+
+				gs 'arousal', 'bj', 3, 'sub'
+				gs 'arousal', 'end'
+				gs 'stat'
+
+				act 'Leave':gt 'burger', 'start'
+			end
+
+			act 'Send him away':
+				*clr & cla
+				'You contemptuously tell this boy, that he can go to hell with his threats.'
+				'"Ha, listen here slut! My father is the real owner of the bistro and Borisovich is just a hired director. And if he learns that you fuck Borisovich whenever he wants it, it will be very bad for you! So if you want me to keep quiet…"'
+				'After these words, he calls two movers over and says'
+				'"Guys would you like to blow off some steam on this nymph? Don''t worry, she enjoys it. She is here to serve. Am I right <<$pcs_nickname>>?'
+
+				gs 'willpower', 'group', 'resist', 'medium'
+				if will_cost <= pcs_willpwr:
+					act 'Refuse (<<will_cost>> Willpower)':
+						gs 'willpower', 'pay', 'resist'
+						bistroQW = 61 
+						gt 'burger', 'start'
+					end
+				else
+					act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end	
+
+				act 'Yes':
+					*clr & cla
+					bistroQW = 70
+					guy += 3
+					gruzsex += 1
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/tri.jpg"></center>'
+					'You jitter and mumble, "Yes." as you stand in front of the three men. The movers smile and you are quickly grabbed by your hand and taken to the warehouse. They help you undress and put you on your knees. Then they pull out their cocks waiting for you to serve them.'
+					'You begin to diligently suck and stroke the cocks of the three man. Soon they groan and one of them grabs your head with one hand, holding his erect cock with the other.'
+
+					gs 'arousal', 'bj', 3, 'sub', 'group'
+					gs 'arousal', 'hj', -3, 'sub', 'group'
+					gs 'stat'
+
+					act 'Let them cum on you':
+						*clr & cla
+						gs 'boyStat', 'A75'
+						gs 'cum_call', 'face', 'A75', 1
+						gs 'npcgeneratec', 0, 'Moving Man', rand(18,40)
+						gs 'boystat', $npclastgenerated
+						gs 'cum_call', 'face', 'unknown'
+						gs 'npcgeneratec', 0, 'Moving Man', rand(18,40)
+						gs 'boystat', $npclastgenerated
+						gs 'cum_call', 'face', 'unknown'
+						facial += 3
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/tri2.jpg"></center>'
+						'Hot jets of sperm slap you in the face, you close your eyes and just feel the stinky seed on your skin. Soon after the sprays of semen stop and your face is all covered with a thick layer of sticky cum. The guys look satisfied and laugh at you. Afterwards they exit the warehouse leaving you by yourself.'
+
+						gs 'arousal', 'end'
+						gs 'stat'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+				end
+			end
+		end
+	elseif bistroQW >= 65 and soplakTimes ! 3:
+		'The pimply deputy manager comes to you and, taking your hand, leads you into his office.'
+		'In the office, he sits down on a chair pulls out his dick and puts you in front of him on all fours.'
+
+		act 'Use your mouth':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/diner/sex/bj31.jpg"></center>'
+			'You kneel in front of the kid sitting in a chair and begin to diligently suck his dick. You caress his cock and testicles with your tongue while simoultaneously stroking his shaft with your hand.'
+
+			gs 'arousal', 'bj', 3, 'sub', 'prostitution'
+			gs 'arousal', 'hj', -3, 'sub', 'prostitution'
+			gs 'stat'
+
+			act 'Continue':
+				*clr & cla
+				swallow += 1
+				gs 'boyStat', 'A75'
+				gs 'cum_call', 'mouth', 'A75', 1
+				money += 300
+				soplakTimes1 += 1
+				if soplaktimes1=10:set soplaktimes=3
+				'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum19.jpg"></center>'
+				'A hot jet of sperm slaps you in the mouth, while you continue to stroke his member. You are careful not to spill a drop of the nasty smelling liquid out of your mouth. Finally the stream dries up and you swallow the sperm. He grins and tosses 300 <b>₽</b> on the floor. You pick them up and hide them in your pocket as you rise up from your knees and leave the office.'
+
+				gs 'arousal', 'end'
+				gs 'stat'
+
+				act 'Leave':gt 'burger', 'start'
+			end
+		end
+
+		exit
+	elseif (bistroQW = 57 and BistroBoss = 0) or (bistroQW >= 65 and BistroBoss = 0 and soplakTimes = 3):
+		BistroBoss = 1
+
+		if soplakTimes = 3:soplakTimes = 4
+
+		'After you finish, you see Anatoly Borisovich. He nods and tells you "Hello <<$pcs_nickname>>, when you''re done, come to me."'
+
+		act 'Leave':gt 'burger', 'start'
+
+		exit
+	end
+
+	act 'Leave':gt 'burger', 'start'
+end
+
+if $ARGS[0] = 'floor':
+	menu_off = 1
+	*clr & cla
+	posudaAday = daystart
+	minut += 60
+	posuda += 1
+	if pcs_mood > 15: pcs_mood -= 15
+	money += 70
+	gs 'sweat', 'add', 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/office/clener1.jpg"></center>'
+	'You wash the floors of the bistro for an hour. Afterwards you are given 70 <b>₽</b> for your work.'
+
+	act 'Leave':gt 'burger', 'start'
+end
+
+if $ARGS[0] = 'boss':
+	$menu_loc = 'burger'
+	$menu_arg = 'boss'
+	menu_off = 0
+
+	gs 'stat'
+
+	if BistroBoss = 10:
+		if week < 6 and hour >= 9 and hour < 17:'Anatoly Borisovich is sitting at the table talking to someone on the phone.'
+		if week < 6 and hour < 9 or week < 6 and hour >= 17:'Anatoly Borisovich is not here.'
+		if week >= 6:'It''s the weekend and Anatoly Borisovich is not here.'
+
+		act 'Leave':gt 'burger', 'start'
+
+		if PersSecWork = 2:
+			if week < 6 and hour < 10:'Anatoly Borisovich looks at you sternly, "<<$pcs_nickname>>, you''re fired. Go away, we''re done, I love my wife more than you."'
+		elseif PersSecWork = 1:
+			if week < 6 and hour < 10 and $clothingworntype = 'office':
+				act 'Work':gt 'burgerWork', 'start'
+
+				act 'Resign':
+					PersSecWork = 0
+					work = 0
+					minut += 20
+
+					gt 'burger', 'start'
+				end
+
+			elseif week < 6 and hour < 10 and $clothingworntype ! 'office':
+				'Anatoly Borisovich looks at you sternly, "<<$pcs_nickname>>, why aren''t you dressed properly? Go home and come back tomorrow dressed appropriately, you''re not working today!"'
+			end
+
+		elseif PersSecWork = 0 and week < 6:
+			if secrDiplom = 1:
+				act 'Show your secretary diploma':
+					*clr & cla
+					menu_off = 1
+					minut += 1
+					gs 'stat'
+					'You show Anatoly Borisovich your diploma and he asks you, "Do you want to work for me?"'
+
+					act 'No':
+						*clr & cla
+						minut += 1
+						gs 'stat'
+						'You tell him, that you already work somewhere else. Anatoly Borisovich smiles a little, "What can I do to make you quit your job and work for me? You can think about it, I won''t force you, but I''ll pay you a normal salary. You will get 1250 <b>₽</b> per day."'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+
+					if (work = 0 and PersSecWork = 0 and cheatWork = 0) or (PersSecWork = 0 and cheatWork = 1):
+						act 'Ask about the work':
+							*clr & cla
+							minut += 1
+							gs 'stat'
+							'You ask about the job. Anatoly Borisovich smiles a little, "You can think about it, I won''t force you, but I''ll pay you a normal salary. You will get 1250 <b>₽</b> per day. I''m looking for loyalty, hard work, and strict compliance with my guidelines."'
+
+							act 'Leave':gt 'burger', 'start'
+
+							act 'Take the job':
+								*clr & cla
+								minut += 1
+								work = 1
+								PersSecWork = 1
+								gs 'stat'
+								'You agree to become a secretary to Anatoly Borisovich. He takes your CV, makes a copy of your passport and diploma, and tells you. "Come to work here every weekday, no later than 9 am, you must wear an office outfit. You will receive calls, take letters, and copy documents, and you have to do any other general office work as required. You will work until 17:00, your salary will be paid into your bank account every month."'
+
+								act 'Leave':gt 'burger', 'start'
+							end
+						end
+					end
+				end
+			end
+		end
+
+	elseif BistroBoss = 1:
+		'You enter the manager''s office. Anatoly Borisovich is sitting at the table studying some documents. When he sees you, he puts them aside and invites you to sit on a chair.'
+
+		act 'Sit on a chair':
+			*clr & cla
+			menu_off = 1
+			minut += 1
+			BistroBoss = 10
+			gs 'stat'
+
+			if bistroQW = 57:
+				kosmetica += 200
+				'You sit on a chair and Anatoly Borisovich smiles at you. "I''m so glad this damn trip is over. I really missed you. Incidentally I do not come empty-handed, here''s a gift." with these words Anatoly Borisovich puts some expensive cosmetics on the table. "And yet, I have to tell you about some facts. I am married and I have kids. So do not even think about marriage, it won''t work. My wife is the daughter of a very influential deputy and currently I am only the manager of this lousy diner. Very soon I''ll get the post of deputy minister of construction, but for now I just need to do my job here. So, don''t start any trouble. I need loyal people, and I want you to be my secretary. Did you get the diploma for the secretary course? "'
+
+				if secrDiplom = 1:
+					act 'Yes, I have a diploma':
+						*clr & cla
+						minut += 1
+						gs 'stat'
+						'You tell him that you already have a secretary diploma. Anatoly Borisovich smiles. "That''s good. Listen, I need to make a couple of calls, so leave now."'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+
+				elseif secrDiplom = 0 and sekrObu > 0:
+					act 'I do not have a diploma, but I am a secretary':
+						*clr & cla
+						minut += 1
+						gs 'stat'
+						'You tell him that you do not have a diploma, but are experienced at working as a secretary. Anatoly Borisovich smiles. "That''s good. Douchishsya, come to me. Listen, I now need to make a couple of calls, leave now."'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+
+				elseif secrDiplom = 0 and sekrObu = 0:
+					act 'No':
+						*clr & cla
+						sekrObu = 1
+						minut += 1
+						gs 'stat'
+						'You shake your head. Anatoly Borisovich smiles. "It doesn''t matter, I will pay for your training and once you''re done, come to me."'
+
+						act 'Leave':gt 'burger', 'start'
+					end
+				end
+
+			elseif bistroQW >= 65:
+				'You sit down on a chair and Anatoly Borisovich gives you a grim look. "I did not think you were so cheap. What is your fee? 300 <b>₽</b> for a blowjob?" He pulls 300 <b>₽</b> out of his pocket and throws them on the floor. "Get down on your knees and do your work, slut."'
+				gs 'willpower', 'bj', 'resist', 'medium'
+				if will_cost <= pcs_willpwr:
+					act 'Leave (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'resist'
+						gt 'burger', 'start'
+					end
+				else
+					act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end	
+				act 'Get on your knees':
+					*clr & cla
+					money += 300
+					swallow += 1
+					gs 'boyStat', 'A74'
+					gs 'cum_call', 'mouth', 'A74', 1
+					BistroBoss = 2
+					BistroBossDay = daystart
+					'<center><img <<$set_imgh>> src="images/characters/city/anatoly/sex/bj2.jpg"></center>'
+					'You kneel down and take the money from the floor. Anatoly Borisovich pulls his already hard member out and holds it in front of your face. You wrap your lips around it and begin to suck as the hard cock fills your mouth. Anatoly Borisovich grits his teeth with pleasure "Suck it slut and don''t forget to swallow every last drop!" You feel his sperm hit the inside of your mouth and begin to quickly swallow his cum to prevent yourself from choking. After you finish, Anatoly Borisovich puts his dick back in his pants. "Now get out."'
+
+					gs 'arousal', 'bj', 5, 'sub', 'prostitution'
+					gs 'arousal', 'end'
+					gs 'stat'
+
+					act 'Leave':gt 'burger', 'start'
+				end
+			end
+		end
+
+	elseif BistroBoss = 2 and BistroBossDay = daystart:
+		'Knocking you walk into the office to Anatoly Borisovich. He looks at you angrily, "I said, get out of here."'
+
+		act 'Leave':gt 'burger', 'start'
+
+	elseif BistroBoss = 2 and BistroBossDay ! daystart:
+		BistroBossDay = daystart
+		'Knocking you walk into the office to Anatoly Borisovich. He looked at you grimly and pulls out 300 <b>₽</b>, "Get down on your knees and get to work, slut."'
+		gs 'willpower', 'bj', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Leave (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gt 'burger', 'start'
+			end
+		else
+			act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act 'Get on your knees':
+			*clr & cla
+			menu_off = 1
+			money += 300
+			swallow += 1
+			gs 'boyStat', 'A74'
+			gs 'cum_call', 'mouth', 'A74', 1
+			BistroBossDay = daystart
+			'<center><img <<$set_imgh>> src="images/characters/city/anatoly/sex/bj2.jpg"></center>'
+			'You kneel down and take the money from the floor. Anatoly Borisovich pulls his already hard member out and holds it in front of your face. You wrap your lips around it and begin to suck as the hard cock fills your mouth. Anatoly Borisovich grits his teeth with pleasure "Suck it slut and don''t forget to swallow every last drop!" You feel his sperm hit the inside of your mouth and begin to quickly swallow his cum to prevent yourself from choking. After you finish, Anatoly Borisovich puts his dick back in his pants. "Now get out."'
+
+			gs 'arousal', 'bj', 5, 'sub', 'prostitution'
+			gs 'arousal', 'end'
+			gs 'stat'
+
+			act 'Leave':gt 'burger', 'start'
+		end
+	end
+end
+
+--- burger ---------------------------------
+

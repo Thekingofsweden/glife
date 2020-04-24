@@ -1,0 +1,295 @@
+# stat_sklattrib
+
+!!********************  Warning!  ********************
+!!The code in this location is both complex and very fundamental to most systems!
+!!Use EXTREME caution if modifying!
+!!Ask if understanding is required
+!!****************************************************
+!!For Users;
+!! For any Attribute or Skill, outside of "stat_sklattrib", the only things that get used are;
+!! the variables themselves, pcs_"name", for checks
+!! "name"_exp to replace straight adds (i.e. stren_exp +=1 instead of pcs_stren += 1)
+!! "name"_deg to replace losses (i.e. stren_deg -= 1 instead of pcs_stren -= 1)
+!! "name"_muta if setting higher attribute limits due to "mutations" ("name"_muta replaces the "mutagen" variables)
+!! And checking "name"_lvl if and only if it''s being used to check if an NPC/Item can still train the PC. That is also the only time there should be a gate on "name"_exp += x and should be a minimum of += rand(3,5). No other gates should be used.
+!! The others are used in the code as controllers and modifying anything except "name"_exp, "name"_deg, and "name"_muta outside of this routine can break things
+
+!! Attributes & Skills
+!! $att_name[x] and $skl_name[x]; an array that stores the name of each attribute variable
+!! For each attribute and skill variable, there are the following sub-variables
+!! _lvl, is the base level of an attribute/skill before adjustment
+!! _lvlst, level yesterday, used for error checking
+!! _deg is the days to attribute/skill loss and is reset on XP gain
+!! _exp is the amount of total XP gained so far for each and will replace all the gains in the rest of the code
+!! _mem is the amount of XP yesterday
+!! _muta replaces the assorted mutagen variables for attributes, this is to replace the 30 lines of code with 1
+!! _flr, this is the floor through which an attribute/skill cannot fall
+!! _xpnxt is the XP required to reach the next level
+
+!! Traits
+!! $traitattskl[x], this stores a list of all traits that can affect attribute or skill advancement or degradation, if a trait does not, it does not go in this array
+!! For each trait that can affect attribute or skill advancement or degradation;
+!! "trait"[y1] = 1 if affecting an attribute or = 2 if affecting a skill;
+!! "trait"[y2] = the index number in $att_name or $skl_name that corresponds to the skill/attribute to be effected;
+!! "trait"[y3] = indicates if it effects XP required to level by adjusting the base rate as a plus to the default of 60
+!! "trait"[y4] = indicates if it effects degradation rate by adjusting the base rate as a plus to the default of 60 for attributes or 90 (3/2) for skills
+!! the 'y' in the above is for traits that affect more than 1 skill or attribute, note they must be contiguous 0x, 1x, 2x, etc. there can be no gaps
+!! Note, the effects of multiple traits on a single skill or attribute stack
+
+!!Attribute variable list
+$att_name[0] = 'stren'
+$att_name[1] = 'agil'
+$att_name[2] = 'vital'
+$att_name[3] = 'intel'
+$att_name[4] = 'react'
+$att_name[5] = 'sprt'
+$att_name[6] = 'chrsm'
+$att_name[7] = 'prcptn'
+$att_name[8] = 'magik'
+
+!!Skill variable list
+!!Add new skills to the end; if removing a skill, move the rest up and then edit the Traits so that the index numbers are correct
+$skl_name[0] = 'jab'
+$skl_name[1] = 'punch'
+$skl_name[2] = 'kick'
+$skl_name[3] = 'def'
+$skl_name[4] = 'shoot'
+$skl_name[5] = 'vokal'
+$skl_name[6] = 'sewng'
+$skl_name[7] = 'instrmusic'
+$skl_name[8] = 'photoskl'
+$skl_name[9] = 'artskls'
+$skl_name[10] = 'danc'
+$skl_name[11] = 'dancero'
+$skl_name[12] = 'dancpol'
+$skl_name[13] = 'chess'
+$skl_name[14] = 'gaming'
+$skl_name[15] = 'humint'
+$skl_name[16] = 'persuas'
+$skl_name[17] = 'run'
+$skl_name[18] = 'vball'
+$skl_name[19] = 'icesktng'
+$skl_name[20] = 'wrstlng'
+$skl_name[21] = 'ftbll'
+$skl_name[22] = 'splcstng'
+$skl_name[23] = 'observ'
+$skl_name[24] = 'makupskl'
+$skl_name[25] = 'compskl'
+$skl_name[26] = 'comphckng'
+$skl_name[27] = 'hndiwrk'
+$skl_name[28] = 'servng'
+$skl_name[29] = 'mdlng'
+$skl_name[30] = 'medcn'
+$skl_name[31] = 'heels'
+$skl_name[32] = 'pool'
+$skl_name[33] = 'inhib'
+$skl_name[34] = 'perform'
+$skl_name[35] = 'bushcraft'
+$skl_name[36] = 'cleaning'
+$skl_name[37] = 'bkbll'
+$skl_name[38] = 'cheer'
+
+!!Trait Section
+!!This is where Traits that will affect attribute or skill advancement or degradation have those aspects defined.
+!!Always put the trait name, variable name, and skill or attribute variable in a comment
+
+!!Natural Dancer; Provides a 10% reduction in xp required to level dance skills
+nat_dancer[1] = 2 & nat_dancer[2] = 10 & nat_dancer[3] = -6 & nat_dancer[4] = 0
+nat_dancer[11] = 2 & nat_dancer[12] = 11 & nat_dancer[13] = -6 & nat_dancer[14] = 0
+nat_dancer[21] = 2 & nat_dancer[22] = 12 & nat_dancer[23] = -6 & nat_dancer[24] = 0
+
+!!Natural Athlete; Provides a 10% reduction in xp required to level sports skills
+nat_athlete[1] = 2 & nat_athlete[2] = 17 & nat_athlete[3] = -6 & nat_athlete[4] = 0
+nat_athlete[11] = 2 & nat_athlete[12] = 18 & nat_athlete[13] = -6 & nat_athlete[14] = 0
+nat_athlete[21] = 2 & nat_athlete[22] = 19 & nat_athlete[23] = -6 & nat_athlete[24] = 0
+nat_athlete[31] = 2 & nat_athlete[32] = 20 & nat_athlete[33] = -6 & nat_athlete[34] = 0
+nat_athlete[41] = 2 & nat_athlete[42] = 21 & nat_athlete[43] = -6 & nat_athlete[44] = 0
+
+!!Scholarly; Provides a 10% reduction in xp required to level Intelligence, easier to get good notes at school, faster studying in the university
+schlrly[1] = 1 & schlrly[2] = 3 & schlrly[3] = -6 & schlrly[4] = 0
+
+!!Trait variable list; only traits that can affect attribute or skill advancement or degradation goes here
+$traitattskl[0] = 'nat_dancer'
+$traitattskl[1] = 'nat_athlete'
+$traitattskl[2] = 'schlrly'
+
+!!This is sets _lvl and _exp based on the value of pcs_"name" the first time so that _lvl and _exp do not need to set on start.
+!!Theoretically this can be eventually deleted.
+if attsklupdate = 0:
+	i = 0 & x = 1
+	:rstloop
+	expadj = func('_difficulty','getexpadj')	
+	tl = 0
+	:trtrstloop
+	tltp = 0
+	:trtrstinsdlp
+!!	Note this loop is done with a flag set in the dynamic that is checked outside; this is because testing showed inconsistent results when jumping from inside the dynamic and with the whole loop in the dynamic.
+	dynamic "
+		if <<$traitattskl[tl]>> > 0 and <<$traitattskl[tl]>>[tltp + 1] = x and <<$traitattskl[tl]>>[tltp + 2] = i and <<$traitattskl[tl]>>[tltp + 3] ! 0: expadj += <<$traitattskl[tl]>>[tltp + 3]
+		if <<$traitattskl[tl]>>[tltp + 11] ! 0: insdlpflag = 1
+		"
+	if insdlpflag = 1: tltp += 10 & insdlpflag = 0 & jump 'trtrstinsdlp'
+	tl += 1
+	if tl < arrsize ('$traitattskl'): jump 'trtrstloop'
+	killvar 'tl' & killvar 'tltp' & killvar 'insdlpflag'
+
+	if x = 1:
+		$attskltmp = $att_name[i]
+	else
+		$attskltmp = $skl_name[i]
+	end
+
+	dynamic "
+		if pcs_<<$attskltmp>> > 0 and <<$attskltmp>>_lvl = 0:
+			<<$attskltmp>>_exp = (expadj * (pcs_<<$attskltmp>> - 1) * (pcs_<<$attskltmp>> - 1) / 180) + 1
+			<<$attskltmp>>_mem = <<$attskltmp>>_exp - 1
+			<<$attskltmp>>_lvl = pcs_<<$attskltmp>>
+			<<$attskltmp>>_lvlst = <<$attskltmp>>_lvl
+		end
+	"
+	killvar 'expadj' & killvar '$attskltmp'
+	i += 1
+	if (x = 1 and i < arrsize ('$att_name')) or (x = 2 and i < arrsize ('$skl_name')): jump 'rstloop'
+	i = 0 & x += 1
+	if x < 3: jump 'rstloop'
+	killvar 'i' & killvar 'x'
+
+	attsklupdate = 1
+end
+
+!!This is the section that runs when the call is from cikl
+if $ARGS[0] = 'daycall':
+!!	Attribute XP with Skill XP gain
+	x = 0
+	:sklxploop
+	y = 1
+	:persklloop
+	dynamic "$attnamtmp = $att_name[<<$skl_name[x]>>[y]]"
+	dynamic "
+		if <<$skl_name[x]>>_exp > <<$skl_name[x]>>_mem: <<$attnamtmp>>_exp += (<<$skl_name[x]>>_exp - <<$skl_name[x]>>_mem) / 5
+		if <<$skl_name[x]>>[y + 1] = -1 or y >= 9: lpstopflg = 1
+		"
+	killvar '$attnamtmp'
+	if lpstopflg = 0: y += 1 & jump 'persklloop'
+	killvar 'lpstopflg'
+	x += 1
+	if x < arrsize ('$skl_name'): jump 'sklxploop'
+	killvar 'x' & killvar 'y' & killvar '$attnamtmp'
+
+!!	Degradation Loop
+	i = 0 & x = 1
+	:degloop
+	degadj = 60
+	if x = 2: degadj += 30
+	expadj = func('_difficulty','getexpadj')	
+	tl = 0
+	:trtdegloop
+	tltp = 0
+	:trtdeginsdlp
+!!	Note this loop is done with a flag set in the dynamic that is checked outside; this is because testing showed inconsistent results when jumping from inside the dynamic and with the whole loop in the dynamic.
+	dynamic "
+		if <<$traitattskl[tl]>> > 0 and <<$traitattskl[tl]>>[tltp + 1] = x and <<$traitattskl[tl]>>[tltp + 2] = i and <<$traitattskl[tl]>>[tltp + 3] ! 0: expadj += <<$traitattskl[tl]>>[tltp + 3]
+		if <<$traitattskl[tl]>> > 0 and <<$traitattskl[tl]>>[tltp + 1] = x and <<$traitattskl[tl]>>[tltp + 2] = i and <<$traitattskl[tl]>>[tltp + 4] ! 0: degadj += <<$traitattskl[tl]>>[tltp + 4]
+		if <<$traitattskl[tl]>>[tltp + 11] ! 0: insdlpflag = 1
+		"
+	if insdlpflag = 1: tltp += 10 & insdlpflag = 0 & jump 'trtdeginsdlp'
+	tl += 1
+	if tl < arrsize ('$traitattskl'): jump 'trtdegloop'
+	killvar 'tl' & killvar 'tltp' & killvar 'insdlpflag'
+
+	if x = 1:
+		$attskltmp = $att_name[i]
+	else
+		$attskltmp = $skl_name[i]
+	end
+
+	dynamic "
+		if <<$attskltmp>>_lvl ! <<$attskltmp>>_lvlst: <<$attskltmp>>_lvl = <<$attskltmp>>_lvlst
+		if <<$attskltmp>>_lvl < 100:
+			degtmp = (102 - <<$attskltmp>>_lvl + <<$attskltmp>>_muta)
+		else
+			degtmp = 2 + <<$attskltmp>>_muta
+		end
+	
+		degtmp = degadj * degtmp / 60
+		if degtmp < 2: degtmp = 2
+		
+		if <<$attskltmp>>_exp < <<$attskltmp>>_mem: <<$attskltmp>>_exp = <<$attskltmp>>_mem
+
+		if <<$attskltmp>>_exp = <<$attskltmp>>_mem:
+			<<$attskltmp>>_deg -= 1
+		else
+			<<$attskltmp>>_deg = degtmp
+		end
+
+		if <<$attskltmp>>_deg <= 0 and <<$attskltmp>>_lvl > <<$attskltmp>>_flr:
+			exptmp = <<$attskltmp>>_exp - (expadj * (<<$attskltmp>>_lvl - 1) * (<<$attskltmp>>_lvl - 1) / 180)
+			if exptmp < 0: exptmp = 0
+			<<$attskltmp>>_lvl -= 1
+			<<$attskltmp>>_deg = degtmp
+			<<$attskltmp>>_exp = (expadj * (<<$attskltmp>>_lvl - 1) * (<<$attskltmp>>_lvl - 1) / 180) + exptmp
+!!			This will only do anything if the PC builds exp well in excess of what is needed to level
+			if <<$attskltmp>>_exp > (expadj * (<<$attskltmp>>_lvl) * (<<$attskltmp>>_lvl) / 180): <<$attskltmp>>_exp -= (2 * <<$attskltmp>> - 1) / 10
+		end
+		<<$attskltmp>>_lvlst = <<$attskltmp>>_lvl
+		<<$attskltmp>>_mem = <<$attskltmp>>_exp
+		"
+	killvar 'degtmp' & killvar 'exptmp'
+	killvar 'degadj' & killvar 'expadj' & killvar '$attskltmp'
+	i += 1
+	if (x = 1 and i < arrsize ('$att_name')) or (x = 2 and i < arrsize ('$skl_name')): jump 'degloop'
+	i = 0 & x += 1
+	if x < 3: jump 'degloop'
+	killvar 'i' & killvar 'x'
+end
+
+!!Advancement Loop
+i = 0 & x = 1
+:advloop
+expadj = func('_difficulty','getexpadj')
+tl = 0
+:trtadvloop
+tltp = 0
+:trtadvinsdlp
+!!Note this loop is done with a flag set in the dynamic that is checked outside; this is because testing showed inconsistent results when jumping from inside the dynamic and with the whole loop in the dynamic.
+dynamic "
+	if <<$traitattskl[tl]>> > 0 and <<$traitattskl[tl]>>[tltp + 1] = x and <<$traitattskl[tl]>>[tltp + 2] = i and <<$traitattskl[tl]>>[tltp + 3] ! 0: expadj += <<$traitattskl[tl]>>[tltp + 3]
+	if <<$traitattskl[tl]>>[tltp + 11] ! 0: insdlpflag = 1
+	"
+if insdlpflag = 1: tltp += 10 & insdlpflag = 0 & jump 'trtadvinsdlp'
+tl += 1
+if tl < arrsize ('$traitattskl'): jump 'trtadvloop'
+killvar 'tl' & killvar 'tltp' & killvar 'insdlpflag'
+
+if x = 1:
+	$attskltmp = $att_name[i]
+else
+	$attskltmp = $skl_name[i]
+end
+
+dynamic "
+	if <<$attskltmp>>_lvl ! <<$attskltmp>>_lvlst: <<$attskltmp>>_lvl = <<$attskltmp>>_lvlst
+	if <<$attskltmp>>_exp > (expadj * <<$attskltmp>>_lvl * <<$attskltmp>>_lvl / 180): <<$attskltmp>>_lvl += 1
+	<<$attskltmp>>_lvlst = <<$attskltmp>>_lvl
+	<<$attskltmp>>_xpnxt = (expadj * <<$attskltmp>>_lvl * <<$attskltmp>>_lvl / 180) + 1
+	if <<$attskltmp>>_lvl / 5 > <<$attskltmp>>_flr: <<$attskltmp>>_flr = <<$attskltmp>>_lvl / 5
+	if <<$attskltmp>>_lvl > (100 + (<<$attskltmp>>_muta * 50)): <<$attskltmp>>_lvl = (100 + (<<$attskltmp>>_muta * 50))
+	"
+!! removed by rachels 17/10/23 to correct the "marksman" bug - belongs into preceding dynamic code
+!!	if <<$attskltmp>>_exp > (expadj * (<<$attskltmp>>_lvl + 1) * (<<$attskltmp>>_lvl + 1) / 180) - 1:
+!!		<<$attskltmp>>_exp = (expadj * (<<$attskltmp>>_lvl + 1) * (<<$attskltmp>>_lvl + 1) / 180) - 1
+!!		<<$attskltmp>>_mem = <<$attskltmp>>_exp
+!!	end
+
+
+killvar 'expadj' & killvar '$attskltmp'
+i += 1
+if (x = 1 and i < arrsize ('$att_name')) or (x = 2 and i < arrsize ('$skl_name')): jump 'advloop'
+i = 0 & x += 1
+if x < 3: jump 'advloop'
+killvar 'i' & killvar 'x'
+
+gs 'stat_sklattrib_lvlset'
+
+--- stat_sklattrib ---------------------------------
+

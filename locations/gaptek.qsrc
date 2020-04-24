@@ -1,0 +1,481 @@
+# gaptek
+$location_type = 'public_indoors'
+
+if $ARGS[0] = 'start' or $message ! '':
+	CLOSE ALL
+	*clr & cla
+	$loc = 'gaptek'
+	$metka = 'start'
+	$menu_loc = 'gaptek'
+	$menu_arg = 'start'
+	menu_off = 0
+	if sound = 0:PLAY 'sound/shop.mp3',30
+	gs 'stat'
+
+	if gatabletkiday ! daystart: gap_bc_count = 0
+	if galubriday ! daystart: gap_lub_count = 0
+	if gapregday ! daystart: gap_preg_count = 0
+	if gaprezikday ! daystart: gap_condom_count = 0
+	if gabotsmlday ! daystart: gap_botsml_count = 0
+	if gabotmedday ! daystart: gap_botmed_count = 0
+
+	if (hour >= 9 and hour < 13) or (hour >= 14 and hour <= 18) and week < 6:
+		gaptek_aunt_hours = 1
+	else
+		gaptek_aunt_hours = 0
+	end
+
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	if gaptek_aunt_hours = 1:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	else
+		if pav_pharma_day ! daystart: pav_pharma_day = daystart & pav_pharma_picrand = rand(1,4)
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_worker_'+pav_pharma_picrand+'.jpg"></center>'
+	end
+	*nl
+	
+	act 'Leave the pharmacy':gt 'pavCommercial'
+
+	if $message ! '':
+		$message
+		killvar '$message'
+		'"Do you need anything else?"'
+	else
+		if StoryLine = 0 or gaptek_aunt_hours = 0:
+			'The woman behind the counter in a white coat greets you, "Hello, what you need?"'
+		else
+			'Aunt Luda is sitting behind the counter, as usual. She gives you a friendly nod when she sees you: "Hi <<$pcs_firstname>>! How are you?"'
+		end
+	end
+	*nl
+	*pl '<center><table align="center" width=80%>'
+	!!I want to change this so Sveta can always buy the stuff below regardless who is working. Not sure how to change the code so just leaving this note. The first time Sveta buys condoms, pregnancy test, birth control, or lubricant I want it to go to if $ARGS[0] = 'first_time_buy_luda':
+	if gaptek_aunt_hours = 0 or StoryLine = 0:
+		if preziktype = 0:
+			*P FUNC ('$stock_item', 5, 'Condoms', 300, 'prezik', 'gaptek', 'start')
+		elseif preziktype = 1 or preziktype = 2:
+			*P FUNC ('$stock_item', 5, 'Condoms', 300, 'prezikcount', 'gaptek', 'start')
+		end
+		*P FUNC ('$stock_item', 1, 'Pregnancy test', 530, 'pregtest', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 1, 'Birth control pills', 1870, 'tabletki', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 1, 'Morning after pill', 740, 'morning_after_pill', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 10, 'Antibiotics', 580, 'lekarstvo', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 30, 'Vitamins', 130, 'vitamin', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 50, 'Painkillers', 435, 'painkiller', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 10, 'Ointments for chafing', 372, 'mosolmaz', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 20, 'Lubricant', 145, 'lubri', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 30, 'Lip balm', 127, 'lipbalm', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 12, 'Weight loss pill', 248, 'fatdel', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 20, 'Tampons', 200, 'tampon', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 20, 'Sanitary napkins', 100, 'sanpad', 'gaptek', 'start')
+		*P FUNC ('$single_stock_item', 1, 'Enema kit', 1250, 'klisma', 'gaptek', 'start')
+		*P FUNC ('$single_stock_item', 1, 'Breast pump', 2500, 'breastpump', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 3, 'Breastmilk bottle S', 930, 'bpbottles', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 2, 'Breastmilk bottle M', 930, 'bpbottlem', 'gaptek', 'start')
+		if pcs_knows_nipplecream = 1:
+			*P FUNC ('$stock_item', 20, 'Nipplebalm', 600, 'bpnipplebalm', 'gaptek', 'start')
+		end
+		*P FUNC ('$single_stock_item', 1, 'Antifungal medication', 1050, 'Kandidoz', 'gaptek', 'start')
+		*P '</table></center>'
+
+	else
+		if preziktype = 0:
+			*P FUNC ('$stock_item', 5, 'Condoms', 300, 'prezik', 'gaptek', 'buy_condoms')
+		elseif preziktype = 1 or preziktype = 2:
+			*P FUNC ('$stock_item', 5, 'Condoms', 300, 'prezikcount', 'gaptek', 'buy_condoms')
+		end
+		*P FUNC ('$stock_item', 1, 'Pregnancy test', 530, 'pregtest', 'gaptek', 'buy_preg_test')
+		*P FUNC ('$stock_item', 1, 'Birth control pills', 1870, 'tabletki', 'gaptek', 'buy_birth_control')
+		*P FUNC ('$stock_item', 1, 'Morning after pill', 740, 'morning_after_pill', 'gaptek', 'buy_morning_after')
+		*P FUNC ('$stock_item', 10, 'Antibiotics', 580, 'lekarstvo', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 30, 'Vitamins', 130, 'vitamin', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 50, 'Painkillers', 435, 'painkiller', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 10, 'Ointments for chafing', 372, 'mosolmaz', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 20, 'Lubricant', 145, 'lubri', 'gaptek', 'buy_lube')
+		*P FUNC ('$stock_item', 30, 'Lip balm', 127, 'lipbalm', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 12, 'Weight loss pill', 248, 'fatdel', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 20, 'Tampons', 200, 'tampon', 'gaptek', 'start')
+			*P FUNC ('$stock_item', 20, 'Sanitary napkins', 100, 'sanpad', 'gaptek', 'start')
+		if klisma > 0:
+			*P FUNC ('$single_stock_item', 1, 'Enema kit', 1250, 'klisma', 'gaptek', 'start')
+		else
+			*P FUNC ('$single_stock_item', 1, 'Enema kit', 1250, 'klisma', 'gaptek', 'start')
+		end
+		if breastpump > 0:
+			*P FUNC ('$single_stock_item', 1, 'Breast pump', 2500, 'breastpump', 'gaptek', 'start')
+		else
+			*P FUNC ('$single_stock_item', 1, 'Breast pump', 2500, 'breastpump', 'gaptek', 'start')
+		end
+		*P FUNC ('$stock_item', 3, 'Breastmilk bottle S', 930, 'bpbottles', 'gaptek', 'start')
+		*P FUNC ('$stock_item', 2, 'Breastmilk bottle M', 930, 'bpbottlem', 'gaptek', 'start')
+		if pcs_knows_nipplecream = 1:
+			*P FUNC ('$stock_item', 20, 'Nipplebalm', 600, 'bpnipplebalm', 'gaptek', 'start')
+		end
+		if KandidNapr = 1: *P FUNC ('$single_stock_item', 1, 'Antifungal medication', 1050, 'Kandidoz', 'gaptek', 'start')
+		*P '</table></center>'
+	end
+end
+
+if $ARGS[0] = 'buy_condoms':
+	menu_off = 1
+	*clr & cla
+	if gaptek_timers['condom'] = daystart:
+		gt 'gaptek', 'start'
+	else
+		gaptek_timers['condom'] = daystart
+	end
+	if LudaQW['KnowsSexActive'] < 10: LudaQW['KnowsSexActive'] += 1
+	gs 'stat'
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	'You pretend to look at the goods positioned on the shelves, while you consider how to best approach your aunt.'
+	act'Meekly ask':
+		cla
+		*nl
+		'Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+		'"Hi <<$pcs_nickname>>, are you looking for something?"'
+		if gaptekfirstcondom = 0:
+			gaptekfirstcondom = 1
+			minut += 2
+			if pav_slut > 75:
+				'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word, while looking at the condoms.'
+				'"What you mean is condoms so you can have sex with boys." She says with a smile.'
+				'When she notices your surprised look she adds. "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+				'You''re not really sure what to say now and your words become a blubbering mess: "Well... but I..." You''re deeply embarrassed that your aunt, and apparently everyone else in town, knows about your promiscuous behavior.'
+				'She chuckles at you stumbling over your words, and gives you a reassuring smile: "Don''t worry <<$pcs_nickname>>, I''m just teasing you. I''m not here to judge. I guess it runs in the family; maybe we all carry a slut gene or something. Come on, I''ll show you what we have." She takes you by the hand and leads you to the counter holding the condoms. "We also have birth control pills if you prefer bareback."'
+			else
+				'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word.'
+				'Your aunt pretends to be confused, and teases you, "<<$pcs_nickname>>, what kind of stuff? We sell all kinds of things!"'
+				'You blush as you realize she is going to make you say it: "I know, aunt... I need some condoms..."'
+				'She just laughs. "Just teasing, <<$pcs_nickname>>. I''ll show you what we have." She takes you by the hand and leads you to the counter holding the condoms. "We also have birth control pills if you prefer bareback."'
+			end
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+			if momslut = 1:
+				'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret."'
+				'You sigh a little. "Yes I know all about <<$npc_nickname[''A29'']>>. I just don''t want to hear about it from her is all."'
+				'Luda nods and hands over the package. "Here you go <<$pcs_nickname>>. Don''t use them all at once!" She adds with a wink, you just take your purchase.'
+			else
+				'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret." Reassured she won''t tell your <<$npc_nickname[''A29'']>>, you pick out the things you need, after that she rings up your purchase and hands you the bag. "Here you go <<$pcs_nickname>>. Don''t use them all at once!" She adds with a wink, you just take your purchase.'
+			end
+		else
+			minut += rand(2, 5)
+			'You wait until the last customer leaves the pharmacy, and quickly dart over to the counter.'
+			if pcs_inhib < 50:
+				'"Hi Aunt Luda, I need some more condoms." You tell her slightly blushing.'
+				'"You''re going through them quite fast," she chuckles, as you try to hide your blush.'
+				'You intently stare at the items, avoiding her gaze as you mutter: "Thank you, Aunt..."'
+			else
+				'"Hi Aunt Luda, I need some more condoms."'
+				'"You''re going through them quite fast," she chuckles.'
+				'You smile back and shrug non-committally as she holds out the bag for you. "Thank you, Aunt Luda."'
+			end
+			'"No problem <<$pcs_nickname>>, have fun," she says as you take your bag.'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+	act'Openly ask':
+		minut += 1
+		'You wait in line until she''s done helping her current customer and walk up to her at the counter.'
+		cla
+		if gaptekfirstcondom = 0:
+			gaptekfirstcondom = 1
+			'"Hi Aunt Luda. Can I buy some condoms?"'
+			'"I guess it runs in the family," she chuckles, leading you over to the family planning counter. "Maybe we all carry a slut gene or something. Come on, I''ll show you what we have." As she hands you the pack of condoms, she adds, "We also have birth control pills if you prefer bareback and you know you''re having sex with someone you can trust to be STD free."'
+		else
+			'"Hi Aunt Luda, I need some more condoms."'
+			'"You''re going through them quite fast," she chuckles.'
+			'"Just being safe," you shrug as you take the condoms from her. "Thanks, Aunt Luda."'
+			'"Any time, <<$pcs_nickname>>!"'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+end
+
+if $ARGS[0] = 'buy_birth_control':
+	menu_off = 1
+	*clr & cla
+	if gaptek_timers['birth_control'] = daystart:
+		gt 'gaptek', 'start'
+	else
+		gaptek_timers['birth_control'] = daystart
+	end
+	if LudaQW['KnowsSexActive'] < 10: LudaQW['KnowsSexActive'] += 2
+	gs 'stat'
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	'You look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+	'"Hi <<$pcs_nickname>>, are you looking for something?"'
+	act'Meekly ask':
+		cla
+		if gaptekfirstbirthcontrol = 0:
+			gaptekfirstbirthcontrol = 1
+			minut += 2
+			if pav_slut > 75:
+				'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word, while looking at the birth control pills.'
+				'"What you mean is birth control pills so you can have sex with boys, without using a condom." She says with a smile.'
+				'When she notices your surprised look she adds. "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+				'You''re not really sure what to say now and your words become a blubbering mess: "Well... but I..." You''re deeply embarrassed that your aunt, and apparently everyone else in town, knows about your promiscuous behavior.'
+				'She chuckles at you stumbling over your words, and gives you a reassuring smile: "Don''t worry <<$pcs_nickname>>, I''m just teasing you. I''m not here to judge. I guess it runs in the family; maybe we all carry a slut gene or something. Come on, I''ll show you what we have." She takes you by the hand and leads you to the counter holding the birth control pills. "You might consider condoms too since you seem to have a lot of partners, to protect you from STD''s of course. You can never tell who''s clean and who isn''t these days."'
+			else
+				'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word.'
+				'Your aunt pretends to be confused, and teases you, "<<$pcs_nickname>>, what kind of stuff? We sell all kinds of things!"'
+				'You blush as you realize she is going to make you say it: "I know, aunt... I need some birth control pills..."'
+				'She just laughs: "Just teasing, <<$pcs_nickname>>. I''ll show you what we have." She takes you by the hand and leads you to the counter holding the birth control pills. "We also have condoms if you are worried about STD''s. You can never tell who''s clean and who isn''t these days."'
+			end
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+			if momslut = 1:
+				'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret."'
+				'You sigh a little. "Yes I know all about <<$npc_nickname[''A29'']>>. I just don''t want to hear about it from her is all."'
+				'Luda nods and hands over the package. "Here you go <<$pcs_nickname>>. Don''t use it all at once!" She adds with a wink, you just take your purchase.'
+			else
+				'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret." Reassured she won''t tell your <<$npc_nickname[''A29'']>>, you pick out the things you need, after that she rings up your purchase and hands you the bag. "Here you go <<$pcs_nickname>>. Don''t use it all at once!" She adds with a wink, you just take your purchase.'
+			end
+		else
+			minut += rand(2, 5)
+			'You wait until the last customer leaves the pharmacy, and quickly dart over to the counter.'
+			if pcs_inhib < 50:
+				'"Hi Aunt Luda, I need some more birth control pills." You say as your face heats up.'
+				'"Make sure you don''t miss a single day or they might not work." she says, as you try to hide your blush.'
+				'You intently stare at the items, avoiding her gaze as she hands you the bag. "Thank you, Aunt..."'
+			else
+				'"Hi Aunt Luda, I need some more birth control pills."'
+				'"Make sure you don''t miss a single day or they might not work." she says, as you try to hide your blush.'
+				if pilldays >= 18:
+					'"Mhm, I know. I''ve been on the pill for a while now, but thanks anyway Aunt Luda."'
+				else
+					'"Okay, thanks for the advice Aunt Luda."'
+				end
+			end
+			'"No problem <<$pcs_nickname>>. Have fun!" she says as you take your bag.'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+	act'Openly ask':
+		cla
+		if gaptekfirstbirthcontrol = 0:
+			gaptekfirstbirthcontrol = 1
+			minut += 2
+			'"Hi Aunt Luda. Can I buy some birth control pills?"'
+			'"I guess it runs in the family," she chuckles, leading you over to the family planning counter. "Maybe we all carry a slut gene or something. Come on, I''ll show you what we have." As she hands you a box of pills she adds, "You might consider condoms too since you seem to have a lot of partners, to protect you from STD''s of course. You can never tell who''s clean and who isn''t these days."'
+		else
+			'"Hi Aunt Luda, I need some more birth control pills."'
+			'"Make sure you don''t miss a single day or they might not work." she says, as you try to hide your blush.'
+			if tabletkicpd >= 2:
+				'"Mhm, I know. I''ve been on the pill for a while now, but thank you anyway Aunt Luda."'
+			else
+				'"Okay, thanks for the advice Aunt Luda."'
+			end
+			'"No problem <<$pcs_nickname>>, have fun," she says as you take your bag.'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+end
+
+if $ARGS[0] = 'buy_preg_test':
+	menu_off = 1
+	*clr & cla
+	if gaptek_timers['preg_test'] = daystart:
+		gt 'gaptek', 'start'
+	else
+		gaptek_timers['preg_test'] = daystart
+	end
+	if LudaQW['KnowsSexActive'] < 10: LudaQW['KnowsSexActive'] = 10
+	gs 'stat'
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	'You pretend to look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+	'"Hi <<$pcs_nickname>>, are you looking for something?"'
+	if gaptekfirstpregtest = 0:
+		gaptekfirstpregtest = 1
+		minut += 2
+		prezikcount += 5
+		if pav_slut > 75:
+			'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word, while looking at the pregnancy tests.'
+			'"What you mean is pregnancy test so you can see if one of those boys you have been having sex with has knocked you up. You should be more careful and take birth control or start using condoms" She says in a serious tone.'
+			'When she notices your surprised look she adds. "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+			'You''re not really sure what to say now and your words become a blubbering mess: "Well... but I..." You''re deeply embarrassed that your aunt, and apparently everyone else in town, knows about your promiscuous behavior.'
+			'She chuckles at you stumbling over your words, and gives you a reassuring smile: "I''m not here to judge. I guess it runs in the family; maybe we all carry a slut gene or something, but you really should take precautions if you are going to have fun. Come on, I''ll show you what we have." She takes you by the hand and takes you to the family planning counter that holds the pregnancy tests as well as birth control pills and condoms. You should really buy some of each for protection against this and STD''s."'
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+		else
+			'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word.'
+			'Your aunt pretends to be confused, and teases you, "<<$pcs_nickname>>, what kind of stuff? We sell all kinds of things!"'
+			'You blush as you realize she is going to make you say it: "I know, aunt... I need a pregnancy test..."'
+			'She looks a little shocked. "<<$pcs_nickname>> oh my god." Then she shakes her head. "If you are going to be sexual active you really need to use birth control or carry some condoms with you. But let me show you what we have in the way of tests." She takes you by the hand and takes you to the family planning counter that holds the pregnancy tests as well as birth control pills and condoms. "You should really buy some of each for protection against this and STD''s."'
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+		end
+		if momslut = 1:
+			'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret."'
+			'You sigh a little. "Yes I know all about <<$npc_nickname[''A29'']>>. I just don''t want to hear about it from her is all."'
+			'Luda nods and hands over the package. "It''s our secret for now, though if that test is positive there''s nothing that will stop her from noticing when your belly starts to round out. Whether it is or it isn''t, I threw in a box of condoms so this doesn''t happen again, okay?"'
+		else
+			'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret." Reassured she won''t tell your <<$npc_nickname[''A29'']>>, you pick out the things you need, after that she rings up your purchase and hands you the bag. "It''s our secret for now, though if that test is positive there''s nothing that will stop her from noticing when your belly starts to round out. Whether it is or it isn''t, I threw in a box of condoms so this doesn''t happen again, okay?"'
+		end
+		'You gulp, nodding and taking the bag. "Thank you, Aunt Luda."'
+		'"No problem <<$pcs_nickname>>, but do try to be careful okay?"'
+	else
+		minut += rand(2, 5)
+		prezikcount += 5
+		if pcs_inhib < 50:
+			'"Hi Aunt Luda, I need another pregnancy test." You tell her slightly blushing.'
+			'She sighs slightly and shakes her head. "You really need to be more careful <<$pcs_nickname>>. Here, take a box of condoms as well and make sure to use them." she says, as you try to hide your blush, as she rings up your purchase before slipping the condoms into your bag.'
+			'You intently stare at the items, avoiding her gaze as you mutter: "Thank you, Aunt..."'
+		else
+			'"Hi Aunt Luda, I need another pregnancy test."'
+			'She sighs slightly and shakes her head. "You really need to be more careful <<$pcs_nickname>>. Here, take a box of condoms as well and make sure to use them." she says as she rings up your purchase before slipping the condoms into your bag.'
+			'"Thank you, Aunt."'
+		end
+		'"No problem <<$pcs_nickname>>, but seriously! Be careful!" she says as you take your bag.'
+	end
+	act 'Move away from the counter':gt 'gaptek', 'start'
+end
+
+if $ARGS[0] = 'buy_lube':
+	menu_off = 1
+	*clr & cla
+	if gaptek_timers['lube'] = daystart:
+		gt 'gaptek', 'start'
+	else
+		gaptek_timers['lube'] = daystart
+	end
+	if LudaQW['KnowsSexActive'] < 10: LudaQW['KnowsSexActive'] += 1
+	gs 'stat'
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	'You pretend to look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+	'"Hi <<$pcs_nickname>>, are you looking for something?"'
+	if gaptekfirstlube = 0:
+		gaptekfirstlube = 1
+		minut += 2
+		if pav_slut > 75:
+			'You pretend to look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+			'"Hi <<$pcs_nickname>>, are you looking for something?"'
+			'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word, while looking at the lube.'
+			'"What you mean is lube so you can lets the boys stick their dicks up your ass." She says with a smile.'
+			'When she notices your surprised look she adds. "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+			'You''re not really sure what to say now and your words become a blubbering mess: "Well... but I..." You''re deeply embarrassed that your aunt, and apparently everyone else in town, knows about your promiscuous behavior.'
+			'She chuckles at you stumbling over your words, and gives you a reassuring smile: "Don''t worry <<$pcs_nickname>>, I''m just teasing you. I''m not here to judge. I guess it runs in the family; maybe we all carry a slut gene or something. Come on, I''ll show you what we have." She takes you by the hand and leads you to the counter holding the lube, "We also have birth control pills and condoms if you want to things other than anal."'
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+		else
+			'You pretend to look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+			'"Hi <<$pcs_nickname>>, are you looking for something?"'
+			'You take a deep breath and say: "Erm... yes aunt. I need some ''stuff''," putting extra emphasis on the word, while looking at the lube.'
+			'Your aunt pretends to be confused, and teases you, "<<$pcs_nickname>>, what kind of stuff? We sell all kinds of things!"'
+			'You blush as you realize she is going to make you say it: "I know, aunt... I need some lube..."'
+			'"Trying to get around your mothers tests?" She laughs. "Just teasing, <<$pcs_nickname>>. I''ll show you what we have." She takes you by the hand and leads you to the counter holding the lube, "We also have birth control pills and condoms if you want them to fuck your pussy, instead of your butt."'
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+		end
+		if momslut = 1:
+			'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret."'
+			'You sigh a little. "Yes I know all about <<$npc_nickname[''A29'']>>. I just don''t want to hear about it from her is all."'
+			'Luda nods and hands over the package. "Here you go <<$pcs_nickname>>. Don''t use it all at once!" She adds with a wink, you just take your purchase.'
+		else
+			'Your aunt gives you a odd smile. "You might be surprised dear, but anyways I promise this is our little secret." Reassured she won''t tell your <<$npc_nickname[''A29'']>>, you pick out the things you need, after that she rings up your purchase and hands you the bag. "Here you go <<$pcs_nickname>>. Don''t use it all at once!" She adds with a wink, you just take your purchase.'
+		end
+	else
+		minut += rand(2, 5)
+		'You wait until the last customer leaves the pharmacy, and quickly dart over to the counter.'
+		if pcs_inhib < 50:
+			'"Hi Aunt Luda, I need some more lube." You tell her slightly blushing.'
+			'"If you''re going through it fast, you might want to tell the boys to give your poor butt a rest once in awhile," she chuckles, as you try to hide your blush.'
+			'You intently stare at the items, avoiding her gaze as you mutter: "Thank you, Aunt..."'
+		else
+			'"Hi Aunt Luda, I need some more lube."'
+			'"If you''re going through it fast, you might want to tell the boys to give your poor butt a rest once in awhile," she chuckles.'
+			'You roll your eyes at her teasing. "As long as I have this my butt will be just fine. Thank you for the lube Aunt Luda."'
+		end
+		'"No problem, <<$pcs_nickname>>, have fun," she says as you take your bag.'
+	end
+	act 'Move away from the counter':gt 'gaptek', 'start'
+end
+
+if $ARGS[0] = 'buy_morning_after':
+	menu_off = 1
+	*clr & cla
+	if gaptek_timers['morning_after'] = daystart:
+		gt 'gaptek', 'start'
+	else
+		gaptek_timers['morning_after'] = daystart
+	end
+	if LudaQW['KnowsSexActive'] < 10: LudaQW['KnowsSexActive'] += 2
+	gs 'stat'
+	'<center><B><font color="maroon">Pharmacy</font></B></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/pharmacy/apteka_aunt_1.jpg"></center>'
+	'You look at the goods positioned on the shelves, while you consider how to best approach your aunt. Your aunt notices you staring at the shelves, and comes from behind the counter when she''s done helping her last customer.'
+	'"Hi <<$pcs_nickname>>, are you looking for something?"'
+	act'Meekly ask':
+		cla
+		if gaptekfirstmorningafter = 0:
+			gaptekfirstmorningafter = 1
+			minut += 2
+			if pav_slut > 75:
+				'"Erm... yes aunt. I need..." You take a deep breath. "I need some Plan B..."'
+				'"I was wondering if this was going to happen," she sighs, shaking her head.'
+				'When she notices your confusion, she adds, "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+				'You''re not really sure what to say now and your words become a blubbering mess. "Well... but I..." You''re deeply embarrassed that your aunt, and apparently everyone else in town, knows about your promiscuous behavior.'
+				'"I guess it runs in the family; maybe we all carry a slut gene or something. I''d hoped you were being safe, but I suppose we all slip up sometimes," she says, taking a small box off the shelf. "Goodness knows, your sister''s living proof of that." She hands you the box.'
+				'"Take this as soon as possible. It''s most effective the sooner you take it. And if you''re not going to be strict about your condom usage, you should really buy some birth control pills <<$pcs_nickname>>! With how many boys you''ve been seeing, you really ought to be taking it anyways."'
+			else
+				'"Erm... yes aunt. I need..." You take a deep breath. "Aunt Luda, I need some Plan B..."'
+				'"<<$pcs_nickname>>! You need to be more careful!" she says, immediately scurrying over towards the birth control counter.'
+				'You blush in embarrassment. "I know, aunt... I just... made a mistake."'
+				'"Well, we''re all guilty of making those sometimes," she says, taking a small box off the shelf. "Goodness knows, your sister''s living proof of that." She hands you the box.'
+				'"Take this as soon as possible. It''s most effective the sooner you take it. And maybe you should also buy some birth control pills <<$pcs_nickname>> while you''re here? Then this just has to be a one time thing."'
+			end
+			'You can''t help but blush again. "Please don''t tell my <<$npc_nickname[''A29'']>>. She wouldn''t understand."'
+			if momslut = 1:
+				'Your aunt gives you a odd look. "You might be surprised dear."'
+				'You sigh a little. "Yes I know all about <<$npc_nickname[''A29'']>>. I just don''t want to hear about it from her is all."'
+				'Luda nods. "Well, even so, I''m sure she''d prefer hearing that you''re taking this than to find out you''re not. But I promise, this will be our little secret."'
+			else
+				'Luda nods. "Well, even so, I''m sure she''d prefer hearing you''re having sex and taking this than to find out you''re pregnant. But I promise, this will be our little secret."'
+			end
+		else
+			minut += rand(2, 5)
+			'You wait until the last customer leaves the pharmacy, and quickly dart over to the counter.'
+			if pcs_inhib < 50:
+				'"Aunt Luda," you whisper. "I need another plan B pill."'
+				'"Again?!" she asks, aghast. Your face heats up in a crimson blush.'
+			else
+				'"Hi Aunt Luda, I need another plan B pill."'
+				'"Again?!" she asks, aghast. Your only response is to give a sort of sorry shrug.'
+			end
+			'"How many times are you going to make the same mistake <<$pcs_nickname>>?" She shakes her head as she puts the box into the bag and hands it to you. "You need to buy some birth control already. It really isn''t that hard to just take a pill every day you know."'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+	act'Openly ask':
+		cla
+		if gaptekfirstmorningafter = 0:
+			gaptekfirstmorningafter = 1
+			minut += 2
+			'"Hi Aunt Luda. I need a Plan B pill."'
+			if pav_slut > 75:
+				'"I was wondering if this was going to happen," she sighs, shaking her head.'
+				'When she notices your confusion, she adds, "Your reputation precedes you, <<$pcs_nickname>>. Everyone in Pavlovsk knows you''re a <<$gnikname>>."'
+				'"Oh." You wonder how your aunt found out about your sex life. Is your reputation in town really that bad?'
+				'"I guess it runs in the family; maybe we all carry a slut gene or something. I''d hoped you were being safe, but I suppose we all slip up sometimes," she says, taking a small box off the shelf. "Goodness knows, your sister''s living proof of that." She hands you the box.'
+				'"Take this as soon as possible. It''s most effective the sooner you take it. And if you''re not going to be strict about your condom usage, you should really buy some birth control pills <<$pcs_nickname>>! With how many boys you''ve been seeing, you really ought to be taking it anyways."'
+			else
+				'"<<$pcs_nickname>>! You need to be more careful!" she says, immediately scurrying over towards the birth control counter.'
+				'You sigh. "I know, aunt. I just made a mistake this time."'
+				'"Well, we''re all guilty of making those sometimes," she says, taking a small box off the shelf. "Goodness knows, your sister''s living proof of that." She hands you the box.'
+				'"Take this as soon as possible. It''s most effective the sooner you take it. And maybe you should also buy some birth control pills <<$pcs_nickname>> while you''re here? Then this just has to be a one time thing."'
+			end
+		else
+			minut += rand(2, 5)
+			'"Hi Aunt Luda. I need another Plan B pill."'
+			if pcs_inhib < 50:
+				'"Again?!" she asks, aghast. Your face heats up in a crimson blush.'
+			else
+				'"Again?!" she asks, aghast. Your only response is to give a sort of sorry shrug.'
+			end
+			'"How many times are you going to make the same mistake <<$pcs_nickname>>?" She shakes her head as she puts the box into the bag and hands it to you. "You need to buy some birth control already. It really isn''t that hard to just take a pill every day you know."'
+		end
+		act 'Move away from the counter':gt 'gaptek', 'start'
+	end
+end
+
+
+
+--- gaptek ---------------------------------
+

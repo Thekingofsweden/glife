@@ -1,0 +1,135 @@
+# cum_call
+
+!{$ARGS[0] is for the location and should be set for all but vaginal:
+'labia' - 'pantyfront' - 'anus' - 'butt' - 'pantyrear' - 'clothes_hidden' - 'clothes' - 'back' - 'legs'
+'arms' - 'face' - 'mouth' - 'hands' - 'stomach' - 'breasts' - 'hair' - 'internalcondom' - 'precum'
+	'precum' - is for whenever Sveta has unprotected vaginal sex. It will automatically set the volume to 1.
+$ARGS[1] is for the name of the sexual partner
+ARGS[2] is a for knowing the partner. Defaults to 0. If this is not set to 1 the status window message will mention "some guy" instead of his name.
+	0 - unknown sex partner (his name may be known, but she newer saw him before, and likely won't ever again, or she won't remeber it)
+	1 - sex partner is known for MC (classmate, neighbor, someone she new beforehand)
+	2 - MC is unaware of the act (like unconscious sex)
+ARGS[3] is contraception, if left blank it will use the default, if you want to force a particular type:
+	1 - he thought you were on the pill but you weren''t.
+	2 - you are on the Pill
+	3 - Condom. Condoms can still fail vy the code.
+	4 - the Condom Broke. This is mostly used to check if cum manage resulted in a broken condom.
+	5 - the Condom Slipped off. Like 4, this is mostly to check if the contraception of 3 had a failure. But both 4 and 5 can be specified if you want to write an event where it fails no matter what.
+	6 - the condom was Sabotaged but the main character shouldn''t know that
+	7 - the Condom was Sabotaged by the main character.
+ARGS[4] is for changing the potency, -1 for unable to impregnate, default is 10,000
+ARGS[5] is volume, default is 40 (4ml)
+For a simple call you only need the first 3, ie:
+gs 'cum_call', 'anus', 'Kolka', 1 - for a known partner
+gs 'cum_call', 'anus' - for an unknown partner named "unknown", or
+gs 'cum_call', 'anus', 'plumber' - for an unknown partner named "plumber"}
+
+if $ARGS[0] ! 'precum':
+	$cumboy = $boy
+
+	if ARGS[5] ! 0:
+		sexvolume = ARGS[5]
+	end
+
+	if ARGS[4] ! 0:
+		sexspecpot = ARGS[4]
+	else
+		sexspecpot = 0
+	end
+
+	if ARGS[3] = 1:
+		sexcontra = 1
+	elseif ARGS[3] = 2:
+		sexcontra = 2
+	elseif ARGS[3] = 3:
+		sexcontra = 3
+	elseif ARGS[3] = 4:
+		sexcontra = 4
+	elseif ARGS[3] = 5:
+		sexcontra = 5
+	elseif ARGS[3] = 6:
+		sexcontra = 6
+	elseif ARGS[3] = 7:
+		sexcontra = 7
+	end
+
+	if ARGS[2] = 2:
+		sexunaware = 1
+	elseif ARGS[2] = 1:
+		sexpartkno = 1
+	else
+		sexpartkno = 0
+	end
+
+	!!This check if the name passed is not in the new MGX format
+	if $ARGS[1] = '' or mid($ARGS[1],2,1) > 10:
+		if ARGS[2] = 0 or ARGS[2] = 2:
+			gs 'npcgeneratec', 0, $ARGS[1], rand(18,60)
+			gs 'boyStat', $npclastgenerated
+		elseif ARGS[2] = 1:
+			tempnpcid = arrpos('$npc_usedname', $ARGS[1])
+			if tempnpcid > 0:
+				gs 'boystat', tempnpcid
+				'<br><b><font color="teal">DEVELOPER WARNING: Legacy name cum_call needs upgrade from <<$ARGS[1]>> to A<<tempnpcid>></font></b>'
+			else
+				MSG 'There has been an error in the cum_call code. Please contact a developer with what you were doing prior to receiving this message so the error may be fixed. Error type: Improper value for cum_call. Name <<$ARGS[1]>>'
+				gs 'boyStat', 'D0'
+			end
+		end
+	else
+		gs 'boyStat', $ARGS[1]
+	end
+
+	if $ARGS[0] = 'labia':
+		spafinloc = 1
+	elseif $ARGS[0] = 'pantyfront':
+		spafinloc = 2
+	elseif $ARGS[0] = 'anus':
+		spafinloc = 3
+	elseif $ARGS[0] = 'butt':
+		spafinloc = 4
+	elseif $ARGS[0] = 'pantyrear':
+		spafinloc = 5
+	elseif $ARGS[0] = 'clothes_hidden':
+		spafinloc = 6
+	elseif $ARGS[0] = 'clothes':
+		spafinloc = 7
+	elseif $ARGS[0] = 'back':
+		spafinloc = 8
+	elseif $ARGS[0] = 'legs':
+		spafinloc = 9
+	elseif $ARGS[0] = 'arms':
+		spafinloc = 10
+	elseif $ARGS[0] = 'face':
+		spafinloc = 11
+	elseif $ARGS[0] = 'mouth':
+		spafinloc = 12
+	elseif $ARGS[0] = 'hands':
+		spafinloc = 13
+	elseif $ARGS[0] = 'stomach':
+		spafinloc = 14
+	elseif $ARGS[0] = 'breasts':
+		spafinloc = 15
+	elseif $ARGS[0] = 'hair':
+		spafinloc = 16
+	elseif $ARGS[0] = 'internalcondom':
+		spafinloc = 17
+	else
+		spafinloc = 0
+		!Vagina and default
+	end
+
+	!{'boy <<$boydesc>> loc <<spafinloc>> contra <<sexcontra>> vol <<sexvolume>> ppt <<sexspecpot>> know <<sexpartkno>> unaware <<sexunaware>> cumboy <<$cumboy>>'}
+
+	gs 'Cum_Manage'
+	$boy = $cumboy
+
+	sexcontra = 0
+else
+	!This is to check for pregnancy and stds from precum. It is added for readability when it is used in the code.
+	!It will call cum_call with a volume of 1.
+	gs 'cum_call', '', $ARGS[1], ARGS[2], ARGS[3], ARGS[4], 1
+end
+
+--- cum_call ---------------------------------
+

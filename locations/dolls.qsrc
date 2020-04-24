@@ -1,0 +1,280 @@
+# dolls
+
+!!Savva Timurovich - A204 static_num
+!!Viola Valerievna - A205 static_num
+
+if $ARGS[0] = 'start':
+	$metka = 'start'
+	$loc = 'dolls'
+	$menu_arg = 'start'
+	$menu_loc = 'dolls'
+	menu_off = 0
+	$location_type = 'public_indoors'
+	*clr & cla
+	if Anush_dolls = 0:Anush_dolls = 1
+	minut += 2
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/island/dolls/dolls.jpg"></center>'
+	''
+	'The store has a small front on a side street but one glance is all you need to tell this is not your average clothing store. Inside the store, shelves and racks of alternative clothes crammed into every available space - anybody setting out to find an inch of wall would have their work cut out for them. The checkout counter is near the entrance.'
+	if doll_staff_day ! daystart:
+		if rand(0,1) = 0:
+			doll_staff = 0
+			doll_staff_day = daystart
+		else
+			doll_staff = 1
+			doll_staff_day = daystart
+		end
+	end
+
+	act 'Browse clothing':
+		*clr & cla
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/island/dolls/dollsshop.jpg"></center>'
+		''
+		'The store has a small front on a side street but one glance is all you need to tell this is not your average clothing store. Inside the store, shelves and racks of alternative clothes crammed into every available space - anybody setting out to find an inch of wall would have their work cut out for them. The checkout counter is near the entrance.'
+
+		act 'View clothing':gt 'dolls', 'clothing'
+		act 'View shoes':gt 'dolls', 'shoes'
+		act 'View purses':gt 'dolls', 'purses'
+		!act 'Jewelery':gt 'dolls', 'jewelry'
+		!act 'Piercings':gt 'dolls', 'piecrings'
+
+		act 'Return': gt 'dolls', 'start'
+	end
+!!here should be a list of clothing you can buy. shoes, jewelry, clothing, piecrings, etc. Just a list of things to buy and click it takes you to a page showing all the items for sale. Like how most shops are done.
+
+	if doll_staff = 0:
+		if know_Savva = 1: 'As you walk in, Savva waves at you and smiles. "Hi <<$pcs_nickname>>, great to see you again! Let me know if I can help you with anything."'
+
+		act 'Go to the counter': gt 'dolls', 'savva'
+	else
+		if know_Viola = 1: 'As you walk in, Viola winks at you.'
+
+		act 'Go to the counter': gt 'dolls', 'viola'
+	end
+	act 'Leave': minut += 2 & gt 'island'
+end
+
+if $ARGS[0] = 'clothing':
+	$metka = 'clothing'
+	$loc = 'dolls'
+	$menu_arg = 'clothing'
+	$menu_loc = 'dolls'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing Patchwork Dolls clothing</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return':
+		cla
+		minut += 5
+		gt 'dolls', 'start'
+	end
+
+	if Clothingstock > 15:
+		i = 1
+	elseif Clothingstock > 7:
+		i = 3
+	else
+		i = 2
+	end
+
+	:loopalt
+		if alternative[i] = 0:
+			gs 'clothing_attributes', 'alternative', i
+			gs 'clothing_QV', 'shop_filter'
+
+			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''dolls'', ''alternative''"><img src="images/pc/clothing/14alternative/<<i>>.jpg" 	height="250" /></a>'
+		end
+		i += 3
+	if i <= 129:jump 'loopalt'
+end
+
+if $ARGS[0] = 'alternative':
+	cla
+
+	if alternative[i] ! 0:
+		msg 'You already own these clothes.'
+		gt 'dolls', 'clothing'
+	end
+
+	gt 'clothing', 'view_clothing_item', 'shop', 'alternative',i, 3500
+
+end
+
+if $ARGS[0] = 'shoes':
+	$metka = 'shoes'
+	$loc = 'dolls'
+	$menu_arg = 'purses'
+	$menu_loc = 'shoes'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+
+	act 'Return':
+		cla
+		minut += 5
+		gt 'dolls', 'start'
+	end
+
+	if Clothingstock > 11:
+		i = 1
+	else
+		i = 2
+	end
+
+	:loopdolls_shoes
+		if sdolls[i] = 0:*p '<a href="exec: i = <<i>> & gt ''dolls'', ''dolls_shoes''"><img src="images/pc/shoes/dolls/<<i>>.jpg" height="250" /></a>'
+		i += 2
+	if i <= 27:jump 'loopdolls_shoes'
+end
+
+if $ARGS[0] = 'dolls_shoes': gt 'shoes', 'view_shoe_item', 'shop', 'dolls',i, 2000
+
+if $ARGS[0] = 'purses':
+	$metka = 'purses'
+	$loc = 'dolls'
+	$menu_arg = 'purses'
+	$menu_loc = 'dolls'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+
+	act 'Return':
+		cla
+		minut += 5
+		gt 'dolls', 'start'
+	end
+
+	i = 1
+
+	:loopdolls_purses
+		if dolls_purses[i] = 0:*p '<a href="exec: i = <<i>> & gt ''dolls'', ''purses2''"><img src="images/pc/purses/dolls/<<i>>.jpg" height="250" /></a>'
+		i += 1
+	if i <= 22:jump 'loopdolls_purses'
+end
+
+if $ARGS[0] = 'purses2': gt 'purses', 'view_purse_item', 'shop', 'dolls',i, 2000
+
+if $ARGS[0] = 'savva':
+	*clr & cla
+	menu_off = 1
+	'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/city/savva/savva.jpg"></center>'
+	if know_Savva = 0:
+		'At the counter you see a young man; he looks about your sister''s age but he has a shy, quiet, almost girlish quality about him. As you approach the counter, he quietly asks if you need help, so softly you can barely hear him. "Can I help you?"'
+	else
+		'Savva is working the counter today. As you walk up, he gives you a friendly smile. "Hey <<$pcs_nickname>>, nice to see you again. What can I help you with?"'
+	end
+	act 'Ask him about the shop':
+		*clr & cla
+		npc_rel['A204'] += 2
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/savva/savva.jpg"></center>'
+		'You ask him about the shop. He tells you it opened a few years ago and they mostly cater to the college kids. Occasionally they get hassled by the local gopniks or police, but he likes the job. Then asks if you need help finding an outfit.'
+		act 'Continue': gt 'dolls', 'savva'
+	end
+!!this only shows up as an option if Anushka sent Sveta to the store from one of her chat options in anushka file or anushapt file.
+	if Anush_dolls = 2:
+		act 'Anushka sent me':
+			*clr & cla
+			npc_rel['A204'] += 3
+			'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/characters/city/savva/savva.jpg"></center>'
+			'"A friend of mine Anushka sent me." You tell him with a smile.'
+			'He laughs a bit. "Well you must lead a real interesting life then, if she is your friend. So you from Pavlovsk too?"'
+			'You nod a bit. "Yeah we go to school together actually."'
+			'He nods a bit. "Cool, I still find it hard to believe that a girl like that has good enough grades to go to the University, guess when that happens I will see a lot more of her."'
+			*nl
+			'"She is a wild one that''s for sure, anyways she told me you could help and that you owe her one."'
+			'He snorts and shakes his head. "She must be failing math, she doesn''t seem to grasp how to count. But she''s pretty cool and if she sent you, then you have to be ok. So what''s your name?" You tell him your name and he types out a few things on the computer and a few moments later, you hear the sound of something printing. Then he hands over a card. "Here is a VIP customer card, it is good for ten percent off anything in the store. Now you can tell her, she owes me, like I am ever likely to collect." He says with a laugh.'
+	!!can this be coded so Sveta gets a discount on all items here after this conversation.
+			act 'Continue': gt 'dolls', 'savva'
+		end
+	end
+	act 'Flirt with him':
+		*clr & cla
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/savva/savva.jpg"></center>'
+		'You think he is pretty cute in a girlish kinda way, so you chat with him about a variety of things and flirt for all you are worth. He seems happy to talk, especially about fashion and music... but either he''s gay or completely oblivious to your flirting.'
+		act 'Continue': gt 'dolls', 'savva'
+	end
+	act 'Chat with him':
+		*clr & cla
+		know_Savva = 1
+		npc_rel['A204'] += 3
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/savva/savva.jpg"></center>'
+		'You decide to chat with him. He seems happy to talk with you, especially about fashion and music. You spend some time chatting about a variety of topics.'
+		if npc_rel['A204'] > 50:'As you do, you eventually touch upon his latest date, some "cutest boy he''s ever seen" that he met in the shop some time ago. He seems to have been dying to tell somebody about it because he just gushes about how handsome the young man is and how great the sex was... Next week, he will likely be talking about another one.'
+		act 'Continue': gt 'dolls', 'savva'
+	end
+	act 'Return': gt 'dolls', 'start'
+end
+
+if $ARGS[0] = 'viola':
+	*clr & cla
+	menu_off = 1
+	'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/city/viola/viola.jpg"></center>'
+	if know_Viola = 0:
+		'At the counter you see a young woman, maybe as old as your sister or a year or two older. She is reading a magazine when you walk up, only glancing up at you as you stop at the counter. "How can I help you?"'
+	else
+		'"What''s up, <<$pcs_nickname>>? You here to do a little shopping or to kill some time?"'
+	end
+	act 'Ask her about the shop':
+		*clr
+		cla
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/viola/viola.jpg"></center>'
+		'You ask her about the shop. She tells you the place is only a few years old and is about the only place to buy a decent outfit in the whole city; unless you are willing to shop online, that is, which leads her to talking about the woes of online shopping where clothes don''t fit and never seem to have anywhere near as good a quality as they seem to on the pictures. You get the impression that the topic really bothers her and she could go on for some time if you let her.'
+		act 'Continue': gt 'dolls', 'viola'
+	end
+!!this only shows up as an option if Anushka sent Sveta to the store from one of her chat options in anushka file or anushapt file.
+	if Anush_dolls = 2:
+		act 'Anushka sent me':
+			*clr & cla
+			Anush_dolls = 3
+			npc_rel['A205'] += 5
+			'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/characters/city/viola/viola.jpg"></center>'
+			'"A friend of mine Anushka sent me." You tell her with a smile.'
+			'Viola perks up a bit at the mention of Anushka. "Oh? You''re friends with Nush? Why didn''t you say so, anyways how is she doing? Raising hell and having fun if I know her."'
+			*nl
+			'You can''t help but grin a little, if you are not mistaken Viola has a thing for Anushka. "She''s good, I was asking her about her clothes. You know she has such good tastes and I asked her where she got them and she said here and you guys could help me out. Oh and she said to tell you, that you owe her one or something like that."'
+			*nl
+			'Viola laughs at that last bit. "I seem to always be owing her, not sure how math works in her head. But if she sent you, then you are in good hands, whats your name?" You tell her your name and she types out a few things on the computer and a few moments later, you hear the sound of something printing. Then she hands over a card. "Here is a VIP customer card, it is good for ten percent off anything in the store. Now you can tell her, she owes me." Viola says with a wink.'
+	!!can this be coded so Sveta gets a discount on all items here after this conversation.
+			act 'Continue': gt 'dolls', 'viola'
+		end
+	end
+	act 'Flirt with her':
+		*clr & cla
+		npc_rel['A205'] += 3
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/viola/viola.jpg"></center>'
+		'As you talk to her, you start flirting and she returns the favor to a point, occasionally touching your hand or shoulder, laughing at some of the things you say... but she never fully commits to flirting with you; either she''s playing hard to get, trying to put you in a good mood to buy stuff, or she is messing with you - you are unsure which one it is.'
+		act 'Continue': gt 'dolls', 'viola'
+	end
+	act 'Chat with her':
+		*clr
+		cla
+		know_Viola = 1
+		npc_rel['A205'] += 2
+		'<center><b><font color="maroon">Patch Work Dolls</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/characters/city/viola/viola.jpg"></center>'
+		'You decide to chat with her and the two of you talk about a variety of topics. She seems happy to talk with you, especially about fashion, techniques on dying your hair, music, and the injustices of life. She mentions how the gopniks hassle some of the gay boys that shop here and some time passes, before you decide to do something else.'
+		act 'Continue': gt 'dolls', 'viola'
+	end
+	act 'Return': gt 'dolls', 'start'
+end
+
+--- dolls ---------------------------------
+

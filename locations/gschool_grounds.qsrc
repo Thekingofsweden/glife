@@ -1,0 +1,752 @@
+# gschool_grounds
+
+!Outside school building
+if $ARGS[0] = 'main':
+	CLOSE ALL
+	$loc = 'gschool_grounds'
+	$metka = 'main'
+	$location_type = 'public_outdoors'
+	$menu_loc = 'gschool_grounds'
+	$menu_arg = 'main'
+	menu_off = 0
+	*clr & cla
+	gs 'stat'
+	'<center><b><font color="maroon">Outside School</font></b></center>'
+	if month >= 11 or month <= 3:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/building/schoolwinter.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/building/gschool.jpg"></center>'
+	end
+	'Pavlovsk''s only school, all the local children go here for their education. Next to the school is the athletic field, a parking lot for the teachers, just beyond the parking lot is a grove of trees, and past that is the old school building. After the new school was built the old one was supposed to get renovated and used for advance classes but budget cuts meant the project was canceled and now the old school building stands empty. Though many of the kids use it to skip class or as a place to sneak off to drink or have sex.'
+
+	if ((hour = 6 and minut >= 30) or (hour >= 7 and hour < 18)) and StoryLine > 0 and SchoolAtestat = 0 and kanikuli = 0:
+		'With the school open you can go to the <a href="exec: minut += 1 & gt ''gschool_grounds'', ''change_room''">changing rooms</a> by the gym and change your outfit.'
+	end
+
+	if day = nyp_day and month = 12 and StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0:
+		if hour >= 14 and hour < 17:
+			'All the boys and girls are standing near the school. Everyone did their best to look good today, wearing their nicest clothes. Someone calls out to you, "Hey <<$pcs_nickname>>, are you coming to the New Year''s Eve party or not? You didn''t pay the 1000 <b>₽</b> entry fee yet!"'
+
+			if money >= 1000:act 'Go to the party (1,000 <b>₽</b>)':money -= 1000 & gt 'nyp_school', 'start'
+		end
+	end
+	
+	if InvitationToDimkaNYparty = 1 and day = 31 and day = nyp_day: act 'Follow Dimka to the New Year''s party at his home': killvar 'InvitationToDimkaNYparty' & minut += 30 & gt 'sny', '3'
+
+	if hour = 14 and week < 6 and kanikuli = 0:
+
+		if NikoDate_Day ! daystart:
+			if week = 1 and NikoIntro = 0:
+				gt 'NikoEv', 'Intro'			
+			elseif NikoVolkovQW = 5 and NikoEv = 6 and NikoDate = 0:
+				gt 'NikoDates', 'After School'
+			elseif NikoVolkovQW = 5 and NikoEv = 8 and NikoDate = 0:
+				gt 'NikoDates', 'After School 2'
+			elseif NikoVolkovQW = 10 and NikoEv = 22:
+				gt 'NikoEv2', 'Recovery'
+			end
+		end
+	end	
+	
+	if week < 6 and hour = 14 and kanikuli = 0 and afterschool_day ! daystart:
+		afterschool_day = daystart
+		if rand(0,3) = 0:
+			$eventtype = 'after_school'
+			gt 'gschool_events', 'break_events'
+		else
+			gt 'gschool_events', 'afterschool_events'
+		end
+	end
+	
+	!! Cheerleading tryouts if Sveta decided to attend
+	if hour = 14 and cheerleadingQW['quest_stage'] = 1:
+		gt 'gschool_cheerleading', 'tryouts'
+	!! Sveta attends training after school every Tuesday and Thursday.
+	elseif hour = 14 and cheerleadingQW['day'] ! daystart and (week = 2 or week = 4) and kanikuli = 0 and cheerleadingQW['quest_stage'] > 1:
+		gt 'gschool_cheerleading', 'afterschool_practice'
+	!! A football game is played once every 2nd Friday and the cheerleaders perform out on the field. 
+	elseif hour = 14 and cheerleadingQW['day'] ! daystart and week = 5 and (daystart - (daystart mod 7)) mod 2 = 1 and kanikuli = 0 and (cheerleadingQW['quest_stage'] >= 3 or cheerleadingQW['backup_game'] = 1):
+		gt 'gschool_cheerleading', 'afterschool_game'
+	end
+	
+	if hour <= 8 and kanikuli = 6:
+		'Today is graduation day! The school prom is tonight as well.'
+
+		act 'Go to your graduation':
+			*clr & cla
+			menu_off = 1
+			hour = 10
+			minut = 0
+			SchoolAtestat = 1
+			kanikuli = 7
+			gs 'stat'
+
+			if home_owned[2] = 0:
+				'Everyone from your year is assembled in the auditorium of the school. Your teachers are standing on a platform in front of several rows of chairs where you and your classmates are sitting. Some parents and siblings are sitting in the back rows. Nobody from your family showed up.'
+			else
+				'Everyone from your year is assembled in the auditorium of the school. Your teachers are standing on a platform in front of several rows of chairs where you and your classmates are sitting. Some parents and siblings are sitting in the back rows. You turn your head and see your mother and your brother sitting among them.'
+			end
+
+			'Your Principial begins calling your classmates in alphabetical order. Finally it''s your turn.'
+
+			if pcs_grades >= 90:
+				'You go up to the podium. As the Principal shakes your hand she announces "As every year I''d like to honor our best student of the year. Miss <<$pcs_lastname>> here performed exceptionally well in her studies and I think that deserves some recognition." She starts applaude and the auditorium quickly joins in the applause.'
+				if home_owned[2] = 1: 'As you return to your place you see your mother smiling brightly.'
+			elseif pcs_grades >= 70:
+				'You go up to the podium. The Principal shakes your hand and gives you your diploma. "Well done, Miss <<$pcs_lastname>>!" she says before you return to your place.'
+			else
+				'You go up to the podium. The Principal shakes your hand and gives you your diploma and you return to your place.'
+			end
+
+			act 'Return to town': minut += 2 & gt 'pavResidential'
+
+			act 'Go to the prom party':
+				*clr & cla
+				minut += 540
+				pcs_energy += 70
+				gs 'drugs', 'alcohol', 'vodka', rand(2,3)
+				gs 'underwear', 'remove'
+				gs 'clothing', 'strip'
+				gs 'stat'
+				'After the official graduation, everyone gets hammered at the prom party. You don''t remember much of what happened, only recalling a few flashbacks of going skinny dipping in the town fountain with a group of friends. Your mouth is dry and you can taste beer and what might be a kebab, you are somewhere in the town center, all of your clothes are missing and you are completely naked.'
+				'You make your way back home, you think you are discrete and stick to poorly lit areas but you really don''t remember and somehow have bits of someone''s hedge in your hair.'
+
+				act 'Go home': gt 'korrPar'
+			end
+		end
+		exit
+	end
+
+	if SchoolAtestat = -1 and week < 6 and hour >= 6 and hour < 14:
+		act 'Get your diploma':
+			*clr & cla
+			menu_off = 1
+			minut += 20
+			SchoolAtestat = 1
+			kanikuli = 7
+			gs 'stat'
+			if pcs_grades >= 70:
+				'The Principal hands you your diploma. "Well done, Miss <<$pcs_lastname>>! Good luck in your future!" she says as she shakes your hand.'
+			else
+				'The Principal hands you your diploma. "Good luck in your future!" she says as she shakes your hand.'
+			end
+
+			act 'Return to town': minut += 2 & gt 'pavResidential'
+		end
+	end
+
+!!	act 'Go to old school building': gt
+
+!!	act 'Go to the Principals Office': gt
+
+	if week < 6 and hour >= 6 and StoryLine > 0 and SchoolAtestat = 0 and kanikuli = 0 and schoolBlock = 0:
+		if $clothingworntype = 'school' or Enable_sforma = 1:
+			if hour = 6:
+				if minut < 30:
+					'It''s too early for school now.'
+				else
+					if NikoEv = 10: gt 'NikoWhore', 'Walk Of Shame'
+					act 'Wait for class': gt 'gschool_grounds', 'bulding'
+				end
+			elseif hour = 7:
+				if NikoEv = 10:
+					gt 'NikoWhore', 'Walk Of Shame'
+				elseif minut <= 45:
+					act '<b>Go to class</b>': gt 'gschool_grounds', 'bulding'
+				else
+					'You are late for school, you could rush to class or just skip until the second period.'
+					act '<b>Rush to class</b>':
+						demerit += 5
+						gt 'gschool_grounds', 'bulding'
+					end
+					act 'Skip class':
+						*clr & cla
+						menu_off = 1
+						'<center><b><font color="maroon">School Hallway</font></b></center>'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/building/gschool_hall0<<rand(0,2)>>.jpg"></center>'
+						'You don''t feel like attending all of your classes this morning. Surely no one will miss you if you skip one of your three morning classes.'
+						act 'Go to girl''s bathroom': gt 'gschool_girls_bathroom', 'start'
+						act 'Go to boy''s bathroom': gt 'gschool_boys_bathroom', 'start'
+					end
+				end
+			elseif hour = 8:
+				if NikoEv = 10: gt 'NikoWhore', 'Walk Of Shame'
+				'You missed your whole first class, hopefully no one noticed.'
+				act '<b>Rush to class</b>':	demerit += 10 & gt 'gschool_grounds', 'bulding'
+			elseif hour < 14:
+				'It''s too late for school now. You have been marked as absent today.'
+			end
+		else
+			'You''re not allowed to attend any classes at school if you''re not wearing your school uniform.'
+		end
+	end
+
+	act 'Return to town': minut += 2 & gt 'pavResidential'
+
+	act 'Go to the sports field': minut += 1 & gt 'gschool_grounds', 'sports'
+
+	if joint > 0 and jointhigh = 0: act 'Smoke a joint behind the school building': gs 'drugs', 'joint' & gt $loc, $metka
+
+	if week = 6 and hour = 8 and StoryLine > 0 and SchoolAtestat = 0 and detention_set = 1 and schoolBlock = 0: act 'Go to detention': gt 'gschool_detention', 'start'
+
+	if zverRageQW = 1: gt 'gschool_grounds', 'KristinaFight'
+
+	if week < 6 and hour = 14 and dimaRevenge = 5 and dimaRevChoice = 0:
+		gt 'dimaRevenge', dimaRevenge
+	elseif week < 6 and hour = 14 and dimaRevenge = 4 and dimaRevChoice = 1:
+		gt 'dimaRevenge', dimaRevenge
+	elseif week < 6 and hour = 7 and dimaRevenge = 5 and dimaRevChoice = 1:
+		gt 'dimaRevenge', 5, 'before'
+	elseif week < 6 and hour = 7 and dimaRevenge = 6 and dimaRevChoice = 1:
+		gt 'dimaRevenge', 6, 'before'
+	elseif week < 6 and hour = 14 and dimaRevenge = 7 and dimaRevChoice = 1:
+		gt 'dimaRevenge', dimaRevenge
+	elseif week < 6 and hour = 7 and dimaRevenge = 4 and dimaRevChoice = 2:
+		gt 'dimaRevenge', dimaRevenge, 'day4jockbefore'
+	elseif week < 6 and hour = 7 and dimaRevenge = 5 and dimaRevChoice = 2:
+		gt 'dimaRevenge', dimaRevenge, 'day5jockbefore'
+	elseif week < 6 and hour = 14 and dimaRevenge = 6 and dimaRevChoice = 2:
+		gt 'dimaRevenge', 5, 'day5jockafter'
+	!elseif week < 6 and hour = 11 and dimaRevenge = 4 and	dimaRevChoice = 3:
+	!	 gt 'gschool_lessons', 'short_break'
+	elseif week < 6 and hour = 7 and dimaRevenge = 5 and  dimaRevChoice = 3:
+		gt 'dimaRevenge', dimaRevenge
+	elseif week < 6 and hour = 14 and dimaRevenge = 4 and dimaRevChoice = 4:
+		gt 'dimaRevenge', dimaRevenge, 'after'
+	elseif week < 6 and hour = 7 and dimaRevenge = 5 and dimaRevChoice = 4:
+		gt 'dimaRevenge', dimaRevenge,	'before'
+	elseif week < 6 and hour = 14 and dimaRevenge = 6 and dimaRevChoice = 4:
+		gt 'dimaRevenge', 5, 'after'
+	elseif week < 6 and hour = 7 and dimaRevenge = 7 and dimaRevChoice = 4 and dimaRevengedaystart >= daystart:
+		gt 'dimaRevenge', 6
+	elseif week < 6 and hour = 7 and dimaRevenge = 5 and dimaRevChoice = 5:
+		gt 'dimaRevenge', dimaRevenge, 'before'
+	elseif week < 6 and hour = 7 and dimaRevenge = 4 and dimaRevChoice = 5:
+		gt 'dimaRevenge', 5
+	elseif week < 6 and hour = 7 and dimaRevenge = 4 and dimaRevChoice = 6:
+		gt 'dimaRevenge', dimaRevenge
+	end
+
+	if hour >= 14 and pav_slut >= 125 and SchoolGossip > 0 and afterschoolday ! daystart: gt 'gschool_sex', 'suck'
+
+	if week = 1 and kanikuli = 0 and arthakQW = 10 and apmeetday ! daystart and hour >= 14: gt 'artgar'
+
+	if hour = 14 and week < 6 and kanikuli = 0:
+
+		if ivan_afterschool = 1: act 'Meet Ivan after school': gt 'gschool_sex', 'afterschool'
+
+		if LinaSlut > 0 and rand(1,10) < 3: 'You see Lina, Dan and Vasily leaving the school together.'
+
+		if Enable_tablemap = 0:
+			if anushkaFirstvisit = 0 and meet_after_school = 1: '<a href="exec: gt ''anushka'', ''meet_after_school''">Anushka Konstantinov</a> is leaning against a tree just in front of the school.'
+			if LariskaHomeIn > 0: '<a href="exec:minut += 1 & gt ''LariskaGo''">Lariska Gruzdev</a> impatiently walks back and fourth across the courtyard, as if she''s waiting for someone.'
+			if JuliaMilLernQW >= 1: '<a href="exec:minut += 1 & gt ''JuliaMilGo''">Julia Milova</a> is sitting somewhere on the school courtyard, reading a book.'
+			if NatbelQW['QWstage'] > 0: '<a href="exec:minut += 1 & gt ''NatBelGo''">Natasha Belova</a> is standing in a corner.'
+			if artemLernQW >= 1 and artemVitokQW ! 2 and artemblok = 0 and artlie ! 2 and artembrokenheart ! 1: '<a href="exec:minut += 15 & gt ''artemEv'', ''start''">Artem Chebotarev</a> is waiting for you near the school entrance.'
+			if npc_QW['A231'] = 1 or npc_QW['A231'] = 3 or npc_QW['A231'] >= 5: '<a href="exec:minut += 1 & gt ''AleksandraGo'', ''Start''"><<$npc_firstname[''A231'']>> <<$npc_lastname[''A231'']>></a> is waiting for you at the end of the school courtyard, listening to music.'
+
+			if katjaMeynoldday ! daystart and meynoldQW >= 2: '<a href="exec:minut += 15 & gt ''katjaEv''">Katja Meynold</a> is walking across the school courtyard, getting ready to go home.'
+			if DimaBeHomeOnce = 1 and DimaRudeBlock = 0:
+				'<a href="exec:minut += 15 & gt ''dimaEv'', ''after_school''">Dimka Nosov</a> is deep in thought, as he leans against a lamp post.'
+			elseif DimaRudeQW > 0 and dimarudeday ! daystart and DimaRudeBlock = 0:
+				if rand(0,4) = 0: gt 'dimaEv', 'after_school'
+				'<a href="exec:minut += 15 & gt ''dimaEv'', ''after_school''">Dimka Nosov</a> is deep in thought, as he leans against a lamp post.'
+			end
+			if IgorLoverQW > 0 and igorkruglovday ! daystart and IdorBlock = 0: '<a href="exec:minut += 15 & gt ''igorhome'', ''entrance''">Igor Kruglov</a> is talking to some of his friends on the courtyard.'
+			if fedorKozlovQW >= 10 and kotovVSkozlov = 1:
+				'You can see <a href="exec: gt ''FedorEv'', ''Strela Chat''">Fedor</a> sitting in the corner of the schoolyard by himself.'
+			elseif fedorKozlovQW >= 10 and fedorkozqw = 2 and FedorLuv < -4:
+				'You can see <a href="exec: gt ''FedorEv2'', ''Fedor Breakup''">Fedor</a> standing by himself with a troubled look on his face.'
+			elseif fedorKozlovQW >= 10:
+				'You can see <a href="exec: gt ''FedorEv'', ''Start''">Fedor</a> with his backpack around his arm, standing by himself.'
+			end
+			if NikoVolkovQW = 5 and NikoDate = 1 and NikoDate_Day ! daystart or NikoEv = 11:
+				'You can see <a href="exec:gt ''NikoEv'', ''Niko Dates''">Nikolai Volkov</a> smoking outside of the school.'
+			elseif NikoVolkovQW = 10 and NikoEv >= 17 and NikoEv <= 20 and NikoDate_Day ! daystart:
+				'<a href="exec:gt ''NikoEv2'', ''Events''">Nikolai Volkov</a> is smoking outside of the school.'	
+			end
+		else
+			!display friends in table if switch is on.
+			st_count=0 & $show_table=''
+			if anushkaFirstvisit = 0 and meet_after_school = 1: gs 'show_table', '<a href="exec: gt ''anushka'', ''meet_after_school''">Anushka Konstantinov</a>', '5'
+			if LariskaHomeIn > 0: gs 'show_table', '<a href="exec:minut += 1 & gt ''LariskaGo''">Lariska Gruzdev</a>', '5'
+			if JuliaMilLernQW >= 1: gs 'show_table', '<a href="exec:minut += 1 & gt ''JuliaMilGo''">Julia Milov</a>', '5'
+			if NatbelQW['QWstage'] > 0: gs 'show_table', '<a href="exec:minut += 1 & gt ''NatBelGo''">Natasha Belova</a>', '5'
+			if artemLernQW >= 1 and artemVitokQW ! 2 and artemblok = 0: gs 'show_table', '<a href="exec:minut += 15 & gt ''artemEv'', ''start''">Artem Chebotarev</a>', '5'
+			if katjaMeynoldday ! daystart and meynoldQW >= 2: gs 'show_table', '<a href="exec:minut += 15 & gt ''katjaEv''">Katja Meynold</a>', '5'
+			if DimaBeHomeOnce = 1 and DimaRudeBlock = 0:
+				gs 'show_table', '<a href="exec:minut += 15 & gt ''dimaHome'', ''home''">Dimka Nosov</a>', '5'
+			elseif DimaRudeQW > 0 and dimarudeday ! daystart and DimaRudeBlock = 0:
+				if rand(0,4) = 0: gt 'dimaEv', 'after_school'
+				gs 'show_table', '<a href="exec:minut += 15 & gt ''dimaEv'', ''after_school''">Dimka Nosov</a>', '5'
+			end
+			if IgorLoverQW > 0 and igorkruglovday ! daystart and IdorBlock = 0: gs 'show_table', '<a href="exec:minut += 15 & gt ''igorhome'', ''entrance''">Igor Kruglov</a>', '5'
+			if fedorKozlovQW >= 10 and kotovVSkozlov = 1:
+				gs 'show_table', '<a href="exec: gt ''FedorEv'', ''Strela Chat''">Fedor</a>', '5'
+			elseif fedorKozlovQW >= 10 and fedorkozqw = 2 and FedorLuv < -4:
+				gs 'show_table', '<a href="exec: gt ''FedorEv2'', ''Fedor Breakup''">Fedor</a>', '5'
+			elseif fedorKozlovQW >= 10:
+				gs 'show_table', '<a href="exec: gt ''FedorEv'', ''Start''">Fedor</a>', '5'
+			end
+			if NikoVolkovQW = 5 and NikoDate = 1 and NikoDate_Day ! daystart or NikoEv = 11 and NikoDate_Day ! daystart:
+				gs 'show_table', '<a href="exec: gt ''NikoEv'', ''Niko Dates''">Nikolai</a>', '5'
+			elseif NikoVolkovQW = 10 and NikoEv >= 17 and NikoEv <= 20 and NikoDate_Day ! daystart:
+				gs 'show_table', '<a href="exec: gt ''NikoEv2'', ''Events''">Nikolai</a>', '5'
+			end
+			if npc_QW['A231'] = 1 or npc_QW['A231'] = 3 or npc_QW['A231'] >= 5: gs 'show_table', '<a href="exec:minut += 1 & gt ''AleksandraGo'', ''Start''"><<$npc_firstname[''A231'']>> <<$npc_lastname[''A231'']>></a>', '5'
+			if st_count > 0:
+				'Near school yard, you see: '
+				'<TABLE BORDER=1><<$show_table>></TR></TABLE>'
+			end
+		end
+		if albinaCarday ! daystart and AlbFrend >= 1 and albrideday ! daystart: '<a href="exec:minut += 15 & gt ''albinaRide''">Albina Barlovskaya</a> is waiting behind the wheel of a large black SUV, parked near the school.'
+
+		! meynold`s events
+		if hour = 14 and vicky_afterschool ! daystart: gs 'mey_vika_events', 'near_school'
+		if mey_vika['mey_vika_qw'] = 35 or mey_vika['mey_vika_qw'] = 36 and minut < 45:
+			act 'Study with Tamara Mikhailovna':
+				if mey_vika['mey_vika_qw'] = 36: gt 'mey_tamara_events', 'rebuke'
+				gt 'mey_tamara_events', 'learning0'
+			end
+		end
+	end
+
+	if strelaDay ! daystart and strelaQW = 1 and hour = 14:
+		*clr & cla
+		'A Mitsubishi Pajero and a BMW drive up to the school gates. Strong, muscular guys in leather jackets and tracksuits get out of the cars. They have come to meet Vitek, Dan and Vasily. You watch them talk about something, though you''re not close enough to hear what it''s about. Then you notice Fedor Kozlov leaving school, his face all swollen and bruised. Fedor waves his hand at you, "<<$pcs_nickname>>! Come here, you''re my witness!"'
+
+		act 'Go and see what Fedor needs': gt 'strela'
+	end
+end
+
+!Outside school sports field
+if $ARGS[0] = 'sports':
+
+	$loc = 'gschool_grounds'
+	$location_type = 'public_outdoors'
+	$metka = 'sports'
+	$menu_loc = 'gschool_grounds'
+	$menu_arg = 'sports'
+	menu_off = 0
+	*clr & cla
+	gs 'stat'
+	if month > 3 and month < 11:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/field.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/fieldwinter.jpg"></center>'
+	end
+	'There is a football field and around it is a track, often before and after school kids use the field and track.'
+
+	if week = 5 and hour >= 16 and hour <= 18: 'As you pass by the sports field you hear lots of cheering and yelling coming from the younger kids on the field. As you approach you see '+iif(socialchg['tLazar_day'] ! daystart, '<a href="exec: gt ''gschool_socialchg1'', ''tLazar''">Lazar</a>', 'Lazar')+' is on the football field showing off his skills.'
+
+	if (week = 1 or week = 3) and hour >= 16 and hour <= 18: 'Looking toward what you can barely describe as a running track, you notice '+iif(socialchg['tSvyatoslav_day'] ! daystart, '<a href="exec: gt ''gschool_socialchg1'', ''tSvyatoslav''">Svyatoslav</a>', 'Svyatoslav')+' doing sprints by the football field.'
+
+	act 'Leave the sports field': minut += 1 & gt 'gschool_grounds', 'main'
+
+	if schoolrunday ! daystart and $clothingworntype = 'exercise' and $shoeworntype = 'trainers':
+		act 'Go for a run (1 hour)':
+			*clr & cla
+			menu_off = 1
+			minut += 60
+			schoolrunday = daystart
+			fat -= rand(2, 7)
+			run_exp += rand(0, 2)
+			gs 'sweat', 'add', 20
+			gs 'stat'
+			if month > 2 and month < 9:
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school//grounds/runsummer.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school//grounds/runwinter.jpg"></center>'
+			end
+			'You spend an hour on the track going for a run.'
+
+			act 'Continue': gt 'gschool_grounds', 'sports'
+		end
+	elseif schoolrunday ! daystart and ($clothingworntype ! 'exercise' or $shoeworntype ! 'trainers'):
+		'You could go for a run here if you were wearing sports clothes and shoes.'
+	end
+
+	if hour >= 9 and hour < 18 and StoryLine > 0 and SchoolAtestat = 0 and kanikuli = 0: 'With the school open you can go to the <a href="exec: minut += 1 & gt ''gschool_grounds'', ''change_room''">changing rooms</a> by the gym and change your outfit.'
+
+	if week = 6 and schoolSorev = 2 and hour = 10 and SchoolBlock = 0:
+		*nl
+		'Athletic students of your school and other schools in the area have gathered at the athletics track near your school. Everyone is getting ready for the running competition.'
+		if $clothingworntype = 'exercise' and $shoeworntype = 'trainers':
+			act 'Participate in the 400m sprint event': gt 'gschool_grounds', 'SchoolRun2'
+		else
+			'You need to wear exercise clothes to participate.'
+		end
+	end
+
+	if week = 6 and schoolSorev = 1 and hour = 10 and SchoolBlock = 0:
+		*nl
+		'Athletic students of your school and other schools in the area have gathered at the athletics track near your school. Everyone is getting ready for the running competition.'
+
+		if $clothingworntype = 'exercise' and $shoeworntype = 'trainers':
+			act 'Participate in the 400m sprint race': gt 'gschool_grounds', 'SchoolRun'
+		else
+			'You need to wear exercise clothes to participate.'
+		end
+	end
+
+	gs 'family'
+	
+	! Giving football preference, since there''s no indoor option for it.
+	if temper => 15 and sunWeather = 1 and hour > 8 and hour < 12 and week = 6 and fbpickupDay + 14 <= daystart and bbpickupDay ! daystart:
+		*nl
+		'As you pass by the sports field you notice that most of the ''jocks'' have gathered around the <a href="exec: gt ''fbgameout'', ''start''">football field</a>.'
+	elseif temper => 15 and sunWeather = 1 and hour > 8 and hour < 12 and week = 6 and bbpickupDay + 14 <= daystart and fbpickupDay ! daystart:
+		*nl
+		'As you pass by the sports field you notice that most of the ''jocks'' have gathered around the <a href="exec: gt ''bbgameout'', ''start''">basketball court</a>.'
+	end
+end
+
+!!School building
+if $ARGS[0] = 'bulding':
+	$loc = 'gschool_grounds'
+	$metka = 'bulding'
+	$location_type = 'public_indoors'
+	$menu_loc = 'gschool_grounds'
+	$menu_arg = 'bulding'
+	menu_off = 0
+	gs 'stat'
+	'<center><b><font color="maroon">Inside School</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/building/gschool_hall0<<rand(0,2)>>.jpg"></center>'
+	'The hallways of the school building are painted with a cheap green paint, which you think may be toxic. Budget cuts.'
+	act 'Continue':
+		if hour = 8: late = 1
+		gs 'stat'
+		BeInSchool += 1
+		if rand(0,1) = 0:
+			gt 'gschool_lessons', 'morning'
+		else
+			if rand(0,3) = 0:
+				gt 'gschool_events', 'teacher_greet'
+			else
+				$eventtype = 'before_school'
+				gt 'gschool_events', 'break_events'
+			end
+		end
+	end
+	act 'Return to town': minut += 2 & gt 'pavResidential'
+	if dimaRevenge = 1:
+		menu_off = 1
+		'You''re in a good mood today as you enter the school. That changes when Dimka stops you in the hall on the way to class.
+		"I know what you did, bitch. Did you really thing I wouldn''t figure out it was you that wiped my harddrive."
+		Before you can deny anything he continues: "I don''t even need that video to ruin your life. Just you wait. Soon the whole school will know what a whore you are."
+		His words fill you with dread as you make your way to class.'
+	end
+
+	if zverSlutQW = 1 and week = 1 and lariskaQwestDay < daystart and lariskaQwestDay ! 0 and zverRageQW = 2:
+		menu_off = 1
+		zverSlutQW = 2
+		if KotovZverHelp ! 1:
+			$npc_notes['A18'] = 'Ever since your fight, Christina has been avoiding you. She''s been humiliated ever since you told the whole school about how she sucked the P.E. teacher''s dick for a place in the running competition, and beat her up when she tried to fight you. Barely a shade of her former self she stands timidly in a corner, her head still wrapped in gauss. Whenever she opens her mouth, people can see the broken teeth she hasn''t had a chance to get fixed yet.'
+			if lariskaHelp > 0:
+				'Lariska tells you that you crushed Christina''s spirit when she lost that fight to you, and that there''s no fight left in her now. You know better though; Christina is the type of person to hold a grudge, and you expect she''s just biding her time until she finds a good opportunity to get back at you.'
+			end
+		else
+			if LinaSlut > 0:$text_end = ' and Lina'
+			'Lariska tells you that Christina will require treatment for several months to fully recover from the beating you gave her, and also that Avelina has been hooking up with Vitek Kotov recently. You suspect this might have something to do with Christina; Lina would do anything for Christina. You feel a knot in your stomach; being on Vitek''s bad side could be really bad for you.'
+		end
+		if lariskaHelp > 0:LariskaHomeIn = 1
+		$npc_notes['A13'] = 'Lariska is an athletic girl with a weak personality: she''s very dependent on other people''s opinions of her. Christina used to control her, but ever since you took care of Christina she has been a lot more lively. She has a spark in her eyes, and is almost always in a good mood. Even though Mikhail Nikolayevich sees a lot of potential in her and offered her a spot on the volleyball team, she''s afraid to go pro.'
+	elseif zverSlutQW = 0 and week = 1 and lariskaQwestDay < daystart and lariskaQwestDay ! 0 and zverRageQW = 2:
+		menu_off = 1
+		$npc_notes['A18'] = 'Christina is a tall and strong girl. She''s one of the best athletes your school has to offer. Her leadership skills, combined with her intelligence and tenacity make her a very serious threat to anyone who would challenge her.'
+		npc_rel['A18'] = 0
+		*nl
+		$npc_notes['A13'] = 'Lariska is an athletic girl with a weak personality: she''s very dependent on other people''s opinions of her. Christina controls her every move, and ever since the fight she has been avoiding you. She seems even more down than usual, and often looks sad. Even though Mikhail Nikolayevich sees a lot of potential in her and offered her a spot on the volleyball team, she''s afraid to go pro.'
+		if lariskaHelp > 0:
+			$text_end = ' And don''t you worry, I will take care of your girlfriend Lariska as well. I''ll teach her what happens when she sides against me.'
+			$npc_notes['A13'] = 'Lariska is an athletic girl with a weak personality: she''s very dependent on other people''s opinions of her. Christina used to control her, but ever since you stood up to Christina she has been a lot more lively. Even though Mikhail Nikolayevich saw a lot of potential in her and offered her a spot on the volleyball team, she''s afraid to go pro. Her close ties with Christina Zvereva have put her in a bad light, and she has now been banned from playing for the volleyball team even if she wanted to.'
+		end
+		'Christina Zvereva approaches you:'
+		'"What do you want, bitch? Have you recovered from your ass-kicking yet? At least you understand your place now.<<$text_end>>"'
+		lariskaQwestDay += 99999
+	end
+end
+
+if $ARGS[0] = 'KristinaFight':
+	*clr & cla
+	menu_off = 1
+	zverRageQW = 2
+	$location_type = 'event_outdoors'
+	gs 'stat'
+	'<center><video autoplay loop src="images/characters/pavlovsk/school/girl/christina/school/fight.mp4"></video></center>'
+	'As you cross the school yard after school, you are surprised by a powerful kick in your back. You fall to your hands and knees and rub your sore back for a second, before you turn around and see Christina Zvereva, her face contorted with rage. She yells at you, "You fucking bitch! How dare you spread shit about me like that? I''ll break your fucking face!"'
+	act 'Fight her':
+		gs 'fight', 'initFight'
+		gs 'fight_npcdata', 'christina'
+		gt 'fight', 'start'
+	end
+end
+
+if $ARGS[0] = 'SchoolRun':
+	$location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	minut += 30
+	gs 'stat'
+	'You think you might be able to win, and sign up to participate in the competition. After quickly changing into your running gear you return to the track. The guys are having their race first, and you watch them as you prepare. As expected, Ivan Prokhorov wins. When the guys have finished, it is the girls'' turn.'
+
+	act 'Go to the start':
+		*clr & cla
+		minut += 30
+		schoolSorev = 0
+		kolsorev += 1
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/begsor.jpg"></center>'
+		'The 400m sprint event for girls is up next. You take off your jacket and go the starting line, mentally preparing yourself for the race.'
+		wait 725
+		'On your marks...'
+		wait 725
+		'Get set...'
+		wait 725
+		'Go!'
+		wait 725
+
+		begminus = 0
+		if bmi_calc > 25: 
+			begminus = ((bmi_calc - 25)*4)
+		elseif bmi_calc < 18:
+			begminus = ((25 - bmi_calc)*6)
+		end
+        begresult = pcs_run - begminus
+		
+		act 'Run': gs 'gschool_grounds', 'SchoolRun_result'
+		gs 'willpower', 'skill', 'run_lvl', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Give it your best (<<will_cost>> Willpower)':
+				begresult += 10
+				gs 'willpower', 'pay', 'self'
+				gs 'gschool_grounds', 'SchoolRun_result'
+			end
+		else
+			act 'Give it your best (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+end
+
+if $ARGS[0] = 'SchoolRun_result':
+	cla
+	if begresult < 10:
+		grupvalue[2] -= 2
+		'You barely manage to reach the finish line at all. There''s no point in checking where you finished, you already know you were last by quite a large margin.'
+	elseif begresult < 15:
+		grupvalue[2] -= 1
+		'You struggle to keep up with the other girls, and finish in last place.'
+	elseif begresult < 20:
+		'You run as fast as you can, but only manage to finish second to last.'
+	elseif begresult < 25:
+		'You run as fast as you can, but only manage to take 6th place.'
+	elseif begresult < 30:
+		grupvalue[2] += 1
+		'You run as fast as you can, but only manage to take 5th place.'
+	elseif begresult < 35:
+		grupvalue[2] += 1
+		'You run as fast as you can, but only manage to take 4th place.'
+	elseif begresult < 45:
+		grupvalue[2] += 2
+		'You run as fast as you can, and manage to take 3rd place. Mr. Pavlovich, the P.E. teacher at your school, congratulates you.'
+	elseif begresult < 50:
+		grupvalue[2] += 3
+		'You run as fast as you can, and manage to take 2nd place. Mr. Pavlovich, the P.E. teacher at your school, congratulates you on your achievement.'			
+	else
+		swinbeg += 1
+		grupvalue[2] += 5
+		'You run as fast as you can, and manage to reach the finish line before anyone else. First place! Mr. Pavlovich, the P.E. teacher at your school, congratulates you on winning the competition, as you walk around with your arms raised in triumph.'
+	end
+
+	run_exp += 1
+	fat -= 2
+
+	if swinbeg = 3 and LocalRun = 0:
+		LocalRun = 1
+		if razradbeg < 1:
+			'You have won the school running competition three times now and Mr. Pavlovich, the P.E. teacher at your school, announces that your success has not gone unnoticed. He smiles and awards you the third tier sports trophy in running, which you proudly accept and show to everyone.'
+			razradbeg = 1
+		else
+			'You have won the school running competition three times now and Mr. Pavlovich, the P.E. teacher at your school, smiles and awards you a local competition trophy which you proudly accept and show to everyone.'
+		end
+	end
+
+	gs 'stat'
+	
+	act 'Return to town': gt 'gschool_grounds', 'main'
+end
+
+if $ARGS[0] = 'SchoolRun2':
+	$location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	minut += 30
+	gs 'stat'
+	'You think you might be able to win, and sign up to participate in the competition. After quickly changing into your running gear you return to the track. The guys are having their race first, and you watch them as you prepare. As expected, Ivan Prokhorov wins. When the guys have finished, it is the girls'' turn.'
+
+	if swinbeggor = 0:
+		'Getting ready at the start is Christina Zvereva, one of the girls in your class. She scoffs at you, "You''ll never beat me!"'
+	elseif swinbeggor = 1:
+		'Getting ready at the start is Christina Zvereva, one of the girls in your class. She looks at you angrily and says, "You beat me once, but never again!"'
+	elseif swinbeggor = 2:
+		'Getting ready at the start is Christina Zvereva, one of the girls in your class. She looks at you with hatred, "You again, bitch? You''re going down this time, I promise you!"'
+	end
+
+	act 'Go to the start':
+		*clr & cla
+		kolsorev += 1
+		minut += 30
+		schoolSorev = 0
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/begsor.jpg"></center>'
+		'The 400m sprint event for girls is up next. You take off your jacket and go the starting line, mentally preparing yourself for the race.'
+		wait 725
+		'On your marks...'
+		wait 725
+		'Get set...'
+		wait 725
+		'Go!'
+		wait 725
+
+		begminus = 0
+		if bmi_calc > 25: 
+			begminus = ((bmi_calc - 25)*4)
+		elseif bmi_calc < 18:
+			begminus = ((25 - bmi_calc)*6)
+		end
+        begresult = pcs_run - begminus
+				
+		act 'Run': gs 'gschool_grounds', 'SchoolRun2_result'
+		gs 'willpower', 'skill', 'run_lvl', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Give it your best (<<will_cost>> Willpower)':
+				begresult += 10
+				gs 'willpower', 'pay', 'self'
+				gs 'gschool_grounds', 'SchoolRun2_result'
+			end
+		else
+			act 'Give it your best (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end		
+	end
+end
+
+if $ARGS[0] = 'SchoolRun2_result':
+	cla
+	if begresult < 10:
+		grupvalue[2] -= 2
+		'You barely manage to reach the finish line at all. There''s no point in checking where you finished, you already know you were last by quite a large margin.'
+	elseif begresult < 15:
+		grupvalue[2] -= 1
+		'You struggle to keep up with the other girls, and finish in last place.'
+	elseif begresult < 20:
+		'You run as fast as you can, but only manage to finish second to last.'
+	elseif begresult < 25:
+		'You run as fast as you can, but only manage to take 6th place.'
+	elseif begresult < 30:
+		grupvalue[2] += 1
+		'You run as fast as you can, but only manage to take 5th place.'
+	elseif begresult < 35:
+		grupvalue[2] += 1
+		'You run as fast as you can, but only manage to take 4th place.'
+	elseif begresult < 40:
+		grupvalue[2] += 2
+		'You run as fast as you can, and manage to take 3rd place. Mr. Pavlovich, the P.E. teacher at your school, congratulates you.'
+	elseif begresult < 50:
+		grupvalue[2] += 3
+		'You run as fast as you can, and manage to take 2nd place. Mr. Pavlovich, the P.E. teacher at your school, congratulates you on your achievement.'
+	else
+		swinbeggor += 1
+		grupvalue[2] += 5
+		'You run as fast as you can, and manage to reach the finish line before anyone else. First place! Mr. Pavlovich, the P.E. teacher at your school, congratulates you on winning the competition yet again while you walk around with your arms raised in triumph.'
+	end
+
+	run_exp += 1
+	fat -= 2
+
+	if swinbeggor = 3 and LocalRun = 1:
+		LocalRun = 2
+		npc_rel['A18'] = 0
+		zverevaQW = 1
+		if razradbeg < 2:
+			'You have won the competition three more times and Mr. Pavlovich awards you the second tier sports trophy in running.'
+			razradbeg = 2
+		else
+			'You have won the competition three more times and Mr. Pavlovich awards you another trophy.'
+		end
+		'Christina Zvereva stands nearby glaring at you the whole time, her hands balled into fists. She''s seething with rage, realizing she cannot beat you.'
+	elseif swinbeggor = 2 and begresult >= 130:
+		npc_rel['A18'] = 0
+		'Christina Zvereva is gasping for breath at the finish line. She was unable to overtake you, and came second again. Christina avoids your gaze, not wanting to look you in the eye.'
+	elseif swinbeggor = 1 and begresult >= 130:
+		npc_rel['A18'] = 0
+		'Christina Zvereva is gasping for breath at the finish line. She was unable to overtake you, and came second yet again. You just flash her a teethy grin and continue your victory lap. Through clenched teeth Christina growls at you, "You bitch!"'
+	end
+
+	gs 'stat'
+
+	act 'Leave': gt 'gschool_grounds', 'main'
+end
+
+if $ARGS[0] = 'change_room':
+	$metka = 'change_room'
+	$loc = 'gschool_grounds'
+	$location_type = 'bathroom'
+	$locM = 'gschool_grounds'
+	$metkaM = 'change_room'
+	$menu_loc = 'gschool_grounds'
+	$menu_arg = 'change_room'
+	menu_off = 0
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/gym/lockerroom.jpg"></center>'
+
+	act 'Leave the school building':
+		if $clothingworntype = 'nude':
+			msg'<b><font color = red>You need to get dressed.</font></b>'
+			gt 'gschool_grounds', 'change_room'
+		else
+			minut += 1
+			gt 'gschool_grounds', 'main'
+		end
+	end
+
+	act 'Go to sports field':
+		if $clothingworntype = 'nude':
+			msg'<b><font color = red>You need to get dressed.</font></b>'
+			gt 'gschool_grounds', 'change_room'
+		else
+			minut += 1
+			gt 'gschool_grounds', 'sports'
+		end
+	end
+	*nl
+	'The locker room is accessed through the school gym, and is left unlocked until 18:30 each day, to be utilised by students using the sports ground for training and events outside school hours. The room is cold, damp and filled with lockers, benches, and not much else. You can <a href="exec: gt ''wardrobe'', ''start''">change your outfit</a> by the lockers here'+iif(pirsA + pirsB + pirsC + pirsD + pirsE + pirsF + pirsN + pirsG + pirsGL > 0, ', and <a href="exec:dynamic $pirManage">manage your piercings</a>', '.')+''
+	*nl
+	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+
+	if (hour = 18 and minut >= 30) or hour > 18:
+		'The school is closing for the night and you have to leave so you don''t get stuck here all night.'
+		exit
+	end
+
+	gs 'wardrobe', 'sports_outfit'
+	act 'Change you outfit':
+		cla
+		gt 'wardrobe', 'start'
+	end
+	dynamic $publicpan
+	act 'Look in the mirror': gt 'mirror', 'start'
+	if pcs_hairbsh = 0: act 'Brush your hair': gt 'mirror', 'brush'
+	dynamic $quickwash
+	dynamic $basin
+	if shampoo > 0:
+		dynamic $shower
+	else
+		'<font color="red">You''ve run out of shampoo and will have to buy some more before you can wash yourself.</font>'
+	end
+	dynamic $tampon
+	gs 'din_van', 'pblc_pee'
+end
+
+--- gschool_grounds ---------------------------------
+

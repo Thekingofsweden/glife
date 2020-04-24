@@ -1,0 +1,117 @@
+# DNA
+if $ARGS[0] = 'compare':
+!!Comparing two DNA string, if match, gives back 1
+	if $ARGS[1] = $ARGS[2]:
+		result = 1
+	else
+		result = 0
+	end
+end
+
+if $ARGS[0] = 'relate':
+!!Comparing two DNA string to determine genetic relation
+	!!First sample
+	!!own ID
+	temp1[0] = $mid ($ARGS[1], 1, 10)
+	!!mother ID
+	temp1[1] = $mid ($ARGS[1], 12, 10)
+	!!father ID
+	temp1[2] = $mid ($ARGS[1], 23, 10)
+	!!maternal grandmother ID
+	temp1[3] = $mid ($ARGS[1], 34, 10)
+	!!maternal grandfather ID
+	temp1[4] = $mid ($ARGS[1], 45, 10)
+	!!paternal grandmother ID
+	temp1[5] = $mid ($ARGS[1], 56, 10)
+	!!paternal grandfather ID
+	temp1[6] = $mid ($ARGS[1], 67, 10)
+	!!Second sample
+	!!own ID
+	temp2[0] = $mid ($ARGS[2], 1, 10)
+	!!mother ID
+	temp2[1] = $mid ($ARGS[2], 12, 10)
+	!!father ID
+	temp2[2] = $mid ($ARGS[2], 23, 10)
+	!!maternal grandmother ID
+	temp2[3] = $mid ($ARGS[2], 34, 10)
+	!!maternal grandfather ID
+	temp2[4] = $mid ($ARGS[2], 45, 10)
+	!!paternal grandmother ID
+	temp2[5] = $mid ($ARGS[2], 56, 10)
+	!!paternal grandfather ID
+	temp2[6] = $mid ($ARGS[2], 67, 10)
+	
+	if temp1[0] = temp2[1] or temp1[0] = temp2[2] or temp2[0] = temp1[1] or temp2[0] = temp1[2]:
+		'Parent-child relation'
+		if temp1[0] = temp2[1] or temp1[0] = temp2[2]:
+			!!temp1 is the parent, temp2 is child
+			if temp2[1] = temp2[5] or temp2[2] = temp2[4]:'Child is the result of incest (parent is also grandparent)'
+			if temp2[3] = temp2[5] and temp2[4] = temp2[6]:'Child is result of incest with close family member (sibling)'
+			if temp2[3] = temp2[5] or temp2[4] = temp2[6]:'Child is result of incest with close family member (half sibling)'
+		elseif temp2[0] = temp1[1] or temp2[0] = temp1[2]:
+			!!temp2 is the parent, temp1 is child
+			if temp1[1] = temp1[5] or temp1[2] = temp1[4]:'Child is the result of incest (parent is also grandparent)'
+			if temp1[3] = temp1[5] and temp1[4] = temp1[6]:'Child is result of incest with close family member (sibling)'
+			if temp1[3] = temp1[5] or temp1[4] = temp1[6]:'Child is result of incest with close family member (half sibling)'
+		end
+	elseif temp1[0] = temp2[3] or temp1[0] = temp2[4] or temp1[0] = temp2[5] or temp1[0] = temp2[6] or temp2[0] = temp1[3] or temp2[0] = temp1[4] or temp2[0] = temp1[5] or temp2[0] = temp1[6]:
+		'Grandparent-grandchild relation'
+	elseif temp1[1] = temp2[1] or temp1[2] = temp2[2]:
+		'Sibling relation'
+		if temp1[1] = temp2[1] and temp1[2] = temp2[2]:'Full sibling'
+		if temp1[1] ! temp2[1] or temp1[2] ! temp2[2]:'Half sibling'
+	elseif temp1[1] ! temp2[1] and temp1[2] ! temp2[2]:
+		if temp1[3] = temp2[3] and temp1[4] = temp2[4] or temp1[3] = temp2[5] and temp1[4] = temp2[6]:
+			'first cousins'
+		elseif temp1[3] = temp2[3] or temp1[4] = temp2[4] or temp1[3] = temp2[5] or temp1[4] = temp2[6]:
+			'distand blood relation'
+		end
+	end
+	killvar 'temp1'
+	killvar 'temp2'
+end
+
+if $ARGS[0] = 'create':
+!!If no known parentage, generate a DNA string, as Tabula Rasa
+	icr = 0
+	:DNAloop
+		$DNA += str(rand(0,9)) + mid(str(rand(1000000000,1999999999)),2,9)
+	if icr < 6:$DNA += ' ' & icr += 1 & jump 'DNAloop'
+	$RESULT = $DNA
+	killvar '$DNA'
+	killvar 'icr'
+end
+
+if $ARGS[0] = 'generateM':
+	$RESULT = mid($ARGS[1],12,11) + mid($ARGS[1],34,22) + mid(func('DNA','create'),1,43)
+end
+
+if $ARGS[0] = 'generateF':
+	$RESULT = mid($ARGS[1],23,11) + mid($ARGS[1],56,21) + ' ' + mid(func('DNA','create'),1,43)
+end
+
+if $ARGS[0] = 'generate':
+!!Creating its own DNA string from parent DNAs
+!!The order of the arguments are important, first is always the female
+	$momDNA = $ARGS[1]
+	$dadDNA = $ARGS[2]
+	!!mother ID
+	$temp[0] = $mid ($momDNA, 1, 10)
+	!!father ID
+	$temp[1] = $mid ($dadDNA, 1, 10)
+	!!maternal grandmother ID
+	$temp[2] = $mid ($momDNA, 12, 10)
+	!!maternal grandfather ID
+	$temp[3] = $mid ($momDNA, 23, 10)
+	!!paternal grandmother ID
+	$temp[4] = $mid ($dadDNA, 12, 10)
+	!!paternal grandfather ID
+	$temp[5] = $mid ($dadDNA, 23, 10)
+	$RESULT = str(rand(0,9)) + mid(str(rand(1000000000,1999999999)),2,9) + ' ' + $temp[0] + ' ' + $temp[1] + ' ' + $temp[2] + ' ' + $temp[3] + ' ' + $temp[4] + ' ' + $temp[5]
+	killvar 'temp'
+	killvar 'momDNA'
+	killvar 'dadDNA'
+end
+
+--- DNA ---------------------------------
+

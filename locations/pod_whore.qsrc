@@ -1,0 +1,1043 @@
+# pod_whore
+
+menu_off = 1
+
+!chatter with the client
+if $ARGS[0] = 'client_talk':
+	CLOSE ALL
+	menu_off = 1
+	gs 'pod_whore', 'setup'
+	gs 'stat'
+	if whore_money_bjsex < 50:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/fear.jpg"></center>'
+		'You open the door and look at a strange man who looks quite surprised. He accidentally mutters: "Holy shit, she looks terrible!", just loud enough for you to hear.' 
+		'He quickly pulls himself together and apologizes: "Erm... my apologies miss, I must be at the wrong apartment. Have a nice day."'
+		'You open your mouth to tell him he is at the right place, but he''s gone before you can speak up. Maybe you should try to look a bit nicer before you open the door, if you want to receive clients here.'
+
+		act 'Close the door': gt 'korrPar'
+	else
+		if $clothingworntype = 'nude':
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/door_nude'+rand(1,3)+'.jpg"></center>'
+		elseif $clothingworntype = 'formal' or $clothingworntype = 'expensive':
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/door_glamur.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/door.jpg"></center>'
+		end
+		'When you open the door, you see a stranger quickly eyeing you up and down. He smiles and asks: "Excuse me, are you <<$pcs_nickname>>?"'
+		act '"Yes, that''s me!"':
+			cla
+			gs 'stat'
+			'You give him a sweet smile and say: "Yes, that''s me. Why are you asking?"'
+			'The man looks a tad embarrassed to bring it up, but he''s too horny to back down now: "I hear you''re a prostitute, who services men in the stairwell here. Is that right?"'
+			if pcs_sleep >= 10 and pod_whore_client_count > 0:
+				act 'Give him your price list': gt 'pod_whore','hide','pod_whore_price'
+				gs 'willpower', 'prostitution', 'resist', 'medium'
+				if will_cost <= pcs_willpwr:
+					act 'Decline, you don''t want to fuck him (<<will_cost>> Willpower)':
+						*clr & cla
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt 'pod_whore','hide','pod_whore_no'
+					end
+				else
+					act 'Decline, you don''t want to fuck him (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end	
+			else
+				act 'Decline, you''re too tired': gt 'pod_whore','hide','pod_client_talk_noson'
+			end
+		end
+		gs 'willpower', 'misc', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act '"Nope, never heard of her!" (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'pod_whore','hide','pod_client_talk_no'
+			end
+		else
+			act '"Nope, never heard of her!" (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+end
+
+if $ARGS[0] = 'setup':
+	!game events with a part-time job at the entrance if gg rap: prostitute
+	!settings:
+	!count-can cater to clients` day:
+	if pod_whore_countQW <= 15:
+		if pod_whore_client_day ! daystart: pod_whore_client_count = rand(4,8)
+	elseif pod_whore_countQW > 15:
+		if pod_whore_client_day ! daystart: pod_whore_client_count = rand(8,16)
+	end
+	!==========================================
+	!the price tag for services by region and country
+	!appearance , etc..Parameters affecting the price
+	!------------------
+	!parameters plus:
+	!silicone
+	if silicone < 20:
+		money_silicone = 0
+	elseif silicone < 30:
+		money_silicone = 50
+	elseif silicone < 40:
+		money_silicone = 100
+	else
+		money_silicone = 150
+	end
+	!cosmetics
+	money_mop = 0
+	if pcs_makeup >= 2: money_mop = 50
+	!hairdo
+	money_hapri = 0
+	if pcs_hairbsh = 1: money_hapri = 50
+	!glamorous clothes
+	money_glamur = 0
+	if $clothingworntype = 'formal' or $clothingworntype = 'expensive': money_glamur = 150
+	!!hooker clothing
+	money_odethooker = 0
+	if PCloStyle = 4: money_odethooker = 50
+	!smooth and clean skin
+	money_skin = 0
+	if pcs_skin >= 60: money_skin = 50
+	!pcs_tan
+	money_tan = 0
+	if pcs_tan > 0: money_skin_tan = 50
+	!smooth legs, shaven or not
+	money_leghair = 0
+	if pcs_leghair <= 0: money_leghair = 50
+	!grooming eyelashes
+	money_resnic = 0
+	if pcs_lashes = 2: money_resnic = 50
+	if pcs_lashes > 2: money_resnic = 100
+	!lip balm
+	money_pcs_lipbalm = 0
+	if pcs_lipbalm >= 1: money_pcs_lipbalm = 50
+	!deep Throat
+	money_throat = 0
+	if pcs_throat >= 20: money_throat = 50
+	!------------------------------------------
+	!Options in the negative
+	!looseness of the vagina
+	money_vagina = 0
+	if pcs_vag >= 20: money_vagina = 50
+	!shakiness anus
+	money_anus = 0
+	if pcs_ass >= 20: money_anus = 50
+	!excitement
+	money_horny = 0
+	if pcs_horny > 70: money_horny = 50
+	!appearance -10, venereal diseases
+	money_vnesh = 0
+	if pcs_apprnc = -10: money_vnesh = 150
+	!semen stains on clothing:
+	money_cumfrot = 0
+	if (cumloc[6] = 1 or cumloc[7] = 1): money_cumfrot = 50
+	!purity of body (lean or not)
+	money_sweat = 0
+	if pcs_sweat >= 20 and pcs_sweat <= 39: money_sweat = 50
+	if pcs_sweat > 39: money_sweat = 100
+	!mouth smells
+	money_cumlip = 0
+	if cumloc[12] = 1: money_cumlip = 50
+	!face smeared with semen
+	money_cumface = 0
+	if cumloc[11] = 1: money_cumface = 50
+	!bandaged body in the semen
+	money_cumbelly = 0
+	if cumloc[14] = 1: money_cumbelly = 50
+	money_cumass = 0
+	if cumloc[4] = 1: money_cumass = 50
+	!It derives from the sperm pussy
+	money_cumpussy = 0
+	if cumloc[0] > 0: money_cumpussy = 20
+	if cumsumvag > 20: money_cumpussy += 30
+	!It follows the sperm of priests
+	money_cumanus = 0 
+	if cumloc[3] > 0: money_cumanus = 20
+	if cumsumass > 20: money_cumanus += 30
+	!ass smeared in sperm
+	!your energy: 
+	money_son = 0
+	if pcs_sleep < 25: money_son = 50
+
+	!additional random loot
+	whore_money_rnd = RAND(1,2)
+		if whore_money_rnd = 1:$whore_money_rnd = 50
+		if whore_money_rnd = 2:$whore_money_rnd = 100
+	whore_dopmoney = $whore_money_rnd
+	
+	!price, if the customer only wants a blowjob
+	whore_money_bjsex = money_silicone + money_mop + money_hapri + money_glamur + money_odethooker + money_skin + money_skin_tan + money_leghair + money_resnic + money_pcs_lipbalm + whore_dopmoney + 50 + money_throat - money_vnesh - money_horny - money_cumfrot - money_sweat - money_cumlip - money_cumface - money_cumbelly - money_cumpussy - money_cumanus - money_cumass - money_son
+	!whore_money_bjsex = $whore_money_bjsex
+	!price, if the customer wants the classics
+	whore_money_clsex = money_silicone + money_mop + money_hapri + money_glamur + money_odethooker + money_skin + money_skin_tan + money_leghair + money_resnic + money_pcs_lipbalm + whore_dopmoney + 150 - money_vagina - money_vnesh - money_horny - money_cumfrot - money_sweat - money_cumlip - money_cumface - money_cumbelly - money_cumpussy - money_cumanus - money_cumass - money_son
+	!whore_money_clsex = $whore_money_clsex
+	!price, if the customer wants in the ass
+	whore_money_analsex = money_silicone + money_mop + money_hapri + money_glamur + money_odethooker + money_skin + money_skin_tan + money_leghair + money_resnic + money_pcs_lipbalm + whore_dopmoney + 200 - money_anus - money_vnesh - money_horny - money_cumfrot - money_sweat - money_cumlip - money_cumface - money_cumbelly - money_cumpussy - money_cumanus - money_cumass - money_son
+	!whore_money_analsex = $whore_money_analsex
+	!price, if the client wants it all
+	whore_money_allsex = whore_money_bjsex + whore_money_analsex + 50
+	!whore_money_allsex = $whore_money_allsex
+	!price for gangbang
+	whore_money_groupsex = whore_money_bjsex + whore_money_analsex + whore_money_clsex + whore_dopmoney
+	!whore_money_groupsex = $whore_money_groupsex
+	!the price for a blowjob and classic
+	whore_money_bjvagsex = whore_money_bjsex + whore_money_clsex
+	!the price for a blowjob and anal
+	whore_money_bjanalsex = whore_money_bjsex + whore_money_analsex
+end
+
+if $ARGS[0] = 'hide':
+!anal tube and lubrication:
+	if $ARGS[1] = 'pod_whore_analplugin':
+		if analplugin = 1:
+			analplugin = 0
+			'The guy asks in surprise: "There''s a plug in your ass?"'
+			'You blush and confess: "I like to be prepared..."'
+			'He slowly pulls it out of your ass with a lewd grin: "In that case, you didn''t prepare for nothing. I''ll see to filling that hole again real soon."'
+		end
+	end &! --- pod_whore_analplugin ---
+
+	if $ARGS[1] = 'pod_whore_lubri':
+		if lubri > 0:
+			lubri -= 1
+			agape = 1
+			gs 'arousal','anal_finger',1
+			$pod_whore_lubri_text = '<br>You quickly interrupt the guy as you hand him your lube: "Wait, you should use this first! It''ll feel better for both of us!" The guy spreads some lube over his fingers and rubs it all over his dick, before rubbing some on your tight butthole as well.'
+		elseif lubri = 0:
+			$pod_whore_lubri_text = ''
+			agape = 2
+			pcs_horny = 0
+		end
+	end &! --- pod_whore_lubri ---
+
+!--------------------------------------------------------------
+!text `s Event:
+!sucking
+	if $ARGS[1] = 'text_pod_whore_bj':
+		txt_pod_whore_bj = rand(1,5)
+		if txt_pod_whore_bj = 1:$txt_pod_whore_bj = 'For some reason, you can''t help but get turned on by the idea that you''re going to suck some old stranger''s dick in the stairwell for money. The guy must''ve noticed your body tremble, and takes control more firmly: "Kneel and take my dick in your mouth, whore. I''m not paying you to look at it." With these words, he unbuttons his pants. You kneel down and close your fingers around his firm erection, and slowly guide it towards your mouth. You close your <<$liptalk3>> around it and begin to gently suck him off. He encourages you between his moans: "That feels great girl... keep sucking, don''t stop..."'
+		if txt_pod_whore_bj = 2:$txt_pod_whore_bj = 'You''re too afraid to look him in the eye, and avoid his look as you go with him. The guy tells you: "Kneel down, stupid bitch! You have two minutes to get it nice and slick, after that I want your ass!" You reel back a little at the thought... he''s going to fuck your ass!? Then you remind yourself: you need the money. You drop to your knees and take his dick in your mouth, telling yourself you should drool over it as much as you can to make the assfucking easier on yourself.'
+		if txt_pod_whore_bj = 3:$txt_pod_whore_bj = 'He pulls his penis out of his pants and tells you: "Start sucking, baby." Without saying a word, you drop to your knees and begin to suck his huge dick. You can feel it growing even larger in your mouth. Then he pulls his dick away from you, and orders you: "My balls, whore. Lick them, and lick them good." Well... he is paying. You silently do as he says, taking his balls in your mouth and sucking on them, licking the shaft of his dick as well. You can tell he''s pleased with your performance, but you hope that doesn''t encourage him to demand even rougher things from you.'
+		if txt_pod_whore_bj = 4:$txt_pod_whore_bj = 'You kneel before him, and open your mouth wide. He immediately accepts your invitation and tries to shoves his dick in, but it''s too big.	He crudely tells you to try harder: "Suck it, whore. If you can''t take it down your throat, at least try something else." You do your best to please him, clamping your lips around the head of his cock and licking it all over with your tongue. You can tell you''re doing a good job, and soon the guy can no longer suppress his moans.'
+		if txt_pod_whore_bj = 5:$txt_pod_whore_bj = 'You follow the man into the stairwell and squat down, pulling his pants down. Wow... his cock is big. You admire his dick for a second and then take a deep breath before licking the head. You try to close your lips around the head and suck him off, but you already know you won''t be able to deepthroat this guy. He puts his hands on the back of your head but doesn''t force you to take him in any deeper, he''s content with the amount of effort you''re putting in. Occasionally you look up at him and look him into the eyes, and you can tell he''s turned on by that.'
+
+		*pl $txt_pod_whore_bj
+		killvar '$txt_pod_whore_bj'
+	end
+
+!vaginas sex
+	if $ARGS[1] = 'text_pod_whore_vag':
+		txt_pod_whore_vag = rand(1,3)
+		if txt_pod_whore_vag = 1:$txt_pod_whore_vag = 'You pull your clothes to the side and show him your bare ass as you bend over for him. He immediately moves up behind you and rubs his hard cock over your pussy lips before sliding it in. He roughly fucks you, slapping your ass cheeks in turn with his hand. You do your best to stifle your moans, but you''re still too loud for his tastes. You feel him move a little and soon he covers your mouth with one of his hands, while he keeps slapping your ass with the other. You groan into his hand as he picks up the pace and fucks you even faster. He has an evil grin on his face and laughs when he tells you: "Keep it down, whore. People live here, do you want them all to come over and see what you''re doing?" You desperately shake your head no and try to hold back your moans, but he''s really not making it easy on you when he slaps your ass even harder, trying to provoke a squeal out of you.'
+		if txt_pod_whore_vag = 2:$txt_pod_whore_vag = 'You stand with your back to him, your hands resting on a window sill. When he pulls your clothes aside, you see a clear wet spot on them. Damn... you don''t want to admit it to him, but you could really use a good fucking right now! Getting paid for it is just a bonus. He''s already behind you, and quickly shoves his stiff rod into your pussy in one firm stroke. He gets it all the way in quite easily, and his balls are soon resting against your butt cheeks while he rests for a second and reaches out for your boobs. You gasp as he gently pinches your nipples and rubs them between his fingers, just as he begins to fuck you in long slow strokes.'
+		if txt_pod_whore_vag = 3:$txt_pod_whore_vag = 'The man puts his hand on your shoulder and turns you around, moving his hand down your back and letting it rest on your ass for a moment, before giving it a loud slap. The sound of the slap and your yelp that followed echo throughout the stairwell, and desperately you hope no one heard you. He explores your pussy for a moment with his hands, and you hang your head in shame when you see his admiring look, and hear the loud sopping sounds of his fingers digging into your wet pussy over and over. Then, he decides he wants to fuck you and slams his dick in. From the short and hurried thrusts you can tell he doesn''t want to be here for long. You must''ve been moaning too much, since he covers up your mouth with the hand that was just on your pussy, and you can smell yourself on his fingers. The smell arouses you even more.'
+
+		*pl $txt_pod_whore_vag
+		killvar '$txt_pod_whore_vag'
+	end
+
+!anal sex
+	if $ARGS[1] = 'text_pod_whore_anal':
+		gs 'pod_whore','hide','pod_whore_lubri'
+		txt_pod_whore_anal = rand(1,2)
+		if txt_pod_whore_anal = 1:$txt_pod_whore_anal = 'The man puts his arm around your waist and pulls you up close against him. He tugs on your clothes for a second, trying to get them out of the way. Soon after, you feel his dick resting on your ass cheeks while he leans your head back and kisses you. Then he takes his cock into his hand, and guides it towards your puckered butthole. <<$pod_whore_lubri_text>> He decides you''re ready, and slowly pushes the head of his cock into your anus. He embraces your body for a second and just plays with your boobs while he lets you get used to the size, before slowly thrusting it in deeper and deeper.	It actually feels pretty good! You can''t help but get aroused from the thought that an older man would pay you good money, just so he can fuck your cute little ass. He slowly picks up the pace, but all the while shows respect for your body and tries to make sure you have a good time too.'
+		if txt_pod_whore_anal = 2:$txt_pod_whore_anal = 'You pull your clothes to the side and show him your bare ass as you bend over for him and offer him your asshole. He eagerly accepts your invitation and walks up to you, immediately rubbing the head of his cock against your clenched anus. <<$pod_whore_lubri_text>> He decides he''s been patient enough, and roughly shoves his cock half-way into your anus in one thrust. Then he begins to fuck your ass roughly, while slapping your ass cheeks quite hard. You do your best to stifle your moans, but you''re too loud for his tastes. You feel him move a little and soon he covers your mouth with one of his hands, while he keeps slapping your ass with the other. You groan into his hand as he picks up the pace and fucks your ass even faster. He has an evil grin on his face and laughs when he tells you: "Keep it down, whore. People live here. Do you want them all to come over and see you''re selling your ass for money in the stairwell?" You desperately shake your head no and try to hold back your moans, but he''s really not making it easy on you when he slaps your ass even harder, trying to provoke a squeal out of you. '
+
+		gs 'pod_whore','hide','pod_whore_analplugin'
+		*pl $txt_pod_whore_anal
+		killvar '$txt_pod_whore_anal'
+	end
+
+!ending
+	if $ARGS[1] = 'text_pod_whore_cum':
+		txt_pod_whore_cum = rand(1,4)
+		if txt_pod_whore_cum = 1:$txt_pod_whore_cum = 'The man begins to moan, and within minutes he tells you he wants to finish in your mouth. You let him, and soon enough you feel him shooting several jets of cum into your mouth. You swallow it all obediently, and lick your lips and his dick clean afterwards. As you get up, he quickly tucks his dick back into his pants. Then he takes out his wallet and counts out the money he owes you. He seems very happy: "Nice job, whore. I''ll definitely be back to make use of your services again!" You can''t help but think: "The money is nice... but what happens if he tells all his friends? Will they also all come over to have a go at me... and what if they all come at once!?"'
+		if txt_pod_whore_cum = 2:$txt_pod_whore_cum = 'The man quickly finishes, shooting his load in your mouth like he wanted. He quickly pulls up his pants and grabs some crumpled bills from his pocket. He offers them to you and says: "Here you go slut, you''ve earned it. See you around, I''m sure".'
+		if txt_pod_whore_cum = 3:$txt_pod_whore_cum = 'The man moans softly, and you soon feel his cum fill your mouth. Ugh, it tastes awful! You try to find a way to discretely spit it out, but he notices and puts his hands on your mouth keeping it shut. "No no slut, don''t be rude! You''re not spitting it out. I want to see an empty mouth before you get any money." Well, if he insists... you''re not happy about it but nod obediently, and do your best to swallow his bitter sperm. It takes you some effort, but eventually you manage and you open your mouth and show him your open mouth, moving your tongue around. This puts a grin on his face, and he beams at you while he offers you the money: "See? That wasn''t so bad, was it? Next time, don''t make me ask... here you go, you''ve earned it."'
+		if txt_pod_whore_cum = 4:$txt_pod_whore_cum = 'The man didn''t give you any warming, and you''re slightly surprised by the jets of his hot sperm suddenly landing on the back of your throat while you suck him off like he told you to. Realizing he''s paying you good money for your services, you decide not to throw a fuss and simply keep sucking, swallowing the cum that he shoots into your mouth. After you''re pretty sure he''s finished, you slowly pull your head back and lick the remains of sperm from his cock. You can see his face is flustered, and it takes him a second to recuperate. He gently runs his hand through your hair and smiles at you: "Wow... you''re the best whore I''ve ever had, that was amazing!" Then he quickly straightens his clothes. You can''t help but feel a tinge of pride as you see him count out your well-earned money... another happy customer!'
+
+		*pl $txt_pod_whore_cum
+		killvar '$txt_pod_whore_cum'
+	end
+
+!=============================
+!text conversations with the client:
+	if $ARGS[1] = 'rnd_client_text_bj':
+		rnd_client_text_bj = rand(1,10)
+		if rnd_client_text_bj = 1:$rnd_client_text_bj = 'I want a blowjob.'
+		if rnd_client_text_bj = 2:$rnd_client_text_bj = 'You do blowjobs, right?'
+		if rnd_client_text_bj = 3:$rnd_client_text_bj = 'I want those pretty lips around my dick.'
+		if rnd_client_text_bj = 4:$rnd_client_text_bj = 'I want to watch that cute face of yours as it bobs up and down on my cock.'
+		if rnd_client_text_bj = 5:$rnd_client_text_bj = 'I haven''t had any in a while... take me in your mouth and I''ll be happy.'
+		if rnd_client_text_bj = 6:$rnd_client_text_bj = 'I don''t have much time right now, how about a quick blowjob?'
+		if rnd_client_text_bj = 7:$rnd_client_text_bj = 'I heard you give the best blowjobs in town... I want to find out for myself if that''s true.'
+		if rnd_client_text_bj = 8:$rnd_client_text_bj = 'Are you any good at sucking dick? I want a good blowjob right now.'
+		if rnd_client_text_bj = 9:$rnd_client_text_bj = 'You gave a friend of mine a blowjob, and he told me you were great. I want the same.'
+		if rnd_client_text_bj = 10:$rnd_client_text_bj = 'I want you to take my cock as far down your throat as it''ll go!'
+		$result = $rnd_client_text_bj
+		killvar '$rnd_client_text_bj'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_vag':
+		rnd_client_text_vag = rand(1,10)
+		if rnd_client_text_vag = 1:$rnd_client_text_vag = 'Is your pussy still tight? If so, I want it.'
+		if rnd_client_text_vag = 2:$rnd_client_text_vag = 'I feel like fucking your pussy today.'
+		if rnd_client_text_vag = 3:$rnd_client_text_vag = 'I only want your pussy today, I''m in a hurry.'
+		if rnd_client_text_vag = 4:$rnd_client_text_vag = 'I have been in a bit of a dry spell... I really need some pussy right now!'
+		if rnd_client_text_vag = 5:$rnd_client_text_vag = 'My friend told me you have the cutest little squeals when he fucked your pussy. I want to find out for myself if that''s true.'
+		if rnd_client_text_vag = 6:$rnd_client_text_vag = 'I want to fuck your pussy, but I don''t have much time. We''ll have to be quick!'
+		if rnd_client_text_vag = 7:$rnd_client_text_vag = 'I hear your snatch is always dripping. I want to see you squirm as I fuck it.'
+		if rnd_client_text_vag = 8:$rnd_client_text_vag = 'One of my buddies told me you have the best pussy in town. I have to have it too!'
+		if rnd_client_text_vag = 9:$rnd_client_text_vag = 'One of my best friends is getting married soon, and we need a girl for his bachelor party who puts out. I need to fuck your pussy first, to see if you''re good enough for him.'
+		if rnd_client_text_vag = 10:$rnd_client_text_vag = 'Is it okay if I take some photos of you as I fuck your pussy? No? Okay... I still want you.'
+		$result = $rnd_client_text_vag
+		killvar '$rnd_client_text_vag'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_anal':
+		rnd_client_text_anal = rand(1,10)
+		if rnd_client_text_anal = 1:$rnd_client_text_anal = 'I want to fuck that tight little asshole of yours.'
+		if rnd_client_text_anal = 2:$rnd_client_text_anal = 'I''m looking for a cute ass to fuck, but I''m kind of in a hurry.'
+		if rnd_client_text_anal = 3:$rnd_client_text_anal = 'I hear anal sex is great, but I want to try before I fuck my girlfriend there... would you mind giving me some tips?'
+		if rnd_client_text_anal = 4:$rnd_client_text_anal = 'I hear you''re the biggest buttslut in town. I want your ass.'
+		if rnd_client_text_anal = 5:$rnd_client_text_anal = 'My friend said you came when he fucked you in the ass... I bet him I could do that too.'
+		if rnd_client_text_anal = 6:$rnd_client_text_anal = 'I''m kind of in a rush, how about a quick buttfuck?'
+		if rnd_client_text_anal = 7:$rnd_client_text_anal = 'I''m looking for something a bit unusual today... how about your ass?'
+		if rnd_client_text_anal = 8:$rnd_client_text_anal = 'Do you do anal sex too?'
+		if rnd_client_text_anal = 9:$rnd_client_text_anal = 'Your ass looks great, girl. How about I fuck you there?'
+		if rnd_client_text_anal = 10:$rnd_client_text_anal = 'I want to see you bounce that butt on my cock while I fuck your ass.'
+		$result = $rnd_client_text_anal
+		killvar '$rnd_client_text_anal'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_all':
+		rnd_client_text_all = rand(1,10)
+		if rnd_client_text_all = 1:$rnd_client_text_all = 'I can''t decide what I want... how about I just pay for everything and I decide as we go?'
+		if rnd_client_text_all = 2:$rnd_client_text_all = 'I want all of your holes.'
+		if rnd_client_text_all = 3:$rnd_client_text_all = 'I want to fuck all of your holes, no questions asked. Understood?'
+		if rnd_client_text_all = 4:$rnd_client_text_all = 'You''re so hot, I can''t just choose one thing! You know what, I''ll get the full package.'
+		if rnd_client_text_all = 5:$rnd_client_text_all = 'I''m still fairly new to sex. How about I just pay you for everything, and we see where it leads?'
+		if rnd_client_text_all = 6:$rnd_client_text_all = 'I can''t decide what I want... how about I just pay for everything and I decide as we go?'
+		if rnd_client_text_all = 7:$rnd_client_text_all = 'I want all of your holes.'
+		if rnd_client_text_all = 8:$rnd_client_text_all = 'I want to fuck all of your holes, no questions asked. Understood?'
+		if rnd_client_text_all = 9:$rnd_client_text_all = 'You''re so hot, I can''t just choose one thing! You know what, I''ll get the full package.'
+		if rnd_client_text_all = 10:$rnd_client_text_all = 'I''m still fairly new to sex. How about I just pay you for everything, and we see where it leads?'
+		$result = $rnd_client_text_all
+		killvar '$rnd_client_text_all'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_group':
+		rnd_client_text_group = rand(1,10)
+		if rnd_client_text_group = 1:$rnd_client_text_group = 'I''m not alone here, my friend is waiting outside. Can you handle two guys at once?'
+		if rnd_client_text_group = 2:$rnd_client_text_group = 'My buddy is waiting just around the corner, we want to fuck you together.'
+		if rnd_client_text_group = 3:$rnd_client_text_group = 'My friend is about to leave town, but I promised him a cute girl to fuck before he goes. How about we fuck you together?'
+		if rnd_client_text_group = 4:$rnd_client_text_group = 'Me and my buddy are looking for a quick fuck. You available?'
+		if rnd_client_text_group = 5:$rnd_client_text_group = 'All of my friends have been saying how great you are at fucking a group of guys. Care to take care of us?'
+		if rnd_client_text_group = 6:$rnd_client_text_group = 'We don''t have much time, we''re just looking for a quick fuck. We want all of your holes.'
+		if rnd_client_text_group = 7:$rnd_client_text_group = 'Me and my friend are looking for a cute little fuckpuppet to stuff. You will do just fine.'
+		if rnd_client_text_group = 8:$rnd_client_text_group = 'It''s my birthday, and my friend here says he''ll share you with me as a gift.'
+		if rnd_client_text_group = 9:$rnd_client_text_group = 'It''s my friend''s first time, but I want in as well. Do you fuck two guys at once?'
+		if rnd_client_text_group = 10:$rnd_client_text_group = 'We''re looking for a girl that''s not so squeamish. You want to get fucked by my buddy and me?'
+		$result = $rnd_client_text_group
+		killvar '$rnd_client_text_group'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_bj_vag':
+		rnd_client_text_bj_vag = rand(1,10)
+		if rnd_client_text_bj_vag = 1:$rnd_client_text_bj_vag = 'I want to fuck your throat and pussy both.'
+		if rnd_client_text_bj_vag = 2:$rnd_client_text_bj_vag = 'I''m looking for a quick blowjob and fuck.'
+		if rnd_client_text_bj_vag = 3:$rnd_client_text_bj_vag = 'How about you suck me off for a while, and after that I fuck your pussy?'
+		if rnd_client_text_bj_vag = 4:$rnd_client_text_bj_vag = 'My friend says your mouth and pussy are both great... you know what? I''ll take both.'
+		if rnd_client_text_bj_vag = 5:$rnd_client_text_bj_vag = 'How about you warm me up with your mouth first, and then I fuck your pussy?'
+		if rnd_client_text_bj_vag = 6:$rnd_client_text_bj_vag = 'I want to fuck your pussy, and then watch you lick your juices off my cock.'
+		if rnd_client_text_bj_vag = 7:$rnd_client_text_bj_vag = 'I hear you''re the best lay in town. I want your mouth and pussy, and quick... I''m in a hurry.'
+		if rnd_client_text_bj_vag = 8:$rnd_client_text_bj_vag = 'I think I''ll have both your mouth and pussy today.'
+		if rnd_client_text_bj_vag = 9:$rnd_client_text_bj_vag = 'I was planning to only fuck your pussy, but how can I say no to that cute little face of yours? I''ll have a blowjob too.'
+		if rnd_client_text_bj_vag = 10:$rnd_client_text_bj_vag = 'I bet your lips would look great around my cock. Both sets of lips, if you know what I mean.'
+		$result = $rnd_client_text_bj_vag
+		killvar '$rnd_client_text_bj_vag'
+	end
+
+	if $ARGS[1] = 'rnd_client_text_bj_anal':
+		rnd_client_text_bj_anal = rand(1,10)
+		if rnd_client_text_bj_anal = 1:$rnd_client_text_bj_anal = 'I want to fuck you in the ass. You can warm me up with your mouth first.'
+		if rnd_client_text_bj_anal = 2:$rnd_client_text_bj_anal = 'My wife won''t give me a blowjob, or let me fuck her ass... so I want both from you.'
+		if rnd_client_text_bj_anal = 3:$rnd_client_text_bj_anal = 'I love it when a girl sucks my dick, right before I fuck her ass.'
+		if rnd_client_text_bj_anal = 4:$rnd_client_text_bj_anal = 'I''m not interested in your pussy today, I want you to give me a blowjob and then we move straight to your ass.'
+		if rnd_client_text_bj_anal = 5:$rnd_client_text_bj_anal = 'I feel like doing something nasty today... how about you blow me, and then I fuck your ass?'
+		if rnd_client_text_bj_anal = 6:$rnd_client_text_bj_anal = 'I want your mouth and ass today.'
+		if rnd_client_text_bj_anal = 7:$rnd_client_text_bj_anal = 'I hear your ass is the best in town, so I definitely want to fuck that. How about you blow me first?'
+		if rnd_client_text_bj_anal = 8:$rnd_client_text_bj_anal = '<<$pcs_nickname>>, the buttslut... what would I ever want from you? Your mouth and ass, of course!'
+		if rnd_client_text_bj_anal = 9:$rnd_client_text_bj_anal = 'I''m going to fuck your throat, and then I''m going to fuck your ass.'
+		if rnd_client_text_bj_anal = 10:$rnd_client_text_bj_anal = 'Your pussy can get some rest today, I want to fuck your ass. You can lubricate my cock by giving me a blowjob first.'
+		$result = $rnd_client_text_bj_anal
+		killvar '$rnd_client_text_bj_anal'
+	end
+
+!------------------------------
+	if $ARGS[1] = 'rnd_client_torgtext1':
+		rnd_client_torgtext = rand(1,5)
+		if rnd_client_torgtext = 1:$rnd_client_torgtext = 'But those prices seem kind of high. Take off 100 <b>₽</b> and we have a deal.'
+		if rnd_client_torgtext = 2:$rnd_client_torgtext = 'But you''re rather expensive. How about a 100 <b>₽</b> discount?'
+		if rnd_client_torgtext = 3:$rnd_client_torgtext = 'But my friends said you would be cheaper. How about you take 100 <b>₽</b> off the price?'
+		if rnd_client_torgtext = 4:$rnd_client_torgtext = 'But... you''re not that good looking. Take 100 <b>₽</b> off the price and I will consider it.'
+		if rnd_client_torgtext = 5:$rnd_client_torgtext = 'But I don''t think you''re worth that money. Let''s agree on 100 <b>₽</b> cheaper.'
+		$result = $rnd_client_torgtext
+		killvar '$rnd_client_torgtext'
+	end
+
+	if $ARGS[1] = 'rnd_client_torgtext2':
+		rnd_client_torgtext2 = rand(1,5)
+		if rnd_client_torgtext2 = 1:$rnd_client_torgtext2 = 'But you want too much money. Maybe for 50 <b>₽</b> less...'
+		if rnd_client_torgtext2 = 2:$rnd_client_torgtext2 = 'But you''re too expensive. Make me a better offer, at least 50 <b>₽</b> lower.'
+		if rnd_client_torgtext2 = 3:$rnd_client_torgtext2 = 'But your services are not as cheap as I thought. How about you lower your prices a little? 50 <b>₽</b> maybe?'
+		if rnd_client_torgtext2 = 4:$rnd_client_torgtext2 = 'But my friends said you were cheaper. How about 50 <b>₽</b> less? That sounds like a fair price to me.'
+		if rnd_client_torgtext2 = 5:$rnd_client_torgtext2 = 'But I''m a little bit short on money. Can you do it for 50 <b>₽</b> less?'
+		$result = $rnd_client_torgtext2
+		killvar '$rnd_client_torgtext2'
+	end
+
+	if $ARGS[1] = 'rnd_client_torgtext3':
+		rnd_client_torgtext3 = rand(1,5)
+		if rnd_client_torgtext3 = 1:$rnd_client_torgtext3 = 'But what the fuck!? I was told you were not that expensive!'
+		if rnd_client_torgtext3 = 2:$rnd_client_torgtext3 = 'But that''s a lot of money! I was told you''re a cheaper whore than that!'
+		if rnd_client_torgtext3 = 3:$rnd_client_torgtext3 = 'But everyone in town says you''re a cheap whore. What happened to your prices?'
+		if rnd_client_torgtext3 = 4:$rnd_client_torgtext3 = 'But... what? The guys told me you were a cheap fuck! Those prices aren''t cheap at all!'
+		if rnd_client_torgtext3 = 5:$rnd_client_torgtext3 = 'But wow... you''re way too greedy, for that money I can fuck three whores in the city - at once!'
+		$result = $rnd_client_torgtext3
+		killvar '$rnd_client_torgtext3'
+	end
+
+	if $ARGS[1] = 'rnd_client_torgtext4':
+		rnd_client_torgtext4 = rand(1,7)
+		if rnd_client_torgtext4 = 1:$rnd_client_torgtext4 = 'Sound good?'
+		if rnd_client_torgtext4 = 2:$rnd_client_torgtext4 = 'Do you agree?'
+		if rnd_client_torgtext4 = 3:$rnd_client_torgtext4 = 'Deal?'
+		if rnd_client_torgtext4 = 4:$rnd_client_torgtext4 = 'What do you say?'
+		if rnd_client_torgtext4 = 5:$rnd_client_torgtext4 = 'Alright?'
+		if rnd_client_torgtext4 = 6:$rnd_client_torgtext4 = 'Sound fair?'
+		if rnd_client_torgtext4 = 7:$rnd_client_torgtext4 = 'How about it?'
+		$result = $rnd_client_torgtext4
+		killvar '$rnd_client_torgtext4'
+	end
+
+	if $ARGS[1] = 'rnd_client_torgtext5':
+		rnd_client_torgtext5 = rand(1,5)
+		if rnd_client_torgtext5 = 1:$rnd_client_torgtext5 = 'I can give you'
+		if rnd_client_torgtext5 = 2:$rnd_client_torgtext5 = 'I quickly counted how much money I have on me, it''s'
+		if rnd_client_torgtext5 = 3:$rnd_client_torgtext5 = 'I have more than enough on me. I''ll give you'
+		if rnd_client_torgtext5 = 4:$rnd_client_torgtext5 = 'I''m a bit short on cash, I can only offer you'
+		if rnd_client_torgtext5 = 5:$rnd_client_torgtext5 = 'I think you''re worth'
+		$result = $rnd_client_torgtext5
+		killvar '$rnd_client_torgtext5'
+	end
+
+!failure
+	if $ARGS[1] = 'pod_whore_no':
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/no2.jpg"></center>'
+		'"Sorry, I''m a little busy right now. Perhaps you could come back later?"'
+		act 'Close the door': gt 'korrPar'
+	end
+!We do not agree on the price:
+	if $ARGS[1] = 'pod_whore_noprice':
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/home/event/whore/no1.jpg"></center>'
+		'"I''m sorry, but I think my rates are more than reasonable. No deal."'
+		act 'Close the door on him': gt 'korrPar'
+	end
+!Voice actor pricelist
+	if $ARGS[1] = 'pod_whore_price':
+		cla
+		'You smile and give him a list of your services:'
+		if whore_money_rnd <= 0:
+			'You give him a seductive smile: "You know what, you''re cute. I''ll give you a special deal on my prices."'
+		end
+		'"A blowjob will cost you <<whore_money_bjsex>> <b>₽</b>,<br>fucking my pussy is <<whore_money_clsex>> <b>₽</b><br>or you can fuck my ass for <<whore_money_analsex>> <b>₽</b>.<br>You can also just give me <<whore_money_allsex>> <b>₽</b>, you can fuck me any way you like then for as long as you want... no holes barred.<br>If you are with your friends, I''ll be happy to take all of you on at once for <<whore_money_groupsex>> <b>₽</b>.'
+
+		!'<<money_silicone>> + <<money_mop>> + <<money_hapri>> + <<money_glamur>> + <<money_odethooker>> + <<money_skin>> + <<money_skin_tan>> + <<money_leghair>> + <<money_resnic>> + <<money_pcs_lipbalm>> + <<whore_dopmoney>> + <<money_throat>> | - <<money_vagina>> - <<money_anus>> - <<money_vnesh>> - <<money_horny>> - <<money_cumfrot>> - <<money_sweat>> - <<money_cumlip>> - <<money_cumface>> - <<money_cumbelly>> - <<money_cumpussy>> - <<money_cumanus>> - <<money_cumass>> - <<money_son>>'
+
+		rnd_client_event = RAND(1,7)
+		if rnd_client_event = 1:$rnd_client_text = func('pod_whore','hide','rnd_client_text_bj') & $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev1'" & total_money = whore_money_bjsex
+		if rnd_client_event = 2:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_vag') & $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev2'" & total_money = whore_money_clsex
+		if rnd_client_event = 3:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_anal') & $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev3'" & total_money = whore_money_analsex
+		if rnd_client_event = 4:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_all') &  $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev4'" & total_money = whore_money_allsex
+		if rnd_client_event = 5:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_group') &  $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev5'" & total_money = whore_money_groupsex
+		if rnd_client_event = 6:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_bj_vag') & $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev6'" & total_money = whore_money_bjvagsex
+		if rnd_client_event = 7:$rnd_client_text = func( 'pod_whore','hide','rnd_client_text_bj_anal') &  $rnd_client_event = "gt 'pod_whore','hide', 'pod_whore_ev7'" & total_money = whore_money_bjanalsex
+
+		!how much money for sex if the client offers: blow job, pussy or anal
+		$rnd_client_money = ''+rand(150,245)+''
+		rnd_client_money = $rnd_client_money
+		!how much money for sex if the client offers: all at once or gangbang
+		$rnd_client_money2 = ''+rand(450,595)+''
+		rnd_client_money2 = $rnd_client_money2
+		!how much money for sex if the client offers: blow job + pussy and blowjob + anal
+		$rnd_client_money3 = ''+rand(300,445)+''
+		rnd_client_money3 = $rnd_client_money3
+		
+		$rnd_client_torgtext1 = func('pod_whore','hide','rnd_client_torgtext1')
+		$rnd_client_torgtext2 = func('pod_whore','hide','rnd_client_torgtext2')
+		$rnd_client_torgtext3 = func('pod_whore','hide','rnd_client_torgtext3')
+		$rnd_client_torgtext4 = func('pod_whore','hide','rnd_client_torgtext4')
+		$rnd_client_torgtext5 = func('pod_whore','hide','rnd_client_torgtext5')
+		
+		rnd_clint_torg = RAND(1,5)
+		if rnd_clint_torg = 1:	
+			$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+		elseif rnd_clint_torg = 2:
+			if total_money >= 250:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>> <<$rnd_client_torgtext1>>"' & total_money -= 100
+			elseif total_money < 250:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+			end
+		elseif rnd_clint_torg = 3:
+			if total_money >= 150:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>> <<$rnd_client_torgtext2>>"' & total_money -= 50
+			elseif total_money < 150:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+			end
+		elseif rnd_clint_torg = 4:
+			if rnd_client_event < 4 and total_money >= 250:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>> <<$rnd_client_torgtext3>> <<$rnd_client_torgtext5>> <<rnd_client_money>> <b>₽</b>. <<$rnd_client_torgtext4>>"' 
+				total_money = rnd_client_money
+			elseif rnd_client_event < 4 and total_money < 250:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+			end
+			if rnd_client_event >= 4 and rnd_client_event <= 5 and total_money >= 600:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>> <<$rnd_client_torgtext3>> <<$rnd_client_torgtext5>> <<rnd_client_money2>> <b>₽</b>. <<$rnd_client_torgtext4>>"' 
+				total_money = rnd_client_money2
+			elseif rnd_client_event >= 4 and total_money < 600:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+			end
+			if rnd_client_event >= 6 and total_money >= 450:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>> <<$rnd_client_torgtext3>> <<$rnd_client_torgtext5>> <<rnd_client_money3>> <b>₽</b>. <<$rnd_client_torgtext4>>"' 
+				total_money = rnd_client_money3
+			elseif rnd_client_event >= 6 and total_money < 450:
+				$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+			end
+		elseif rnd_clint_torg = 5:
+			$rnd_clint_torg = 'The man thinks for a second, and then says: "<<$rnd_client_text>>"'
+		end
+
+		*pl $rnd_clint_torg
+		act 'Accept and go with him': dynamic $rnd_client_event
+		if rnd_clint_torg >= 2 and rnd_clint_torg <= 4:
+			act 'Decline and shut the door': gt 'pod_whore','hide','pod_whore_noprice'
+		end
+	end
+
+!long talk nothing)
+	if $ARGS[1] = 'pod_client_talk_bazar1':
+		cla
+		'You simply give the man a questioning look, and he continues: "Some friends of mine gave me this address. They said a beautiful girl lives here, that took care of both their bodies and minds. You sure look beautiful... I thought you were the one they were talking about."'
+		act 'Object': gt 'pod_whore','hide','pod_client_talk_bazar2'
+	end
+	
+	if $ARGS[1] = 'pod_client_talk_bazar2':
+		cla
+		'You pretend to be insulted: "So you''re saying I look like a whore!?"'
+		if pod_whore_countQW <= 15:
+			'The man apologizes again: "I''m so sorry, I must''ve gotten the wrong address."'
+			'He turns around and leaves before you can tell him otherwise.'
+			gs 'willpower', 'prostitution', 'resist', 'medium'
+			if will_cost <= pcs_willpwr:
+				act 'Close the door (<<will_cost>> Willpower)':
+					*clr & cla
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					gt 'korrPar'
+				end
+			else
+				act 'Close the door (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+		elseif pod_whore_countQW > 15:
+			'He looks at you defiantly and says: "Look, girl. You can''t blame me for being confused... it even says so right there on the wall! A whore lives here!"'
+			act 'Scold him': gt 'pod_whore','hide','pod_client_talk_bazar3'
+			act 'Back down a little': gt 'pod_whore','hide','pod_client_talk_bazar5'
+		end
+	end
+	
+	if $ARGS[1] = 'pod_client_talk_bazar3':
+		cla
+		gs 'stat'
+		'You act insulted and shout at him: "Any idiot can write down that crap on someone''s wall, that doesn''t make it true!"'
+		'The man raises his hands in defense and mutters: "Alright alright, I get it... she''s not here. I''m sorry, I should go."'
+		act '"Are you sure?"': gt 'pod_whore','hide','pod_client_talk_bazar9'
+		gs 'willpower', 'prostitution', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'Close the door (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'korrPar'
+			end
+		else
+			act 'Close the door (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+	
+	if $ARGS[1] = 'pod_client_talk_bazar4':
+		cla
+		'You''re not sure whether to be insulted or not. You simply tell him: "I''m sorry sir, I don''t know any prostitutes. You should leave."'
+		act 'Close the door': gt 'korrPar'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar5':
+		cla
+		'You smirk at him: "Just because someone wrote it there, that doesn''t make it true... for all I know, you were the one who put that there!"'
+		'He goes in full defensive mode now: "Wait, what? I didn''t do anything!"'
+		act 'Keep teasing him': gt 'pod_whore','hide','pod_client_talk_bazar6'
+		gs 'willpower', 'prostitution', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'End the conversation (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'pod_whore','hide','pod_client_talk_bazar7'
+			end
+		else
+			act 'End the conversation (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar6':
+		cla
+		gs 'stat'
+		'You keep teasing him: "Well, you could always just go from door to door, trying to find a girl named <<$pcs_nickname>>...", while you do your best not to laugh.'
+		'The guy is clearly taken aback, his face deeply red with embarrassment.'
+		act 'Confess you''re <<$pcs_nickname>>': gt 'pod_whore','hide','pod_client_talk_bazar8'
+		gs 'willpower', 'prostitution', 'resist', 'medium'
+		if will_cost <= pcs_willpwr:
+			act 'End the conversation (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'pod_whore','hide','pod_client_talk_bazar7'
+			end
+		else
+			act 'End the conversation (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar7':
+		cla
+		gs 'stat'
+		'You sigh and tell him: "This conversation is over. Good day, sir", and close the door in his face. Mere seconds later, you already feel bad about how you treated him.'
+		act 'Close the door': gt 'korrPar'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar8':
+		cla
+		'You feel bad for the guy, and confess: "I''m sorry babe, I was just teasing you. I''m <<$pcs_nickname>>. How can I make it up to you? All of my holes are at your disposal, I''ll even give you a discount..."'
+		'He looks relieved, and it takes him a second to realize why he''s here. Then it hits him, and he says: "Right... how much do you charge?"'
+		act 'Give him your price list': gt 'pod_whore','hide','pod_whore_price'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar9':
+		cla
+		'You can barely hide your smile when you say: "Is that all you have to say for yourself? You know, my name also happens to be <<$pcs_nickname>>..."'
+		'The man looks at you with a somewhat confused look on his face: "Wait... so you''re not the <<$pcs_nickname>> that''s being advertised on the walls? Are you also in the business or not?"'
+		act '"Maybe..."': gt 'pod_whore','hide','pod_client_talk_bazar10'
+		act '"Just kidding!"': gt 'pod_whore','hide','pod_client_talk_bazar11'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar10':
+	cla
+		'You show the effort of quickly eyeing him top to bottom, and then smile mysteriously: "For you, sweetie? Maybe... do you like me?"'
+		'The man really doesn''t know what''s happening any more: "Erm, do I like you? Heck yea, you''re pretty cute... why, do you want to go out some time?"'
+		act '"You do look cute..."': gt 'pod_whore','hide','pod_client_talk_bazar12'
+		act '"No, I was joking!"': gt 'pod_whore','hide','pod_client_talk_bazar13'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar11':
+		cla
+		'You decide to let him off easy, and just admit it: "I was just kidding, babe. I''m <<$pcs_nickname>>."'
+		'The guy looks at you, not quite sure what to think: "Wait... so you were just leading me on?"'
+		'You give him a friendly smile and say: "I''m sorry, babe. Maybe I can make it up to you? I bet I could make you feel good..."'
+		'You see the greedy look in his eyes, you can tell he wants you. After a second, he says: "Alright, you got me. How much do you charge?"'
+		act 'Give him your price list': gt 'pod_whore','hide','pod_whore_price'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar12':
+		cla
+		'You keep smiling mysteriously at him, chuckling internally. You love messing with guys! You tell him: "Well, you do look cute... what did you have in mind?"'
+		'He''s half blubbering now, and you can tell he''s doing his best to find a way out of this conversation: "Erm... I don''t know, maybe I could take you some place nice?"'
+		'You simply smile: "Oh? Where would you take me?"'
+		'The man feels encouraged by you not blowing him off immediately, and suggests: "Maybe we could go for a walk? Or we could go have a drink in a cafe, or go see a movie?"'
+		act '"Sorry, sweetie..."': gt 'pod_whore','hide','pod_client_talk_bazar14'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar13':
+		cla
+		gs 'stat'
+		'You chuckle and shake your head: "Of course not! What kind of girl do you think I am?"'
+		'The man is obviously insulted, and sneers: "A bitch, to be honest."'
+		'You feel you may have crossed a line, and try to respond: "How would you feel if some guy was at your door, hoping to find a prostitute?"'
+		'He''s not buying it, and angrily says: "I would feel like this is a huge fucking waste of time. Thanks for nothing, bitch."'
+		'He turns around and leaves before you can get another word in, and you feel a tinge of regret for hurting his feelings like that.'
+		act 'Close the door': gt 'korrPar'
+	end
+	if $ARGS[1] = 'pod_client_talk_bazar14':
+		cla
+		'You can''t keep toying with this poor man! You chuckle and tell him: "I''m sorry sweetie, I don''t think I could take my clients to a place like that!"'
+		'The man is silent for a moment while he connects the dots in his mind, and then mutters: "Wait... so you are <b>the</b> <<$pcs_nickname>> and you were messing with me the whole time!?"'
+		'You laugh out loud and tell him: "Sorry babe, I was testing you. I like you though, you''re cute. How about I give you a discount, maybe I can make it up to you?"'
+		'The man looks a tad embarrassed, but is mostly just relieved you are who he thinks you are: "Damn, you got me there! Alright then... how much do you charge?"'
+		act 'Give him your price list': gt 'pod_whore','hide','pod_whore_price'
+	end
+!gg he said, that it does not <<$pcs_nickname>>
+	if $ARGS[1] = 'pod_client_talk_no':
+		cla
+		gs 'stat'
+		'You shake your head: "I''m sorry, I don''t know who this <<$pcs_nickname>> is. You must be at the wrong number."'
+		'The man smiles and apologizes: "I''m sorry, miss. Could you tell me where I could find a willing girl? I have more than enough money on me."'
+		act '"I don''t know any whores!"': gt 'pod_whore','hide','pod_client_talk_bazar4'
+		act '"Money, you say?"': gt 'pod_whore','hide','pod_client_talk_bazar1'
+	end
+!gg tired and can not accept a client
+	if $ARGS[1] = 'pod_client_talk_noson':
+		cla
+		gs 'stat'
+		'You look at the guy sympathetically and say: "I''m sorry, babe. You''re cute, but I''m simply exhausted today. I wouldn''t be able to give you the attention you deserve. Maybe come back tomorrow, I''ll show you a good time then?"'
+		'The man is a tad frustrated about coming over to your place for nothing, but you can tell your attempts to butter him up salvaged the situation a bit: "Really, you think so? Alright... maybe I''ll come back tomorrow."'
+		act 'Close the door': gt 'korrPar'
+	end
+
+!==========================================================
+!end `s Event:
+	if $ARGS[1] = 'pod_whore_ev_end':
+		*clr & cla
+		gs 'cum_call','face',$boy,0,'','',10
+		gs 'cum_call','mouth',$boy,0,'','',30
+		if pcs_energy >= 15: pcs_energy -= 4
+		if pcs_hydra >= 20: pcs_hydra -= 6
+		pcs_hairbsh = 0
+		minut += rand(2,5)
+		money += total_money
+		pod_whore_countQW += 1
+		pod_whore_client_day = daystart
+		pod_whore_client_count -= 1
+		pav_prostitute += rand(6,12)
+		gs 'arousal', 'end'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/cum'+rand(1,7)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_cum'
+		'The man gives you <<total_money>> <b>₽</b>, as promised.'
+		act 'Leave': gs 'pod_whore','hide','clean' & gt 'pod_ezd','etaj_2'
+	end
+!==============
+!start `s Event:
+!--------------
+!sucking
+	if $ARGS[1] = 'pod_whore_ev1':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','bj',rand(5,15),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/bj'+rand(1,17)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_bj'
+		gs 'gopsex','hide','accview_ggsex'
+		act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+	end
+!classic sex
+	if $ARGS[1] = 'pod_whore_ev2':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','vaginal',rand(7,15),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(1,7)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_vag'
+		gs 'gopsex', 'gg_sex_orgasm'
+		gs 'gopsex','hide','accview_ggsex'
+		act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+	end
+!anal sex
+	if $ARGS[1] = 'pod_whore_ev3':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','anal',rand(7,15),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(8,14)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_anal'
+		gs 'gopsex','hide','accview_ggsex'
+		act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+	end
+!all inclusive
+	if $ARGS[1] = 'pod_whore_ev4':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','bj',rand(3,12),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/bj'+rand(1,17)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_bj'
+		act 'Continue':
+			*clr & cla
+			gs 'arousal','vaginal',rand(5,13),'prostitution'
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(1,7)+'.mp4"></video></center>'
+			gs 'pod_whore','hide','text_pod_whore_vag'
+			gs 'gopsex', 'gg_sex_orgasm'
+			gs 'gopsex','hide','accview_ggsex'
+			act 'Continue':
+				*clr & cla
+				gs 'arousal','anal',rand(7,15),'prostitution'
+				gs 'stat'
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(8,14)+'.mp4"></video></center>'
+				gs 'pod_whore','hide','text_pod_whore_anal'
+				act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+			end
+		end
+	end
+
+!blow job + classic sex
+	if $ARGS[1] = 'pod_whore_ev6':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','bj',rand(5,15),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/bj'+rand(1,17)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_bj'
+		act 'Continue':
+			*clr & cla
+			gs 'arousal','vaginal',rand(7,15),'prostitution'
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(1,7)+'.mp4"></video></center>'
+			gs 'pod_whore','hide','text_pod_whore_vag'
+			gs 'gopsex', 'gg_sex_orgasm'
+			gs 'gopsex','hide','accview_ggsex'
+			act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+		end
+	end
+!blow job + anal sex
+	if $ARGS[1] = 'pod_whore_ev7':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$boy] += 1
+		gs 'arousal','bj',rand(5,15),'prostitution'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/bj'+rand(1,17)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_bj'
+		act 'Continue':
+			*clr & cla
+			gs 'arousal','anal',rand(7,15),'prostitution'
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/sex'+rand(8,14)+'.mp4"></video></center>'
+			gs 'pod_whore','hide','text_pod_whore_anal'
+			gs 'gopsex','hide','accview_ggsex'
+			act 'Continue': gt 'pod_whore','hide','pod_whore_ev_end'
+		end
+	end
+
+!-----------------
+!Group text:
+!=================
+!blow job
+	if $ARGS[1] = 'text_pod_whore_groupbj':
+		txt_pod_whore_groupbj = rand(1,4)
+		if txt_pod_whore_groupbj = 1:$txt_pod_whore_groupbj = 'You drop down to your knees and eagerly begin to suck off one of the guys. After a few minutes, his friend gets impatient and says: "Back off man, it''s my turn now." His friend replies: "Don''t be greedy, she can service two cocks at the same time. <<$pcs_nickname>>, suck us both off at once." He rubs his cock against your cheek, spreading his precum all over it. You do your best to please him too, and try to please both of them at the same time. After a few minutes, one of the men tells you he''s going to fuck you now. He says: "Bare your ass and go lean up against that railing."'
+		if txt_pod_whore_groupbj = 2:$txt_pod_whore_groupbj = 'You follow them to the stairwell. Your knees are trembling, and you feel your pussy slowly getting soaked between your legs... are you really going to fuck two guys at once, just for the money? One guy unbottons his pants immediately, his erection eagerly jumping out. The other guy still has his pants on, and you massage the bulge in his groin through the fabric. You silently kneel before them and gently take the exposed cock in your hand. He rudely interrupts you and says: "Nice try, whore. Open your mouth wide, I''m going to fuck your throat." You do your best to suppress your gag reflex as he rams his dick down your throat, while his friend takes off your top and roughly massages your tits with his hands. He pinches your nipples hard, in an attempt to get you to open your mouth further for his friend so he can ram his dick even further down your throat. After a while, they switch places. They repeat the same thing, and from the routine in their handlings you wonder if they''ve used girls like you more often together. The guys want more than just a blowjob from you, and one of them commands you: "Get over there and lean against the railing, pushing your ass up. We''re going to fuck you now."'
+		if txt_pod_whore_groupbj = 3:$txt_pod_whore_groupbj = 'You don''t know these guys at all. You follow them, rather timidly, hoping they will make the first move. The shorter guy pulls his pants down, and orders you: "Go on whore, suck it." His dick is not particularly big. Nevertheless, you do as he says, and you do your best to suck him off like it''s the best dick you have ever had. The other guy takes his pants off and offers you his dick too. It''s a fair bit bigger, and you do your best to please both guys with your mouth. Nevertheless, they can tell your heart is not really into it. They look at one another and say: "Looks like it''s up to us... she''s not trying at all." You don''t want to find out what they mean by that and redouble your efforts, trying to enthusiastically suck one of them off while you massage the other guy''s cock with your hand.	You see them looking at one another, and then one guy speaks up: "I''m going first. You got to go first on that last whore we fucked." You can tell the other guy is a bit disappointed, but nods in agreement: "That''s fair". Then he smirks at you: "Save some for me, whore."'
+		if txt_pod_whore_groupbj = 4:$txt_pod_whore_groupbj = 'You move up between the guys and put your arms around their waists, and say: "Come on guys, let''s go into the stairwell. How do you want me?" You can tell the boys are uncomfortable, and you guide them towards a quiet corner. You try to reassure them: "Relax boys... we''ll be fine here, no one ever walks through here at this time of day. Why don''t you show me what you have for me?" They''re still rather timid. You drop to your haunches and undo the pants of one of the guys, pulling out his limp dick. You close your mouth around it and begin to suck, and slowly but surely you can feel it grow erect in your mouth. The other guy fumbles with your clothes for a moment. After he manages to get your boobs to hang out of your top, he also offers you his cock. It''s already hard, you can tell the horniness of the guys is slowly trumping the embarrassment they felt before. You figure this is their first time with a prostitute, and you want to do your best to make it a time to remember. You suck them off and stroke them enthusiastically, giving them a sweet smile and encouraging them to be more daring. After a few minutes, you take the cock you''re currently sucking on out of your mouth and ask them: "So boys, what do you say... would you like to fuck me now?"'
+
+		*pl $txt_pod_whore_groupbj
+		killvar '$txt_pod_whore_groupbj'
+	end
+!sex
+	if $ARGS[1] = 'text_pod_whore_groupsex':
+		txt_pod_whore_groupsex = rand(1,3)
+		if txt_pod_whore_groupsex = 1:$txt_pod_whore_groupsex = 'You obediently pull your clothes to the side, and spread your legs as the guy walks up behind you and paws at your naked ass, running his fingers over your pussy lips a few times. He notices how wet you are, and grins: "Nice..." as he rubs his cock against your hole and slams it in one fluent motion. Without saying another word, he begins to fuck you. It actually feels great, he sure knows what he''s doing! You moan with pleasure, despite yourself when you realize you''re loving this, getting fucked by some dirty middle-aged man for money. Still, it feels so good! His friend just watches the two of you have sex, happy to just wait for his turn to have you to himself. He casually jerks off while he watches you, in order to keep his cock ready.'
+		if txt_pod_whore_groupsex = 2:$txt_pod_whore_groupsex = 'You expose your ass to one of the guys, and tease him a little by giving him an innocent smile as you ask: "Would you like me like this, sir?"	He gives your ass a hard slap, and grins at your yelp: "Just like that, girl". He moves up behind you and you feel the head of his cock press against your tight pussy. Fortunately he''s not that well-hung, and he slides it in quite easily.	It actually feels good. You softly begin to moan when the guy fucks you, loud enough for them to notice. They laugh, and one of them says: "You''re loving this, aren''t you girl? You really should be paying <b>us</b> instead..."'
+		if txt_pod_whore_groupsex = 3:$txt_pod_whore_groupsex = 'When you lean against the railing, one of the guys immediately follows you and you feel his hard erection poking against your back. He groans: "Put some back into it girl, I expect to feel those hips slapping back against me." You nod obediently and enthusiastically ride him once he enters his dick inside you. It feels surprisingly good... maybe even better than it should. You could definitely get used to having men come to your house! As much cock as you want, and you don''t even have to go look for it! The other guy is watching your face intently while slowly jerking himself off. You can tell that your pleasure in getting fucked is arousing him a great deal.'
+
+		*pl $txt_pod_whore_groupsex
+		killvar '$txt_pod_whore_groupsex'
+	end
+
+	if $ARGS[1] = 'pod_whore_ev5':
+		pod_whore_groupsexev = rand(1,2)
+		if pod_whore_groupsexev = 1: gt 'pod_whore','hide','pod_whore_groupsexev1'
+		if pod_whore_groupsexev = 2: gt 'pod_whore','hide','pod_whore_groupsexev2'
+	end
+!gangbang event 1
+	if $ARGS[1] = 'pod_whore_groupsexev1':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated,'1'
+		npc_sex[$boy[1]] += 1
+		gs 'npcgeneratec', 0, 'client', rand(18,40)
+		gs 'boyStat', $npclastgenerated,'2'
+		npc_sex[$boy[2]] += 1
+		gs 'arousal','bj',rand(3,5),'dick[1]','prostitution','group'
+		gs 'arousal','bj',rand(3,5),'dick[2]','prostitution','group'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/sex/1_1_'+rand(1,2)+'.jpg"></center>'
+		gs 'pod_whore','hide','text_pod_whore_groupbj'
+		act 'Continue':
+			*clr & cla
+			gs 'arousal','vaginal',rand(5,11),'dick[1]','prostitution','group'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/sex/1_2_'+rand(1,2)+'.jpg"></center>'
+			gs 'pod_whore','hide','text_pod_whore_groupsex'
+			gs 'gopsex', 'gg_sex_orgasm'
+			gs 'gopsex','hide','accview_ggsex'
+			act 'Continue':
+				*clr & cla
+				gs 'arousal','vaginal',rand(7,12),'dick[2]','prostitution','group'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/sex/1_3.jpg"></center>'
+				gs 'pod_whore','hide','text_pod_whore_groupsex'
+				gs 'gopsex', 'gg_sex_orgasm'
+				act 'Continue':
+					*clr & cla
+					gs 'cum_call','face',$boy[1],0,'','',10
+					gs 'cum_call','mouth',$boy[1],0,'','',30
+					gs 'cum_call','face',$boy[2],0,'','',10
+					gs 'cum_call','mouth',$boy[2],0,'','',20
+					gs 'cum_call','breasts',$boy[2],0,'','',10
+					if pcs_energy >= 15: pcs_energy -= 8
+					if pcs_hydra >= 20: pcs_hydra -= 10
+					pcs_hairbsh = 0
+					minut += rand(3,7)
+					money += total_money
+					pod_whore_countQW += 1
+					pod_whore_client_day = daystart
+					pod_whore_client_count -= 1
+					gs 'arousal', 'end'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/sex/1_4_'+rand(1,2)+'.jpg"></center>'
+					'After they fucked you in several positions and both had their turns, they tell you they want to cum on your face.
+					You eagerly drop to your knees and stick out your tongue, inviting them to cum in your mouth while you look them deep in the eyes.
+					Soon enough, the hot jets of cum splatter down on your face, mostly on your exposed tongue. A few drips run down your chin and drop onto your <<$titsize>> boobs. You absent-mindedly rub them, spreading their cum all over them.
+					You can tell the men are truly spent, and enjoyed your services a great deal.'
+					'One guy produces the money you were promised, and hands you the <<total_money>> <b>₽</b>. He smiles happily: "You were great, girl. We''ll definitely be back."'
+					act 'Thank them and leave': gs 'pod_whore','hide','clean' & gt 'pod_ezd','etaj_2' 
+				end
+			end
+		end
+	end
+
+!gangbang event 2
+	if $ARGS[1] = 'pod_whore_groupsexev2':
+		gs 'npcgeneratec', 0, 'customer', rand(18,40)
+		gs 'boyStat', $npclastgenerated,'1'
+		npc_sex[$boy[1]] += 1
+		gs 'npcgeneratec', 0, 'client', rand(18,40)
+		gs 'boyStat', $npclastgenerated,'2'
+		npc_sex[$boy[2]] += 1
+		gs 'arousal','bj',rand(3,5),'dick[1]','prostitution','group'
+		gs 'arousal','bj',rand(3,5),'dick[2]','prostitution','group'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_1_'+rand(1,2)+'.mp4"></video></center>'
+		gs 'pod_whore','hide','text_pod_whore_groupbj'
+		act 'Continue':
+			*clr & cla
+			gs 'arousal','vaginal',rand(5,10),'dick[2]','prostitution','group'
+			gs 'arousal','bj',5,'dick[1]','prostitution','group'
+			minut -=5
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_2_1.mp4"></video></center>'
+			'The guys indicate they want to fuck you now. As soon as you lean over, the man behind you immediately grabs onto your hips and begins to fuck you with long, hard thrusts.'
+			'The other guy gets in front of you and says: "Go on, whore. Put that mouth of yours to work as well, I''m not just going to stand here and wait."'
+			'You obediently open your mouth and take his dick in your mouth. It''s a bit difficult to give him a good blowjob while your pussy is also getting pounded, especially with him moving his hips like that, but after a while they get into a steady pace and you just let the guys have their way with you.'
+			gs 'gopsex', 'gg_sex_orgasm'
+			gs 'gopsex','hide','accview_ggsex'
+			act 'Continue':
+				*clr & cla
+				gs 'arousal','vaginal',rand(5,10),'dick[1]','prostitution','group'
+				gs 'arousal','bj',5,'dick[2]','prostitution'
+				minut -=5
+				gs 'stat'
+				'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_3_1.mp4"></video></center>'
+				'Then they switch places, and you now have the other guy fucking you. You can taste your pussy juices on his dick as he makes you suck it. You''re still not very comfortable in this position, but you steady yourself on the man''s belt and after a while you get back into that steady pace.'
+				gs 'gopsex', 'gg_sex_orgasm'
+				act 'Continue':
+					*clr & cla
+					minut += rand(5,10)
+					gs 'stat'
+					'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_2_'+rand(2,3)+'.mp4"></video></center>'
+					'Then the guy fucking you lies down on his back, his cock never leaving your pussy. He drags you with him, and you steady your hands on his chest behind you. He expects you to ride him now, while the other guy moves back up to your face and tells you to keep sucking.'
+					'You don''t give it any more thought and just open your mouth as he says, and close your lips around it again.'
+					'Getting fucked by two guys at once really makes you feel like a dirty slut. The guys probably think that getting fucked is all that you are good for, and treat you like a slab of meat.'
+					gs 'gopsex', 'gg_sex_orgasm'
+					act 'Continue':
+						*clr & cla
+						gs 'arousal','vaginal',rand(5,10),'dick[2]','prostitution','group'
+						gs 'arousal','bj',5,'dick[1]','prostitution'
+						gs 'stat'
+						'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_3_2.mp4"></video></center>'
+						'The man you''ve been blowing for the past 10 minutes suddenly pulls you up, and lowers himself to the ground before he tells you to get on his dick. He pulls your hips closer against him once you rub his hard cock against your pussy lips, and begins to fuck you vigorously.'
+						'The other man points his cock at your mouth and grins at you: "You know what I want, whore. Start sucking."'
+						'You nod and take his dick in your mouth, once again tasting yourself. You rather enjoy the way you taste, and the thought of licking your juices off someone''s cock turns you on a lot.'
+						gs 'gopsex', 'gg_sex_orgasm'
+						act 'Continue':
+							*clr & cla
+							gs 'cum_call','stomach',$boy[2],0,'','',10
+							gs 'cum_call','',$boy[2],0,'','',30
+							gs 'cum_call','face',$boy[1],0,'','',10
+							gs 'cum_call','mouth',$boy[1],0,'','',30
+							if pcs_energy >= 15: pcs_energy -= 8
+							if pcs_hydra >= 20: pcs_hydra -= 10
+							pcs_hairbsh = 0
+							minut += rand(3,7)
+							money += total_money
+							pod_whore_countQW += 1
+							pod_whore_client_day = daystart
+							pod_whore_client_count -= 1
+							gs 'arousal', 'end'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/stairs/sex/2_4.jpg"></center>'
+							'After a few more minutes of getting fucked, you suddenly feel the guy underneath you spasm. Seconds later you feel a warm liquid inside you, and when he pulls his cock out of you his cum slowly drips from your pussy. A few more jets of cum come out, landing on your stomach. The other guy cums inside your mouth at the same time, without any warning. You swallow his load as best you can, and only miss a few drops that end up on your chin.'
+							'The guys don''t pay much attention to you when they put their clothes back on. They''re mostly talking to one another about how much of a good fuck you were, pretending you''re not there.'
+							'Then one guy turns to you and gives you the money: "You''re a pretty decent fuck, <<$pcs_nickname>>. Here are the <<total_money>> <b>₽</b> we agreed upon. See you around."'
+							act 'Thank them and leave': gs 'pod_whore','hide','clean' & gt 'pod_ezd','etaj_2' 
+						end
+					end
+				end
+			end
+		end
+	end
+	if $ARGS[1] = 'clean':
+		killvar 'rnd_clint_torg'
+		killvar '$rnd_client_event'
+		killvar '$rnd_client_money'
+		killvar '$rnd_client_money2'
+		killvar '$rnd_client_money3'
+		killvar '$pod_whore_lubri_text'
+		killvar 'money_silicone'
+		killvar 'money_mop'
+		killvar 'money_hapri'
+		killvar 'money_glamur'
+		killvar 'money_odethooker'
+		killvar 'money_skin'
+		killvar 'money_skin_tan'
+		killvar 'money_leghair'
+		killvar 'money_resnic'
+		killvar 'money_pcs_lipbalm'
+		killvar 'whore_dopmoney'
+		killvar 'money_throat'
+		killvar 'money_vnesh'
+		killvar 'money_horny'
+		killvar 'money_cumfrot'
+		killvar 'money_sweat'
+		killvar 'money_cumlip'
+		killvar 'money_cumface'
+		killvar 'money_cumbelly'
+		killvar 'money_cumpussy'
+		killvar 'money_cumanus'
+		killvar 'money_cumass'
+		killvar 'money_son'
+		killvar 'whore_money_bjsex'
+		killvar 'whore_money_clsex'
+		killvar 'whore_money_analsex'
+		killvar 'whore_money_groupsex'
+		killvar 'whore_money_bjvagsex'
+		killvar 'whore_money_bjanalsex'
+		killvar '$whore_money_rnd'
+	end
+end &! --- hide ---
+--- pod_whore ---------------------------------
+

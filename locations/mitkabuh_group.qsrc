@@ -1,0 +1,662 @@
+# mitkabuh_group
+
+if $ARGS[0] = '':
+	menu_off = 1
+	CLOSE ALL
+	gs 'stat'
+	
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/mitka_old_trailer.jpg"></center>'
+	*nl
+	'You follow the boys into the woods. Soon the familiar old trailer comes into view.'
+
+	*nl
+	if sunWeather = 1:
+		'The skies are clear today so you all decide to drink outside tonight.'
+		'You quickly head over to the bench and sit down before anyone else can claim it.'
+		
+		act 'Sit down outside':
+			gt 'mitkabuh_group','partywithMira'
+		end
+	else
+		'The weather is poor outside today so you all decide to drink inside tonight.'
+		'The inside of the trailer looks like last time, just with maybe a few more empty bottles and cups strewn about. You quickly head over to the best couch and sit down before anyone else can claim it.'
+		
+		act 'Go inside the trailer':
+			gt 'mitkabuh_group','partywithMira'
+		end
+	end
+end
+
+if $ARGS[0] = 'partywithMira':
+	$loc = 'mitkabuh_group'
+	$metka = 'partywithMira'
+	$location_type = 'indoors'
+	
+	$menu_loc = 'mitkabuh_group'
+	$menu_arg = 'partywithMira'
+	menu_off = 0
+		
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/village/drunk.jpg"></center>'
+	*nl
+	'You, Mira, Mitka, Kolyamba and Vasyan are sitting on some '+iif(sunWeather=1,'logs outside','couches inside')+' the trailer. There is plenty of moonshine to go around but no snacks.'
+	
+	! prevent drinking events from repeating after sex is done because the passage of time in the sex events allowed alko to decrease again
+	if mitkabuhday = 1 and alko < 10: alko = 10
+	if mitkabuhmiraday = 1 and npc_drunk['A60'] < 10: npc_drunk['A60'] = 10
+	mitkadrinkday = daystart
+	
+	! Sveta is drunk and Mira is drunk and boys fucked both already tonight
+	if npc_drunk['A60'] >= 10 and alko >= 10 and mitkabuhday = 1 and mitkabuhmiraday = 1:
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/village/mira/girls_go.jpg"></center>'
+		*nl
+		'You and Mira are both way too drunk and can barely stand. The guys tell you to leave, they already fucked you tonight, but to make sure to come back tomorrow for another round.'
+		'As you are leaving the guys call after you both "Hey whores, come drink with us again, we love fucking you both!! Ha-ha!" They laugh as you make your way out. You are too drunk to come up with a response and just walk away with Mira.'
+		
+		act 'Leave': MiraLoc = 0 & npc_drunk['A60'] = 0 & mitkabuhmiraday = 0 & mitkabuhday = 0 & minut += 15 & gt 'gadroad'
+	! Sveta is drunk and Mira is drunk and both not had sex with the boys 
+	elseif npc_drunk['A60'] >= 10 and alko >= 10 and mitkabuhday = 0 and mitkabuhmiraday = 0:
+		*clr & cla
+		mitkabuhday = 1
+		mitkabuhmiraday = 1
+		mitkarand = rand(1,10)
+		mitkabuhrand = rand(1,6)
+		if mitkabuhrand = 1:
+			gs 'boyStat','A61','0'
+			gs 'boyStat','A62','1'
+			gs 'boyStat','A63','2'
+		elseif mitkabuhrand = 2:
+			gs 'boyStat','A61','0'
+			gs 'boyStat','A63','1'
+			gs 'boyStat','A62','2'
+		elseif mitkabuhrand = 3:
+			gs 'boyStat','A62','0'
+			gs 'boyStat','A61','1'
+			gs 'boyStat','A63','2'
+		elseif mitkabuhrand = 4:
+			gs 'boyStat','A62','0'
+			gs 'boyStat','A63','1'
+			gs 'boyStat','A61','2'
+		elseif mitkabuhrand = 5:
+			gs 'boyStat','A63','0'
+			gs 'boyStat','A62','1'
+			gs 'boyStat','A61','2'
+		elseif mitkabuhrand = 6:
+			gs 'boyStat','A63','0'
+			gs 'boyStat','A61','1'
+			gs 'boyStat','A62','2'
+		end	
+		if mitkarand <= 4 and mesec = 0:
+			gt 'mitkabuh_group','group_sex'
+		elseif mitkarand  <= 7:
+			gt 'mitkabuh_group', 'group_bj'
+		elseif mitkarand <= 9:
+			gt 'mitkabuh_group', 'group_show'
+		else
+			gt 'mitkabuh_group', 'group_anal'
+		end
+	! Sveta is not drunk and Mira is not drunk
+	else
+		gs 'willpower', 'drink', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Leave (<<will_cost>> Willpower)':
+				MiraLoc = 0
+				npc_drunk['A60'] = 0
+				mitkabuhmiraday = 0
+				mitkabuhday = 0
+				minut += 15
+				gs 'willpower', 'drink', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				
+				gt 'gadroad'
+			end
+		else
+			act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Drink with Mira and the boys':
+			*clr & cla
+			menu_off = 1
+			minut += 15
+			npc_rel['A63'] += rand(0,1)
+			npc_rel['A62'] += rand(0,1)
+			npc_rel['A61'] += rand(0,1)
+			npc_rel['A60'] += rand(0,1)
+			gs 'stat'
+			
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/village/drinking.jpg"></center>'
+			*nl
+			'Mitka pours some of the brew into two clear plastic shot glasses and hands them over to you.'
+			'You take one glass and give it to Mira while the other you quickly gulp down. Mira does the same with the one you gave her.'
+			'You and Mira have almost the same reaction to the moonshine. Your eyes widen and you coughs a little, sucking in your breath with a smile. You chat with the boys as they drink as well.'
+			'Mitka looks at you approvingly, "Good shit, right?"'
+			'"Just as good as the last batch you made!" you reply.'
+
+			npc_drunk['A60'] += 5
+			gs 'drugs', 'alcohol', 'moonshine', 1
+			gs 'stat'
+			
+			act 'Continue drinking':gt 'mitkabuh_group','partywithMira'
+		end
+	end
+end
+
+if $ARGS[0] = 'group_sex':
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+	*nl
+	'While drinking with Mira, <<$boydesc[0]>> comes up to you and starts removing your clothes. At the same time <<$boydesc[1]>> does the same to Mira. They tell you, "We want to share you both right now."'
+	'<<$boydesc[2]>> looks on but doesn''t move or say anything. Mira doesn''t bother resisting and goes along with it.'
+	
+	act 'Let them continue':
+		*clr & cla
+		
+		npc_rel[$boy[0]] += 1
+		npc_rel[$boy[1]] += 1
+		npc_rel['A60'] += 1
+		if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+		if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+		npc_sex[$boy[0]] += 1
+		npc_sex[$boy[1]] += 1
+		gang += 1
+		gs 'arousal', 'vaginal', 10, 'sub', 'gangbang'
+		gs 'arousal', 'bj', 10, 'sub', 'gangbang'
+		gs 'stat'
+		
+		mitkapicrand = rand(1,5)
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhgroup1.'+mitkapicrand+'.jpg"></center>'
+		*nl
+		'<<$boydesc[0]>> and <<$boydesc[1]>> waste no time as they quickly put you and Mira on your knees. They shove their cocks in your mouths and you give them sloppy blowjobs while trying to avoid gagging.'
+		'<<$boydesc[0]>> turns you around and begins thrusting rapidly, as Mira moans beside you from the fucking she is receiving from <<$boydesc[1]>>.'
+		'The boys always seem to be constantly changing positions and trading you and Mira back and forth between them.'
+		'Out of the corner of your eye, you see <<$boydesc[2]>> stroking himself as he watches you and Mira. You were only distracted for a second, but in that time <<$boydesc[0]>> and <<$boydesc[1]>> started cumming onto you and Mira.'
+		'<<$boydesc[2]>> walks up and says, "Ready for Round 2 girls?"'
+		
+		gs 'cum_call','vagina',$boy[0],1
+		gs 'cum_call','vagina',$boy[1],1
+		gs 'arousal', 'end'
+		gs 'stat'
+		
+		act 'Pleasure <<$boydesc[2]>> with Mira':
+			*clr & cla
+			npc_rel[$boy[2]] += 1
+			npc_rel['A60'] += 1
+			npc_sex[$boy[2]] += 1
+			gang += 1
+			gs 'arousal', 'bj', 10, 'sub', 'gangbang'
+			gs 'stat'
+			
+			mitkapicrand = rand(1,4)
+			if mitkapicrand = 1:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh2.2.jpg"></center>'
+			elseif mitkapicrand = 2:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.1.jpg"></center>'
+			elseif mitkapicrand = 3:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.5.jpg"></center>'
+			elseif mitkapicrand = 4:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.6.jpg"></center>'
+			end
+			*nl
+			'Mira seems to be just as insatiable as the boys as she races you over to <<$boydesc[2]>>''s cock. She is the first to wrap her lips around it as you are left to try and lick whatever Mira isn''t currently shoving down her throat.'
+			'You get your turn soon though when <<$boydesc[2]>> says, "Come on Mira, give <<$pcs_nickname>> a chance, there is more than enough for both of you."'	
+			'As Mira removes <<$boydesc[2]>>''s cock from her mouth she gives you a little smile and wink. You quickly begin to suck with even more enthusiasm, not wanting to be outdone by Mira.'
+						
+			act 'Make <<$boydesc[2]>> cum':
+				*clr & cla
+				
+				mitkapicrand = rand(1,8)
+				if mitkapicrand <= 5:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhcum0.'+mitkapicrand+'.jpg"></center>'
+				elseif mitkapicrand = 6:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.4.jpg"></center>'
+				elseif mitkapicrand = 7:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.5.jpg"></center>'
+				elseif mitkapicrand = 8:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkagroupcum2.jpg"></center>'
+				end
+				*nl
+				'<<$boydesc[2]>> doesn''t last long under the combined talents of you and Mira. You don''t even have time to get in position to share the cumshot with Mira, as he erupts a huge load onto your face.'
+				'Mira doesn''t seem to mind as she once again starts to lap up the cum that ran down your face and pooled on your breasts and body.'
+				
+				gs 'cum_call','breasts',$boy[2],1
+				gs 'cum_call','stomach',$boy[2],1
+				gs 'cum_call','face',$boy[2],1
+				gs 'cum_call','mouth',$boy[2],1
+				gs 'arousal', 'end'
+				gs 'stat'
+				
+				if sunWeather = 1:
+					act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+				else
+					act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'group_bj':
+	*clr & cla
+	menu_off = 1
+	
+	mitkarand = rand(0,1)
+	if mitkarand = 0:
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+		*nl
+		'While you are drinking with Mira, <<$boydesc[0]>> jokingly says that you both look incredible, but would look even better with cocks in your mouths.'
+		'Mira giggles in response, "You mean like this?", as she gets on her knees in front of him. She quickly pulls his cock out of his pants and wraps her lips around it.'
+		'Seeing this <<$boydesc[1]>> immediately walks up to you and takes his cock out too.'
+		
+		act 'Suck <<$boydesc[1]>> too':
+			*clr & cla
+			npc_rel[$boy[0]] += 1
+			npc_rel[$boy[1]] += 1
+			npc_rel['A60'] += 1
+			if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+			if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+			npc_sex[$boy[0]] += 1
+			npc_sex[$boy[1]] += 1
+			gang += 1
+			gs 'arousal', 'hj', 10, 'sub', 'gangbang'
+			gs 'arousal', 'bj', 10, 'sub', 'gangbang'
+			gs 'stat'
+			
+			mitkapicrand = rand(1,4)
+			if mitkapicrand = 1:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh0.1.jpg"></center>'
+			elseif mitkapicrand = 2:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh0.2.jpg"></center>'
+			elseif mitkapicrand = 3:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.4.jpg"></center>'
+			elseif mitkapicrand = 4:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.7.jpg"></center>'
+			end
+			*nl
+			'You follow Mira''s example and obediently drop to your knees and begin to blow <<$boydesc[1]>> as well. Both of your heads bob in unison as the boys moan in pleasure.'
+			'Mira occasionally looks at you to see if you are keeping up, but you aren''t having any trouble at all. You''ve gotten used to these nighttime adventures and have come to even enjoy them as well.'
+			
+			act 'Make <<$boydesc[1]>> cum':
+				*clr & cla
+				
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.1.jpg"></center>'
+				*nl
+				'Out of the corner of your eye, you see <<$boydesc[2]>> stroking himself as he watches you and Mira. You were only distracted for a second, but in that time <<$boydesc[0]>> and <<$boydesc[1]>> started cumming onto you and Mira.'
+				'You open your mouth in surprise and feel cum fly into your mouth. As you turn back to look at Mira again, her tongue greedily licks some of the cum off your face. You begin to return the favor as <<$boydesc[2]>> walks up and says, "Ready for Round 2 girls?"'
+				
+				gs 'cum_call','breasts',$boy[0],1
+				gs 'cum_call','stomach',$boy[0],1
+				gs 'cum_call','face',$boy[1],1
+				gs 'cum_call','mouth',$boy[1],1
+				gs 'arousal', 'end'
+				gs 'stat'
+				
+				act 'Pleasure <<$boydesc[2]>> with Mira':
+					*clr & cla
+					npc_rel[$boy[2]] += 1
+					npc_rel['A60'] += 1
+					npc_sex[$boy[2]] += 1
+					gang += 1
+					gs 'arousal', 'bj', 10, 'sub', 'gangbang'
+					gs 'stat'
+					
+					mitkapicrand = rand(1,4)
+					if mitkapicrand = 1:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh2.2.jpg"></center>'
+					elseif mitkapicrand = 2:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.1.jpg"></center>'
+					elseif mitkapicrand = 3:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.5.jpg"></center>'
+					elseif mitkapicrand = 4:
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.6.jpg"></center>'
+					end
+					*nl
+					'Mira seems to be just as insatiable as the boys as she races you over to <<$boydesc[2]>>''s cock. She is the first to wrap her lips around it as you are left to try and lick whatever Mira isn''t currently shoving down her throat.'
+					'You get your turn soon though when <<$boydesc[2]>> says, "Come on Mira, give <<$pcs_nickname>> a chance, there is more than enough for both of you."'
+					'As Mira removes <<$boydesc[2]>>''s cock from her mouth she gives you a little smile and wink. You quickly begin to suck with even more enthusiasm, not wanting to be outdone by Mira.'
+					
+					act 'Make <<$boydesc[2]>> cum':
+						*clr & cla
+						
+						mitkapicrand = rand(1,8)
+						if mitkapicrand <= 5:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhcum0.'+mitkapicrand+'.jpg"></center>'
+						elseif mitkapicrand = 6:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.4.jpg"></center>'
+						elseif mitkapicrand = 7:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.5.jpg"></center>'
+						elseif mitkapicrand = 8:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkagroupcum2.jpg"></center>'
+						end
+						*nl
+						'<<$boydesc[2]>> doesn''t last long under the combined talents of you and Mira. You don''t even have time to get in position to share the cumshot with Mira, as he erupts a huge load onto your face.'
+						'Mira doesn''t seem to mind as she once again starts to lap up the cum that ran down your face and pooled on your breasts and body.'
+						
+						gs 'cum_call','breasts',$boy[2],1
+						gs 'cum_call','stomach',$boy[2],1
+						gs 'cum_call','face',$boy[2],1
+						gs 'cum_call','mouth',$boy[2],1
+						gs 'arousal', 'end'
+						gs 'stat'
+						
+						if sunWeather = 1:
+							act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+						else
+							act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+						end
+					end
+				end
+			end
+		end
+	else
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+		*nl
+		'While you are drinking with Mira, <<$boydesc[0]>> jokingly says that you both look incredible, but would look even better with cocks in your mouths.'
+		'Mira giggles in response, "You mean like this?", as she gets on her knees in front of him. She quickly pulls his cock out of his pants and wraps her lips around it.'
+		
+		act 'Look at Mira':
+			*clr & cla
+			gs 'arousal', 'voyeur_sex', 5, 'sub'
+			gs 'stat'
+			
+			mitkapicrand = rand(1,5)
+			if mitkapicrand <= 5:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh1.'+mitkapicrand+'.jpg"></center>'
+			elseif mitkapicrand = 6:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh0.3.jpg"></center>'
+			elseif mitkapicrand = 7:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh0.4.jpg"></center>'
+			elseif mitkapicrand = 8:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh0.5.jpg"></center>'
+			elseif mitkapicrand = 9:
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh2.1.jpg"></center>'
+			end
+			*nl
+			'You spend the next few minutes watching Mira. You can''t bring yourself to look away as you watch her enjoy herself with <<$boydesc[0]>>''s cock.'
+			'<<$boydesc[1]>> and <<$boydesc[2]>> notice your interest and walk up to you. They say, "Don''t wory we can have some fun with you too" as they take their cocks out for you.'
+			
+			act 'Suck them both':
+				*clr & cla
+				
+				npc_rel[$boy[0]] += 1
+				npc_rel[$boy[1]] += 1
+				npc_rel[$boy[2]] += 1
+				npc_rel['A60'] += 1
+				if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+				if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+				npc_sex[$boy[1]] += 1
+				npc_sex[$boy[2]] += 1
+				gang += 1
+				gs 'arousal', 'hj', 10, 'sub', 'gangbang'
+				gs 'arousal', 'bj', 10, 'sub', 'gangbang'
+				gs 'stat'
+				
+				mitkapicrand = rand(2,4)
+				if mitkapicrand <= 3:
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.'+mitkapicrand+'.jpg"></center>'
+				else
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoral0.8.jpg"></center>'
+				end
+				*nl
+				'You kneel and position yourself between <<$boydesc[1]>> and <<$boydesc[2]>>. The boys never leave your mouth empty as they swap back and forth, each one taking turns using your mouth.'
+				'You make sure to keep stroking both boys as you try to equally please both of them. It isn''t enough for <<$boydesc[1]>> as he puts his hand on the back of your head, shoving his cock deeper down your throat.'
+				'As you begin to gag a little, <<$boydesc[2]>> slaps his dick against your face and laughs, "Perfect, right where you should be. You know it is tough, deciding whether you or Mira is the better fuck, but why choose when we can have both!"'
+				
+				act 'Make them both cum':
+					*clr & cla
+					
+					mitkapicrand = rand(2,3)
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.'+mitkapicrand+'.jpg"></center>'
+					*nl
+					'You pick up the pace, moving your head faster and faster with each stroke. <<$boydesc[1]>> is the first to cum and <<$boydesc[2]>> isn''t far behind him.'
+					'They both pull back a little before shooting their loads onto you. There is a decent amount of cum that has gotten in your hair and dripped down your face onto your body.'
+					
+					gs 'cum_call','breasts',$boy[2],1
+					gs 'cum_call','stomach',$boy[2],1
+					gs 'cum_call','face',$boy[1],1
+					gs 'cum_call','hair',$boy[1],1
+					gs 'stat'
+					
+					act 'Look at Mira again':
+						*clr & cla
+						gs 'arousal', 'voyeur_sex', 5
+						gs 'arousal', 'end'
+						gs 'stat'
+						
+						mitkapicrand = rand(1,7)
+						if mitkapicrand <= 5:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhcum0.'+mitkapicrand+'.jpg"></center>'
+						elseif mitkapicrand = 6:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.4.jpg"></center>'
+						elseif mitkapicrand = 7:
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhoralcum0.5.jpg"></center>'
+						end
+						*nl
+						'You take another look at Mira once the boys are done with you and are just in time to watch <<$boydesc[0]>> finish on her face.'
+						'Mira notices you watching and smiles while pointing to the cum on both of your faces.'
+						
+						if sunWeather = 1:
+							act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+						else
+							act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'group_show':
+	*clr & cla
+	menu_off = 1
+	
+	mitkarand = rand(0,1)
+	if mitkarand = 0 and sunWeather = 1 and temper >= 10:
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+		*nl
+		'While drinking with Mira, <<$boydesc[0]>> yells at you, "I''m bored!, get your asses over here and dance for us!"'
+		'<<$boydesc[1]>> and <<$boydesc[2]>> shout their approval of this idea as well. Mira slurs a response that you assume was a yes because she begins to undress.'
+		'<<$boydesc[0]>>, looks over at you and says, "<<$pcs_nickname>>, why don''t you join her?". <<$boydesc[1]>> and <<$boydesc[2]>> start cheering you on as you decide what to do.'
+		
+		act 'Join Mira':
+			*clr & cla
+		
+			npc_rel[$boy[0]] += 1
+			npc_rel[$boy[1]] += 1
+			npc_rel[$boy[2]] += 1
+			npc_rel['A60'] += 1
+			if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+			if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+			gs 'stat'
+			
+			mitkapicrand = rand(0,3)
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhdance0.'+mitkapicrand+'.jpg"></center>'
+			*nl
+			'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+			'You whirl and dance around the fire completely naked. You are having so much fun dancing with Mira that you barely notice the boys watching you.'
+			'The boys take their cocks out at begin to stroke themselves as they watch you and Mira dance for them. The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira.'
+			'The boys move closer and closer to you as they near climaxing. <<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira.'
+			
+			gs 'cum_call','butt',$boy[0],1
+			gs 'cum_call','labia',$boy[0],1
+			gs 'cum_call','breasts',$boy[2],1
+			gs 'cum_call','stomach',$boy[2],1
+			gs 'cum_call','face',$boy[1],1
+			gs 'cum_call','mouth',$boy[1],1
+			gs 'cum_call','hair',$boy[1],1
+			gs 'arousal','foreplay',15,'exhibitionism', 'sub'
+			gs 'arousal','end'
+			gs 'stat'
+			
+			if sunWeather = 1:
+				act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+			else
+				act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+			end
+		end
+	else
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+		*nl
+		'While drinking with Mira, <<$boydesc[0]>> yells at you, "I''m bored!, get your asses over here a give us a show to remember! Let''s get a good look at all your holes!"'
+		'<<$boydesc[1]>> and <<$boydesc[2]>> shout their approval of this idea as well. Mira slurs a response that you assume was a yes because she begins to undress.'
+		'<<$boydesc[0]>>, looks over at you and says, "<<$pcs_nickname>>, why don''t you join her?". <<$boydesc[1]>> and <<$boydesc[2]>> start cheering you on as you decide what to do.'
+		
+		act 'Join Mira':
+			*clr & cla
+			
+			npc_rel[$boy[0]] += 1
+			npc_rel[$boy[1]] += 1
+			npc_rel[$boy[2]] += 1
+			npc_rel['A60'] += 1
+			if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+			if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+			gs 'stat'
+			
+			if sunWeather = 1:
+				mitkapicrand = rand(1,3)
+				if mitkapicrand = 1:
+					gs 'cum_call','butt',$boy[0],1
+					gs 'cum_call','legs',$boy[0],1
+					gs 'cum_call','butt',$boy[2],1
+					gs 'cum_call','legs',$boy[2],1
+					gs 'cum_call','butt',$boy[1],1
+					gs 'cum_call','legs',$boy[1],1
+					gs 'arousal','foreplay',15,'exhibitionism', 'sub'
+					gs 'arousal','end'
+					gs 'stat'
+					
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhshow1.jpg"></center>'
+					*nl
+					'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+					'You bend over for the boys, giving them a great view of your ass. The boys take their cocks out at begin to stroke themselves as they watch you and Mira pose for them.'
+					'The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira. The boys move closer and closer to you as they near climaxing.'
+					'<<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira. This is more than enough to finally bring yourself to an orgasm too.'
+				elseif mitkapicrand <= 3:
+					gs 'cum_call','breasts',$boy[0],1
+					gs 'cum_call','stomach',$boy[0],1
+					gs 'cum_call','breasts',$boy[2],1
+					gs 'cum_call','stomach',$boy[2],1
+					gs 'cum_call','face',$boy[1],1
+					gs 'cum_call','mouth',$boy[1],1
+					gs 'cum_call','hair',$boy[1],1
+					gs 'arousal','masturbate',15,'exhibitionism', 'sub'
+					gs 'arousal','end'
+					gs 'stat'
+					
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhshow2.jpg"></center>'
+					*nl
+					'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+					'You sit down on the ground and begin to masturbate for the boys. At first, it is a bit uncomfortable since you are just trying to finger yourself on command, without any foreplay. But soon a feeling of excitement takes over as Mira moans next to you.'
+					'The boys take their cocks out at begin to stroke themselves as they watch you and Mira masturbate for them. The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira.'
+					'The boys move closer and closer to you as they near climaxing. <<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira. This is more than enough to finally bring yourself to an orgasm too.'
+				elseif mitkapicrand = 3 and pcs_ass > 15:
+					gs 'cum_call','butt',$boy[0],1
+					gs 'cum_call','legs',$boy[0],1
+					gs 'cum_call','butt',$boy[2],1
+					gs 'cum_call','legs',$boy[2],1
+					gs 'cum_call','butt',$boy[1],1
+					gs 'cum_call','legs',$boy[1],1
+					gs 'arousal','masturbate',15,'exhibitionism', 'sub'
+					gs 'arousal','end'
+					gs 'stat'
+					
+					'<center><video autoplay loop src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhshow2.mp4"></video></center>'
+					*nl
+					'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+					'You kneel on the ground and begin to tease your fingers into your ass. As you get more and more excited, you eventually are able to thrust most of your hand into your ass. The boys are most amazed at the feat and move closer to watch.'
+					'The boys take their cocks out at begin to stroke themselves as they watch you and Mira masturbate for them. The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira.'
+					'The boys move closer and closer to you as they near climaxing. <<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira. This is more than enough to finally bring yourself to an orgasm too.'
+				end
+			else
+				mitkapicrand = rand(1,2)
+				if mitkapicrand = 1:
+					gs 'cum_call','breasts',$boy[0],1
+					gs 'cum_call','stomach',$boy[0],1
+					gs 'cum_call','breasts',$boy[2],1
+					gs 'cum_call','stomach',$boy[2],1
+					gs 'cum_call','face',$boy[1],1
+					gs 'cum_call','mouth',$boy[1],1
+					gs 'cum_call','hair',$boy[1],1
+					gs 'arousal','foreplay',15,'exhibitionism', 'sub'
+					gs 'arousal','end'
+					gs 'stat'
+					
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh2.3.jpg"></center>'
+					*nl
+					'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+					'You spready your legs open for the boys, giving them a great view of your pussy. The boys take their cocks out at begin to stroke themselves as they watch you and Mira pose for them.'
+					'The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira. The boys move closer and closer to you as they near climaxing.'
+					'<<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira. This is more than enough to finally bring yourself to an orgasm too.'
+				elseif mitkapicrand = 2:
+					gs 'cum_call','butt',$boy[0],1
+					gs 'cum_call','legs',$boy[0],1
+					gs 'cum_call','butt',$boy[2],1
+					gs 'cum_call','legs',$boy[2],1
+					gs 'cum_call','butt',$boy[1],1
+					gs 'cum_call','legs',$boy[1],1
+					gs 'arousal','foreplay',15,'exhibitionism', 'sub'
+					gs 'arousal','end'
+					gs 'stat'
+					
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuh2.4.jpg"></center>'
+					*nl
+					'You follow Mira''s lead and quickly undress. It doesn''t take long for you both to be completely naked in front of the boys.'
+					'You kneel on all fours for the boys, giving them a great view of your ass. The boys take their cocks out at begin to stroke themselves as they watch you and Mira pose for them.'
+					'The boys are having a blast as they race to see which one can cum first, just by looking at you and Mira. The boys move closer and closer to you as they near climaxing.'
+					'<<$boydesc[0]>> is the first to cum, quickly followed by <<$boydesc[1]>> and <<$boydesc[2]>>. The combination of the three boys cum lands all over you and Mira. This is more than enough to finally bring yourself to an orgasm too.'
+				end
+			end			
+
+			if sunWeather = 1:
+				act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+			else
+				act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'group_anal':
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/drunk1.jpg"></center>'
+	*nl
+	'While drinking with Mira, <<$boydesc[0]>> comes up to you and starts pulling off your clothes. "I''m going to fuck that nice ass of yours right now" he says.'
+	'<<$boydesc[1]>> and <<$boydesc[2]>> shout their approval of this idea and go over to do the same to Mira. She doesn''t bother resisting and goes along with it.'
+	
+	act 'Let <<$boydesc[0]>> fuck your ass':
+		*clr & cla
+		
+		npc_rel[$boy[0]] += 1
+		if npc_QW['A63'] < 20: npc_QW['A63'] += 1
+		if npc_QW['A60'] < 15: npc_QW['A60'] += 1
+		npc_sex[$boy[0]] += 1
+		gs 'cum_call','anus',$boy[0],1
+		gs 'arousal', 'anal', 10, 'sub', 'rough', 'deepthroat'
+		gs 'arousal','end'
+		gs 'stat'
+		
+		mitkapicrand = rand(1,5)
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhanal0.'+mitkapicrand+'.jpg"></center>'
+		*nl
+		'<<$boydesc[0]>> takes you inside the trailer and pushes you down on the bed face first. As he penetrates you, he says something to himself about choosing the right girl, whatever that means.'
+		'You wouldn''t call this particularly enjoyable tonight as <<$boydesc[0]>> roughly thrusts into you without a care. With the pace he is keeping, he doesn''t last long and he quickly cums in your ass.'		
+		'<<$boydesc[0]>> makes you lick his dick clean before taking you back to where the other guys are already finished with Mira as well.'
+		
+		act 'Go back with him':
+			*clr & cla
+			
+			mitkapicrand = rand(1,5)
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/mitka/mitka_group/mitkabuhgroup0.'+mitkapicrand+'.jpg"></center>'
+			*nl
+			'As you walk back to where you left Mira, <<$boydesc[1]>>, and <<$boydesc[2]>> you see they are just finishing up with Mira too.'
+			'<<$boydesc[0]>> walks up to them and says, "I think I got the better deal here, but maybe you''ll get <<$pcs_nickname>> next time."'
+			
+			if sunWeather = 1:
+				act 'Sit down outside':gt 'mitkabuh_group','partywithMira'
+			else
+				act 'Sit down in the trailer':gt 'mitkabuh_group','partywithMira'
+			end
+		end
+	end
+end
+
+--- mitkabuh_group ---------------------------------
+

@@ -1,0 +1,85 @@
+# mod_setting
+
+!'Mod system 1.0 by illume'
+gs 'obj_din', 'settingtabs'
+cla
+
+if settingmode = 1:
+	!value= 2, call from Character creation
+	act '<center><b>Return to character creation</b></center>': killvar 'menu_page' & gt 'begin', 'start'
+else
+	!call from Menu - Game settings
+	act 'Exit the menu': killvar 'menu_page' & gt 'obj_din', 'menu_exit'
+end
+
+*nl '<center><h1>MODs</h1></center>'
+'<center>'
+'<b>WARNING</b>: Game slowdown may occur when installing too many mods, or mods with bad structure.'
+*nl
+'You may find information on available Mods as well as instructions on installing Mods on this thread:'
+'<a href="https://tfgames.site/phpbb3/viewtopic.php?f=70&t=11793&sid=08ee13168a1ea71fa2348f20815b8380">https://tfgames.site/phpbb3/viewtopic.php?f=70&t=11793&sid=08ee13168a1ea71fa2348f20815b8380</a>'
+*nl
+if mod_list > 0:
+
+	'<table border=1><tr><td>id</td><td>Name</td><td>Version</td><td>Author</td><td>Description</td><td>Options</td></tr>'
+	mod_i=1
+	:mod_alllist
+	if $mod_name[mod_i] ! '':
+		!name
+		gs 'mod_<<$mod_name[mod_i]>>_setup'
+		*p '<tr><td><<mod_i>></td><td><<$mod_info[0]>></td>'
+		!version
+		*p '<td><<val($mod_info[1])/10000>>.<<(val($mod_info[1]) mod 10000)/100>> <<iif(val($mod_info[1]) mod 100 > 0, ''fix <<val($mod_info[1]) mod 100>> '', '' '')>></td>'
+		!author
+		*p '<td><<$mod_info[2]>></td>'
+		!description and readme
+		*p '<td><a href="exec:gs ''mod_<<$mod_info[0]>>_readme''"><img src="images/system/icon/anptekainfo.jpg"></a> <<$mod_info[3]>></td>'
+		!mod options page
+		*p '<td>'+iif($mod_opt[mod_i] ! '','<a href="exec:gs ''mod_<<$mod_info[0]>>_options''"><<$mod_info[4]>></a>','')+'</td></tr>'
+	else
+		'ERROR loading mod id <<mod_i>>, no mod name available'
+	end
+
+	if mod_list > mod_i:
+		mod_i+=1
+		jump 'mod_alllist'
+	end
+	killvar '$mod_info'
+	'</table>'
+else
+	'<br>You have no Mods activated.'
+end
+'</center>'
+act ''+iif(settingmode = 1, '<center><b>Install new mod</b></center>','Install new mod')+'':
+	killvar '$mod_info'
+	$mod_temp=input('input mod name (as for the example image above, input <B>isample</B>)')
+	if $mod_temp='':exit
+	addqst 'mod/<<$mod_temp>>.qsp'
+	gs 'mod_<<$mod_temp>>_setup'
+	if $mod_info[0] = '':
+		msg '<b><<$mod_temp>>.qsp</b> is not a Girl life ECV mod, please contract its author for help'
+		exit
+	end
+	mod_list += 1
+	$mod_name[mod_list] = $mod_info[0]
+	$mod_version[mod_list] = $mod_info[1]
+	$mod_author[mod_list] = $mod_info[2]
+	$mod_desc[mod_list] = $mod_info[3]
+	$mod_opt[mod_list] = $mod_info[4]
+	gt 'mod_setting'
+end
+act ''+iif(settingmode = 1, '<center><b>Disable all mods</b></center>','Disable all mods')+'':
+	if input('Are you sure? ALL mod will be disabled!<br>please input <b>qqq</B> to confirm') = 'qqq':
+		killqst
+		set mod_list=0
+		killvar '$mod_name'
+		killvar '$mod_version'
+		killvar '$mod_author'
+		killvar '$mod_desc'
+		killvar '$mod_opt'
+		msg 'All mod disabled. You can re-install them later.'
+		gt 'mod_setting'
+	end
+end
+--- mod_setting ---------------------------------
+

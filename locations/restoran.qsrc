@@ -1,0 +1,142 @@
+# restoran
+$location_type = 'public_indoors'
+if $ARGS[0] = 'start':
+	$menu_loc = 'restoran'
+	$menu_arg = 'start'
+	menu_off = 0
+	minut += 5
+	gs 'stat'
+	'<center><b><font color="maroon">Babel</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/restoran.jpg"></center>'
+	'You enter the restaurant and at the counter by the entrance, you see a well dressed man '
+
+	! mennolds ev
+	if hour = 21 and minut < 30 and mey_vika['mey_vika_qw'] = 36: gt 'mey_tamara_events', 'wait_qw'
+
+	if vladimirday = daystart and vladimirQW = 21 and hour = 20: gt 'qwmeet'
+
+	act 'Leave the restaurant': minut += 5 & gt 'down'
+
+	act 'Approach the maître d'' ': gt 'restoran', 'maitred'
+end
+
+if $ARGS[0] = 'maitred':
+	$menu_loc = 'restoran'
+	$menu_arg = 'maitred'
+	menu_off = 0
+	minut += 5
+	!!eto there_were glamur > 1 and pcs_apprnc > 50
+	if $clothingworntype = 'formal' and pcs_makeup > 1 and pcs_hairbsh = 1 and pcs_sweat < 20:
+		'<center><b><font color="maroon">Babel</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/maitredseat.jpg"></center>'
+		'The well-dressed maître d'' politely asks you whether you prefer the VIP section or the common room'
+	else
+		'<center><b><font color="maroon">Restaurant</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/maitredrefuse.jpg"></center>'
+		'The maître d'' politely informs you that customers must look presentable and wear formal clothing if they wish to dine here.'
+	end
+
+	if $clothingworntype = 'formal' and pcs_makeup > 1 and pcs_hairbsh = 1 and pcs_sweat < 20 and money >= 5000:
+		act 'Go to the VIP room (5,000 <b>₽</b>)':
+		*clr & cla
+		'<center><b><font color="maroon">Babel</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/maitredvip.jpg"></center>'
+		'The maître d'' informs you that there will be a VIP charge of 5000 <b>₽</b>'
+		act 'Follow the maître d'' ': money -= 5000 & gt 'restoran', 'vip' &
+		act 'Change your mind': gt 'restoran', 'maitred'
+		end
+	end
+
+	if $clothingworntype = 'formal' and pcs_makeup > 1 and pcs_hairbsh = 1 and pcs_sweat < 20:
+		act 'Go to the Common Room': gt 'restoran', 'zal'
+	end
+	act 'Back to the foyer': gt 'restoran', 'start'
+end
+
+if $ARGS[0] = 'zal':
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><b><font color="maroon">Babel, Common Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/restoran2.jpg"></center>'
+	'The room emits a good atmosphere with its soft lighting and light furniture. You hear the sounds of music, the clinks of glasses and female laughter. It seems you can finally relax a little.'
+	!!etogame
+
+	if rand(0, 100) > 80 and npc_QW['A192'] = 0 and pcs_energy > 15 and nastjaday ! daystart:
+		clr
+		nastjaday = daystart
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/characters/city/anastasia/nastja1.jpg"></center>'
+		'In the hall you notice a girl, sitting alone. She looks pretty attractive. Your eyes linger on her for a bit and she seems to feel your gaze as she suddenly looks at you.'
+
+		act 'Look down':
+			cla
+			'She turns away'
+
+			act 'Leave': gt 'restoran', 'zal'
+		end
+		
+		gs 'willpower', 'misc', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Smile at her (<<will_cost>> Willpower)': 
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'nastja', 'pos1'
+			end
+		else
+			act 'Smile at her (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+	
+	act 'Be seated at a table': gt 'restoran', 'comtable'
+
+	act 'Leave the Common Room':gt 'restoran', 'start'
+end
+
+if $ARGS[0] = 'vip':
+	$menu_loc = 'restoran'
+	$menu_arg = 'vip'
+	menu_off = 0
+	minut += 5
+	gs 'stat'
+	'<center><b><font color="maroon">Babel, VIP room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/restoran3.jpg"></center>'
+	'You are shown into the VIP room by the maître d'', and you can''t help but smile involuntarily. Soft lighting and empire style furniture provide a calm and friendly atmosphere. You hear soft music and finally feel safe enough to let your guard down a little.'
+
+	act 'Be seated at the VIP table': gt 'restoran', 'viptable'
+
+	act 'Leave the VIP Room':gt 'restoran', 'start'
+end
+
+if $ARGS[0] = 'comtable':
+	$menu_loc = 'restoran'
+	$menu_arg = 'comtable'
+	menu_off = 0
+	$metka = 'comtable'
+	$loc = 'restoran'
+	minut += 5
+	*clr & cla
+	'<center><b><font color="maroon">Babel, Common Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/maitredseat.jpg"></center>'
+	'You are escorted to your seat by the maître d''. You sit and prepare to order a wonderful meal in the busy restaurant.'
+	act 'Order from the menu (0:05)': gs 'food_menu'
+
+	act 'Get up from the table': gt 'restoran', 'zal'
+end
+
+if $ARGS[0] = 'viptable':
+	$menu_loc = 'restoran'
+	$menu_arg = 'viptable'
+	menu_off = 0
+	$metka = 'viptable'
+	$loc = 'restoran'
+	*clr & cla
+	minut += 5
+	'<center><b><font color="maroon">Babel, VIP room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/expensiverest/chefrecommends.jpg"></center>'
+	'You sit and prepare to order a wonderful meal, recommended by the chef. You''ll be dining with pleasure in the peaceful and luxurious VIP Room.'
+	act 'Order from the menu (0:05)': gs 'food_menu'
+
+	act 'Get up from the table': gt 'restoran', 'vip'
+end
+--- restoran ---------------------------------

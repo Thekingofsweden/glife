@@ -1,0 +1,90 @@
+# castSpell
+! Used to cast a spell.
+!
+! ARGS[0] is the spell being cast
+!	Valid Spells are listed below
+!		teleport
+! ARGS[1-n] are any parameters that need to be passed to the Spell
+!
+!	Example:
+!		gs 'castSpell', 'teleport', 'CentralPark'
+
+gs 'spellList'
+
+spellSuccess = 0
+
+$SpellID = $ARGS[0]
+$SpellArgs = ""
+i=1
+:ArgLoop
+if i < arrsize('$ARGS'):
+	if $ARGS[i] = '':
+		$SpellArgs += ", <<ARGS[i]>>"
+	else
+		$SpellArgs += ", '<<$ARGS[i]>>'"
+	end
+	i += 1
+	jump 'ArgLoop'
+end
+killvar 'i'
+
+if spellKnown[$SpellID] = 1:
+	!Make a Skill Check to see if the Spell succeeds
+	spellRoll = pcs_splcstng - spellDiff[$SpellID] - (pcs_horny/5) + rand(1,100)
+	if spellRoll > 50:
+		!Critical Success
+		spellSuccess = 2
+		splcstng_exp += rand(1,spellDiff[$SpellID]) + rand(0,5)
+	elseif spellRoll > 10:
+		!Success
+		spellSuccess = 1
+		splcstng_exp += rand(1,spellDiff[$SpellID])
+	elseif spellRoll > -20:
+		!Failure
+		spellSuccess = 0
+		splcstng_exp += rand(1,spellDiff[$SpellID]) / 2
+	else
+		!Critical Failure
+		spellSuccess = -1
+		splcstng_exp += rand(1,spellDiff[$SpellID]) / 2
+	end
+	killvar 'spellRoll'
+
+	!Incur the costs of casting the spell
+	if spellSuccess = 2:
+		manaCost = spellMana[$SpellID] / 2
+	elseif spellSuccess = -1:
+		manaCost = spellMana[$SpellID] * 2
+	else
+		manaCost = spellMana[$SpellID]
+	end
+
+	if pcs_mana >= manaCost:
+		pcs_mana -= manaCost
+		!pcs_willpwr -= spellWill[$SpellID]
+		arouseVal = manaCost / 50
+		gs 'arousal', 'voyeur', arouseVal
+		minut -= arouseVal
+		killvar 'arouseVal'
+		killvar 'manaCost'
+
+		minut += spellTime[$SpellID]
+
+		gs 'stat'
+		$SpellExec = "gs 'spell', '<<$SpellID>>', '<<spellSuccess>>'<<$SpellArgs>>"
+
+		dynamic $SpellExec
+
+	else
+		*pl "You realize you don''t have enough mana for this spell."
+	end
+end
+
+killvar '$SpellID'
+killvar '$SpellArgs'
+killvar '$SpellExec'
+killvar 'spellSuccess'
+killvar 'arouseVal'
+killvar 'manaCost'
+
+--- castSpell ---------------------------------

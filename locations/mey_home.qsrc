@@ -1,0 +1,381 @@
+# mey_home
+
+close all
+gs 'themes', 'indoors'
+$location_type = 'indoors'
+
+!! corporate only at the end of the month on weekends, check
+if day <= 25 and mey_vika['mey_vika_qw'] > 40: mey_vika['mey_vika_qw'] = 40
+
+if $args[0] = 'door':
+	$metka = 'door'
+	$loc = 'mey_home'
+	$menu_loc = 'mey_home'
+	$menu_arg = 'door'
+	menu_off = 0
+	cls
+	gs'stat'
+	'<center><h4><font color="maroon">Meynold''s house</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/mey_home.jpg"></center>'
+	*nl
+
+	if mey_vika['key'] = 1:
+		'You open the door with your key and enter the house.'
+
+		act 'Enter': gt 'mey_home', 'start'
+	elseif hour < 20 and ((week < 6 and hour >= 15) or (week >= 6 and hour > 10)):
+		if mey_vika['mey_vika_qw'] = 27: gt 'mey_tamara_events', 'next_meet'
+		if mey_vika['mey_vika_qw'] > 27:
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/tamara_tea1.jpg"></center>'
+			*nl
+			'You walk up to the Meynolds residence and ring the doorbell...'
+			'After a short wait, you hear the lock click and you see Katja''s mother Kathy and sister Vicky standing by the door: <br><do>Oh hi, <<$pcs_nickname>>, welcome! Come in, make yourself at home.</do>'
+
+			act 'Enter': gt 'mey_home', 'start'
+		else
+			cla
+			'You walk up to the Meynolds residence and ring the doorbell...'
+			'Katja opens the door and quickly drags you to her room.'
+
+			act 'Go to Katjas room':
+				if frost > 0: frost = 0
+				gt 'KatjaHomeTalk'
+			end
+		end
+	else
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/tamara_tea0.jpg"></center>'
+		'You walk up to the Meynolds residence and ring the doorbell...'
+		'No one opens the door, it looks like nobody''s home or they are all asleep.'
+		'Maybe you should try again at a more sociable time?'
+
+		act 'Leave': minut += 5 & gt 'pavResidential'
+	end
+end
+
+! hall
+if $ARGS[0] = 'start':
+	$metka = 'start'
+	$loc = 'mey_home'
+	$menu_loc = 'mey_home'
+	$menu_arg = 'start'
+	menu_off = 0
+	killvar '$locclass'
+	cls
+	gs'stat'
+	'<center><h4><font color="maroon">Hall</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/corridor.jpg"></center>'
+	*nl
+	'A large and bright hall, this "hallway" stretches for quite a bit, you''ve never seen anything like this before! There is a mirror covering half of one of the walls. You see the kitchen from the hallway, there''s a big oval dining table.'
+	'There are stairs leading to the second floor. You can also see two doors where the signs say "Toilet" and "Bathroom".'
+
+	act 'Leave the house':minut += 5 & gt 'pavResidential'
+
+	if mey_vika['mey_vika_qw'] = 30 and mey_vika['qw_day'] ! daystart and hour = 23: gs 'mey_vika_events', 'case_gift'
+	if week mod 2 ! 0 and mey_vika['mey_vika_qw'] >= 32 and mey_vika['gym_day'] ! daystart and hour = 16 and minut >= 30: gs 'mey_vika_events', 'gym0'
+	if week mod 2 ! 0 and mey_vika['mey_vika_qw'] >= 32 and mey_vika['gym_day'] ! daystart and hour = 17 and minut >= 30: gs 'mey_vika_events', 'gym1'
+	if mey_vika['mey_vika_qw'] >= 32 and mey_vika['mey_vika_qw'] < 35 and mey_vika['qw_day'] ! daystart and hour >= 23: gs 'mey_vika_events', 'learning0'
+
+	if mey_vika['mey_vika_qw'] >= 32:
+		! welcome to the corporate
+		if week = 7 and hour >= 12 and hour <= 16 and day > 25 and mey_vika['mey_vika_qw'] = 40 and mey_tamara['qw_end'] = 0 and pav_slut < 75:
+			gt 'mey_tamara_events', 'party0'
+		end
+		! check appearance before going to corporate
+		if week = 7 and (hour = 17 or hour = 18) and mey_vika['mey_vika_qw'] = 41:
+			'<br><a href="exec: gt''mey_tamara_events'',''check_look''">Tamara Mikhailovna.</a> is waiting for you in the lobby.'
+
+			exit
+		end
+
+		! need to fuck Katja!
+		if KatjaSex >= 5 and mey_vika['mey_vika_qw'] > 35 and hour = 23 and mey_vika['mey_vika_bang_qw'] = 0:
+			gs 'mey_vika_events', 'bang_katya'
+			exit
+		end
+
+		! Vic calls in the shower
+		if mesec = 0 and pcs_vag > 0 and mey_vika['bath_qw'] = 1 and mey_vika['bath_qw_day'] ! daystart and rand(0,10) > 5 and ((week < 6 and hour >= 14) or (week = 6 and hour >= 8)):
+			gs 'mey_vika_events', 'bath_qw1'
+			exit
+		end
+
+		if ((week < 6 and hour >= 14 and hour < 20) or (week = 6 and hour >= 10 and hour < 20)) and mey_tamara['help_day'] ! daystart:
+			act 'Clean the house':
+				menu_off = 1
+				cla
+				mey_tamara['help_day'] = daystart
+				mey_tamara['help_count'] += 1
+				minut += rand(50,70)
+				gs 'sweat', 'add', 3
+				pcs_mood -= 5
+				gs 'stat'
+				if mey_vika['bath_qw'] = 0 and mey_vika['bath_qw_day'] ! daystart:
+					gs 'mey_vika_events', 'bath_qw0'
+				else
+					'<br>You take out a hefty vacuum cleaner from the closet, and it takes you about an hour to vacuum the house.'
+
+					act 'Finish': gt 'mey_home', 'start'
+				end
+			end
+		end
+	end
+	act 'Kitchen': gt 'mey_home', '1'
+	act 'Bathroom': gt 'mey_home', '2'
+	act 'Guest room': gt 'mey_home', '3'
+	act 'Lounge': gt 'mey_home', '4'
+	act 'Katja''s room': gt 'mey_home', '5'
+	act 'Vicky''s room': gt 'mey_home', '6'
+	act 'Tamara Mikhailovna''s room': gt 'mey_home', '7'
+	act 'Garden': gt 'mey_home', '8'
+
+	!!if rand (0,2) ! 0:gs 'din_bad' & dynamic $mobile_check
+end
+
+! kitchen
+if $ARGS[0] = '1':
+	*clr & cla
+	$loc = 'mey_home'
+	$metka = '1'
+	$locclass = 'kitr'
+	$menu_loc = 'mey_home'
+	$menu_arg = '1'
+	menu_off = 0
+	gs 'kit_din'
+	gs 'stat'
+	'<center><h4><font color="maroon">Kitchen</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/kitchen.jpg"></center>'
+	*nl
+	'The kitchen is huge and luxurious. It is decorated in a minimalist high-tech style. An oval dining room table standing in the middle of the room. The appliances are all hidden. The kitchen is sparkling clean.'
+
+	act 'Return to hallway': gt 'mey_home', 'start'
+
+	if mey_vika['mey_vika_qw'] >= 32 and ((week < 6 and hour >= 14 and hour < 20) or (week = 6 and hour >= 10 and hour < 20)) and mey_tamara['help_day'] ! daystart:
+		act 'Cook for the whole family':
+			menu_off = 1
+			cla
+			mey_tamara['help_day'] = daystart
+			mey_tamara['help_count'] += 1
+			minut += rand(50,70)
+			gs 'stat'
+			'<br>You take out the food from the refrigerator, and start cooking for the whole family. It takes you about an hour to finish.'
+
+			act 'Finish': gt 'mey_home', '1'
+		end
+	end
+
+	act 'Eat a full meal (0:30)':gs 'food', 'm_meal'
+
+	act 'Eat a light meal (0:25)':gs 'food', 's_meal'
+
+	act 'Have a snack (0:15)':gs 'food', 'snack'
+
+	dynamic $driwater
+	dynamic $dritea
+	dynamic $fill_bottle
+	dynamic $edaD
+	dynamic $pranik
+	dynamic $fatdel
+	dynamic $fatdel
+	dynamic $lekarstvo
+	dynamic $vitamin
+
+	gs 'events', 'read'
+
+	!!if rand (0,2) ! 0:gs 'din_bad' & dynamic $mobile_check
+end
+
+if $ARGS[0] = '2':
+	!bathroom
+	$locM = 'mey_home'
+	$metkaM = '2'
+	$metka = '2'
+	$menu_loc = 'mey_home'
+	$menu_arg = '2'
+	menu_off = 0
+	minut += 1
+	cls
+	gs'stat'
+	$location_type = 'bathroom'
+	'<center><b><font color = maroon>Bathroom</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/hotel.room.best1.jpg"></center>'
+	*nl
+	'A luxurious bathroom looking like the five-star hotel bathrooms you read about in the magazines.'
+	'Above the beautiful vanity and sink there is a huge <a href="exec:gt ''mirror'',''start''">mirror</a>.'
+	!acts copy from [shulgabath]
+	act 'Return to the hallway': gt 'mey_home', 'start'
+	gs 'din_van', 'private'
+end
+
+! guestroom
+if $ARGS[0] = '3':
+	cls
+	$locM = 'mey_home'
+	$metkaM = '3'
+	$loc = 'mey_home'
+	$metka = '3'
+	$menu_loc = 'mey_home'
+	$menu_arg = '3'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Guest room</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/guestroom.jpg"></center>'
+	*nl
+	'It feels and looks like a standard room in a hotel.'
+	'There is a <a href="exec:gt ''bed'', ''start''">bed</a>, a small <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> (where you can choose outfits and organize your clothing), and a desk.'
+	*nl
+	'Your <a href="exec:gt ''budilnik'', ''start''">alarm clock</a> is set to <b>'+iif(timer < 10,'0<<timer>>','<<timer>>')+':'+iif(timerM < 10,'0<<timerM>>','<<timerM>>')+'</b> during the week and <b>'+iif(timerEnd < 10,'0<<timerEnd>>','<<timerEnd>>')+':'+iif(timerEndM < 10,'0<<timerEndM>>','<<timerEndM>>')+'</b> during the weekend. It is currently turned '+iif(budilnikOn = 0, '<a href="exec: budilnikOn = 1 & gt $loc, $metka">OFF</a>.', '<a href="exec: budilnikOn = 0 & gt $loc, $metka">ON</a>.')
+	*nl
+	'A <a href="exec:gt ''mirror'', ''start''">mirror</a> hangs on the wall near the front door.'
+	if komp = 1:'Your <a href="exec:gt ''Komp'',''start''">laptop</a> is on the desk.'
+	*nl
+	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+
+	act 'Return to the hallway':
+		if ($clothingworntype = 'nude' or $clothingworntype = 'swimwear'):
+			*clr
+			'<center><img <<$set_imgh>> src="'+'images/pc/clothing/'+iif($pantyworntype = 'none','0','tanga')+'.jpg'+'"></center>'
+			*nl
+			'<center><font color=red><b>You can''t go out dressed like this!</b></font></center>'
+			exit
+		end
+		gt 'mey_home', 'start'
+	end
+
+	gs 'exercise', 'start'
+
+	if pcs_horny >= 50:	act 'Masturbate':gt 'selfplay', 'start'
+	if pornMagazine > 0:
+		'You hide your porn magazines under the mattress of your bed.'
+		gs 'events', 'read_porn'
+	end
+
+	gs 'events', 'read'
+
+	if dur > 0 and narkday ! daystart:
+		act 'Snort the White Lady (0:05)':
+			menu_off = 1
+			cla
+			*clr
+			minut += 5
+			narkday = daystart
+			gs 'drugs', 'cocaine'
+			'<center><img <<$set_imgh>> src="images/shared/drugs/dur.jpg"></center>'
+			*nl
+			'You snort some White Lady, feeling dizzy for a moment. After that you feel fantastic, and incredibly horny.'
+
+			act 'Continue':gt 'mey_home', '3'
+		end
+	end
+	act 'Relax on your bed': gt 'bed', 'start'
+
+	act 'Wait':gs 'obj_din', 'wait'
+
+	!!if rand (0,2) ! 0:gs 'din_bad' & dynamic $mobile_check
+end
+
+if $ARGS[0] = '4':
+	cls
+	$loc = 'mey_home'
+	$metka = '4'
+	$menu_loc = 'mey_home'
+	$menu_arg = '4'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Lounge</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/hall.jpg"></center>'
+	*nl
+	'Spacious room with a sofa and armchairs, on the wall hangs a large plasma TV, located next to the bookcase, and on the opposite side is the fireplace, from the hall there is access to a bright garden, overgrown with grapes'
+
+	act 'Return to hallway': gt 'mey_home', 'start'
+	act 'Garden': gt 'mey_home', '8'
+end
+
+if $ARGS[0] = '5':
+!add room katja
+	cls
+	$loc = 'mey_home'
+	$metka = '5'
+	$menu_loc = 'mey_home'
+	$menu_arg = '5'
+	menu_off = 0
+	minut += 1
+	$locclass = 'livingr'
+	gs 'stat'
+	'<center><h4><font color="maroon">Katja''s room</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/katya_room.jpg"></center>'
+	*nl
+	'Katja''s room feels like someone is living there temporarily and will soon move out. The stuff in the room are in the perfect order, depicting the feeling off a "non-residential premise".'
+	'There are numerous flowers in the pots on the windowsill, there are pots hanging on the walls and there are even plants in pots on the floor giving the room a greenhouse feeling.'
+	'There is a computer desk in one of the corners, opposite of the bed. In another corner is a hidden wardrobe. Lastly a well hidden bookshelf can be seen in the room, but it is kinda hard to spot because of wildly overgrown plants.'
+	if katjaFirstKiss >= 1:
+		if (hour >= 15 and week < 6 and kanikuli = 0 and hour < 20) or (hour >= 9 and week >= 6 and kanikuli = 0 and hour < 20) or (hour >= 9 and kanikuli > 0 and hour < 20):
+			act 'Chat with Katja': gt'KatjaHomeTalk'
+		end
+	else
+		'<font color=red>Your relationship with Katja is not good enough to just barge into her room, better leave as soon as possible.</font>'
+	end
+	act 'Return to the hallway': gt 'mey_home', 'start'
+end
+
+if $ARGS[0] = '6':
+	cls
+	$loc = 'mey_home'
+	$metka = '6'
+	$menu_loc = 'mey_home'
+	$menu_arg = '6'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Vicky''s room</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/vika_room.jpg"></center>'
+	*nl
+	'Vicky''s room is always in a mess. It''s clean, but everything is scattered all over the place. There are soft toys laying around in enormous quantities, and all the walls are plastered with posters of pop stars and film actors.'
+	'There''s a laptop on the table by the window, it accidentally brings a sense of orderliness. The stacks of magazines resemble music speakers. The rooms centerpiece is the ginormous bed, next to it is a wardrobe. There''s a lone chair somewhere in the corner hidden under all the stuff.'
+
+	act 'Return to hallway': gt 'mey_home', 'start'
+end
+
+if $ARGS[0] = '7':
+	cls
+	$loc = 'mey_home'
+	$metka = '7'
+	$menu_loc = 'mey_home'
+	$menu_arg = '7'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Tamara''s room</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/tamara_room.jpg"></center>'
+	*nl
+	'You would say Tamara Mikhailovna''s room resembles an office, if it was not for the bed in the corner. There''s a computer on a desk, a wardrobe, and a big but a pretty modest bed. The room is quite small and cramped. There are no decorations but one, a sword hanging on the wall. It''s unclear what it''s doing there.'
+
+	act 'Return to hallway': gt 'mey_home', 'start'
+end
+
+! courtyard
+if $ARGS[0] = '8':
+	cls
+	$loc = 'mey_home'
+	$metka = '8'
+	$menu_loc = 'mey_home'
+	$menu_arg = '8'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><h4><font color="maroon">Garden</font></h4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/meynolds/courtyard.jpg"></center>'
+	*nl
+	'The garden is quite small for the house and overgrown, most of the space is taken up by a small pool.'
+	'A car belonging to Tamara Mikhailovna is parked on the drive next to the garden.'
+	if hour = 7 and minut >= 30 and week < 6:
+		'<a href="exec:gs''mey_tamara_events'',''tamara''">Aunt Tamara</a> is here talking on her phone.'
+	end
+	act 'Return to hallway': gt 'mey_home', 'start'
+end
+
+--- mey_home ---------------------------------
+

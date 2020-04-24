@@ -1,0 +1,94 @@
+# crossfit_north_box
+
+$loc = $CURLOC
+$locM = 'crossfit_north_box'
+$sexloc = 'crossfit_north_box'
+$location_type = 'public_indoors'
+$metka = 'box'
+$metkaM = 'box'
+$crossfit_north_image_dir = 'images/locations/city/citycenter/gym/crossfit/'
+$menu_loc = 'crossfit_north_box'
+$menu_arg = 'box'
+menu_off = 0
+
+if $ARGS[0] = 'box':
+	
+	act 'Leave': gt 'fit', 'dressing room'
+	
+	if crossfit_random_choice < daystart OR $todays_crossfit_wod = '':
+		gs 'crossfit_north_wod', 'setup_wod'
+		$todays_crossfit_wod = $crossfit_wods[rand(0, ARRSIZE('$crossfit_wods') - 1)]
+		crossfit_random_choice = daystart
+	end
+
+	if $previous_record_holder ! ''  and pcs_lover < 3 and last_crossfit_workout < daystart:
+		gt 'crossfit_north_girlmeet', 'start'
+	end
+
+	'<center><b><font color="maroon">Crossfit North St. Petersburg</font></b></center>'
+	'<center><img <<$set_imgh>> src="<<$crossfit_north_image_dir>>start.jpg"></center>'
+	'This crossfit box might not look like it, but is said to be one of the best ones in the region.'
+	'Today''s exercise is <<$todays_crossfit_wod>>.'
+	'It consists of:'
+	gs 'crossfit_north_wod', $todays_crossfit_wod
+
+	if crossfit_first = 1:
+		act 'Check personal records':
+			cla
+			menu_off = 1
+			gt 'crossfit_north_record', 'view_records'
+		end
+	end
+
+	act 'Start the exercise':
+		menu_off = 1
+		if last_crossfit_workout = daystart:
+			msg'<b><font color = red>You already did this workout today. That''s enough for one day.</font></b>'
+		else
+			*clr & cla
+			last_crossfit_workout = daystart
+			crossfit_first = 1
+			abonement -= 1
+			'You start with the workout.'
+			gs 'crossfit_north_wod', $todays_crossfit_wod
+			gs 'exercise', 'tier4', 20, 'stren_exp', 'vital_exp', 'agil_exp'
+			'<center><video autoplay loop src="<<$crossfit_north_image_dir>><<$wod_video[$todays_crossfit_wod]>>.mp4"></video></center>'
+			current_wod_score = max(1,(100 - ((100 * pcs_health * (rand(40,100) + pcs_sleep  + pcs_vital + pcs_agil + pcs_stren))/ (healthmax * 500))))
+			cla
+			act 'Check your score':
+				cla
+				$resultstring = func('crossfit_north_record', 'recordstring', $todays_crossfit_wod,  current_wod_score)
+				'You successfully finish the workout <<$todays_crossfit_wod>> in <<$resultstring>>'
+				if personal_wod_record[$todays_crossfit_wod] = 0:
+					personal_wod_record[$todays_crossfit_wod] = current_wod_score
+				elseif current_wod_score < personal_wod_record[$todays_crossfit_wod]:
+					'This is a new personal record!'
+					personal_wod_record[$todays_crossfit_wod] = current_wod_score
+				end
+				if box_wod_record[$todays_crossfit_wod] = 0:
+					box_wod_record[$todays_crossfit_wod] = current_wod_score
+					$box_wod_record_holder[$todays_crossfit_wod] = $pcs_nickname
+				elseif current_wod_score < box_wod_record[$todays_crossfit_wod]:
+					'Not only that, it''s also a new best record for the whole box!'
+					$prevrecordstring = func('crossfit_north_wod', 'recordstring', $todays_crossfit_wod, box_wod_record[$todays_crossfit_wod])
+					if $box_wod_record_holder[$todays_crossfit_wod] ! $pcs_nickname:
+						$previous_record_holder = $box_wod_record_holder[$todays_crossfit_wod]
+						'You beat <<$previous_record_holder>>''s record of <<$prevrecordstring>>'
+					else
+						'You beat your own old box record of <<$prevrecordstring>>'
+					end
+					killvar '$prevrecordstring'
+					box_wod_record[$todays_crossfit_wod] = current_wod_score
+					$box_wod_record_holder[$todays_crossfit_wod] = $pcs_nickname
+				end
+				killvar 'current_wod_score'
+				act 'Finish and go to the changing room':
+					gt 'fit', 'dressing room'
+				end
+			end
+		end
+	end
+end
+
+--- crossfit_north_box ---------------------------------
+

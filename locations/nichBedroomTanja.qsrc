@@ -1,0 +1,125 @@
+# nichBedroomTanja
+
+CLOSE ALL
+
+$metka = ''
+$loc = 'nichBedroomTanja'
+$location_type = 'private'
+$menu_loc = 'nichBedroomTanja'
+$nichLoc = 'bedroomTanya'
+$menu_arg = ''
+menu_off = 0
+
+$sexloc = 'nichBedroomTanja'
+gs 'stat'
+
+!! Argument return: PC has been in the room before, dont perform actions meant to be executed before or as she enters the room.
+if $ARGS[0] = '' or $ARGS[0] = 'start' or $ARGS[0] = 'return':
+	'<center><b>Tanya''s Room</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/bedroomTanja.jpg"></center>'
+	*nl
+	'This room belongs to <a href="exec: gt ''nichTanya'', ''desc''">Tanya</a>, Nicholas'' stepdaughter. While she is a little bit selfish, quick-tempered and spoiled, her heart seems to be in the right place.'
+	'Her room is usually in a state of chaos - typical for somebody who''s gotten used to others cleaning up after them - but otherwise displays the warmth and mix of colors you would expect of a woman who is still trying to figure herself out and doesn''t worry too much about the future.'
+	
+	$nichNichAct = func('nichUtil','npcActivity','nicholas')
+	$nichTanyAct = func('nichUtil','npcActivity','tanya')
+	nichNichPresent = FUNC('nichUtil','isPresent','nicholas','bedroomTanya')
+	nichTanyPresent = FUNC('nichUtil','isPresent','tanya','bedroomTanya')
+
+	nichCleanAppropriate = 1
+	
+	if $nichNichAct = 'tanya' and $nichTanyAct = 'nicholas' and nichNTRelation < 10:
+		*clr & cla
+		
+		
+		
+		if nichNTRelation > 0:
+			'The door to Tanyas room seems to be locked. You assume that Nicholas is in there with her now. You could spy through the the keyhole.'
+		else
+			'The door to Tanyas room seems to be locked. You could spy through the keyhole.'
+		end
+		act 'Spy':
+			nichRand = rand(0,3)
+			$nichTempPic = func('nichUtil','tanyaPic','sexH','spy','nicholas')
+			if nichRand = 0 or nichTanyaSpyLast = daystart or nichTanyaSpyCounter = 0:
+				'The view is obscured by something. You can''t see anything.'
+				
+			elseif nichTanyaSpyCounter < 2:
+				'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+				'You can see Tanya having sex with a man. You can''t see his face. From your location you can''t figure out who he is. Afraid of getting caught spying through the keyhole you turn away.'
+				gs 'arousal', 'voyeur_sex', -5
+			else
+				nichNTRelation = 1
+				'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+				'You can see Tanya having sex with a man. You can''t see his face but from the clothes lieing around, the body statue and the muffled sounds there is no doubt that Tanya is fucking her stepfather.'
+				gs 'arousal', 'voyeur_sex', -5, 'incest'
+			end
+			nichTanyaSpyLast = daystart
+			nichTanyaSpyCounter += 1
+			cla
+			act 'Walk away':
+				gt 'nichApartment', 'return'
+			end
+		end
+		act 'Walk away':
+			gt 'nichApartment', 'return'
+		end
+		exit
+	elseif $nichTanyAct = 'boyfriend':
+		*clr & cla
+		'The door to Tanyas room seems to be locked. You assume that her boyfriend is in there with her now. You could spy through the the keyhole.'
+		
+		act 'Spy':
+			*clr & cla
+			$nichTempPic = func('nichUtil','tanyaPic','sexH','spy','bf<<nichTanyaBF>>')
+			'<center><img <<$set_imgh>> src="<<$nichTempPic>>"></center>'
+			'"Through the keyhole you can see Tanya and her boyfriend. They are obviously in the act of doing it."'
+			
+			act 'Walk away':
+				gt 'nichApartment', 'return'
+			end
+		end
+			
+		act 'Walk away':
+			gt 'nichApartment', 'return'
+		end
+		
+		exit
+	elseif $nichTanyAct = 'sleep':
+		'Tanya is sleeping in her bed.'
+		nichCleanAppropriate = 0
+	elseif $nichTanyAct = 'tanya':
+		nichRand = rand(0,3)
+		if nichRand = 0:
+			'<a href="exec: gt ''nichTanya'', ''bedroomTanya''">Tanya</a> is lieing on her bed listening to music.'
+		elseif nichRand = 1:
+			'<a href="exec: gt ''nichTanya'', ''bedroomTanya''">Tanya</a> is lieing on her bed watching tv.'
+		elseif nichRand = 2:
+			'<a href="exec: gt ''nichTanya'', ''bedroomTanya''">Tanya</a> is in her walk-in closet trying on some outfits.'
+		else
+			'<a href="exec: gt ''nichTanya'', ''bedroomTanya''">Tanya</a> is sitting at her desk surfing the internet.'
+		end
+	else
+		'Tanya is not here at the moment.'
+	end
+
+
+	act '<b>Return to the hallway</b>':
+		minut += 1
+		gt 'nichApartment'
+	end
+
+	act 'Go to the master bathroom':
+		minut += 1
+		gt 'nichBathMaster'
+	end
+
+	if nichWork = 2:
+		if nichCleanAppropriate = 0:
+			'It wouldn''t be appropriate to clean this room now.'
+		else
+			gs 'nichChore','inspect','tanya'
+		end
+	end
+end
+--- nichBedroomTanja ---------------------------------

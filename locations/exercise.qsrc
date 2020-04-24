@@ -1,0 +1,664 @@
+# exercise
+
+!{This will centralize calls for exercise. For calls where you wish to allow multiple types of exercises, such as a bedroom or yard, use gs 'exercise', 'start'
+For direct calls use this format: gs 'exercise', $ARGS[0], ARG[1], $ARGS[2], $ARGS[3], $ARGS[4]
+$ARGS[0] is the workout tier and the higher the tier, the greater the workout intensity.
+	Values: 'tier1' 'tier2' 'tier3' 'tier4'
+ARG[1] is the time override. By default the tiers are in 15 minute segments if being called from an event with predetermined time set this to 1
+	Values: 0 (default of 15 minutes) 1 (time set to 0)
+$ARGS[2] and on are the stats to be affected by the workout NOTE: use the _exp variant, not the pcs_!!!!
+	Values: 'stren_exp' 'vital_exp' 'agil_exp' 'sprt_exp' 'react_exp'
+	Other stats can be added if desired - for a dance-a-thon you might use gs 'exercise', 'tier1', 0, 'agil_exp', 'danc_exp'
+}
+
+if $ARGS[0] = 'start':
+	if (pcs_stam >=15 or pcs_stam >= 10 and bookYog + obruch > 0):
+		'There is enough space in the room to <a href="exec: gt ''exercise'', ''workout''">exercise</a>.'
+	else
+		'There is enough space in the room for a variety of exercises, but you don''t have the energy to work out now.'
+	end
+end
+
+if $ARGS[0] = 'workout':
+	$menu_loc = 'exercise'
+	$menu_arg = 'workout'
+	menu_off = 0
+	*clr & cla
+	exer_menu = 0
+	gs 'exercise', 'routines'
+	clothesAtLocation = FUNC('lost_clothes_here',$loc)
+	if $clothingworntype = 'nude' and clothesAtLocation = 1:
+		act 'End workout and get dressed':
+			cla
+			minut += 5
+			gs 'underwear', 'wear'
+			gs 'clothing', 'recover_lost_clothes', $loc, 1
+			gs 'stat'
+			gt $loc, $metka
+		end
+	else
+		act 'End workout':
+			gt $loc, $metka
+		end
+	end
+	if $clothingworntype = 'nude' or $clothingworntype = 'exercise':
+		act 'Manual routines': gt 'exercise', 'manual'
+		act 'Define routines': gt 'exercise', 'setup'
+		if exer_stam[1] ! 0 and pcs_stam > exer_stam[1]: act '<<$excer_name[1]>> - (<<exer_stam[1]>> stamina)': exercisex = 1 & gt 'exercise', 'auto'
+		if exer_stam[2] ! 0 and pcs_stam > exer_stam[2]: act '<<$excer_name[2]>> - (<<exer_stam[2]>> stamina)': exercisex = 2 & gt 'exercise', 'auto'
+		if exer_stam[3] ! 0 and pcs_stam > exer_stam[3]: act '<<$excer_name[3]>> - (<<exer_stam[3]>> stamina)': exercisex = 3 & gt 'exercise', 'auto'
+		if exer_stam[4] ! 0 and pcs_stam > exer_stam[4]: act '<<$excer_name[4]>> - (<<exer_stam[4]>> stamina)': exercisex = 4 & gt 'exercise', 'auto'
+		if exer_stam[5] ! 0 and pcs_stam > exer_stam[5]: act '<<$excer_name[5]>> - (<<exer_stam[5]>> stamina)': exercisex = 5 & gt 'exercise', 'auto'
+	elseif $clothingworntype ! 'nude' or $clothingworntype ! 'exercise':
+		'<b>You need to equip the proper attire before you can exercise</b>'
+	end
+end
+
+if $ARGS[0] = 'auto':
+	exer_auto = 1
+	if exer_rout0[exercisex] > 0:
+		timemult = exer_rout0[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'push'
+	elseif exer_rout1[exercisex] > 0:
+		timemult = exer_rout1[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'press'
+	elseif exer_rout2[exercisex] > 0:
+		timemult = exer_rout2[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'rope'
+	elseif exer_rout3[exercisex] > 0:
+		timemult = exer_rout3[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'yoga'
+	elseif exer_rout4[exercisex] > 0:
+		timemult = exer_rout4[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+	end
+end
+
+if $ARGS[0] = 'auto1':
+	if exer_rout1[exercisex] > 0:
+		timemult = exer_rout1[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'press'
+	elseif exer_rout2[exercisex] > 0:
+		timemult = exer_rout2[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'rope'
+	elseif exer_rout3[exercisex] > 0:
+		timemult = exer_rout3[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'yoga'
+	elseif exer_rout4[exercisex] > 0:
+		timemult = exer_rout4[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+	else
+		gt 'exercise', 'auto_end'
+	end
+end
+
+if $ARGS[0] = 'auto2':
+	if exer_rout2[exercisex] > 0:
+		timemult = exer_rout2[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'rope'
+	elseif exer_rout3[exercisex] > 0:
+		timemult = exer_rout3[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'yoga'
+	elseif exer_rout4[exercisex] > 0:
+		timemult = exer_rout4[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+	else
+		gt 'exercise', 'auto_end'
+	end
+end
+
+if $ARGS[0] = 'auto3':
+	if exer_rout3[exercisex] > 0:
+		timemult = exer_rout3[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'yoga'
+	elseif exer_rout4[exercisex] > 0:
+		timemult = exer_rout4[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+	else
+		gt 'exercise', 'auto_end'
+	end
+end
+
+if $ARGS[0] = 'auto4':
+	if exer_rout4[exercisex] > 0:
+		timemult = exer_rout4[exercisex] & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+	else
+		gt 'exercise', 'auto_end'
+	end
+end
+
+if $ARGS[0] = 'auto_end':
+	exer_auto = 0
+	gt 'exercise', 'workout'
+end
+
+if $ARGS[0] = 'manual':
+	$menu_loc = 'exercise'
+	$menu_arg = 'manual'
+	menu_off = 0
+	cla
+	act 'Return':gt 'exercise', 'workout'
+	if pcs_stam >= 15:
+		Act 'Do pushups for 15 minutes': timemult = 1 & gs 'exercise', 'timestring' & gt 'exercise', 'push'
+		Act 'Do crunches for 15 minutes': timemult = 1 & gs 'exercise', 'timestring' & gt 'exercise', 'press'
+		if skak > 0 and $loc ! 'meadow':
+			Act 'Jump rope for 15 minutes': timemult = 1 & gs 'exercise', 'timestring' & gt 'exercise', 'rope'
+		end
+	end
+	if pcs_stam >= 10:
+		if bookYog > 0:
+			Act 'Do yoga for 15 minutes': timemult = 1 & gs 'exercise', 'timestring' & gt 'exercise', 'yoga'
+		end
+		if obruch > 0 and $loc ! 'meadow':
+			Act 'Use your hula hoop for 15 minutes': timemult = 1 & gs 'exercise', 'timestring' & gt 'exercise', 'hula'
+		end
+	end
+	if pcs_stam >= 30:
+		Act 'Do pushups for 30 minutes': timemult = 2 & gs 'exercise', 'timestring' & gt  'exercise', 'push'
+		Act 'Do crunches for 30 minutes': timemult = 2 & gs 'exercise', 'timestring' & gt  'exercise', 'press'
+		if skak > 0 and $loc ! 'meadow':
+			Act 'Jump rope for 30 minutes': timemult = 2 & gs 'exercise', 'timestring' & gt  'exercise', 'rope'
+		end
+	end
+	if pcs_stam >= 20:
+		if bookYog > 0:
+			Act 'Do yoga for 30 minutes': timemult = 2 & gs 'exercise', 'timestring' & gt  'exercise', 'yoga'
+		end
+		if obruch > 0 and $loc ! 'meadow':
+			Act 'Use your hula hoop for 30 minutes': timemult = 2 & gs 'exercise', 'timestring' & gt  'exercise', 'hula'
+		end
+	end
+	if pcs_stam >= 45:
+		Act 'Do pushups for 45 minutes': timemult = 3 & gs 'exercise', 'timestring' & gt  'exercise', 'push'
+		Act 'Do crunches for 45 minutes': timemult = 3 & gs 'exercise', 'timestring' & gt  'exercise', 'press'
+		if skak > 0 and $loc ! 'meadow':
+			Act 'Jump rope for 45 minutes': timemult = 3 & gs 'exercise', 'timestring' & gt  'exercise', 'rope'
+		end
+	end
+	if pcs_stam >= 30:
+		if bookYog > 0:
+			Act 'Do yoga for 45 minutes': timemult = 3 & gs 'exercise', 'timestring' & gt  'exercise', 'yoga'
+		end
+		if obruch > 0 and $loc ! 'meadow':
+			Act 'Use your hula hoop for 45 minutes': timemult = 3 & gs 'exercise', 'timestring' & gt  'exercise', 'hula'
+		end
+	end
+	if pcs_stam >= 60:
+		Act 'Do pushups for 60 minutes': timemult = 4 & gs 'exercise', 'timestring' & gt  'exercise', 'push'
+		Act 'Do crunches for 60 minutes': timemult = 4 & gs 'exercise', 'timestring' & gt  'exercise', 'press'
+		if skak > 0 and $loc ! 'meadow':
+			Act 'Jump rope for 60 minutes': timemult = 4 & gs 'exercise', 'timestring' & gt  'exercise', 'rope'
+		end
+	end
+	if pcs_stam >= 40:
+		if bookYog > 0:
+			Act 'Do yoga for 60 minutes': timemult = 4 & gs 'exercise', 'timestring' & gt  'exercise', 'yoga'
+		end
+		if obruch > 0 and $loc ! 'meadow':
+			Act 'Use your hula hoop for 60 minutes': timemult = 4 & gs 'exercise', 'timestring' & gt  'exercise', 'hula'
+		end
+	end
+	if pcs_stam < 10 or pcs_stam < 15 and bookYog + obruch = 0:
+		'You don''t have the energy to work out anymore now.'
+	end
+end
+
+if $ARGS[0] = 'routines':
+	*clr & cla
+	'<center><h2>Exercise Routines</h2></center>'
+	*nl
+	'<center><table>'
+	'<TD><b>Routine</b></TD><TD><b>Push ups</b></TD><TD><b>Crunches</b></TD><TD><b>Jump rope</b></TD><TD><b>Yoga</TD><TD><b>Hula hoop</b></TD>'
+	'<TR><TD width="100" cellspacing="2" align="left">'+iif(exer_menu = 1,'<a href="exec:$excer_name[1] = input (''<center>Enter name for exercise routine 1<br>Leave blank to restore default name.</center>'') & gs ''exercise'', ''rename'' & gt ''exercise'', ''setup''"><<$excer_name[1]>>:</a> ','<<$excer_name[1]>>:</a> ')+'</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout0[1]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout1[1]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout2[1]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout3[1]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout4[1]*15>></b> minutes</TD>'
+	'<TR><TD width="100" cellspacing="2" align="left">'+iif(exer_menu = 1,'<a href="exec:$excer_name[2] = input (''<center>Enter name for exercise routine 2<br>Leave blank to restore default name.</center>'') & gs ''exercise'', ''rename'' & gt ''exercise'', ''setup''"><<$excer_name[2]>>:</a> ','<<$excer_name[2]>>:</a> ')+'</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout0[2]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout1[2]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout2[2]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout3[2]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout4[2]*15>></b> minutes</TD>'
+	'<TR><TD width="100" cellspacing="2" align="left">'+iif(exer_menu = 1,'<a href="exec:$excer_name[3] = input (''<center>Enter name for exercise routine 3<br>Leave blank to restore default name.</center>'') & gs ''exercise'', ''rename'' & gt ''exercise'', ''setup''"><<$excer_name[3]>>:</a> ','<<$excer_name[3]>>:</a> ')+'</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout0[3]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout1[3]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout2[3]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout3[3]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout4[3]*15>></b> minutes</TD>'
+	'<TR><TD width="100" cellspacing="2" align="left">'+iif(exer_menu = 1,'<a href="exec:$excer_name[4] = input (''<center>Enter name for exercise routine 4<br>Leave blank to restore default name.</center>'') & gs ''exercise'', ''rename'' & gt ''exercise'', ''setup''"><<$excer_name[4]>>:</a> ','<<$excer_name[4]>>:</a> ')+'</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout0[4]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout1[4]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout2[4]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout3[4]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout4[4]*15>></b> minutes</TD>'
+	'<TR><TD width="100" cellspacing="2" align="left">'+iif(exer_menu = 1,'<a href="exec:$excer_name[5] = input (''<center>Enter name for exercise routine 5<br>Leave blank to restore default name.</center>'') & gs ''exercise'', ''rename'' & gt ''exercise'', ''setup''"><<$excer_name[5]>>:</a> ','<<$excer_name[5]>>:</a> ')+'</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout0[5]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout1[5]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout2[5]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout3[5]*15>></b> minutes</TD><TD width="100" cellspacing="2" align="left"><b><<exer_rout4[5]*15>></b> minutes</TD>'
+	'<TR><TD colspan="7"><br><br><center><a href="exec:gt ''exercise'', ''setup''">Define up to 5 automated exercise routines.</a></center></TD></TR>'
+	'</table></center>'
+	*nl
+end
+
+if $ARGS[0] = 'setup':
+	$menu_loc = 'exercise'
+	$menu_arg = 'setup'
+	menu_off = 0
+	*clr & cla
+	exer_menu = 1
+	gs 'exercise', 'routines'
+	act 'Return': gt 'exercise', 'workout'
+	act 'Define <<$excer_name[1]>>':i = 1 & gt 'exercise', 'matrix'
+	act 'Rename <<$excer_name[1]>>':
+		$excer_name[1] = input ('<center>Enter name for exercise routine 1<br>Leave blank to restore default name.</center>')
+		gs 'exercise', 'rename'
+		gt 'exercise', 'setup'
+	end
+	act 'Define <<$excer_name[2]>>':i = 2 & gt 'exercise', 'matrix'
+	act 'Rename <<$excer_name[2]>>':
+		$excer_name[2] = input ('<center>Enter name for exercise routine 2<br>Leave blank to restore default name.</center>')
+		gs 'exercise', 'rename'
+		gt 'exercise', 'setup'
+	end
+	act 'Define <<$excer_name[3]>>':i = 3 & gt 'exercise', 'matrix'
+	act 'Rename <<$excer_name[3]>>':
+		$excer_name[3] = input ('<center>Enter name for exercise routine 3<br>Leave blank to restore default name.</center>')
+		gs 'exercise', 'rename'
+		gt 'exercise', 'setup'
+	end
+	act 'Define <<$excer_name[4]>>':i = 4 & gt 'exercise', 'matrix'
+	act 'Rename <<$excer_name[4]>>':
+		$excer_name[4] = input ('<center>Enter name for exercise routine 4<br>Leave blank to restore default name.</center>')
+		gs 'exercise', 'rename'
+		gt 'exercise', 'setup'
+	end
+	act 'Define <<$excer_name[5]>>':i = 5 & gt 'exercise', 'matrix'
+	act 'Rename <<$excer_name[5]>>':
+		$excer_name[5] = input ('<center>Enter name for exercise routine 5<br>Leave blank to restore default name.</center>')
+		gs 'exercise', 'rename'
+		gt 'exercise', 'setup'
+	end
+!!exer_rout1 = default
+end
+
+if $ARGS[0] = 'rename':
+	if $excer_name[1] = '':$excer_name[1] = 'Default 1'
+	if $excer_name[2] = '':$excer_name[2] = 'Default 2'
+	if $excer_name[3] = '':$excer_name[3] = 'Default 3'
+	if $excer_name[4] = '':$excer_name[4] = 'Default 4'
+	if $excer_name[5] = '':$excer_name[5] = 'Default 5'
+end
+
+
+if $ARGS[0] = 'matrix':
+	*clr & cla
+	exer_stam[i] = exer_stam0[i] + exer_stam1[i] + exer_stam2[i] + exer_stam3[i] + exer_stam4[i]
+	
+	act'Confirm': gt 'exercise', 'setup'
+
+	'Choose your exercise options from the following table:'
+	'<center><table border=0 cellspacing=0 cellpadding=10 width=1000><TH>Exercise</TH><TH>None</TH><TH>15 mins</TH><TH>30 mins</TH><TH>45 mins</TH><TH>60 mins</TH>'
+	gs 'exercise', 'matrixdata', 0, 'Push ups'
+	gs 'exercise', 'matrixdata', 1, 'Crunches'
+	if skak > 0 and $loc ! 'meadow': gs 'exercise', 'matrixdata', 2, 'Jump rope'
+	if bookYog > 0: gs 'exercise', 'matrixdata', 3, 'Yoga'
+	if obruch > 0 and $loc ! 'meadow': gs 'exercise', 'matrixdata', 4, 'Hula hoop'
+
+	'</center></table>'
+	*nl
+	'Total stamina required - <<exer_stam[i]>>'
+end
+
+if $ARGS[0] = 'matrixdata':
+	'<TR>'
+	*p '<TD><<$ARGS[2]>></TD>'
+
+	if dyneval('RESULT = exer_rout<<ARGS[1]>>[<<i>>]') = 0:
+		dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 0'
+		*p '<TD>Selected</TD>'
+	else
+		*p '<TD><a href="exec:dynamic ''exer_rout<<ARGS[1]>>[i] = 0'' & gt ''exercise'', ''matrix''">Select</a></TD>'
+	end
+
+	if dyneval('RESULT = exer_rout<<ARGS[1]>>[<<i>>]') = 1:
+		if ARGS[1] >= 3:
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 10'
+		else
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 15'
+		end
+		*p '<TD>Selected</TD>'
+	else
+		*p '<TD><a href="exec:dynamic ''exer_rout<<ARGS[1]>>[i] = 1'' & gt ''exercise'', ''matrix''">Select</a></TD>'
+	end
+
+	if dyneval('RESULT = exer_rout<<ARGS[1]>>[<<i>>]') = 2:
+		if ARGS[1] >= 3:
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 20'
+		else
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 30'
+		end
+		*p '<TD>Selected</TD>'
+	else
+		*p '<TD><a href="exec:dynamic ''exer_rout<<ARGS[1]>>[i] = 2'' & gt ''exercise'', ''matrix''">Select</a></TD>'
+	end
+
+	if dyneval('RESULT = exer_rout<<ARGS[1]>>[<<i>>]') = 3:
+		if ARGS[1] >= 3:
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 30'
+		else
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 45'
+		end
+		*p '<TD>Selected</TD>'
+	else
+		*p '<TD><a href="exec:dynamic ''exer_rout<<ARGS[1]>>[i] = 3'' & gt ''exercise'', ''matrix''">Select</a></TD>'
+	end
+
+	if dyneval('RESULT = exer_rout<<ARGS[1]>>[<<i>>]') = 4:
+		if ARGS[1] >= 3:
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 40'
+		else
+			dynamic 'exer_stam<<ARGS[1]>>[<<i>>] = 60'
+		end
+		*p '<TD>Selected</TD>'
+	else
+		*p '<TD><a href="exec:dynamic ''exer_rout<<ARGS[1]>>[i] = 4'' & gt ''exercise'', ''matrix''">Select</a></TD>'
+	end
+
+	exer_stam[i] = exer_stam0[i] + exer_stam1[i] + exer_stam2[i] + exer_stam3[i] + exer_stam4[i]
+end
+
+if $ARGS[0] = 'hula':
+	cla
+	*clr
+	loopcount = 1
+	:timeloophula
+	gs 'exercise', 'tier2', 0, 'agil_exp', 'react_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'timeloophula'
+	loopcount = 0
+	timemult = 0
+	if $clothingworntype ! 'nude':
+		if $location_type = 'secluded':
+			if month >=5 and month <= 9:
+				'<center><img <<$set_imgh>> src="images/pc/activities/hulaoutdoors.jpg"></center>'
+			else
+				'<center><video autoplay loop src="images/pc/activities/hulawinter.mp4"></video></center>'
+			end
+		else
+			'<center><video autoplay loop src="images/pc/activities/huladressed.mp4"></video></center>'
+		end
+	elseif $pantyworntype ! 'none':
+		'<center><video autoplay loop src="images/pc/activities/hula_underwear.mp4"></video></center>'
+	else
+		'<center><video autoplay loop src="images/pc/activities/obruch.mp4"></video></center>'
+	end
+	'You improve your dexterity by using your hula hoop for <<$timestring>> minutes.'
+	gs 'stat'
+	if exer_auto = 1:
+		act 'Continue': gt 'exercise', 'auto_end'
+	else
+		act 'Continue': gt 'exercise', 'manual'
+	end
+end
+
+if $ARGS[0] = 'yoga':
+	*clr & cla
+	loopcount = 1
+	:timeloopyoga
+	if willday_yoga ! daystart: willday_yoga = daystart & yoga_counter = 0	
+	gs 'exercise', 'tier2', 0, 'sprt_exp', 'agil_exp', iif(yoga_counter < 4, 'pcs_willpwr', '')	
+	yoga_counter += 1
+	if loopcount < timemult: loopcount += 1 & jump 'timeloopyoga'
+	loopcount = 0
+	timemult = 0
+
+	if $clothingworntype ! 'nude':
+		if $location_type = 'secluded':
+			'<center><img <<$set_imgh>> src="images/pc/activities/yoga_dressed_outdoor.jpg"></center>'
+		else
+			'<center><video autoplay loop src="images/pc/activities/yoga_dressed.mp4"></video></center>'
+		end
+	elseif $pantyworntype ! 'none':
+		'<center><video autoplay loop src="images/pc/activities/yoga_underwear.mp4"></video></center>'
+	else
+		'<center><video autoplay loop src="images/pc/activities/yoga_naked.mp4"></video></center>'
+	end
+
+	'You spend <<$timestring>> minutes stretching and straining your muscles in various poses, improving your will and flexibility.'
+	gs 'stat'
+	if exer_auto = 1:
+		act 'Continue': gt 'exercise', 'auto4'
+	else
+		act 'Continue': gt 'exercise', 'manual'
+	end
+end
+
+if $ARGS[0] = 'rope':
+	cla
+	*clr
+	loopcount = 1
+	:timelooprope
+	gs 'exercise', 'tier3', 0, 'agil_exp', 'react_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'timelooprope'
+	loopcount = 0
+	timemult = 0
+
+	if $clothingworntype ! 'nude':
+		'<center><video autoplay loop src="images/pc/activities/rope_dressed.mp4"></video></center>'
+	elseif $pantyworntype ! 'none':
+		'<center><img <<$set_imgh>> src="images/pc/activities/rope_underwear.jpg"></center>'
+	else
+		'<center><video autoplay loop src="images/pc/activities/rope_naked.mp4"></video></center>'
+	end
+
+	'You jump rope for <<$timestring>> minutes, improving your speed.'
+	gs 'stat'
+	if exer_auto = 1:
+		act 'Continue': gt 'exercise', 'auto3'
+	else
+		act 'Continue': gt 'exercise', 'manual'
+	end
+end
+
+if $ARGS[0] = 'press':
+	cla
+	*clr
+	loopcount = 1
+	:timelooppress
+	gs 'exercise', 'tier3', 0, 'vital_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'timelooppress'
+	loopcount = 0
+	timemult = 0
+
+	if $clothingworntype ! 'nude':
+		'<center><video autoplay loop src="images/pc/activities/abdominal_dressed.mp4"></video></center>'
+	elseif $pantyworntype ! 'none':
+		'<center><video autoplay loop src="images/pc/activities/abdominal_underwear.mp4"></video></center>'
+	else
+		'<center><video autoplay loop src="images/pc/activities/abdominal_naked.mp4"></video></center>'
+	end
+
+	'You do a series of abdominal exercises for <<$timestring>> minutes, improving your endurance.'
+	gs 'stat'
+	if exer_auto = 1:
+		act 'Continue': gt 'exercise', 'auto2'
+	else
+		act 'Continue': gt 'exercise', 'manual'
+	end
+end
+
+if $ARGS[0] = 'push':
+	cla
+	*clr
+	loopcount = 1
+	:timelooppush
+	gs 'exercise', 'tier3', 0, 'stren_exp'
+	if loopcount < timemult: loopcount += 1 & jump 'timelooppush'
+	loopcount = 0
+	timemult = 0
+
+	if $clothingworntype ! 'nude':
+		'<center><video autoplay loop src="images/pc/activities/push_dressed.mp4"></video></center>'
+	elseif $pantyworntype ! 'none':
+		'<center><video autoplay loop src="images/pc/activities/push_underwear.mp4"></video></center>'
+	else
+		'<center><video autoplay loop src="images/pc/activities/push_naked.mp4"></video></center>'
+	end
+	'You do push-ups for <<$timestring>> minutes, improving your strength.'
+
+	randpushfact = rand(-5,5)
+	if pcs_energy < 40: randpushfact -= RAND(1,10)
+
+	pushnum = (pcs_stren * pcs_sleep * pcs_health)  / ( 1 * 67 *  healthmax) + randpushfact
+
+	if pushnum < 1: pushnum = rand(1,5)
+	KILLVAR 'randpushfact'
+	'<br>You managed to do <<pushnum>> push-ups. Your previous record is <<pushrecord>>.'
+
+	if pushrecord < pushnum:pushrecord = pushnum & 'This is a new record!'
+	gs 'stat'
+	if exer_auto = 1:
+		act 'Continue': gt 'exercise', 'auto1'
+	else
+		act 'Continue': gt 'exercise', 'manual'
+	end
+end
+
+if $ARGS[0] = 'tier1':
+	if ARGS[1] = 0:
+		minut += 15
+	else
+		minut += ARGS[1]
+	end
+
+	gs 'exercise', 'get_sport_clothes_exercise_bonus'
+	pcs_stam -= (5 * (10 - sport_clothes_exercise_bonus)) / 10
+
+	gs 'sweat', 'add', 3
+	fat -= 1
+	pcs_energy -= 1
+	pcs_hydra -= 2
+	pcs_mood += 3
+	if $ARGS[3] = '':
+		dynamic '<<$ARGS[2]>> += 1'
+		if $ARGS[2] = 'vital_exp' or $ARGS[2] = 'stren_exp':
+			dynamic '<<$ARGS[2]>> += rand(0,steroid_dose)'
+			if steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+		end
+	else
+		i = 2
+		:exploop
+		if $ARGS[i] ! '':
+			dynamic '<<$ARGS[i]>> += rand(0,1)'
+			if $ARGS[i] = 'vital_exp' or $ARGS[i] = 'stren_exp': dynamic '<<$ARGS[i]>> += rand(0,steroid_dose) & steroidcheck = 1'
+			i += 1
+			jump 'exploop'
+		else
+			if steroidcheck = 1 and steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+			killvar 'steroidcheck'
+			killvar 'i'
+			exit
+		end
+	end
+end
+
+if $ARGS[0] = 'tier2':
+	if ARGS[1] = 0:
+		minut += 15
+	else
+		minut += ARGS[1]
+	end
+
+	gs 'exercise', 'get_sport_clothes_exercise_bonus'
+	pcs_stam -= (10 * (10 - sport_clothes_exercise_bonus)) / 10
+
+	gs 'sweat', 'add', 10
+	fat -= 2
+	pcs_energy -= 2
+	pcs_hydra -= 4
+	pcs_mood += 5
+	if $ARGS[3] = '':
+		dynamic '<<$ARGS[2]>> += rand(2,3)'
+		if $ARGS[2] = 'vital_exp' or $ARGS[2] = 'stren_exp':
+			dynamic '<<$ARGS[2]>> += rand(0,steroid_dose)'
+			if steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+		end
+	else
+		i = 2
+		:exploop2
+		if $ARGS[i] ! '':
+			dynamic '<<$ARGS[i]>> += rand(1,2)'
+			if $ARGS[i] = 'vital_exp' or $ARGS[i] = 'stren_exp': dynamic '<<$ARGS[i]>> += rand(0,steroid_dose) & steroidcheck = 1'
+			i += 1
+			jump 'exploop2'
+		else
+			if steroidcheck = 1 and steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+			killvar 'steroidcheck'
+			killvar 'i'
+		end
+	end
+end
+
+if $ARGS[0] = 'tier3':
+	if ARGS[1] = 0:
+		minut += 12
+	else
+		minut += ARGS[1]
+	end
+
+	gs 'exercise', 'get_sport_clothes_exercise_bonus'
+	pcs_stam -= (15 * (10 - sport_clothes_exercise_bonus)) / 10
+
+	gs 'sweat', 'add', 15
+	fat -= 3
+	pcs_energy -= 3
+	pcs_hydra -= 6
+	pcs_mood += 5
+	if $ARGS[3] = '':
+		dynamic '<<$ARGS[2]>> += rand(3,5)'
+		if $ARGS[2] = 'vital_exp' or $ARGS[2] = 'stren_exp':
+			dynamic '<<$ARGS[2]>> += rand(0,steroid_dose)'
+			if steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+		end
+	else
+		i = 2
+		:exploop3
+		if $ARGS[i] ! '':
+			dynamic '<<$ARGS[i]>> += rand(2,3)'
+			if $ARGS[i] = 'vital_exp' or $ARGS[i] = 'stren_exp': dynamic '<<$ARGS[i]>> += rand(0,steroid_dose) & steroidcheck = 1'
+			i += 1
+			jump 'exploop3'
+		else
+			if steroidcheck = 1 and steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+			killvar 'steroidcheck'
+			killvar 'i'
+		end
+	end
+end
+
+if $ARGS[0] = 'tier4':
+	if ARGS[1] = 0:
+		minut += 15
+	else
+		minut += ARGS[1]
+	end
+
+	gs 'exercise', 'get_sport_clothes_exercise_bonus'
+	pcs_stam -= (25 * (10 - sport_clothes_exercise_bonus)) / 10
+
+	gs 'sweat', 'add', 25
+	fat -= 4
+	pcs_energy -= 4
+	pcs_hydra -= 12
+	pcs_mood += 5
+	if $ARGS[3] = '':
+		dynamic '<<$ARGS[2]>> += rand(7,10)'
+		if $ARGS[2] = 'vital_exp' or $ARGS[2] = 'stren_exp':
+			dynamic '<<$ARGS[2]>> += rand(0,steroid_dose)'
+			if steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+		end
+	else
+		i = 2
+		:exploop4
+		if $ARGS[i] ! '':
+			dynamic '<<$ARGS[i]>> += rand(3,5)'
+			if $ARGS[i] = 'vital_exp' or $ARGS[i] = 'stren_exp': dynamic '<<$ARGS[i]>> += rand(0,steroid_dose) & steroidcheck = 1'
+			i += 1
+			jump 'exploop4'
+		else
+			if steroidcheck = 1 and steroid_dose > 0 and rand(1,5) <= steroid_dose:clit_size += rand(0,1)
+			killvar 'steroidcheck'
+			killvar 'i'
+		end
+	end
+end
+
+if $ARGS[0] = 'timestring':
+	if timemult = 1: $timestring = 'fifteen'
+	if timemult = 2: $timestring = 'thirty'
+	if timemult = 3: $timestring = 'forty-five'
+	if timemult = 4: $timestring = 'sixty'
+end
+
+
+if $ARGS[0] = 'get_sport_clothes_exercise_bonus':
+	sport_clothes_exercise_bonus = 0
+	if $braworntype = 'sport':
+		sport_clothes_exercise_bonus = sport_clothes_exercise_bonus + 1
+	end
+	if $pantyworntype = 'sport':
+		sport_clothes_exercise_bonus = sport_clothes_exercise_bonus + 1
+	end
+	if $clothingworntype = 'exercise':
+		sport_clothes_exercise_bonus = sport_clothes_exercise_bonus + 1
+	end
+	if $shoeworntype = 'trainers':
+		sport_clothes_exercise_bonus = sport_clothes_exercise_bonus + 1
+	end
+end
+--- exercise ---------------------------------
+

@@ -1,0 +1,1695 @@
+# telefon
+! Draw screens for mobile phone.
+!
+! The base storage for Contacts is controlled by the Array "$contact". This array is a list of NPC identifiers
+! telling us which ones are in your contact list. There are several other ancillary arrays that support the functions
+! of a contact. Each of these has matching indexes to the $contact array. These are mostly used internally, but a
+! writer can make use of them if they need to.
+!
+! ContactList arrays:
+! $contact[]     = NPC code for contact. ('A129', 'A29', 'B13', 'C14')
+! $contactIcon[] = Icon for the contact to use. If path is left off, standard phone icon folder is used. if file extension is left off, '.png' is used
+! $contactOCode[] = Code to execute if call is placed to this contact
+! $contactOSche[] = If statement code to determine schedule for outbound calls
+! $contactICode[] = Code to execute for Incoming call
+! $contactISche[] = if statement code for schedule of incoming calls
+! contactAnon[] = 0 if contact number is known to Sveta, 1 for Anonymous
+! contactToday[] = Calls from this contact today
+! contactWeek[] = Calls from this contact this week
+! contactLastCall[] = last time this Contact called
+!
+! Add a contact with AddContact
+!	gs 'telefon', 'AddContact', <NPC Code>, <Icon for NPC>, <Code for Incoming Call>, <Limiter for Incoming Call>, <Code for Outgoing Call>, <Limiter for Outgoign Call>, <Anonymous=1>
+!  Example, to Add Mother:
+!	gs 'telefon', 'AddContact', 'A29', 'icon_npc1', "gs 'telefon', 'Phone_call'", "hour >= 8 and hour <= 20", "gs 'telefon', 'lover'", "hour >= 8 and hour <= 20", 0
+!
+! Remove a contact with DeleteContact
+!	gs 'telefon', 'DeleteContact', <NPC Code>
+!  Example, to delete Mom:
+!	gs 'telefon', 'DeleteContact', 'A29'
+
+! Header for Phone Screen.  Keeps consistent and in one place
+$telefon['header'] = '<center>
+	<b><<$mid(100+hour,2,2)>>:<<$mid(100+minut,2,2)>></b><br>
+	<TABLE cellspacing="0" width="80%">
+		<TR>
+			<TD><img src="images/system/icon/icon_statusbar_left.png"></TD>
+			<TD></TD>
+			<TD align="right"><img src="images/system/icon/icon_statusbar_right.png"></TD>
+		</TR>
+	</TABLE><br>'
+! Footer for phone screen.  Body should be between these two
+$telefon['footer'] = '
+	<a href="exec:gs''telefon'', ''Phone_menu''"><img src="images/system/icon/back.png"></a><br><br>
+	<a href="exec:gs''stat''">Put Phone Away.</a><br>
+</center>'
+
+! This is how we print the screnn on to the Additional Dscription window
+$telefon['print'] = {
+	clr
+	pl func('cleanHTML',$telefon['header'] + $telefon['body'] + $telefon['footer'])
+}
+
+! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
+$telefon['contact'] = {
+	! Contact Row in phone contact list
+	! $ARGS[0] = NPC icon
+	! $ARGS[1] = NPC Nickname
+	! $ARGS[2] = Code to execute for making a Call
+	! $ARGS[3] = if statement for determining if NPC is avaiable
+	$telefon['ContactIcon'] = $ARGS[0]
+	$telefon['ContactNickName'] = $ARGS[1]
+	$telefon['ContactCallCode'] = $ARGS[2]
+	$telefon['ContactCallSchedule'] = $ARGS[3]
+	!If file extension is not given, .png is assumed
+	if instr($telefon['ContactIcon'],'.') = 0:
+		$telefon['ContactIcon'] += '.png'
+	end
+	!If path is not given, default phone icon path is assumed
+	if instr($telefon['ContactIcon'],'/') = 0:
+		$telefon['ContactIcon'] = 'images/system/phone/icons/' + $telefon['ContactIcon']
+	end
+	!If Contact is not in available timeframe, we disable contact calling
+	if dyneval('result = iif(<<$telefon["ContactCallSchedule"]>>,1,0)') = 0:
+		$telefon['ContactCallCode'] = "gs 'telefon', 'phone_call_reject'"
+	end
+	$result = '<TABLE cellspacing="0" width="80%"><TR>
+		<TD><img src="<<$telefon[''ContactIcon'']>>"></TD>
+		<TD><<$telefon[''ContactNickName'']>></TD>
+		<TD align="right"><a href="exec:$callerid = ''<<$telefon[''ContactIcon'']>>'' & <<$telefon[''ContactCallCode'']>>"><b>Call</b></a></TD>
+	</TR></TABLE><br>'
+}
+
+
+if $ARGS[0] = 'AddContact':
+	! $ARGS[1] = NPC Array identifier
+	! $ARGS[2] = Icon
+	! $ARGS[3] = Code to execute for Call out
+	! $ARGS[4] = If statement code to determine schedule for outbound calls
+	! $ARGS[5] = Code to execute for Incoming call
+	! $ARGS[6] = if statement code for schedule of incoming calls
+	!  ARGS[7] = Anonymous? 0 if not, 1 if yes
+	$telefonCon['NPC'] = $ARGS[1]
+	$telefonCon['Icon'] = $ARGS[2]
+	$telefonCon['OutCode'] = $ARGS[3]
+	$telefonCon['OutSched'] = $ARGS[4]
+	$telefonCon['InCode'] = $ARGS[5]
+	$telefonCon['InSched'] = $ARGS[6]
+	telefonCon['Anonymous'] = ARGS[7]
+	telefonCon['ContactListID'] = arrpos('$contact',$telefonCon['NPC'])
+	if telefonCon['ContactListID'] = -1:
+		telefonCon['ContactListID'] = arrsize('$contact')
+		$contact[telefonCon['ContactListID']] = $telefonCon['NPC']
+	end
+	$contactIcon[telefonCon['ContactListID']] = $telefonCon['Icon']
+	$contactOCode[telefonCon['ContactListID']] = $telefonCon['OutCode']
+	$contactOSche[telefonCon['ContactListID']] = $telefonCon['OutSched']
+	$contactICode[telefonCon['ContactListID']] = $telefonCon['InCode']
+	$contactISche[telefonCon['ContactListID']] = $telefonCon['InSched']
+	contactAnon[telefonCon['ContactListID']] = telefonCon['Anonymous']
+
+	killvar 'telefonCon'
+	killvar '$telefonCon'
+end &! --- AddContact ---
+
+if $ARGS[0] = 'DeleteContact':
+	! $ARGS[1] = NPC Array identifier
+	$telefonCon['NPC'] = $ARGS[1]
+	telefonCon['ContactListID'] = arrpos('$contact',$telefonCon['NPC'])
+	if telefonCon['ContactListID'] > -1:
+		killvar '$contact', telefonCon['ContactListID']
+		killvar '$contactIcon', telefonCon['ContactListID']
+		killvar '$contactCode', telefonCon['ContactListID']
+	end
+
+	killvar 'telefonCon'
+	killvar '$telefonCon'
+end &! --- AddContact ---
+
+if $ARGS[0] = 'ContactList':
+	$telefon['body'] = '
+	<font size=6>Contacts</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"><br><br>'
+
+	!!iterating all Contacts
+	i=0
+	:contactloop2
+	if i < arrsize('$contact'):
+		if contactAnon[i] = 0:
+			$telefon['body'] += dyneval($telefon['contact'],$contactIcon[i],$npc_nickname[$contact[i]],$contactOCode[i],$contactOSche[i])
+		end
+		i += 1
+		jump 'contactloop2'
+	end
+
+	! Oddball Contacts
+	if telalla > 0:
+		$telefon['body'] += dyneval($telefon['contact'],'icon_ira1','Alla',"$telsob = 'Alla' & gt 'telefon', 'mobilaraz'","hour >= 8 and hour <= 20")
+	end
+	if telmasha > 0:
+		$telefon['body'] += dyneval($telefon['contact'],'icon_masha','Masha',"$telsob = 'Masha' & gt 'telefon', 'mobilaraz'","hour >= 8 and hour <= 20")
+	end
+
+	!! iterating all lovers
+	lover_number = 0
+	:loverloop2
+	if pcs_lovers[lover_number] = 1 and svidanie[lover_number] = 0:
+		$telefon['body'] += dyneval($telefon['contact'],'icon_bf'+lover_picture[lover_number],$loverdesc[lover_number],"lover_number = <<lover_number>> & gt 'telefon', 'callingTheLover', <<lover_number>>","hour > 6 and hour < 20")
+	end
+	lover_number += 1
+	if lover_number < arrsize('pcs_lovers'): jump 'loverloop2'
+
+	dynamic $telefon['print']
+	killvar 'i'
+	killvar 'lover_number'
+end &! --- ContactList ---
+
+
+! Reset Contact Call Stats Daily and Weekly
+!
+! ARGS[1] = New Week if 1, 0 if same week
+if $ARGS[0] = 'DailyStatRefresh':
+	i=0
+	:DailyStatRefLoop
+	if i < arrsize('$contact'):
+		contactToday[i] = 0
+		if ARGS[1] = 1:
+			contactWeek[i] = 0
+		end
+		i += 1
+		jump 'DailyStatRefLoop'
+	end
+	killvar 'i'
+end
+
+
+! Determine if any Incoming calls should happen
+!
+!	ARGS[1] = Previous totminut
+!	ARGS[2] = Current totminut
+if $ARGS[0] = 'IncomingCheck':
+	telefIncCheck['PrevTotalMinutes'] = ARGS[1]
+	telefIncCheck['NewTotalMinutes'] = ARGS[2]
+
+	if telefIncCheck['PrevTotalMinutes'] > telefIncCheck['NewTotalMinutes'] or telefon['LastIncCallCheck'] > telefIncCheck['NewTotalMinutes'] or telefon['LastIncCallCheck'] = 0:
+		! Time Cheat has been used, so we should do some cleanup
+		telefon['LastIncCallCheck'] = telefIncCheck['NewTotalMinutes']
+	end
+
+	! Limit the number of calls per day
+	! right now allow every 60 minutes
+	if telefIncCheck['NewTotalMinutes'] - telefon['LastIncCallCheck'] > 60 and menu_off = 0:
+		telefon['LastIncCallCheck'] = telefIncCheck['NewTotalMinutes']
+		gs 'telefon','IncomingCallChooser'
+	end
+
+	killvar 'telefIncCheck'
+end
+
+if $ARGS[0] = 'IncomingCallChooser':
+	! When an Incoming call happens, choose who it comes from
+
+	! Add Contacts
+	i=0
+	:telefonIncLoop1
+	if i < arrsize('$contact'):
+		if $contactICode[i] ! "":
+			if dyneval('result = iif(<<$contactISche[i]>>,1,0)') = 1:
+				j = arrsize('$telefIncCall')
+				if contactAnon[i] = 1:
+					$telefIncIcon[j] = "images/system/phone/decline.png"
+					$telefIncName[j] = "Unknown Caller"
+				else
+					$telefIncIcon[j] = $contactIcon[i]
+					$telefIncName[j] = $npc_nickname[$contact[i]]
+				end
+				$telefIncCall[j] = $contactICode[i]
+				$telefIncNPC[j] = $contact[i]
+			end
+		end
+		i += 1
+		jump 'telefonIncLoop1'
+	end
+
+	! Add Lovers
+	i=0
+	:telefonIncLoop2
+	if i < 3 and hour > 5 and hour < 20:
+		if pcs_lovers[i] = 1 and svidanie[i] = 0 and loverday[i] ! daystart and rand(1,100) > 95:
+			j = arrsize('$telefIncCall')
+			$telefIncCall[j] = "cls & gs 'telefon', 'lover', <<i>>"
+			$telefIncIcon[j] = 'images/characters/shared/<<lover_picture[i]>>.jpg'
+			$telefIncName[j] = $loverdesc[i]
+		end
+		i += 1
+		jump 'telefonIncLoop2'
+	end
+
+	if arrsize('$telefIncCall') > 0:
+		j = rand(0,arrsize('$telefIncCall')-1)
+		if $telefIncNPC[j] ! "":
+			i = arrpos('$contact',$telefIncNPC[j])
+			contactLastCall[i] = totminut
+			contactToday[i] += 1
+			contactWeek[i] += 1
+		end
+		gs 'telefon', 'IncomingCall', $telefIncIcon[j], $telefIncName[j], $telefIncCall[j]
+	end
+
+	killvar 'i'
+	killvar 'j'
+	killvar '$telefIncIcon'
+	killvar '$telefIncName'
+	killvar '$telefIncCall'
+	killvar '$telefIncNPC'
+end
+
+if $ARGS[0] = 'IncomingCall':
+	! $ARGS[1] = Icon for contact
+	! $ARGS[2] = Nickname of contact
+	! $ARGS[3] = Code to execute for this Call
+
+	$telefonIncC['Icon'] = $ARGS[1]
+	$telefonIncC['Name'] = $ARGS[2]
+	$telefonIncC['Code'] = $ARGS[3]
+
+	PLAY 'sound/old_phone.mp3',30
+	$telefon['body'] = '
+	<font size=6><<$telefonIncC["Name"]>> calling</font><br>
+	<img src="<<$telefonIncC["Icon"]>>" width="200"><br>
+	<br>
+	<br>
+	<br>
+	<a href="exec:<<$telefonIncC["Code"]>>"><img src="images/system/phone/call_accept.png"></a>
+	<a href="exec:gt $loc, $metka"><img src="images/system/phone/decline.png"></a><br>
+	<b><font color="red">Your phone is ringing</font></b><br>'
+
+	dynamic $telefon['print']
+	killvar '$telefonIncC'
+end
+
+
+!---------------------------------------------------------------------------------------
+! Generic Calls for dates
+
+!! NPC Date
+!!	ARGS[1] = contactlist index
+!!	$ARGS[2] = Date Location
+if $ARGS[0] = 'NPCDate':
+
+	Call4Date["ContactIndex"] = ARGS[1]
+	$Call4Date["Location"] = $ARGS[2]
+
+	$Call4Date["NPC"] = $contact[Call4Date['ContactIndex']]
+	$Call4Date["CallerName"] = $npc_nickname[$Call4Date["NPC"]]
+
+	!! These variables are setup for certain downstream functions
+	$caller = $Call4Date["CallerName"]
+	$callerid = $contactIcon[Call4Date["ContactIndex"]]
+	$boydesc = $Call4Date["CallerName"]
+
+	pcs_mood += 10
+	npc_rel[$Call4Date["NPC"]] += 3
+
+	if $Call4Date["Location"] = 'park':
+		if npc_gender[$Call4Date["NPC"]] = 0:
+			gt 'dateM','datepark'
+		else
+			gt 'dateF','datepark'
+		end
+	elseif $Call4Date["Location"] = 'movie':
+		if npc_gender[$Call4Date["NPC"]] = 0:
+			gt 'dateM','datecinema'
+		else
+			!Not implemented yet
+			!gt 'dateF','datecinema'
+		end
+	elseif $Call4Date["Location"] = 'bar':
+		if npc_gender[$Call4Date["NPC"]] = 0:
+			gt 'dateM','datebar'
+		else
+			gt 'dateF','datebar'
+		end
+	elseif $Call4Date["Location"] = 'cafe':
+		if npc_gender[$Call4Date["NPC"]] = 0:
+			gt 'dateM','datecafe'
+		else
+			!Not implemented yet
+			!gt 'dateF','datecafe'
+		end
+	end
+
+	killvar 'Call4Date'
+	killvar '$Call4Date'
+end
+
+!! Sveta Calls the NPC
+!!	ARGS[1] = contactlist index
+if $ARGS[0] = 'SvetaCallsNPC':
+	cls
+	cla
+	Call4Date["ContactIndex"] = ARGS[1]
+	$Call4Date["NPC"] = $contact[Call4Date['ContactIndex']]
+	$Call4Date["CallerName"] = $npc_nickname[$Call4Date["NPC"]]
+	if npc_gender[$Call4Date["NPC"]] = 0:
+		$Call4Date["NPC-he"] = 'he'
+		$Call4Date["NPC-He"] = 'He'
+		$Call4Date["NPC-his"] = 'his'
+		$Call4Date["NPC-His"] = 'His'
+	else
+		$Call4Date["NPC-he"] = 'her'
+		$Call4Date["NPC-He"] = 'Her'
+		$Call4Date["NPC-his"] = 'hers'
+		$Call4Date["NPC-His"] = 'Hers'
+	end
+
+	!! These variables are setup for certain downstream functions
+	$caller = $Call4Date["CallerName"]
+	$callerid = $contactIcon[Call4Date["ContactIndex"]]
+
+	gs 'telefon','phone_balance'
+	gs 'telefon','phone_call_receive'
+
+	Call4Date["willAgree"] = (rand(0, 10) > 3)
+
+	'"Yes, I''m listening," says a voice from the speaker.'
+
+	if month > 5 and temper > 20 and sunWeather = 1:
+		act 'Invite to the park':
+			cla
+			'"Let''s go for a walk in the park."'
+
+			if Call4Date["willAgree"]:
+				'<<$Call4Date["CallerName"]>>, "See you in the park in an hour."'
+
+				act 'Go':gt 'telefon', 'NPCDate', Call4Date["ContactIndex"], 'park'
+			else
+				gs 'telefon','telotkaz',$Call4Date["CallerName"]
+			end
+		end
+	end
+
+	act 'Invite to a movie':
+		cla
+		'"Want to go see a movie?"'
+
+		if Call4Date["willAgree"]:
+			'<<$Call4Date["CallerName"]>>, "See you at the movie theater in an hour."'
+
+			act 'Go':gt 'telefon', 'NPCDate', Call4Date["ContactIndex"], 'movie'
+		else
+			gs 'telefon','telotkaz',$Call4Date["CallerName"]
+		end
+	end
+
+	if $home_town = 'city':
+		act 'Invite to the bar':
+			cla
+			'"Let''s go to the bar."'
+
+			if Call4Date["willAgree"]:
+				'<<$Call4Date["CallerName"]>>, "See you at the bar in an hour."'
+
+				act 'Go':gt 'telefon', 'NPCDate', Call4Date["ContactIndex"], 'bar'
+			else
+				gs 'telefon','telotkaz',$Call4Date["CallerName"]
+			end
+		end
+	end
+
+	act 'Invite to the cafe':
+		cla
+		'"Let''s go to the cafe."'
+
+		if Call4Date["willAgree"]:
+			'<<$Call4Date["CallerName"]>>, "See you at the cafe in an hour."'
+
+			act 'Go':gt 'telefon', 'NPCDate', Call4Date["ContactIndex"], 'cafe'
+		else
+			gs 'telefon','telotkaz',$Call4Date["CallerName"]
+		end
+	end
+
+	!!Willpower checks for resistance
+	if npc_rel[$Call4Date["NPC"]] <= 25:
+		$Call4Date["loverResist"] = 'easy'
+	elseif npc_rel[$Call4Date["NPC"]] <= 50:
+		$Call4Date["loverResist"] = 'medium'
+	else
+		$Call4Date["loverResist"] = 'hard'
+	end
+	gs 'willpower', 'misc', 'self', $Call4Date["loverResist"]
+
+	if will_cost <= pcs_willpwr:
+		act 'I think we should break up... (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+
+			'<<$Call4Date["NPC-He"]>> sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+			gs 'telefon', 'DeleteContact', $Call4Date["NPC"]
+
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+	else
+		act 'I think we should break up... (<font color="red"><<will_cost>> Willpower</font>)':
+			'<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+
+	act 'Hangup':gt 'telefon', 'fin'
+
+	killvar 'Call4Date'
+	killvar '$Call4Date'
+	killvar '$DateNickName'
+end
+
+! NPC Calls Sveta for a Date
+!	ARGS[1] = $contact index number
+if $ARGS[0] = 'NPCCallsForDate':
+	cla
+	clr
+	Call4Date["ContactIndex"] = ARGS[1]
+	$Call4Date["NPC"] = $contact[Call4Date['ContactIndex']]
+
+	if npc_gender[$Call4Date["NPC"]] = 0:
+		$Call4Date["NPC-he"] = 'he'
+		$Call4Date["NPC-He"] = 'He'
+		$Call4Date["NPC-his"] = 'his'
+		$Call4Date["NPC-His"] = 'His'
+	else
+		$Call4Date["NPC-he"] = 'her'
+		$Call4Date["NPC-He"] = 'Her'
+		$Call4Date["NPC-his"] = 'hers'
+		$Call4Date["NPC-His"] = 'Hers'
+	end
+
+	!!Pick a nickname that caller will use for Sveta
+	$DateNickName[0] = 'cutie'
+	$DateNickName[1] = 'honey'
+	$DateNickName[2] = 'sweetie'
+	$DateNickName[3] = 'baby'
+	$DateNickName[4] = 'hot stuff'
+	$DateNickName[5] = '<<$pcs_nickname>>'
+	$Call4Date['SvetaName'] = $DateNickName[rand(0, arrsize('$DateNickName'))]
+
+	$Call4Date['CallerName'] = $npc_nickname[$Call4Date["NPC"]]
+
+	!! These variables are setup for certain downstream functions
+	$caller = $Call4Date["CallerName"]
+	$callerid = $contactIcon[Call4Date["ContactIndex"]]
+
+	'Hey <<$Call4Date["SvetaName"]>>, it''s me, <<$Call4Date["CallerName"]>>. How''s it going?'
+
+	act 'Answer':
+		cla
+		'"Pretty good, you?"'
+		'<<$Call4Date["CallerName"]>>, "Great, but I kind of miss you, can we meet today?"'
+		if week > 1 and week < 5 and workKafe = 1:
+			act 'Sorry, I''m working today':
+				cla
+				'"Sorry, I''m working today."'
+				'<<$Call4Date["CallerName"]>>, "Okay, I''ll call tomorrow."'
+
+				act 'Hang up':gt 'telefon', 'fin'
+			end
+		end
+
+		act 'Tonight':
+			cla
+			npc_rel[$Call4Date["NPC"]] += 1
+			contMeetDay[Call4Date["ContactIndex"]] = daystart
+			'"How about this evening?"'
+			'<<$Call4Date["CallerName"]>>, "Sounds great! When can I come to pick you up?"'
+
+			act 'Pick a time':
+				cla
+				contMeetHour[Call4Date["ContactIndex"]] = input ("When do you want to be picked up. It is now <<$mid(100+hour,2,2)>>:<<$mid(100+minut,2,2)>>. [Enter the hour only 0 - 20]")
+				if contMeetHour[Call4Date["ContactIndex"]] <= hour or contMeetHour[Call4Date["ContactIndex"]] > 23:contMeetHour[Call4Date["ContactIndex"]] = 20
+
+				'"How about <<contMeetHour[Call4Date["ContactIndex"]]>>:00?."'
+				'<<$Call4Date["CallerName"]>>, "Okay <<$Call4Date["SvetaName"]>>, see you at <<contMeetHour[Call4Date["ContactIndex"]]>>:00."'
+
+				act 'Hang up':gt 'telefon', 'fin'
+			end
+		end
+
+		act 'Maybe tomorrow':
+			cla
+			npc_rel[$Call4Date["NPC"]] -= 1
+			'"I''m busy today. Call tomorrow."'
+
+			if npc_rel[$Call4Date["NPC"]] <= 0:'<<$Call4Date["CallerName"]>>, Are you fucking me, you know what. Suck my dick.' & gs 'telefon', 'DeleteContact', $Call4Date["NPC"]
+			if npc_rel[$Call4Date["NPC"]] > 0:'(<<$Call4Date["CallerName"]>>) -  Okay, I''ll call tomorrow.'
+
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+
+
+		!!Willpower checks for resistance
+		if npc_rel[$Call4Date["NPC"]] <= 25:
+			$Call4Date["loverResist"] = 'easy'
+		elseif npc_rel[$Call4Date["NPC"]] <= 50:
+			$Call4Date["loverResist"] = 'medium'
+		else
+			$Call4Date["loverResist"] = 'hard'
+		end
+		gs 'willpower', 'misc', 'self', $Call4Date["loverResist"]
+
+		if will_cost <= pcs_willpwr:
+			act 'I think we should break up... (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+
+				'<<$Call4Date["NPC-He"]>> sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+				gs 'telefon', 'DeleteContact', $Call4Date["NPC"]
+
+				act 'Hang up': gt 'telefon', 'fin'
+			end
+		else
+			act 'I think we should break up... (<font color="red"><<will_cost>> Willpower</font>)':
+				'<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		end
+
+	end
+
+	act 'Hang up (end relationship)':
+		cla
+		gs 'telefon', 'DeleteContact', $Call4Date["NPC"]
+		gt 'telefon', 'fin'
+	end
+
+	killvar 'Call4Date'
+	killvar '$Call4Date'
+	killvar '$DateNickName'
+end
+
+if $ARGS[0] = 'start':
+	gs 'stat'
+	gs 'telefon','phone_call_receive'
+
+	if npc_QW['A192'] = 1 and week = 6 and pcs_apprnc > 80:
+		gt 'nastja', 'pos4'
+	elseif npc_QW['A192'] = 2 and week ! 6 and zenit ! 0 and nastjaday ! daystart:
+		gt 'nastja', 'pos13'
+	elseif hour >= 8 and hour <= 20 and npc_QW['A192'] = 2 and week = 6 and pcs_apprnc > 80 and nastjaday ! daystart:
+		gt 'nastja', 'pos12'
+	elseif npc_QW['A192'] = 5 and week = 6 and nastjaday ! daystart:
+		gt 'nastja', 'pos22'
+	elseif npc_QW['A192'] = 6 and nastjaday ! daystart:
+		gt 'nastja', 'pos31'
+	else
+		$callerid = 'images/system/phone/icons/icon_nastja.png'
+		gs 'telefon','phone_call_reject'
+	end
+end
+
+
+!--------------------------------------------------------------------------------------------------
+! Old telephone system.  Some of this should be removed.
+if $ARGS[0] = 'phone_ring':
+	$telefon['body'] = '
+	<font size=6><<$caller>> calling</font><br>
+	<img src="<<$callerid>>"><br>
+	<br>
+	<br>
+	<br>
+	<br>'
+	dynamic $telefon['print']
+end &! --- phone_ring ---
+
+if $ARGS[0] = 'phone_call_receive':
+	$telefon['body'] = '
+	<font size=6>Talking to <<$caller>></font><br>
+	<img src="<<$callerid>>"><br>'
+	dynamic $telefon['print']
+end &! --- phone_call_receive ---
+
+if $ARGS[0] = 'phone_balance':
+	if balans < 4:
+		$telefon['body'] = '
+		<font size=6>Not enough credit on your account</font><br>
+		<img src="<<$callerid>>"><br><br>
+		<a href="exec:gs ''telefon'', ''Phone_menu'' "><img src="images/system/phone/decline.png"></a><br>'
+		dynamic $telefon['print']
+		wait 3500
+		cla
+		gt $loc, $metka
+	elseif balans >= 4:
+		balans -= 4
+	end
+end &! --- phone_balance ---
+
+if $ARGS[0] = 'Phone_call':
+	$telefon['body'] = '
+	<font size=6>Calling <<$npc_nickname[''A29'']>></font><br>
+	<img src="images/system/phone/icons/icon_npc1.png"><br><br>
+	<a href="exec:gs ''telefon'', ''Phone_contactlist'' "><img src="images/system/phone/decline.png"></a><br>'
+	dynamic $telefon['print']
+	wait 1500
+	minut += 1
+	$callerid = 'images/system/phone/icons/icon_npc1.png'
+	gs 'telefon', 'phone_balance'
+	$callerid = 'images/system/phone/icons/icon_npc1.png'
+	gs 'telefon', 'phone_call_reject'
+end &! --- Phone_call ---
+
+if $ARGS[0] = 'phone_call_reject':
+	$telefon['body'] = '
+	<font size=6>Calling....</font><br>
+	<img src="<<$callerid>>"><br><br>
+	<a href="exec:gs ''telefon'', ''Phone_contactlist'' "><img src="images/system/phone/decline.png"></a><br>'
+	dynamic $telefon['print']
+end &! --- phone_call_reject ---
+
+if $ARGS[0] = 'Phone_megafon':
+	$telefon['body'] = '
+	<font size=6>MegaFon</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_megafon.png" height="80" width="80"><br><br>
+	<b>The balance in the account:</b>
+	<font size=5><<balans>> ₽.</font><br>'
+	dynamic $telefon['print']
+end &! --- Phone_megafon ---
+
+
+if $ARGS[0] = 'Edit_Custom_list':
+	clr
+	dummyas = arrsize('$contact')
+:din_bad_as1
+	dummyas -= 1
+	if dummyas >= 0:
+		$dummyedit = $contact[dummyas]
+		$dummyedit1 = dyneval('$result = ''</a><a href="exec:killvar ''''$contact'''',<<dummyas>> & gs ''''telefon'''', ''''Edit_Custom_list'''' "><b>Remove</b>'' ')
+		$dummyedit2 = $replace($dummyedit,'<b>Call</b>',$dummyedit1)
+		pl $dummyedit2
+		jump 'din_bad_as1'
+	end
+	killvar 'dummyas'
+	killvar 'dummyedit'
+	killvar 'dummyedit1'
+	killvar 'dummyedit2'
+
+	pl'<center><a href="exec:gs ''telefon'', ''Phone_menu'' "><img src="images/system/icon/back.png"></a></center>'
+	!dynamic $telefon['print']
+end &! --- Edit_Custom_list ---
+
+if $ARGS[0] = 'mobilaraz':
+	cls
+	cla
+	gs'din_bad'
+	$caller = '<<$telsob>>'
+	gs 'telefon','phone_balance'
+	gs 'telefon','phone_call_receive'
+	willAgree = (rand(0, 10) > 3)
+	'"Yes, I''m listening," says a voice from the speaker.'
+
+	if month > 5 and temper > 20 and sunWeather = 1:
+		act 'Invite to the park':
+			cla
+			'"Let''s go for a walk in the park."'
+
+			if willAgree:
+				'<<$telsob>>, "See you in the park in an hour."'
+
+				act 'Go':gt 'parksvid'
+			else
+				gs 'telefon','telotkaz',$telsob
+			end
+		end
+	end
+
+	act 'Invite to a movie':
+		cla
+		'"Want to go see a movie?"'
+
+		if willAgree:
+			'<<$telsob>>, "See you at the movie theater in an hour."'
+			act 'Go':gt 'kinosvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'Invite to the pool hall':
+		cla
+		'"Let''s play pool."'
+
+		if willAgree:
+			'<<$telsob>>, "See you at the pool hall in an hour."'
+
+			act 'Go':gt 'billsvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'Invite to the cafe':
+		cla
+		'"Let''s go to the cafe."'
+
+		if willAgree:
+			'<<$telsob>>, "See you at the cafe in an hour."'
+
+			act 'Go':gt 'kafesvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'Invite to the casino':
+		cla
+		'"Let''s go to the casino."'
+
+		if willAgree:
+			'<<$telsob>>, "See you in the casino in an hour."'
+
+			act 'Go':gt 'kazinosvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'Hangup':gt 'telefon', 'fin'
+end
+!----------------End Old Telephone----------------------------
+
+
+!-----------------------------------------------------------------------------
+! Support for Hardcoded Lovers (BF/GF)
+
+if $ARGS[0] = 'callingTheLover' and loverGender[ARGS[1]] = 1:
+	cls
+	cla
+	gs'din_bad'
+	lover_number = ARGS[1]
+	$caller = '<<$loverdesc[lover_number]>>'
+	$telsob = $caller
+	$callerid = 'images/characters/shared/'+lover_picture[lover_number]+'.jpg'
+	gs 'telefon','phone_balance'
+	gs 'telefon','phone_call_receive'
+	willAgree = (rand(0, 10) > 3)
+	'"Yes, I''m listening," says a voice from the speaker.'
+
+	if month > 5 and temper > 20 and sunWeather = 1:
+		act 'Invite to the park':
+			cla
+			'"Let''s go for a walk in the park."'
+
+			if willAgree:
+				'<<$telsob>>, "See you in the park in an hour."'
+
+				act 'Go': gt 'parksvid'
+			else
+				gs 'telefon','telotkaz',$telsob
+			end
+		end
+	end
+
+	act 'Invite to a movie':
+		cla
+		'"Want to go see a movie?"'
+
+		if willAgree:
+			'<<$telsob>>, "See you at the movie theater in an hour."'
+			act 'Go': gt 'kinosvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	if $home_town = 'city':
+		act 'Invite to the pool hall':
+			cla
+			'"Let''s play pool."'
+
+			if willAgree:
+				'<<$telsob>>, "See you at the pool hall in an hour."'
+
+				act 'Go': gt 'billsvid'
+			else
+				gs 'telefon','telotkaz',$telsob
+			end
+		end
+	end
+
+	act 'Invite to the cafe':
+		cla
+		'"Let''s go to the cafe."'
+
+		if willAgree:
+			'<<$telsob>>, "See you at the cafe in an hour."'
+
+			act 'Go': gt 'kafesvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'Invite to the casino':
+		cla
+		'"Let''s go to the casino."'
+
+		if willAgree:
+			'<<$telsob>>, "See you in the casino in an hour."'
+
+			act 'Go': gt 'kazinosvid'
+		else
+			gs 'telefon','telotkaz',$telsob
+		end
+	end
+
+	act 'I think we should break up...':
+		cla
+		'She sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+		gs 'lover', 'remove', lover_number
+
+		act 'Hangup':gt 'telefon', 'fin'
+	end
+
+	act 'Hangup':gt 'telefon', 'fin'
+end
+
+if $ARGS[0] = 'callingTheLover' and loverGender[ARGS[1]] = 0:
+	cls
+	cla
+	gs'din_bad'
+	lover_number = ARGS[1]
+	$caller = '<<$loverdesc[lover_number]>>'
+	$callerid = 'images/characters/shared/'+lover_picture[lover_number]+'.jpg'
+	gs 'telefon','phone_balance'
+	gs 'telefon','phone_call_receive'
+	willAgree = (rand(0, 10) > 3)
+	'"Yes, I''m listening," says a voice from the speaker.'
+
+	if month > 5 and temper > 20 and sunWeather = 1:
+		act 'Invite to the park':
+			cla
+			'"Let''s go for a walk in the park."'
+
+			if willAgree:
+				'<<$loverdesc[lover_number]>>, "See you in the park in an hour."'
+
+				act 'Go':gt 'svidboy', 'parksvid'
+			else
+				gs 'telefon','telotkaz',$loverdesc[lover_number]
+			end
+		end
+	end
+
+	act 'Invite to a movie':
+		cla
+		'"Want to go see a movie?"'
+
+		if willAgree:
+			'<<$loverdesc[lover_number]>>, "See you at the movie theater in an hour."'
+
+			act 'Go':gt 'svidboy', 'kinosvid'
+		else
+			gs 'telefon','telotkaz',$loverdesc[lover_number]
+		end
+	end
+
+	if $home_town = 'city':
+		act 'Invite to the pool hall':
+			cla
+			'"Let''s play pool."'
+
+			if willAgree:
+				'<<$loverdesc[lover_number]>>, "See you at the pool hall in an hour."'
+
+				act 'Go':gt 'svidboy', 'billsvid'
+			else
+				gs 'telefon','telotkaz',$loverdesc[lover_number]
+			end
+		end
+	end
+
+	act 'Invite to the cafe':
+		cla
+		'"Let''s go to the cafe."'
+
+		if willAgree:
+			'<<$loverdesc[lover_number]>>, "See you at the cafe in an hour."'
+
+			act 'Go':gt 'svidboy', 'kafesvid'
+		else
+			gs 'telefon','telotkaz',$loverdesc[lover_number]
+		end
+	end
+
+	act 'I think we should break up...':
+		cla
+		'He sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+		gs 'lover', 'remove', lover_number
+
+		act 'Hangup':gt 'telefon', 'fin'
+	end
+
+	act 'Hangup':gt 'telefon', 'fin'
+end
+
+if $ARGS[0] = 'lover' and loverGender[ARGS[1]] = 0:
+	cla
+	clr
+	lover_number = ARGS[1]
+	ring = 0
+	lover_days = daystart - loverday[lover_number]
+	!gs 'stat'
+	!gs 'telefon','phone_call_receive'
+	svetrand = rand(0, 5)
+
+	if svetrand = 0:$sveta = 'cutie'
+	if svetrand = 1:$sveta = 'honey'
+	if svetrand = 2:$sveta = 'sweetie'
+	if svetrand = 3:$sveta = 'baby'
+	if svetrand = 4:$sveta = 'hot stuff'
+	if svetrand = 5:$sveta = '<<$pcs_nickname>>'
+
+	'Hey <<$sveta>>, it''s me, <<$loverdesc[lover_number]>>. How''s it going?'
+
+	act 'Reply':
+		cla
+		'"Pretty good, you?"'
+		'<<$loverdesc[lover_number]>>, "Great, but I kind of miss you, can we meet today?"'
+
+		if (pregchem / 24) <= lover_days and knowpreg = 1 and pregtalk = 0:
+			act 'Tell him he''s going to be a dad':
+				cla
+				pregtalk = 1
+				'"Honey, I''m pregnant with your child."'
+
+				if haraklover[lover_number] = 0:
+
+					if loverrelation[lover_number] >= 90:
+						loverlove[lover_number] = 1
+
+						'<<$loverdesc[lover_number]>>, "This is wonderful! We have to celebrate!"'
+						'You start talking about living together. <<$loverdesc[lover_number]>> tells you that he is not against it in principle, but first he wants you to meet his parents.'
+						'He warns you that his mother is very demanding and rigorous. <<$loverdesc[lover_number]>> says that he loves his mother and does not want to upset her. Therefore, you must look gorgeous, wear a dress from a boutique, have well-groomed and curled hair and makeup in moderation.'
+						'When you are totally ready <<$loverdesc[lover_number]>> will take you to his parents.'
+
+						act 'Hang up':gt 'telefon', 'fin'
+
+						act 'Meet tonight':
+							cla
+							svidanie[lover_number] = 1
+							'"How about this evening?"'
+							'<<$loverdesc[lover_number]>>, "Sounds great! When can I come to pick you up?"'
+
+							act 'Pick a time':
+								cla
+								meetday[lover_number] = daystart
+								meethour[lover_number] = input ("When do you want to be picked up? It is now <<$mid(100+hour,2,2)>>:<<$mid(100+minut,2,2)>>. [Enter the hour only 0 - 20]")
+								if meethour[lover_number] <= hour or meethour[lover_number] > 23:meethour[lover_number] = 20
+								'"How about <<meethour[lover_number]>>:00?"'
+								'<<$loverdesc[lover_number]>>, "Okay <<$sveta>>, see you at <<meethour[lover_number]>>:00."'
+
+								act 'Hang up':gt 'telefon', 'fin'
+							end
+						end
+					elseif loverrelation[lover_number] < 90:
+						money += 20000
+						'<<$loverdesc[lover_number]>> "I''m not yet ready to become a dad. I''ll give you the money for an abortion. Get rid of the child.'
+
+						act 'Hang up':gt 'telefon', 'fin'
+					end
+				elseif haraklover[lover_number] = 1:
+
+					money += 20000
+					'<<$loverdesc[lover_number]>> "I''m not yet ready to become a dad. I''ll give you the money get an abortion.'
+
+					act 'Hang up':gt 'telefon', 'fin'
+				elseif haraklover[lover_number] = 2:
+
+					pregtalk = 0
+					'<<$loverdesc[lover_number]>>, "What? You whore! Someone fucked your pussy and now you drop it on me. You''re dumped.'
+					gs 'lover', 'remove', lover_number
+
+					act 'Hang up':gt 'telefon', 'fin'
+				end
+			end
+		elseif (pregchem / 24) > lover_days and knowpreg = 1 and pregtalk = 0:
+			act 'Honey, you will soon become a dad':
+				cla
+				loverrelation[lover_number] = 0
+				'"Honey, I''m pregnant with your child."'
+				'<<$loverdesc[lover_number]>>, "How the fuck did I manage that? Unless I own a time-machine and went back to before we met and fucked you, it''s someone elses, go and tell him. I don''t want to see you again, goodbye."'
+
+				act 'Hang up.':gt 'telefon', 'fin'
+			end
+		elseif week > 1 and week < 5 and workKafe = 1:
+			act 'Sorry, I''m working today':
+				cla
+				'"Sorry, I''m working today."'
+				'<<$loverdesc[lover_number]>>, "Okay, I''ll call tomorrow."'
+
+				act 'Hang up':gt 'telefon', 'fin'
+			end
+		end
+
+		act 'Tonight':
+			cla
+			loverrelation[lover_number] += 1
+			svidanie[lover_number] = 1
+			meetday[lover_number] = daystart
+			'"How about this evening?"'
+			'<<$loverdesc[lover_number]>>, "Sounds great! When can I come to pick you up?"'
+
+			act 'Pick a time':
+				cla
+				meethour[lover_number] = input ("When do you want to be picked up. It is now <<$mid(100+hour,2,2)>>:<<$mid(100+minut,2,2)>>. [Enter the hour only 0 - 20]")
+				if meethour[lover_number] <= hour or meethour[lover_number] > 23:meethour[lover_number] = 20
+
+				'"How about <<meethour[lover_number]>>:00?."'
+				'<<$loverdesc[lover_number]>>, "Okay <<$sveta>>, see you at <<meethour[lover_number]>>:00."'
+
+				act 'Hang up':gt 'telefon', 'fin'
+			end
+		end
+
+		act 'Maybe tomorrow':
+			cla
+			loverrelation[lover_number] -= 1
+			'"I''m busy today. Call tomorrow."'
+
+			if loverrelation[lover_number] <= 0:'<<$loverdesc[lover_number]>>, Are you fucking me, you know what. Suck my dick.' & gs 'lover', 'remove', lover_number
+			if loverrelation[lover_number] > 0:'(<<$loverdesc[lover_number]>>) -  Okay, I''ll call tomorrow.'
+
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+
+		act 'I think we should break up...':
+			cla
+			'He sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+			gs 'lover', 'remove', lover_number
+
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+	end
+
+	act 'Hang up (end relationship)':
+		cla
+		gs 'lover', 'remove', lover_number
+		gt 'telefon', 'fin'
+	end
+end
+
+if $ARGS[0] = 'lover' and loverGender[ARGS[1]] = 1:
+	cla
+	clr
+	lover_number = ARGS[1]
+	ring = 0
+	lover_days = daystart - loverday[lover_number]
+	!gs 'stat'
+	!gs 'telefon','phone_call_receive'
+	svetrand = rand(0, 5)
+
+	if svetrand = 0:$sveta = 'cutie'
+	if svetrand = 1:$sveta = 'honey'
+	if svetrand = 2:$sveta = 'sweetie'
+	if svetrand = 3:$sveta = 'baby'
+	if svetrand = 4:$sveta = 'hot stuff'
+	if svetrand = 5:$sveta = '<<$pcs_nickname>>'
+
+	'Hey <<$sveta>>, it''s me, <<$loverdesc[lover_number]>>. How''s it going?'
+
+	act 'Reply':
+		cla
+		'"Pretty good, you?"'
+		'<<$loverdesc[lover_number]>>, "Great, but I kind of miss you, can we meet today?"'
+
+
+		act 'Tonight':
+			cla
+			loverrelation[lover_number] += 1
+			svidanie[lover_number] = 1
+			meetday[lover_number] = daystart
+			'"How about this evening?"'
+			'<<$loverdesc[lover_number]>>, "Sounds great! When can I come to pick you up?"'
+
+			act 'Pick a time':
+				cla
+				meethour[lover_number] = input ("When do you want to be picked up. It is now <<$mid(100+hour,2,2)>>:<<$mid(100+minut,2,2)>>. [Enter the hour only 0 - 20]")
+				if meethour[lover_number] <= hour or meethour[lover_number] > 23:meethour[lover_number] = 20
+
+				'"How about <<meethour[lover_number]>>:00?."'
+				'<<$loverdesc[lover_number]>>, "Okay <<$sveta>>, see you at <<meethour[lover_number]>>:00."'
+
+				act 'Hang up':gt 'telefon', 'fin'
+			end
+		end
+
+		act 'Maybe tomorrow':
+			cla
+			loverrelation[lover_number] -= 1
+			'"I''m busy today. Call tomorrow."'
+
+			if loverrelation[lover_number] <= 0:'<<$loverdesc[lover_number]>>, Are you fucking me, you know what. Fuck off.' & gs 'lover', 'remove', lover_number
+			if loverrelation[lover_number] > 0:'(<<$loverdesc[lover_number]>>) -  Okay, I''ll call tomorrow.'
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+
+		act 'I think we should break up...':
+			cla
+			'She sounds hurt, but you insist it is for the best. You both say goodbye and part ways.'
+			gs 'lover', 'remove', lover_number
+
+			act 'Hang up': gt 'telefon', 'fin'
+		end
+	end
+
+	act 'Hang up (end relationship)':
+		cla
+		gs 'lover', 'remove', lover_number
+		gt 'telefon', 'fin'
+	end
+end
+!---------------------- End of Lover support
+
+
+if $ARGS[0] = 'Phone_notebook':
+	gs 'housing', 'rent'
+	$telefon['body'] = '
+	<font size=6>Planner</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_notebook.png" height="80" width="80"><br>
+	<<year>>-<<$month>>-<<day>>, <<$week[week]>><br><br>'
+	rent1 = -1
+	rent4 = -1
+	if home_owned[1] > 0 and ArendHouseSL > 0:rent1 = ArendHouseSL
+	if home_owned[4] > 0 and ArendHouseSL4 > 0:rent4 = ArendHouseSL4
+	d1 = day
+	w1 = week
+	m1 = month
+	y1 = year
+	i = 0
+	$list = '<br>&emsp;<b>•</b> '
+	:pnotebook
+		daynum = daystart+i
+		$calendarday = ''
+
+		if m1 = 1 and d1 >= 1 and d1 <= 8:
+			$calendarday += $list + 'New Year holidays'
+			if d1 = 1:$calendarday += ', New Year'
+			if d1 = 7:$calendarday += ', Christmas'
+		end
+		if m1 = 2 and d1 = 23:$calendarday += $list + 'Defender of Fatherland Day'
+		if m1 = 3 and d1 = 8:$calendarday += $list + 'Women''s Day'
+		if m1 = 5 and d1 = 1:$calendarday += $list + 'Spring and Labor Day'
+		if m1 = 5 and d1 = 2:$calendarday += $list + 'National holiday'
+		if m1 = 5 and d1 = 9:$calendarday += $list + 'Victory Day'
+		if m1 = 6 and d1 = 12:$calendarday += $list + 'Russia Day'
+		if m1 = 6 and d1 = 13:$calendarday += $list + 'National holiday'
+		if m1 = 11 and d1 = 4:$calendarday += $list + 'Unity Day'
+
+		if storyline = 1 and SchoolAtestat = 0:
+			if m1 = 1 and d1 = 1:$calendarday += $list + 'First day of Winter break.'
+			if m1 = 1 and d1 = 15:$calendarday += $list + 'Last day of Winter break.'
+			if m1 = 3 and d1 = 20:$calendarday += $list + 'First day of Spring break.'
+			if m1 = 3 and d1 = 26:$calendarday += $list + 'Last day of Spring break.'
+			if school_year = 2003 and y1 = 2020 and m1 = 5 and d1 = 25:$calendarday += $list + 'Graduation Day!'
+			if school_year = 2004 and y1 = 2021 and m1 = 6 and d1 = 1:$calendarday += $list + 'First day of Summer break.'
+			if m1 = 8 and d1 = 31:$calendarday += $list + 'Last day of Summer break.'
+			if m1 = 11 and d1 = 4:$calendarday += $list + 'First day of Autumn break.'
+			if m1 = 11 and d1 = 11:$calendarday += $list + 'Last day of Autumn break.'
+		end
+
+		if daynum >= daylastperiod+28 and daynum < daylastperiod+31:$calendarday += $list + '<font color=''red''><b>Menstruation!</b></font>'
+		if daynum >= daylastperiod+12 and daynum < daylastperiod+14:$calendarday += $list + '<font color=#336600><b>Ovulation!</b></font>'
+		if pregchem >= 6720:$calendarday += $list + '<font color=''red''><b>Birthing day!</b></font>'
+
+		if w1 < 5 and (workSec >= 1 or PersSecWork = 1):$calendarday += $list + 'Working as a secretary. <i>(9:00 - 17:00)</i>'
+		if w1 < 5 and workFabrika = 1:
+			$calendarday += $list + 'Working as a seamstress. '
+			if age < 18:$calendarday += '<i>(16:00 - 20:00)</i>' else $calendarday += '<i>(8:00 - 16:00)</i>'
+		end
+		if w1 > 1 and w1 <= 5 and workhosp = 1:$calendarday += $list + 'Working as nurse. <i>(8:00 - 16:00)</i>'
+		if worksalon = 1 and (w1 = 1 or w1 = 3 or w1 = 5):$calendarday += $list + 'Working as masseuse. <i>(9:00 - 17:00)</i>'
+!!		if maidqw > 0:$calendarday += '<br>&emsp;<b>•</b> Working as maid. <i>(16:00 - 19:00)</i>'
+		if pfilmday[i] > 0:$calendarday += $list + 'Porn shoot: <i><<$porndesc[pfilmday[i]]>></i>'
+		if d1 = 25 and (PersSecWork = 1 or workKafe = 1 or workhosp = 1 or worksalon = 1 or tanwork = 1 or workSec = 1 or workFabrika = 1):$calendarday += $list + '<i>Pay day!</i>'
+		if d1 = nyp_day and m1 = 12 and SchoolAtestat = 0 and StoryLine = 1:$calendarday += $list + 'New Year''s party at 14:00!'
+		if (npc_QW['A33']-2) mod 2 = 1 and sisboyday+1 = daynum:
+			if sisboytrioQW = 1:
+				$calendarday += $list + '<font color="orange">Threesome with Anya and Roma at 18:00</font>'
+			else
+				$calendarday += $list + '<font color="orange">Anya having sex with Roma at 18:00</font>'
+			end
+		end
+		if sisboyparty = 2 and sisboyparty_day+1 = daynum:$calendarday += $list + '<font color="orange">Party at Rex, gathering before 18:00 at Community Center</font>'
+		if rent1 = 0:$calendarday += $list + 'Rent on city apartment expires!'
+		if rent4 = 0:$calendarday += $list + 'Rent on Pushkin apartment expires!'
+		if birthday = d1 and birthmonth = m1:$calendarday += $list + 'My birthday!'
+		if kid > 0:
+			k1 = kid
+			:kiddieloop
+				if daykid[k1] = d1 and monthkid[k1] = m1:$calendarday += $list + 'Birthday of my <<$polreb[k1]>> <<$kidname[k1]>>, my <<kid>>. baby!'
+			if k1 > 1:k1 -= 1 & jump 'kiddieloop'
+		end
+
+		if $calendarday ! '':
+			$telefon['body'] += '<b><<$monthName[m1]>> <<d1>>, <<$week[w1]>>:</b>'
+			$telefon['body'] += $calendarday +'<br>'
+		end
+	if i < 14:
+		rent1 -= 1
+		rent4 -= 1
+		i += 1
+		w1 += 1
+		if w1 > 7:w1 = 1
+		d1 += 1
+		if monthsend[m1] < d1:
+			m1 += 1 & d1 = 1
+			if m1 = 13: m1 = 1 & y1 += 1
+		end
+		jump 'pnotebook'
+	end
+	killvar 'calendarday'
+	killvar 'rent1'
+	killvar 'rent4'
+	killvar 'd1'
+	killvar 'w1'
+	killvar 'm1'
+	killvar 'y1'
+	killvar 'daynum'
+	dynamic $telefon['print']
+end &! --- Phone_notebook ---
+
+!!----------------------------------------Camera-------------------------------------------------
+
+!!For setting the total numbers of selfies
+if $ARGS[0] = 'Phone_selfie_totals':
+	bathroom_clotot = 24
+	bathroom_undtot = 21
+	bathroom_nudtot = 27
+	bathroom_titflash = 20
+	bathroom_assflash = 5
+	bathroom_pussyflash = 22
+	bathroom_bathtot = 24
+	bathroom_showertot = 25
+	bedroom_clotot = 27
+	bedroom_undtot = 20
+	bedroom_nudtot = 25
+	bedroom_titflash = 30
+	bedroom_assflash = 21
+	bedroom_pussyflash = 23
+	kitchen_clotot = 27
+	kitchen_undtot = 23
+	kitchen_nudtot = 23
+	kitchen_titflash = 21
+	kitchen_assflash = 1
+	kitchen_pussyflash = 10
+	livingroom_clotot = 27
+	livingroom_undtot = 23
+	livingroom_nudtot = 20
+	livingroom_titflash = 20
+	livingroom_assflash = 5
+	livingroom_pussyflash = 20
+	changingroom_clotot = 22
+	changingroom_undtot = 25
+	changingroom_nudtot = 25
+	changingroom_titflash = 28
+	changingroom_assflash = 19
+	changingroom_pussyflash = 27
+	park_clotot = 28
+	park_undtot = 2
+	park_nudtot = 12
+	park_titflash = 21
+	park_assflash = 2
+	park_pussyflash = 8
+	lockeroom_clotot = 26
+	lockeroom_undtot = 21
+	lockeroom_nudtot = 13
+	lockeroom_titflash = 13
+	lockeroom_assflash = 2
+	lockeroom_pussyflash = 3
+	beach_swim = 21
+	beach_nudtot = 20
+	beach_titflash = 17
+	beach_assflash = 1
+	beach_pussyflash = 4
+	classroom_clotot = 11
+	classroom_titflash = 3
+	classroom_pussyflash = 3
+!!added underwear as I finally found some images
+	classroom_undtot = 2
+	!!classroom_assflash = 0
+!!I am adding a few more lines for selfies that I have, I am commenting them out for now until we add in the option to take the image. I named the first folder school_bathroom and the second folder restroom
+	!!school_bathroom_clotot = 24
+	!!school_bathroom_undtot = 9
+	!!school_bathroom_nudtot = 0
+	!!school_bathroom_assflash = 1
+	!!school_bathroom_titflash = 4
+	!!school_bathroom_pussyflash = 6
+	!!restroom_clotot = 34
+	!!restroom_undtot = 25
+	!!restroom_nudtot = 3
+	!!restroom_assflash = 10
+	!!restroom_titflash = 34
+	!!restroom_pussyflash = 21
+end
+
+
+!!for viewing photos on your phone
+if $ARGS[0] = 'Phone_pictures':
+	gt 'phone_selfies', 'selfies'
+end
+
+!!picking the selfie image when taking photos, this sets the location variable
+if $ARGS[0] = 'Phone_camera_selfie':
+	gs 'telefon', 'Phone_selfie_totals'
+	minut += rand(5,7)
+	if $location_type = 'bathroom':
+		$phone_loc = 'bathroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'bedr':
+		$phone_loc = 'bedroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'kitr':
+		$phone_loc = 'kitchen'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'livingr':
+		$phone_loc = 'livingroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'changingroom':
+		$phone_loc = 'changingroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'park':
+		$phone_loc = 'park'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'lockeroom':
+		$phone_loc = 'lockeroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'beach':
+		$phone_loc = 'beach'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'school_classroom':
+		$phone_loc = 'school_classroom'
+		gs 'telefon', 'Phone_selfie_image'
+!{for the above image sets school bathroom and restroom aka public bathrooms, not sure what all should be added below so leaving it for you crowke
+	elseif $locclass = 'school_bathroom':
+		$phone_loc = 'school_bathroom'
+		gs 'telefon', 'Phone_selfie_image'
+	elseif $locclass = 'restroom':
+		$phone_loc = 'restroom'
+		gs 'telefon', 'Phone_selfie_image'}
+	else
+		phone_rand = RAND(1,2)
+		phone_selfie[phone_rand] = 1
+		gs 'stat'
+		if usePopUps = 1:
+			msg '<img src="images/system/phone/selfie/phone_selfie<<phone_rand>>.jpg">'
+		else
+			view 'images/system/phone/selfie/phone_selfie<<phone_rand>>.jpg'
+		end
+	end
+	!if spdirtyf > 0: phone_rand = RAND (m,n) - for SELF in the semen
+	!if photo_event_pic = x: phone_rand = RAND (x,y) - for photos during the events (by heart)
+	!msg '<img src="images/system/phone/phone_selfie<<phone_rand>>.jpg">'
+end
+
+!!taking selfies, this chooses a random image for the location for clothed, underwear and nude
+if $ARGS[0] = 'Phone_selfie_image':
+	if $flashing = '':
+		if $clothingworntype = 'swimwear':
+			!!changing to and unmixed variable so the rng will work
+			dynamic 'temp_swim = <<$phone_loc>>_swim'
+			phone_rand = rand(1,temp_swim)
+			!!Setting the image owned flag to 1
+			dynamic '<<$phone_loc>>_swim[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/bikini/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/bikini/<<phone_rand>>.jpg'
+			end
+		elseif $clothingworntype ! 'nude':
+			!!changing to and unmixed variable so the rng will work
+			dynamic 'temp_clotot = <<$phone_loc>>_clotot'
+			phone_rand = rand(1,temp_clotot)
+			!!Setting the image owned flag to 1
+			dynamic '<<$phone_loc>>_closelfie[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/clothed/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/clothed/<<phone_rand>>.jpg'
+			end
+		elseif $pantyworntype ! 'none':
+			dynamic 'temp_undtot = <<$phone_loc>>_undtot'
+			phone_rand = rand(1,temp_undtot)
+			dynamic '<<$phone_loc>>_undselfie[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/underwear/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/underwear/<<phone_rand>>.jpg'
+			end
+		else
+			dynamic 'temp_nudtot = <<$phone_loc>>_nudtot'
+			phone_rand = rand(1,temp_nudtot)
+			dynamic '<<$phone_loc>>_nudselfie[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/nude/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/nude/<<phone_rand>>.jpg'
+			end
+		end
+	else
+		if $flashing = 'tits':
+			dynamic 'temp_titflash = <<$phone_loc>>_titflash'
+			phone_rand = rand(1,temp_titflash)
+			dynamic '<<$phone_loc>>_titflash[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/titflash/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/titflash/<<phone_rand>>.jpg'
+			end
+		elseif $flashing = 'ass':
+			dynamic 'temp_assflash = <<$phone_loc>>_assflash'
+			phone_rand = rand(1,temp_assflash)
+			dynamic '<<$phone_loc>>_assflash[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/assflash/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/assflash/<<phone_rand>>.jpg'
+			end
+		elseif $flashing = 'pussy':
+			dynamic 'temp_pussyflash = <<$phone_loc>>_pussyflash'
+			phone_rand = rand(1,temp_pussyflash)
+			dynamic '<<$phone_loc>>_pussyflash[<<phone_rand>>] = 1'
+			gs 'stat'
+			if usePopUps = 1:
+				msg '<img src="images/pc/selfies/<<$phone_loc>>/pussyflash/<<phone_rand>>.jpg">'
+			else
+				view 'images/pc/selfies/<<$phone_loc>>/pussyflash/<<phone_rand>>.jpg'
+			end
+		end
+		$flashing = ''
+	end
+end
+
+!!taking selfies in the shower or bath
+if $ARGS[0] = 'Phone_selfie_image_bathing':
+	gs 'telefon', 'Phone_selfie_totals'
+	$phone_loc = 'bathroom'
+	minut += rand(5,7)
+	if $ARGS[1] = 'shower':
+		!!changing to and unmixed variable so the rng will work
+		dynamic 'temp_showertot = bathroom_showertot'
+		phone_rand = rand(1,temp_showertot)
+		!!Setting the image owned flag to 1
+		dynamic '<<$phone_loc>>_showerselfie[<<phone_rand>>] = 1'
+		gs 'stat'
+		if usePopUps = 1:
+			msg '<img src="images/pc/selfies/<<$phone_loc>>/shower/<<phone_rand>>.jpg">'
+		else
+			view 'images/pc/selfies/<<$phone_loc>>/shower/<<phone_rand>>.jpg'
+		end
+	elseif $ARGS[1] = 'bath':
+		dynamic 'temp_bathtot = bathroom_bathtot'
+		phone_rand = rand(1,temp_bathtot)
+		dynamic '<<$phone_loc>>_bathselfie[<<phone_rand>>] = 1'
+		gs 'stat'
+		if usePopUps = 1:
+			msg '<img src="images/pc/selfies/<<$phone_loc>>/bath/<<phone_rand>>.jpg">'
+		else
+			view 'images/pc/selfies/<<$phone_loc>>/bath/<<phone_rand>>.jpg'
+		end
+	end
+end
+
+!!for taking photos - only selfies for now
+if $ARGS[0] = 'Phone_camera':
+	if $location_type = 'bathroom':
+		$phone_loc = 'bathroom'
+	elseif $locclass = 'bedr':
+		$phone_loc = 'bedroom'
+	elseif $locclass = 'kitr':
+		$phone_loc = 'kitchen'
+	elseif $locclass = 'livingr':
+		$phone_loc = 'livingroom'
+	elseif $locclass = 'changingroom':
+		$phone_loc = 'changingroom'
+	elseif $locclass = 'park':
+		$phone_loc = 'park'
+	elseif $locclass = 'lockeroom':
+		$phone_loc = 'lockeroom'
+	elseif $locclass = 'beach':
+		$phone_loc = 'beach'
+	elseif $locclass = 'beach':
+		$phone_loc = 'beach'
+	elseif $locclass = 'classroom':
+		$phone_loc = 'classroom'
+	else
+		$phone_loc = ''
+	end
+	$telefon['body'] = '<font size=6>Camera</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_camera.png" height="80" width="80"><br><br>'
+	!! Take a selfie depending on which clothes you are wearing
+	$telefon['body'] += '<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''Phone_camera_selfie'' "><b>Take a selfie</b></a><br>'
+	!! Flashing selfie
+	if $clothingworntype ! 'nude' and ($phone_loc = 'bedroom' or $phone_loc = 'kitchen' or $phone_loc = 'livingroom' or $phone_loc = 'changingroom' or $phone_loc = 'park' or $phone_loc = 'lockeroom' or $phone_loc = 'beach'):
+		if $phone_loc = 'bedroom':
+			$telefon['body'] += '
+			<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''titflash'' "><b>Flash your tits for a selfie</b></a><br>
+			<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''assflash'' "><b>Flash your ass for a selfie</b></a><br>
+			<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''pussyflash'' "><b>Flash your pussy for a selfie</b></a><br>'
+		else
+			if pcs_inhib >= 35 or exhibitionist_lvl > 0:
+				$telefon['body'] += '<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''titflash'' "><b>Flash your tits for a selfie</b></a><br>'
+			end
+			if exhibitionist_lvl > 0:
+				$telefon['body'] += '<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''assflash'' "><b>Flash your ass for a selfie</b></a><br>'
+			end
+			if exhibitionist_lvl > 1:
+				$telefon['body'] += '<a href="exec:photoskl_exp += 1 & gs ''telefon'', ''pussyflash'' "><b>Flash your pussy for a selfie</b></a><br>'
+			end
+		end
+	end
+	dynamic $telefon['print']
+end
+
+if $ARGS[0] = 'titflash':
+	$flashing = 'tits'
+	gs 'telefon', 'Phone_camera_selfie'
+end
+
+if $ARGS[0] = 'assflash':
+	$flashing = 'ass'
+	gs 'telefon', 'Phone_camera_selfie'
+end
+
+if $ARGS[0] = 'pussyflash':
+	$flashing = 'pussy'
+	gs 'telefon', 'Phone_camera_selfie'
+end
+
+!!-----------------------------------end of Camera------------------------------------------
+
+if $ARGS[0] = 'Phone_wheather':
+	$telefon['body'] = '
+	<font size=6>Weather</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_weather.png" height="80" width="80"><br><br>
+	<b>Temperature:</b><br>
+	<<$temperature>>. <<$osadki>><br>
+	P.O.P. today is <<weatherFall>>%<br>'
+	dynamic $telefon['print']
+end &! --- Phone_wheather ---
+
+if $ARGS[0] = 'Phone_calendar':
+	$telefon['body'] = '
+	<font size=6>Calendar</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_calendar.png" height="80" width="80"><br><br>
+	<B>Today:</B><br>
+	<<$week[week]>>, <<day>> <<$month>> <<year>><br>'
+	dynamic $telefon['print']
+end &! --- Phone_calendar ---
+
+if $ARGS[0] = 'Phone_media':
+	$telefon['body'] = '
+	<font size=6>Media</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_music.png" height="80" width="80"><br>
+	<b>This option is not active</b><br>'
+	dynamic $telefon['print']
+end &! --- Phone_media ---
+
+if $ARGS[0] = 'Phone_sms':
+	$telefon['body'] = '
+	<font size=6>SMS</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"><br>
+	<b>This option is not active</b><br>'
+	dynamic $telefon['print']
+end &! --- Phone_sms ---
+
+if $ARGS[0] = 'Phone_menu':
+	$telefon['body'] = '
+	<a href="exec:gs ''telefon'', ''Phone_camera'' "><img src="<<FUNC(''$phone_theme'')>>icon_camera.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_calendar'' "><img src="<<FUNC(''$phone_theme'')>>icon_calendar.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_pictures'' "><img src="<<FUNC(''$phone_theme'')>>icon_pictures.png" height="80" width="80"></a>
+	<br>
+	<a href="exec:gs ''telefon'', ''Phone_media'' "><img src="<<FUNC(''$phone_theme'')>>icon_music.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_notebook'' "><img src="<<FUNC(''$phone_theme'')>>icon_notebook.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_wheather'' "><img src="<<FUNC(''$phone_theme'')>>icon_weather.png" height="80" width="80"></a>
+	<br>
+	<a href="exec:gs ''telefon'', ''ContactList'' "><img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_sms'' "><img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"></a>
+	<a href="exec:gs ''telefon'', ''Phone_megafon'' "><img src="<<FUNC(''$phone_theme'')>>icon_megafon.png" height="80" width="80"></a>
+	<br>'
+	if menu_off = 1:
+		$telefon['body'] += '<a href="exec:gs ''obj_din'', ''menu_disabled''"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+	else
+		$telefon['body'] += '<a href="exec:killvar ''menu_page'' & gs ''Cheatmenu_din'' & dynamic $cheatmenu[''setting'']"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+	end
+	dynamic $telefon['print']
+end &! --- Phone_menu ---
+
+if $ARGS[0] = 'Add_contact':
+	$dummy = INPUT('Enter a note:')
+	$contact[arrsize('$contact')] = dyneval($telefon['contact'],$ARGS[1],$dummy,$ARGS[2])
+	killvar '$dummy'
+end &! --- Add_contact ---
+
+if $ARGS[0] = 'telotkaz':
+	cla
+	minut += 10
+	'<<$ARGS[1]>>, "Sorry, I''m busy right now, maybe next time."'
+
+	act 'Hangup':gt 'telefon', 'fin'
+end &! --- telotkaz ---
+
+
+if $ARGS[0] = 'fin':
+	killvar 'lover_number'
+	cla
+	gt $loc, $metka
+end
+
+if $ARGS[0] = 'setup':
+	! array $$phonetheme_name is built.
+	! might need a tweak to have it rebuilt when new themes are available.
+
+	$phonetheme_name[0] = 'Custom_Standard'
+	$phonetheme_name[1] = 'Bimbo'
+	$phonetheme_name[2] = 'Custom_Aluminus'
+	$phonetheme_name[3] = 'Custom_Bottlecapped'
+	$phonetheme_name[4] = 'Custom_Galactic'
+	$phonetheme_name[5] = 'Custom_Vectored'
+	$phonetheme_name[6] = 'Custom_Veneer'
+	$phonetheme_name[7] = 'Custom_Voidwalker'
+	$phonetheme_name[8] = 'Custom_Voidwalker Red'
+	$phonetheme_name[9] = 'Custom_Voidwalker Toxic'
+	$phonetheme_name[10] = 'Gopnik'
+	$phonetheme_name[11] = 'Sports'
+	$phonetheme_name[12] = 'Succubus'
+	$phonetheme_name[13] = 'Woodshop'
+
+	phonetheme[0] = 1
+end
+
+--- telefon ---------------------------------
+

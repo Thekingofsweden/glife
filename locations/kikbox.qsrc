@@ -1,0 +1,193 @@
+# kikbox
+if $ARGS[0] = 'start':
+	cla
+	if pcs_health <= 0:
+		killvar'damage'
+		'<b><font color = red>You lost by TKO</font></b>'
+		xgt 'enderKik','lossKO'
+		exit
+	elseif healthV <= 0:
+		killvar'damage'
+		'<b><font color = green><<$boydesc>> lost by TKO</font></b>'
+		xgt 'enderKik','winKO'
+		exit
+	end
+
+	if round >= 1:
+		'<center><b>Round <<round>></b></center>'
+		*nl
+		if sparing = 1:
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kik1.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/ring<<round>>.jpg"></center>'
+		end
+		cla
+		minround += 1
+		'<b>= = = = = = = = = = = = = (ROUND <<round>>) = = = = = = = = = = = = =</b>'
+		if minround = 1:'<b>Start of the round</b>'
+		if minround = 2:'<b>Time in round 0:30</b>'
+		if minround = 3:'<b>Time in round 1:00</b>'
+		if minround = 4:'<b>Time in round 1:30</b>'
+		if minround = 5:'<b>Time in round 2:00</b>'
+		if minround = 6:'<b>Time in round 2:30</b>'
+		'<b><<$boydesc>></b> Life <b><font color="red"><<healthV>></font></b>, Endurance <b><font color="green"><<staminaV>></font></b>'
+		'Your life <b><font color="red"><<pcs_health>></font></b>, Endurance <b><font color="green"><<pcs_stam>></font></b>'
+		'<b>= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =</b>'
+		'Your points <<pointKik>>  Points opponent <<pointKikV>>'
+		'<b>= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =</b>'
+		gs 'initKik'
+
+		if hod = 0:
+			!!Player attacks
+			'<font color="green">You can attack</font>'
+
+			act 'Fast Jab':
+				cla
+				damage = rand(pcs_stren/12, pcs_stren/8)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (pcs_agil + pcs_react + pcs_jab) * 2
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="green">You go for the quick jab and step forward.</font>'
+				gs 'Kikatak', 'player'
+				xgt 'kikbox', 'sta'
+			end
+
+			act 'Power punch':
+				cla
+				damkoef = pcs_stren * 20 / 100
+				damage = rand(pcs_stren - damkoef, pcs_stren + damkoef)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (pcs_agil + pcs_react + pcs_punch)
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="green">You attempt a powerful punch.</font>'
+				gs 'Kikatak', 'player'
+				xgt 'kikbox', 'sta'
+			end
+
+			act 'Big kick':
+				cla
+				damkoef = pcs_stren * 20 / 100
+				damage = rand((pcs_stren - damkoef) * 3, (pcs_stren + damkoef) * 3)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (pcs_agil + pcs_react + pcs_kick) / 2
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="green">You try a powerful kick.</font>'
+				gs 'Kikatak', 'player'
+				xgt 'kikbox', 'sta'
+			end
+		else
+			!!Enemy attacks
+			'<font color="red"><<$boydesc>> attacks</font>'
+			tiprand = rand(0, 2)
+
+			if tiprand = 0:
+				damage = rand(strenV / 12, strenV / 8)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (speedV + reactV + JabV) * 2
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="red"><<$boydesc>> deals with quick jab, stepping forward.</font>'
+				gs 'Kikatak', 'enemy'
+				xgt 'kikbox', 'sta'
+			elseif tiprand = 1:
+				damkoef = strenV * 20/100
+				damage = rand(strenV - damkoef, strenV + damkoef)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (speedV + reactV + punchV)
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="red"><<$boydesc>> applies a power punch.</font>'
+				gs 'Kikatak', 'enemy'
+				xgt 'kikbox', 'sta'
+			elseif tiprand = 2:
+				damkoef = strenV * 20 / 100
+				damage = rand((strenV - damkoef) * 3, (strenV + damkoef) * 3)
+
+				if damage <= 0:damage = 1
+
+				koefatak = (speedV + reactV + kikV) / 2
+				koefpop = koefatak * 20 / 100
+				popad = rand(koefatak - koefpop, koefatak + koefpop)
+				'<font color="red"><<$boydesc>> goes for a kick.</font>'
+				gs 'Kikatak', 'enemy'
+				xgt 'kikbox', 'sta'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'sta':
+	cla
+	ionce = 0
+	'<b>= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =</b>'
+	if minround = 1:'<b>Time in round 0:30</b>'
+	if minround = 2:'<b>Time in round 1:00</b>'
+	if minround = 3:'<b>Time in round 1:30</b>'
+	if minround = 4:'<b>Time in round 2:00</b>'
+	if minround = 5:'<b>Time in round 2:30</b>'
+	if minround = 6:'<b>Time in round 3:00</b>'
+	'<b>= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =</b>'
+	'<b><<$boydesc>></b> Life <b><font color="red"><<healthV>></font></b>, Endurance <b><font color="green"><<staminaV>></font></b>'
+	'Your life <b><font color="red"><<pcs_health>></font></b>, Endurance <b><font color="green"><<pcs_stam>></font></b>'
+	'<b>= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =</b>'
+
+	act 'Further':gt 'kikbox', 'start'
+
+	if minround = 6:
+		cla
+		minround = 0
+		round += 1
+		'The bell rings indicating the end of round <<round>>.'
+		if round <= formula:
+			act 'Back to the corner':
+				cls
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/kickboxing/kickboxing_corner.jpg"></center>'
+				'You try to rest as best as you can.'
+
+				act 'Return to the ring':gt 'kikbox', 'start'
+			end
+		elseif round > formula and sparing = 0:
+			act 'Go to the middle of the ring for the announcement':
+				cla
+
+				if pointKik > pointKikV:
+					killvar'damage'
+					gt 'enderKik', 'win'
+				elseif pointKik < pointKikV:
+					killvar'damage'
+					gt 'enderKik', 'loss'
+				elseif pointKik = pointKikV:
+					killvar'damage'
+					gt 'enderKik', 'draw'
+				end
+			end
+		elseif round > formula and sparing = 1:
+			if pointKik > pointKikV:
+				killvar'damage'
+				gt 'enderKik', 'win'
+			elseif pointKik < pointKikV:
+				killvar'damage'
+				gt 'enderKik', 'loss'
+			elseif pointKik = pointKikV:
+				killvar'damage'
+				gt 'enderKik', 'draw'
+			end
+		end
+	end
+end
+
+--- kikbox ---------------------------------
+

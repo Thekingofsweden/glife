@@ -1,0 +1,658 @@
+# nichNicholas
+
+!! Nicholas is registered as NPC A52
+
+!! nichNTRelation: 0= Tanya and Nicholas are having an affair and PC doesnt know it, 1= PC found out, 2-9= reserved for them being together, 10= Tanya broke up, 11-19= reserved, 20= Nicholas broke up
+!! nichFlirtCounter
+!! nichFlirtLast
+!! nichSex: -1- permanentley disabled, 0- disabled, 10- enabled
+
+!! nichGentleclubE1: -1- eventchain permanently locked, 1 - Sveta is expected to attend Nicholas at nichGentleclubDay, 2 - Sveta was too late and got noticed about this, 10 - success
+!! nichGentleclubDayE1
+!! nichGentleclubEnabled
+
+
+
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+	
+	$nichTemp = func('nichUtil','npcActivity','nicholas')
+	
+	if $nichTemp = 'sleep':
+		'Nicholas is sleeping. It would be a bad idea to wake him up now.'
+	elseif $nichTemp = 'bathMorning' or $nichTemp = 'bathEvening' or $nichTemp = 'bathClub':
+		'Nicholas is currently brushing his teeth. It''s not the right time to talk to him now.'
+	elseif $nichTemp = 'study':
+		'Nicholas is sitting at his computer doing his correspondence. When he is finished he might have time for you.'
+		act 'Wait':
+			minut += 5
+			gt 'nichNicholas','approach'
+		end
+	elseif $nichTemp = 'breakfast':
+		'Nicholas is currently enjoying his breakfast.'
+	elseif $nichTemp = 'leaveWork' or $nichTemp = 'leaveShopping' or $nichTemp = 'leaveClub':
+		'Nicholas is putting on his shoes. Apparently he has no time to speak to you now.'
+	!!elseif $nichTemp = 'work':
+	!!	'Nicholas is most likely at work now.'
+	elseif $nichTemp = 'returnWork':
+		'Nicholas just returned from work. You should give him some time before speaking to him.'
+	elseif $nichTemp = 'returnShopping':
+		'Nicholas just returned from a shopping trip. You should give him some time before speaking to him.'
+	elseif $nichTemp = 'living':
+		'Nicholas is sitting on the couch. You could approach him now.'
+		act 'Approach':
+			gt 'nichNicholas','approach'
+		end
+	elseif $nichTemp = 'dinner':
+		'Nicholas is eating dinner.'
+	elseif $nichTemp = 'gala':
+		!! TODO
+	elseif $nichTemp = 'tanya':
+		!! TODO
+	elseif $nichTemp = 'returnClub':
+		'Nicholas just returned from his club. You should give him some time before speaking to him.'
+	end
+	
+	act 'Back':
+		gt $loc, 'return'
+	end
+	
+	
+elseif $ARGS[0] = 'approach':
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+	'You wait for Nicholas to notice you, then you approach him and curtsy.'
+	'"<<$pcs_nickname>>, what do you want?"'
+	if nichEvaluationLast ! daystart:
+		act 'Evaluation':
+			cla
+			if hour < 12:
+				'"It''s not even noon. Are you sure you are done for today?"'
+				act 'Yes':
+					gt 'nichNicholas','evaluation'
+				end
+				act 'No':
+					gt $loc, 'return'
+				end
+			else
+				gt 'nichNicholas','evaluation'
+			end
+		end
+	end
+	
+	nichGalaPresent = FUNC('nichUtil','isPresent','gala',$nichLoc)
+	nichTanyPresent = FUNC('nichUtil','isPresent','tanya',$nichLoc)
+	
+	if nichSex < 10 and nichSex >= 0 and nichFlirtLast ! daystart:
+		act 'Flirt':
+			
+			if nichGalaPresent = 1:
+				'<font color = red>It would be a big mistake to flirt with Nicholas while Gala is in the same room.</font>'
+			elseif nichTanyPresent = 1:
+				'<font color = red>You shouldn''t flirt with Nicholas while Tanya is in the same room.</font>'
+			else
+				gt 'nichNicholas','flirt'
+			end
+		end
+	elseif nichSex >= 10:
+		act 'Seduce':
+			if nichGalaPresent = 1:
+				'<font color = red>It would be a big mistake to seduce Nicholas while Gala is in the same room.</font>'
+			elseif nichTanyPresent = 1:
+				'<font color = red>You shouldn''t seduce Nicholas while Tanya is in the same room.</font>'
+			else
+				gt 'nichNicholas','seduce'
+			end
+		end
+	end
+	
+!!	if nichGentleclubEnabled = 1:
+!!		act 'Club':
+!!			cla
+!!			'"Master Nicholas, I was wondering if you would like to go the club like you suggested."'
+!!			'"Certainly. Lets go."'
+!!			
+!!			act 'Go to Club':
+!!				gt 'nichClub'
+!!			end
+!!		end
+!!	end
+	
+	act 'Back':
+		gt $loc, 'return'
+	end
+	
+elseif $ARGS[0] = 'sex':
+
+	if $ARGS[1] = '' or $ARGS[1] = 'start':
+		gs 'boyStat', 'A52'
+		
+		'<center><img <<$set_imgh>> src="images/characters/city/nicholas/sex/undress.jpg"></center>'
+		'You slowly undress for Nicholas.'
+		
+		!! Nicholas will cum at 5
+		nichTemp = 1
+	
+	elseif $ARGS[1] = 'bj':
+		'<center><img <<$set_imgh>> src="images/characters/city/nicholas/sex/bj/bj'+rand(0,10)+'.jpg"></center>'
+		gs 'arousal', 'bj', 1
+		nichTemp += 1
+	elseif $ARGS[1] = 'anal':
+		'<center><img <<$set_imgh>> src="images/characters/city/nicholas/sex/anal/anal'+rand(0,7)+'.jpg"></center>'
+		gs 'arousal', 'anal', 1
+		nichTemp += 1
+	end
+	
+	
+	
+	if nichTemp < 5:
+		gs 'stat'
+		if nichTemp = 4:
+			'Nicholas moans loudly. He seems to be about to cum.'
+		end
+		act 'Blowjob':
+			gt 'nichNicholas','sex','bj'
+		end
+		
+		act 'Anal':
+			gt 'nichNicholas','sex','anal'
+		end
+	else
+		if $ARGS[1] = 'bj':
+			'He groans loudly, and you feel his hard cock erupting in your mouth. You swallow it obediently, figuring that is what he wants you to do.'
+			spafinloc = 12
+		elseif $ARGS[1] = 'anal':
+			'He groans loudly, spraying his seed deep inside your ass.'
+			spafinloc = 3
+		end
+		gs 'cum_manage'
+		gs 'arousal', 'end'
+		gs 'stat'
+
+		act 'Leave':
+			gt $loc, 'return'
+		end
+	end
+	
+	
+elseif $ARGS[0] = 'seduce':	
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/sex/seduce.jpg"></center>'
+	'"'+$npc_nickname['A52']+'? Is there anything I can do for you?"'
+	'You squeze your breast together, so that '+$npc_firstname['A52']+' has a good look at them.'
+	'"I mean <i>anything</i>."'
+	'"Actually there is something you could help me with." he says while unzipping his pants.'
+	act 'Further':
+		gt 'nichNicholas','sex'
+	end
+elseif $ARGS[0] = 'flirt':
+	nichFlirtLast = daystart
+	
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/sex/flirt.jpg"></center>'
+	
+	if nichSex < 10:
+		nichFlirtCounter += 1
+		if nichFlirtCounter = 1:
+			'"Master Nicholas? I just wanted to tell you that I really like the suit you were wearing today."'
+			'"Style is a way to say who you are without having to speak. Rachel Zoe said that. Successful people live by this motto."'
+			'<i>Nicholas doesn''t seem to be in the mood right now. Maybe you should come back another time.</i>'
+		elseif nichFlirtCounter = 2:
+			'"Master Nicholas? I just wanted to tell you that I really like the new perfume you were wearing today."'
+			'"You are your greatest asset. Put your time, effort and money into training, grooming, and encouraging your greatest asset. Tom Hopkins said something very true there. You should take this advice seriously as well."'
+			'<i>Nicholas doesn''t seem to be in the mood right now. Maybe you should come back another time.</i>'
+		elseif nichFlirtCounter >= 3:
+			'"Master Nicholas? I just wanted to tell you that I really like the way your hair..."'
+			if pcs_apprnc >= 120 or (nichNTRelation >= 10 and pcs_apprnc >= 80):
+				'"Let me stop you right there. I know what you are up to."'
+				'He stands up and makes a step into your direction.'
+				'"You are a very attractive young woman. And I would be lying if I said that I haven''t wondered how your skin feels."'
+				'He makes another step. He is less than one arm length away from you now. You can feel his breath on your skin as he speaks.'
+				'"I know it should feel wrong. You are my maid. And I am a married man."'
+				'He gently touches your left shoulder and slowly runs his hand down your arm.'
+				'"Yet it feels so right."'
+				'Just before his hand reaches your wrist he stops his movement.'
+				'"Am I going too far? Did I get the signals wrong? Please tell me if you don''t want this too."'
+				cla
+				act 'I want this':
+					nichSex = 10
+					'"Yes, Master Nicholas. I want this."'
+					cla
+					act 'Further':
+						gt 'nichNicholas','sex'
+					end
+				end
+				act 'This is going too far':
+					nichSex = -1
+					'"I am sorry, master Nicholas. But I can''t do that."'
+					'He looks dissapointed.'
+					'"I understand. Of course I have to ask you that you tell nobody about this incident."'
+					'"Of course, Master Nicholas."'
+					cla
+					act 'Leave':
+						gt $loc, 'return'
+					end
+				end
+				exit
+			else
+				'"<<$pcs_nickname>>, I don''t think this would be appropriate. I suggest you get back to your work."'
+				cla
+				act 'Leave':
+					gt $loc, 'return'
+				end
+			end
+		end
+	else 
+		gt 'nichNicholas','seduce'
+	end
+	act 'Back':
+		gt $loc, 'return'
+	end
+elseif $ARGS[0] = 'desc':
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+	
+	$nichTemp = func('nichUtil','npcActivity','nicholas')
+	
+	if $nichTemp = 'sleep':
+		'Usually Nicholas is sleeping at this time.'
+	elseif $nichTemp = 'bathMorning':
+		'You assume that currently Nicholas is either in his bedroom or in the master bathroom.'
+	elseif $nichTemp = 'study':
+		'At this time Nicholas can usually be found in his study.'
+	elseif $nichTemp = 'breakfast':
+		'It''s the time Nicholas usually eats breakfast.'
+	elseif $nichTemp = 'leaveWork':
+		'Nicholas is likely heading for work at the moment.'
+	elseif $nichTemp = 'work':
+		'Nicholas is most likely at work now.'
+	elseif $nichTemp = 'returnWork':
+		'Nicholas will return from work soon.'
+	elseif $nichTemp = 'leaveShopping' or $nichTemp = 'shopping' or $nichTemp = 'returnShopping':
+		'Nicholas usually goes downtown around this time.'
+	elseif $nichTemp = 'living':
+		'Nicholas seems to be in the living room.'
+	elseif $nichTemp = 'bathEvening':
+		'Nicholas is likely heading for his bed now.'
+	elseif $nichTemp = 'dinner':
+		'Nicholas usually eats dinner around this time.'
+	elseif $nichTemp = 'gala':
+		'Nicholas seems to be in his bedroom.'
+	elseif $nichTemp = 'tanya':
+		'You are sure that Nicholas is somewhere in the apartment but you don''t know where.'
+	elseif $nichTemp = 'leaveClub' or $nichTemp = 'club' or $nichTemp = 'returnClub' or $nichTemp = 'bathClub':
+		'Usually Nicholas goes to his club around this time.'
+	else
+		'You have no idea where Nicholas is at the moment.'
+	end
+	
+	killvar '$nichTemp'
+	
+	act 'Back': 
+		gt $loc
+	end
+elseif $ARGS[0] = 'evaluation':
+	!! this function will not check whether PC already had an evaluation today
+	!! calling this function with $ARGS[1] = 'silent' will clear all output in the end, use it for evaluating PC if she is not present for her evaluation
+	nichTempEval = 0
+	!!Appearance
+	if spdirty > 0 or (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or cumloc[1] = 1 or cumloc[2] = 1 or cumloc[4] = 1 or cumloc[5] = 1 or cumloc[6] = 1 or cumloc[7] = 1 or cumloc[14] = 1 or cumloc[12] = 1:
+		'<font color = red>Did you really think I won''t notice the cum on you? That''s beyond inappropriate.</font>'
+		nichTempEval -= 20
+	end
+	if ShoHeels < 4:
+		'<font color = orange>I understand that high heels are not a comfortable thing to wear. But your job isn''t about feeling comfortable and high heels are an essential part of your uniform.</font>'
+		nichTempEval -= 2
+	end
+	if lashair ! 1 and pcs_pubes > 3 or pcs_leghair > 3:
+		'<font color = orange>You need to take care of your body hair.</font>'
+		nichTempEval -= 2
+	end
+	if pcs_hairbsh = 0:
+		'<font color = orange>You didn''t brush your hair.</font>'
+		nichTempEval -= 2
+	end
+	
+	!! Breakfast
+	if nichBreakfLast ! daystart:
+		'<font color = red>You didn''t show up for breakfast today. That leaves an exceptional bad impression.</font>'
+		nichTempEval -= 20
+	elseif nichBreakFQual = 4:
+		'<font color = red>You were late for breakfast today. That leaves a very bad impression.</font>'
+		nichTempEval -= 15
+	elseif nichBreakFQual = 3:
+		'<font color = red>The breakfast wasn''t even half-way done when we arrived. That leaves a bad impression.</font>'
+		nichTempEval -= 10
+	elseif nichBreakFQual = 2:
+		'<font color = red>The breakfast wasn''t completely done when we arrived. That leaves a bad impression.</font>'
+		nichTempEval -= 5
+	elseif nichBreakFQual = 1:
+		if rand(1,10) = 0:
+			'<font color = green>The breakfast was acceptable.</font>'
+			nichTempEval += 1
+		end
+	end
+	
+	!! Hallway
+	if nichChoreState[0] = -1:
+		'<font color = green>I noticed that you applied a special polish in the hallway today. I like this show of extra effort.</font>'
+		nichTempEval += 3
+		nichChoreState[0] = 0
+		
+	elseif nichChoreState[0] = 0:
+		if rand(1,10) <= 2:
+			'<font color = green>You did a good job cleaning the hallway today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[0] <= 5:
+		if rand(1,10) <= 9:
+			'<font color = orange>Did you notice the dirt in the hallway? I expect you to pay closer attention in the future.</font>'
+			nichTempEval -= 2
+		end
+	elseif nichChoreState[0] <= 15:
+		'<font color = red>The hallway is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The hallway is in a catastrophic condition. You do realize that this is an apartment, not a barn?</font>'
+		nichTempEval -= 20
+	end
+	
+	!!Guest
+	if nichChoreState[1] = -1:
+		'<font color = green>I took a look at the guest cloakroom. You did an exceptional job there.</font>'
+		nichTempEval += 3
+		nichChoreState[1] = 0
+	elseif nichChoreState[1] = 0:
+		!! He wont comment or notice a clean guest bathroom
+	elseif nichChoreState[1] <= 5:
+		if rand(1,10) <= 5:
+			'<font color = orange>Did you take a look into the guest cloakroom today? It needs some cleaning up.</font>'
+			nichTempEval -= 2
+		end
+	elseif nichChoreState[1] <= 15:
+		'<font color = red>The guest cloakroom is dirty.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The guest cloakroom is very dirty.</font>'
+		nichTempEval -= 20
+	end
+		
+	
+	!! Servant bedroom
+	if nichChoreState[2] = 0:
+		!! He wont comment a clean servant bedroom
+	elseif nichChoreState[2] <= 5:
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bedroom is a bit chaotic.</font>'
+			nichTempEval -= 1
+		end
+	elseif nichChoreState[2] <= 15:
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bedroom is very chaotic.</font>'
+			nichTempEval -= 3
+		end
+	else
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bedroom is extremely chaotic.</font>'
+			nichTempEval -= 5
+		end
+	end
+	
+	!! Servant bathroom
+	if nichChoreState[3] = 0:
+		!! He wont comment a clean servant bathroom
+	elseif nichChoreState[3] <= 5:
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bathroom is a bit dirty.</font>'
+			nichTempEval -= 1
+		end
+	elseif nichChoreState[3] <= 15:
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bathroom is very dirty.</font>'
+			nichTempEval -= 3
+		end
+	else
+		if rand(1,10) <= 2:
+			'<font color = orange>Your personal bathroom is extremely dirty.</font>'
+			nichTempEval -= 5
+		end
+	end
+	
+	!! Laundry
+	if nichChoreState[4] <= 15:
+		!! He wont comment clean laundry
+	elseif nichChoreState[4] <= 25:
+		if rand(1,10) <= 8:
+			'<font color = orange>I looked through my clothes today and found some of them missing. Are you late doing the laundry?</font>'
+			nichTempEval -= 3
+		end
+	elseif nichChoreState[4] <= 35:
+		'<font color = orange>You appear to be late doing the laundry. I''m missing several of my good shirts which should be cleaned up by now.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>Today I was forced to wear one of my shirts which don''t fit me perfectly anymore. You being this late doing the laundry is not acceptable.</font>'
+		nichTempEval -= 20
+	end
+	if nichChoreModLaundry1 >= 1:
+		'<font color = red>I heard that you ruined one of my shirts while doing the laundry.</font>'
+		nichTempEval -= 10 * nichChoreModLaundry1
+		killvar 'nichChoreModLaundry1'
+	end
+	if nichChoreModLaundry2 >= 1:
+		'<font color = green>I took a look at the clothes you washed today. They are flawless and smell exceptionally well.</font>'
+		nichTempEval += 3 * nichChoreModLaundry2
+		killvar 'nichChoreModLaundry2'
+	end
+	
+	!! Tanya bedroom
+	if nichChoreState[5] = 0:
+		!! He wont comment a clean bedroom
+	elseif nichChoreState[5] <= 5:
+		'<font color = orange>I have taken a look at Tanyas room. It is a bit chaotic. Even though creating this chaos is her fault it''s your responsibility to clean it up.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[5] <= 15:
+		'<font color = red>I have taken a look at Tanyas room. It is very chaotic. Even though creating this chaos is her fault it''s your responsibility to clean it up.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>I have taken a look at Tanyas room. It is extremely chaotic. Even though creating this chaos is her fault it''s your responsibility to clean it up.</font>'
+		nichTempEval -= 15
+	end
+	
+	!! Master bathroom
+	if nichChoreState[6] = -1:
+		'<font color = green>You did an exceptional job cleaning the master bathroom. I really like the smell there. And you seem to have a talend of folding towels.</font>'
+		nichTempEval += 3
+		nichChoreState[6] = 0
+	elseif nichChoreState[6] = 0:
+		if rand(1,10) <= 3:
+			'<font color = green>You did a good job cleaning up the master bathroom today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[6] <= 5:
+		'<font color = orange>The master bathroom is a little bit dirty. It doesn''t look like you cleaned it today. I expect it to be cleaned up perfectly in the future.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[6] <= 15:
+		'<font color = red>The master bathroom is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The master bathroom is in a catastrophic condition.</font>'
+		nichTempEval -= 20
+	end
+	
+	!! Master bedroom
+	if nichChoreState[7] = 0:
+		if rand(1,10) <= 3:
+			'<font color = green>You did a good job cleaning up the master bedroom today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[7] <= 5:
+		'<font color = orange>The master bedroom is a little bit dirty. It doesn''t look like you cleaned it today. I expect it to be cleaned up perfectly in the future.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[7] <= 15:
+		'<font color = red>The master bedroom is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The master bedroom is in a catastrophic condition.</font>'
+		nichTempEval -= 20
+	end
+	
+	!! Living room
+	if nichChoreState[8] = -1:
+		'<font color = green>You did an exceptional job cleaning the living room.</font>'
+		nichTempEval += 3
+		nichChoreState[8] = 0
+	elseif nichChoreState[8] = 0:
+		if rand(1,10) <= 3:
+			'<font color = green>You did a good job cleaning up the living room today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[8] <= 5:
+		'<font color = orange>The living room is a little bit dirty. It doesn''t look like you cleaned it today. I expect it to be cleaned up perfectly in the future.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[8] <= 15:
+		'<font color = red>The living room is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The living room is in a catastrophic condition.</font>'
+		nichTempEval -= 20
+	end
+	
+	!! Kitchen
+	if nichChoreState[9] = -1:
+		'<font color = green>I really like what you did with the silverware today.</font>'
+		nichTempEval += 3
+		nichChoreState[9] = 0
+	elseif nichChoreState[9] = 0:
+		if rand(1,10) <= 1:
+			'<font color = green>You did a good job cleaning up the kitchen today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[9] <= 5:
+		'<font color = orange>The kitchen is a little bit dirty. It doesn''t look like you cleaned it today. I expect it to be cleaned up perfectly in the future.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[9] <= 15:
+		'<font color = red>The kitchen is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The kitchen is in a catastrophic condition.</font>'
+		nichTempEval -= 20
+	end
+	
+	!!Study
+	if nichChoreState[10] = 0:
+		if rand(1,10) <= 2:
+			'<font color = green>You did a good job cleaning up the study today.</font>'
+			nichTempEval += 1
+		end
+	elseif nichChoreState[10] <= 5:
+		'<font color = orange>The study is a little bit dirty. It doesn''t look like you cleaned it today. I expect it to be cleaned up perfectly in the future.</font>'
+		nichTempEval -= 5
+	elseif nichChoreState[10] <= 15:
+		'<font color = red>The study is in an unacceptable condition.</font>'
+		nichTempEval -= 10
+	else
+		'<font color = red>The study is in a catastrophic condition.</font>'
+		nichTempEval -= 20
+	end
+	
+	!! Influence of other characters
+	if nichEvalGala = 1:
+		'<font color = green>My wife told me that you were <i>a good girl</i> today.</font>'
+		nichTempEval += 1
+		killvar 'nichEvalGala'
+	elseif nichEvalGala = 2:
+		'<font color = green>My wife told me that you were <i>a very good girl</i> today.</font>'
+		nichTempEval += 2
+		killvar 'nichEvalGala'
+	end
+	
+	if nichGalaOpponent >= 10 and nichGalaOpponent < 20:
+		'<font color = red>My wife told me that you performed poorly today. She didn''t tell me what you did exactly but I will take it into account nevertheless.</font>'
+		'<i>It appears as if Gala wants to get rid of you by talking badly about your job performance.</i>'
+		nichTempEval -= 5
+	end
+	
+	!! Special events
+	if nichGentleclubE1 > 0 and nichGentleclubE1 < 10 and nichGentleclubDayE1 < daystart:
+		'<font color = red>I asked you to attend me yesterday evening but you didn''t show up.</font>'
+		nichTempEval -= 10
+		killvar 'nichGentleclubE1'
+	end
+	
+	*nl
+	if nichTempEval > 5:
+		if nichPerformance >= 80:
+			'Overall you did an outstanding job today and you are consistently performing to my satisfaction. Well done.'
+		elseif nichPerformance < 20:
+			'Overall you did an outstanding job today. If you keep this up I''m willing to forget past shortcomings.'
+		else
+			'Overall you did an outstanding job today. Well done.'
+		end
+	elseif nichTempEval >= 0:
+		if nichPerformance >= 80:
+			'Overall you did your job well job today and you are consistently performing to my satisfaction. Well done.'
+		elseif nichPerformance < 20:
+			'Overall you did your job well job today. If you keep this up I might be willing to forget past shortcomings.'
+		else
+			'Overall you did your job well job today.'
+		end
+	elseif nichTempEval >= -5:
+		if nichPerformance >= 80:
+			'Overall you didn''t quite meet my expectations today. Since you are usually performing well that''s not a big issue.'
+		elseif nichPerformance < 20:
+			'Overall you didn''t quite meet my expectations today. I''m getting tired of getting disappointed by you.'
+		else
+			'Overall you didn''t quite meet my expectations today. Your performance has to improve in the future.'
+		end
+	else
+		'Overall you didn''t meet my expectations at all today.'
+	end
+	
+	if nichDebug = 1:
+		'DEBUG: nichTempEval = <<nichTempEval>>'
+	end
+	
+	nichPerformance += nichTempEval
+	
+	killvar 'nichTempEval'
+	
+	nichPerformance = min(100,max(0,nichPerformance))
+	
+	if $ARGS[1] = 'silent':
+		*clr & cla
+		!! note: the calling script has to make sure nichEvaluationLast is set to the right value
+	else
+	
+		*nl
+		if nichPerformance = 0:
+			'I had it with your laziness. Pack your stuff, you are fired!'
+			*nl
+			act 'Leave':
+				gt 'nichUtil', 'fired'
+			end
+		else
+			if nichPerformance <= 20:
+				'In total you are underperforming. If you keep working like this your remaining time here will be a very short one.'
+			elseif nichPerformance <= 40:
+				'In total I am not satisfied by your performance. It has to improve if you want to keep your job.'
+			elseif nichPerformance <= 60:
+				'In total you are doing a mediocre job. There reason for neither censure nor praise.'
+			elseif nichPerformance <= 80:
+				'In total you are performing well, but there is still room for improvement.'
+			else
+				'In total you are performing exceptionally well. I am glad I hired you.'
+			end
+			
+			if nichWorkState = 0 and daystart >= nickHired + 7:
+				'In the past days you did your job well enough to pass your probation. You don''t need to worry about the legal work, I have it already sorted out for you.'
+				'From now on you don''t need to see me for daily performance evaluation anymore. Of course you can still ask me if you would like to have a detailed analysis of your work.'
+				nichWorkState = 1
+			end
+			
+			'That''s all for now. You are dismissed for today.'
+			nichEvaluationLast = daystart
+			
+			act 'Leave':
+				gt $loc
+			end
+		end
+	end
+end
+
+--- nichNicholas ---------------------------------

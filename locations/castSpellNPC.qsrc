@@ -1,0 +1,50 @@
+# castSpellNPC
+! Used for NPCs to cast a spell.
+!
+!   $ARGS[0] is the spell being cast
+!	$ARGS[1] = Target Type ('opp','pcs')
+!	 ARGS[2] = Target party member number
+!	$ARGS[3] = Caster Type ('opp','pcs')
+!	 ARGS[4] = Caster party member number
+! ARGS[5-n] are any parameters that need to be passed to the Spell
+!
+!	Example:
+!		gs 'castSpell', 'teleport', 'CentralPark'
+
+gs 'spellList'
+
+spellSuccess = 1
+
+$SpellID = $ARGS[0]
+$SpellArgs = ""
+i=5
+:ArgLoopNPC
+if i < arrsize('$ARGS'):
+	if $ARGS[i] = '':
+		$SpellArgs += ", <<ARGS[i]>>"
+	else
+		$SpellArgs += ", '<<$ARGS[i]>>'"
+	end
+	i += 1
+	jump 'ArgLoopNPC'
+end
+killvar 'i'
+
+manaCost = spellMana[$SpellID]
+casterMana = dyneval('result=<<$ARGS[3]>>_mana[<<ARGS[4]>>]')
+if casterMana >= manaCost:
+	dynamic '<<$ARGS[3]>>_mana[<<ARGS[4]>>] -= <<manaCost>>'
+	$SpellExec = "gs 'spell', '<<$SpellID>>', '<<spellSuccess>>', '<<$ARGS[1]>>', <<ARGS[2]>>, <<ARGS[4]>><<$SpellArgs>>"
+	dynamic $SpellExec
+else
+	'Not enough mana to cast the spell.'
+end
+
+
+killvar '$SpellID'
+killvar '$SpellExec'
+killvar 'spellSuccess'
+killvar 'manaCost'
+killvar 'casterMana'
+
+--- castSpellNPC ---------------------------------

@@ -1,0 +1,72 @@
+# pornschedule
+
+if $ARGS[0] = 'pornmiss':
+	pornmiss = 1
+	missedshoot = 0
+	pf = pfilmday[0]
+	film_idx = film
+	dynamic $pornfilmdesc, pornfilmType[film]
+	porndebt += prodcost
+	if pornstack > 0:pornstack -= 1
+end
+
+if $ARGS[0] = 'schedule':
+	killvar 'pfilmday', 0
+	days = 0
+	:fillschedule
+		porns = 0
+		:moveschedule
+			if porntaken['<<days+1>>,<<porns>>'] = 0 and days >= 14:
+				if rand(1,100) = 1: pornplan['<<days+1>>,<<porns>>'] = 0
+				!Change of plans if there is no contract on the movie, shooting some other kind of porn instead
+			end
+			if days = 49 or pornplan['<<days+1>>,<<porns>>'] = 0:
+			!If there is a missing slot in the schedule, it fills in. It also regenerates the last selection on the end, so no endless repetition
+				pornvariable = rand(0,90)
+				if pornvariable <= 1:
+					!50 person
+					pornplan['<<days+1>>,<<porns>>'] = 14
+				elseif pornvariable <= 10:
+					!4 person
+					!some way to randomize the scene
+					pornplan['<<days+1>>,<<porns>>'] = rand(10,13)
+				elseif pornvariable <= 30:
+					!2 person
+					!some way to randomize the scene
+					pornplan['<<days+1>>,<<porns>>'] = rand(8,9)
+				elseif pornvariable <= 60:
+					!single person
+					!some way to randomize the scene
+					pornplan['<<days+1>>,<<porns>>'] = rand(1,7)
+				elseif pornvariable <= 80:
+					!single person
+					!some way to randomize the scene
+					pornplan['<<days+1>>,<<porns>>'] = rand(15,20)
+				else
+					!masturbation scene
+					!some way to randomize the scene - if there will be more than one(???)
+					pornplan['<<days+1>>,<<porns>>'] = 15
+				end
+			end
+			pornplan['<<days>>,<<porns>>'] = pornplan['<<days+1>>,<<porns>>']
+			porntaken['<<days>>,<<porns>>'] = porntaken['<<days+1>>,<<porns>>']
+			!moving the shooting schedule and the contracts ahead by one day. "days = 0" is the current day
+			if porntaken['<<days>>,<<porns>>'] = 0:
+				if rand(1,days*3/2) = 1: porntaken['<<days>>,<<porns>>'] = 1
+				!some other porn actress contracted the movie. The more closer the shooting day is, the more likely, that all of them is taken
+			end
+			if porntaken['<<days>>,<<porns>>'] = 1:
+				if rand(1,100) = 1: porntaken['<<days>>,<<porns>>'] = 0
+				!some other porn actress contracted to the movie has canceled her contract. Not likely, but it happens.
+			end
+		if porns < 3:porns += 1 & jump 'moveschedule'	
+	if days < 49:days += 1 & jump 'fillschedule'
+	! Finally deleting the unnecessary (and the next day overwritten) schedule day to reduce array size
+	killvar 'pornplan', 203
+	killvar 'pornplan', 202
+	killvar 'pornplan', 201
+	killvar 'pornplan', 200
+end
+
+--- pornschedule ---------------------------------
+

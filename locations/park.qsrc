@@ -1,0 +1,687 @@
+# park
+$location_type = 'public_outdoors'
+
+if $ARGS[0] = 'start':
+	CLOSE ALL
+
+	$metka = 'start'
+	$loc = 'park'
+	$menu_loc = 'park'
+	$menu_arg = 'start'
+	$locclass = 'park'
+	menu_off = 0
+	if sound = 0:
+		if month >=11 and month <= 12 or month >=1 and month <=3:
+			if hour >= 8 and hour <= 23: PLAY 'sound/street2.mp3',30 & PLAY 'sound/zima.mp3',30
+			if hour >= 0 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/park.mp3',30 & PLAY 'sound/street_leto.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+		end
+	end
+
+	$sexloc = 'park'
+
+	if WalkInsidePark = 0:WalkInsidePark = 1
+	*clr & cla
+	gs 'stat'
+	'<center><b><font color="maroon">Park</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park.jpg"></center>'
+	'The central park is huge, sandy paths spread out in every direction and every so often you''ll find a bench to sit on. In the summer you''ll see a lot people playing ball, relaxing or have a picnic in the more open areas, while in the winter you''ll meet families with their children sledding down the grass banks.'
+	'Despite its almost paradise-like appearance, the park can be very dangerous once the sun goes down.'
+	*nl
+	'There is a sign that points into general direction of the city center. You estimate the walk to the city center would take 35 minutes.'
+	'The second sign points into the direction of the residential area. If you have to guess, the walk to the residential are should take 20 minutes.'
+	'The third sign says city industrial district on it. You know the city industrial District is rather far away from here, you estimate that the walk would take an hour.'
+	*nl
+	if hour >= 10 and hour <= 22:'The small café in the park is open, you could sit there and have some food.'
+
+	if SNarkPriton = 0:'Near the cafe the <a href="exec: gt ''park'', ''junkies''">junkies</a> hang out.'
+
+	if hour >= 9 or hour <= 20:
+		'There is an all year <a href="exec:gt ''park'', ''luna''">fair</a> at the park which you can visit.'
+	else
+		'There is an all year fair at the park but it is closed. Opening hours from 9:00 to 21:00.'
+	end
+
+	if car > 0 and cardrive = 5:
+		cardrive = 5
+		'Stands near the park <a href="exec:GS ''carF'', ''start''">your <<$car>></a>.'
+	end
+
+	if $pantyworntype = 'none' and PCloSkirt > 2 and hour > 6 and hour <= 20 and rand(0, 100) >= 80:
+		gs 'arousal', 'flash', -5
+		'A man walks past you and notices that you didn''t put on any panties. He whistles at you, "Did you forget to put on your underwear today, honey?"'
+		*nl
+		if pcs_inhib >= 35:
+			gs 'exhibitionism', 2
+			pcs_mood += 5
+			'"Nope!" you call back. "Just remembered not to!" You flip up the back of your skirt, flashing your ass at him and keep walking, a bit of a spring in your step.'
+		elseif pcs_inhib > 30:
+			inhib_exp += 1
+			'"Nah, just didn''t feel like it," you shrug and continue on your way.'
+		else
+			pcs_mood -= 5
+			'You blush with shame and you try to walk out of his sight as fast as possible.'
+		end
+	end
+
+	act 'Leave': gt 'park', 'exit'
+
+	act 'Walk around the park (1:00)': gt 'parkdin'
+
+	gs 'treeCircEntry', 'CentralPark'
+
+	if hour >= 10 and hour <= 22:
+		act 'Have some food in the cafe': minut += 5 & gt 'ParkKafe', 'start'
+	end
+
+	if hour >= 20 or hour < 6 :
+		if home_owned[1] = 0 and tanwork = 0 and student = 0:
+			!nowhere to live in city
+			'It''s quite dark now, and you have no where to stay nearby. Maybe you should try to sleep on a bench?'
+		else
+			'It''s quite dark now, and you don''t feel like walking. Maybe you Should try to sleep on a bench?'
+		end
+		act 'Sleep on a bench': gt'placer_sex','sleeping_park_bench'
+	end
+
+	act 'Sit on a bench': gt'placer_sex','sitting_park_bench'
+	
+	if joint > 0 and jointhigh = 0: act 'Smoke a joint': gs 'drugs', 'joint' & gt $loc, $metka
+
+	if pusher = 1 and hour >= 6 and hour <= 21:
+		'There''s a drug dealer casually sitting on one of the benches. He''s trying not to be too suspicious.'
+
+		if money >= 360:
+			act 'Buy "Pale Lady" aka cocaine (360 <b>₽</b>)':
+				cla
+				menu_off = 1
+				minut += 10
+				palelady = input ("How many doses you want to buy?")
+
+				if palelady * 360 > money or palelady <= 0:
+					'Either tell me how many you want to buy or get lost.'
+				else
+					money -= palelady * 360
+					dur += palelady
+					'You get out your purse and pay him quickly, hoping nobody else saw you giving him money. Then he passes you the doses you''ve paid for and you can savely sniff the stuff at home.'
+				end
+
+				act 'Casually walk away':gt 'park', 'start'
+			end
+		else
+			'You do not have enough money, not even for one dose.'
+		end
+	end
+
+	if $clothingworntype = 'exercise' and $shoeworntype = 'trainers' and hour > 5 and hour < 23 and parkrunday ! daystart:
+		act 'Go for a run in the park (1:00)':
+			*clr & cla
+			menu_off = 1
+			parkrunday = daystart
+			gs 'exercise', 'tier1', 60, 'run_exp'
+			fat -= rand(0, 4)
+			gs 'sweat', 'add', 5
+			'<center><b><font color="maroon">Park</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/shared/park/parkbeg.jpg"></center>'
+			'You randomly take the paths, you run them up and down and about an hour later, you are out of breath and heavily sweating.'
+
+			if hour >= 20:
+				parkrand = rand(0, 10)
+
+				if parkrand >= 8:
+					'A shade steps out of the shadow from a tree and runs up to you. Before you can react, he hits you and drags you into the bushes. "Relax and enjoy this", he says.'
+					gs 'npcgeneratec', 0, 'Rapist', rand(18,40)
+					gs 'boyStat', $npclastgenerated
+					act 'Fight':
+						cla
+						gs 'fight','initFight'
+
+						gs 'fight_npcdata', 'rapist'
+
+						gt 'fight', 'start'
+					end
+					if succubusQW = 5:
+						!!Used if this was a random encounter instead of active hunting
+						Act 'Lure him in and feed (this can take a lot of time)':
+							cla
+							'You wait until he has dragged you almost to the bushes before turning on him.'
+							act 'Continue': gt 'succubus', 'RapistFight'
+						end
+					end
+
+					exit
+				end
+			end
+
+			act 'Finish your run':
+				cla & *nl
+				'You feel great after your run. A bit sweaty, but also that you''ve managed to improve your stamina as you even feel a bit slimmer.'
+				act 'Continue': gt 'park', 'start'
+			end
+			
+			if pcs_inhib >= 35  or exhibitionist_lvl > 0:
+				act 'Expose your breasts':
+					*clr & cla
+					if rand(0,1) = 0:
+						'<center><img <<$set_imgh>> src="images/locations/shared/park/flash'+rand(3,4)+'.jpg"></center>'
+					else
+						'<center><video autoplay loop src="images/locations/shared/park/flash'+rand(1,2)+'.mp4"></video></center>'
+					end
+					'Halfway through your run, you pull up your top and expose your breasts. The cool air against your warm skin causes you to shiver, and almost immediately your nipples start to harden, a mixed reaction from the air hitting them and your growing excitement.'
+					*nl
+					gs 'parkivent', 'run_reactions'
+				end
+			end
+		end
+	elseif ($clothingworntype ! 'exercise' or $shoeworntype = 'trainers') and hour > 5 and hour < 23 and parkrunday ! daystart:
+		'You could go for a run in the park if you were wearing sports clothes and shoes.'
+	end
+
+	if hour <= 7 or hour >= 21:
+		!!Succubus active hunting, can only hunt successfully once a day, but can try until success
+		If succubusQW = 5 and suchuntday ! daystart:
+			act 'Go Hunting (this can take a lot of time)':
+				menu_off = 1
+				if rand(1,100) < 70:
+					minut += 30
+					pcs_mood -= 5
+					*nl
+					'No luck! After searching for half an hour, you find no one. For such a large city you would have thought there would be suitable prey around, your needs remain so maybe another search will be required?'
+					act 'Continue': gt 'park', 'start'
+				else
+					suchunt = 1 & gt 'parkivent', '1'
+				end
+			end
+		end
+
+		if knowsfairy >= 1 and pcs_magik > 4:
+			act 'Find a place the Fairy may be': fairylooking = 1 & gt 'parkdin'
+		end
+	end
+
+	gs 'kseniyaQW', 'events'
+
+	if pcs_inhib >= 35 or exhibitionist_lvl > 0:
+		act 'Flash your tits':
+			menu_off = 1
+			inhib_exp += 2
+			if pcs_exhib = 100 and exhibitionQW = 0: gt 'kseniyaQW', 'event1'
+			*clr & cla
+			gs 'flash', 'tits', 'outdoors', 5
+			gs 'stat'
+
+			act 'Continue': gt 'park', 'start'
+		end
+	end
+
+	if exhibitionist_lvl > 1:
+		act 'Flash your pussy':
+			menu_off = 1
+			inhib_exp += 2
+			if pcs_exhib = 100 and exhibitionQW = 0: gt 'kseniyaQW', 'event1'
+			*clr & cla
+			gs 'flash', 'pussy', 'outdoors', 5
+			gs 'stat'
+
+			act 'Continue': gt 'park', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'exit':
+	cla
+	$loc = 'park'
+	$metka = 'exit'
+	$menu_loc = 'park'
+	$menu_arg = 'exit'
+	menu_off = 0
+	'<center><b><font color="maroon">Park</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park.jpg"></center>'
+	act 'Don''t leave': gt 'park', 'start'
+	!!this leads to the old street walker content, blocked until it''s fixed up or moved into the new street walker content (julzor)
+	!!act 'Go to the highway near the park (0:05)':minut += 5 & gt 'park', 'whore'
+	act 'Go to the Residential Area (0:20)':minut += 20 & gt 'street'
+	act 'Go to the City Center (0:35)':minut += 35 & gt 'down'
+	act 'Go to the City Industrial Region (1:00)':minut += 60 & gt 'Nord'
+end
+
+if $ARGS[0] = 'luna':
+	*clr & cla
+	$menu_loc = 'park'
+	$menu_arg = 'luna'
+	menu_off = 0
+	minut += 5
+	clr
+	gs 'stat'
+	'<center><b><font color="maroon">The Fun Fair</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/luna.jpg"></center>'
+	'The fun fair sits in the hearts of the park and attracts families, people on a vacation and loving couples from all over the town. It''s a popular gathering spot and a place to forget your worries for a few hours.'
+	*nl
+	'Opening hours are 9:00 to 21:00'
+
+	if vladimirQW = 0 and hour >= 9 and hour <= 20 and week > 5 and pcs_apprnc > 40:'<a href="exec:gt ''qwloc''">There''s a strong looking man staring at you from the fences.</a>.'
+
+	act 'Go back to the park':gt 'park', 'start'
+	
+	if hour >= 9 and hour <= 20:
+		act 'Distribute flyers to earn money (50 <b>₽</b>) (1:00)':
+			*clr & cla
+			menu_off = 1
+			minut += 60
+			money += 50
+			pcs_mood -= 5
+			'<center><img <<$set_imgh>> src="images/locations/shared/park/flaer.jpg"></center>'
+			'For an hour straight, you walked through the park and the fun fair, chatting up random visitors and trying to give them one of your flyers. After that you are being paid 50 <b>₽</b> for your effort.'
+
+			act 'Move away':gt 'park', 'luna'
+		end
+
+		if money >= 50:
+			act 'Eat Shawarma (50 <b>₽</b>)':
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				minut += 15
+				pcs_health += 10
+				pcs_mood += 20
+				fat += 2
+				pcs_energy += 30
+				cumspclnt = 2
+				gs 'cum_cleanup'
+				pcs_breath = 0
+				'<center><img <<$set_imgh>> src="images/locations/city/centralpark/luna1.jpg"></center>'
+				'You enjoy the shawarma.'
+
+				act 'Move away':gt 'park', 'luna'
+			end
+
+			act 'Drink Lemonade (50 <b>₽</b>)':
+				*clr & cla
+				menu_off = 1
+				gs 'stat'
+				minut += 5
+				pcs_health += 10
+				pcs_mood += 20
+				fat += 1
+				pcs_hydra += 40
+				cumspclnt = 2
+				gs 'cum_cleanup'
+				pcs_breath = 0
+				'<center><img <<$set_imgh>> src="images/locations/city/centralpark/luna1.jpg"></center>'
+				'You happily drink the refreshing lemonade.'
+
+				act 'Move away':gt 'park', 'luna'
+			end
+
+			act 'Ride on the carousel (50 <b>₽</b>)':
+				*clr & cla
+				menu_off = 1
+				minut += 30
+				money -= 50
+
+				sprt_exp += 2
+
+				pcs_mood += 10
+				'<center><img <<$set_imgh>> src="images/locations/city/centralpark/karusel.jpg"></center>'
+				'You paid 50 <b>₽</b> and sat in the carousel.'
+				'You have a great ride, already dazzled.'
+
+				act 'Move away':gt 'park','luna'
+			end
+		end
+
+		if money >= 100:
+			act 'Shoot some targets (100 <b>₽</b>)':
+				*clr & cla
+				menu_off = 1
+				minut += 30
+				money -= 100
+				'<center><img <<$set_imgh>> src="images/locations/city/centralpark/tir.jpg"></center>'
+				'You paid 100 <b>₽</b> for ten bullets. If you are able to hit all targets, you can win a teddy bear.'
+
+				act 'Shoot':
+					cla
+					tirkoef = pcs_agil + pcs_shoot
+					tirmin = tirkoef * 20 / 100
+					tirand = rand(tirkoef - tirmin, tirkoef + tirmin)
+
+					if tirand >= 80:
+						mishka += 1
+						pcs_mood += 5
+						'You hit all targets and didn''t even miss once. Congratulations! You''ve won a Teddy Bear.'
+					elseif tirand < 80 and tirand >= 70:
+						'Oh, you''ve only missed once.'
+					elseif tirand < 70 and tirand >= 60:
+						'You were able to hit the target eight times, but you''ve missed twice.'
+					elseif tirand < 60 and tirand >= 50:
+						'You were able to hit the target seven times, but you''ve missed three times.'
+					elseif tirand < 50 and tirand >= 40:
+						'Six times you were able to hit the target, but you''ve missed four times.'
+					elseif tirand < 40 and tirand >= 30:
+						'Five times you were able to hit the target, but you''ve missed five times too.'
+					elseif tirand < 30 and tirand >= 25:
+						'Four times you were able to hit the target, but you''ve missed six times.'
+					elseif tirand < 25 and tirand >= 20:
+						'Three times you were able to hit the target, but you''ve missed seven times.'
+					elseif tirand < 20 and tirand >= 15:
+						'You were able to hit the target twice, but you''ve missed it eight times.'
+					elseif tirand < 15 and tirand >= 10:
+						'You were only able to hit the target once and missed it nine times.'
+					elseif tirand < 10:
+						'You couldn''t even hit the target once.'
+					end
+
+					shoot_lvl += 1
+
+					act 'Move away':gt 'park', 'luna'
+				end
+			end
+		end
+
+		if money >= 20:
+			act 'Hit the dynamometer (20 <b>₽</b>)':
+				*clr & cla
+				menu_off = 1
+				'<center><img <<$set_imgh>> src="images/locations/city/centralpark/silomer.jpg"></center>'
+				'You''ve paid 20 <b>₽</b> to play Ring-The-Bell.'
+
+				act 'Bump':
+					cla
+					minut += 30
+					money -= 20
+					stKo = pcs_stren * 20/100
+					damage = rand(pcs_stren - stKo, pcs_stren + stKo)
+
+					gs 'exercise', 'tier2', 1, 'stren_exp'
+					
+					'A LED screen lights up and shows you your score:<<damage>>'
+					if damage > maxdamage:
+						maxdamage = damage & 'Congratulations! A new personal best!'
+					else
+						'You swung the hammer as hard as you could, but it wasn''t enough for a new record.'
+					end
+
+					act 'Move away':gt 'park', 'luna'
+				end
+			end
+		end
+
+		act 'One-Armed Bandit':gt 'park', 'avtomat'
+	else
+		'The fair is now closed.'
+	end
+end
+
+if $ARGS[0] = 'avtomat':
+    $location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/avtomat.jpg"></center>'
+	'The rules of the game are very simple, throw 5 <b>₽</b> into the slot, pull the lever and with a bit of luck you can win the jackpot of 1.000 <b>₽</b>.'
+
+	if money >= 5 and hour <= 20:
+		act 'Throw in 5 <b>₽</b> and pull the lever':gt 'park', 'avtomat2'
+	end
+
+	act 'Move away from the slot machine':gt 'park', 'luna'
+end
+
+if $ARGS[0] = 'avtomat2':
+    $location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	money -= 5
+	gs 'stat'
+	avtrand = rand(0, 100)
+
+	if avtrand = 100:
+		money += 1000
+		'Jackpot! You win 1,000 <b>₽</b>.'
+	elseif avtrand < 100 and avtrand >= 95:
+		money += 100
+		'You win 100 <b>₽</b>.'
+	elseif avtrand < 95 and avtrand >= 85:
+		money += 10
+		'You win 10 <b>₽</b>.'
+	elseif avtrand < 85 and avtrand >= 75:
+		money += 5
+		'You win 5 <b>₽</b>.'
+	elseif avtrand < 75:
+		'Unfortunately, you weren''t able to win anything this time.'
+	end
+
+	act 'Try your luck once more':gt 'park', 'avtomat'
+end
+
+if $ARGS[0] = 'whore':
+    $location_type = 'event_outdoors'
+	*clr & cla
+	$menu_loc = 'park'
+	$menu_arg = 'whore'
+	menu_off = 0
+	gs 'stat'
+	'<center><b><font color="maroon">The road near the park</font></b></center>'
+
+	if hour >= 16 and hour <= 23:
+		'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park1.jpg"></center>'
+		'Along the roadside <a href="exec:gt ''prostitute'', ''start''">Prostitutes</a> are walking and sometimes picked up by a car.'
+	elseif hour >= 4 and hour < 16:
+		'<center><img <<$set_imgh>> src="images/locations/city/centralpark/glpark.jpg"></center>'
+		'Cars passing on the road past the park and there is not seen nothing interesting.'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park1.jpg"></center>'
+		'Cars drive on the road past the park and then not see anything interesting.'
+	end
+
+	temp = rand(1, 10)
+
+	act 'Go back to the park (0:05)': minut += 5 & gt 'park', 'start'
+	
+	if pcs_inhib > 35:
+		act 'Flash breasts':
+			*clr & cla
+			menu_off = 0
+			inhib_exp += 2
+			gs 'flash', 'tits', 'outdoors', 5
+			gs 'stat'
+			act 'Go back to the park':gt 'park', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'prost':
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><b><font color="maroon">Hooker</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/park2.jpg"></center>'
+
+	if whoreQW = 2:
+		'Prostitutes look at you with curiosity.'
+	elseif whoreQW = 1:
+		'Prostitutes look at you with interest.'
+		act 'Talk':
+			cla
+			whoreQW = 2
+			'You went to a prostitute and asked her how things are done here at all. She began to explain. "We are free, do not work on anyone, but because of this many problems. Svimi Stella with her friends sometimes beat us and rob and sometimes come petty thugs and rob us of the money. If you want to work here, you have to pay and Stella and Bandyuk . course you cool, you can try to besiege Stella and her friends, but the bandits do not advise contact. And yet, you do not peck on customers, if you nebudesh dressed like a slut, you can buy some clothes in a sex shop. "'
+
+			act 'Move away':gt 'park', 'prost'
+		end
+	elseif whoreQW = 0:
+		'Hey, you''re not one of us, would valyl from our point, and that the teeth will not collect.'
+		gs 'npcgeneratec', 0, 'Stoned Prostitute', rand(15,30)
+		gs 'boyStat', $npclastgenerated
+		act 'Fuck you!':
+			cla
+			minut += 15
+
+			gs 'fight','initFight'
+
+			gs 'fight_npcdata', 'prostitute'
+
+			gt 'fight', 'start'
+		end
+	end
+	if whoreQW > 1 and PCloStyle = 4:
+		act 'Search client (0:15)':
+			*clr & cla
+			minut += 15
+			whrand = rand(0, 100)
+
+			if whrand <= 5:
+				'To you black jeep pulled up, opened the window and leaned out healthy brazen face. "Hey slut, it''s time to pay tribute. Shtukar Come here and get out on work."'
+
+				if money >= 1000:
+					act 'Giving money (1,000 <b>₽</b>)':
+						cla
+						money -= 1000
+						'You gave the money big man in the jeep. He put them in his pocket and left.'
+
+						act 'Move away':gt 'park', 'prost'
+					end
+				end
+
+				act 'Fuck you!':
+					cla
+					minut += 15
+					gs 'npcgeneratec', 0, 'Bandit', rand(18,40)
+					gs 'boyStat', $npclastgenerated
+
+					gs 'fight','initFight'
+
+					gs 'fight_npcdata', 'bandit'
+
+					gt 'fight', 'start'
+				end
+			elseif whrand > 5 and whrand <= 60:
+				minut += 15
+				stat['bj'] += 1
+				guy += 1
+				money += 500
+				pcs_throat += 1
+				'<center><img <<$set_imgh>> src="images/locations/highway/sex/car.jpg"></center>'
+				'To you a car drove up and a man sitting behind the wheel asked how much it would cost the vacuum. You called a standard fee of 500 <b>₽</b>. He agreed and opened Passenger door for you.'
+
+				if prezik > 0:'You got a condom and put it in your mouth, then bent over his pants and put his client condom on the penis with his mouth.'
+				'You clasped lips member client and began to suck it, caress the tongue and try to take it as deep as possible.'
+				gs 'npcgeneratec', 0, 'Client', rand(15,30)
+				gs 'boyStat', $npclastgenerated
+				if prezik = 0:
+					swallow += 1
+					spafinloc = 12
+					gs 'cum_manage'
+					'Client started cumming in your mouth, you continued to suck and swallow his hot, tart sperm.'
+					gs 'dinSex', 'std_trigger_oral'
+				elseif prezik > 0:
+					dynamic $prezik
+					'Client finished in a condom.'
+				end
+
+				'After the client has finished you off immediately dropped out of the car.'
+
+				act 'Go to the panel':gt 'park', 'prost'
+			elseif whrand > 60 and whrand <= 90:
+				minut += 15
+				'You were walking along the sidewalk showing off their charms completely in vain, no you are not interested.'
+
+				act 'Go to the panel':gt 'park', 'prost'
+			elseif whrand > 90:
+				'To you approached a prostitute. "I hear you, slut, if you do not want problems, you have to pay Stella. Pyatihatnik Come here and get out on work."'
+
+				if money >= 500:
+					act 'Giving money (500 <b>₽</b>)':
+						cla
+						money -= 500
+						'You gave the money to the prostitute, she turned and walked away.'
+
+						act 'Move away':gt 'park', 'prost'
+					end
+				end
+
+				act 'Fuck you!':
+					cla
+					minut += 15
+					gs 'npcgeneratec', 0, 'Prostitute', rand(15,30)
+					gs 'boyStat', $npclastgenerated
+					gs 'fight','initFight'
+
+					gs 'fight_npcdata', 'prostitute'
+
+					gt 'fight', 'start'
+				end
+			end
+		end
+	end
+
+	act 'Move away':gt 'park', 'start'
+end
+
+if $ARGS[0] = 'rape1':
+    $location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	rape += 1
+	gs 'npcgeneratec', 0, 'Rapist', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+	SUB += 3
+	money = 0
+	'<center><img <<$set_imgh>> src="images/locations/city/centralpark/sex/rape.jpg"></center>'
+	'Suddenly, you are hit on the head. You wake up sometime later in a bush. Somehow you''re not able to move your arms, they must be tied up. As you look down at yourself, you realize that you''re not wearing anything and before you can even react some dude is ramming his dick into your cunt. "Shit", you think yourself, "I''m being raped."'
+	gs 'arousal', 5, 'vaginal', 'rape'
+
+	act 'Try to resist':
+		cla
+		spafinloc = 0
+		gs 'cum_manage'
+		'You try everything that''s possible in your situation right now to resist him, but he just tightens his grips and doesn''t stop fucking you. Some time later he begins to groan and you can feel his hot cum flowing inside your pussy. You just hope to yourself, that he didn''t impregnate you. He then zips up his pants, takes your money and leaves.'
+		gs 'arousal', 15, 'vaginal', 'rape', 'rough'
+		gs 'arousal', 'end'
+
+		act 'Leave':gt 'park', 'start'
+	end
+
+	act 'Try to relax and enjoy it':
+		cla
+		*clr
+		stat['anal'] += 1
+		SUB += 5
+		'<center><img <<$set_imgh>> src="images/locations/city/centralpark/sex/rapean.jpg"></center>'
+		'It doesn''t take long for the rapist to realize you''re not resisting. "Good girl!", he says to you. He pushes you onto your knees, seems he intends to take you doggy-style. He spreads your buttocks and pushes his cock into your ass. You cry out in pain, but he holds your mouth shut and doesn''t stop fucking your asshole.'
+		gs 'arousal', 15, 'anal', 'rape'
+
+		act 'Go on':
+			cla
+			*clr
+			spafinloc = 12
+			gs 'cum_manage'
+			spafinloc = 11
+			gs 'cum_manage'
+			SUB += 5
+			'<center><img <<$set_imgh>> src="images/locations/city/centralpark/sex/cum.jpg"></center>'
+			'"Give me a blowjob and you''ll get your reward for not resisting, girl.", he tells you. You nod obidiently and move on your knees and begin to give him head.'
+			gs 'arousal', 15, 'bj', 'rape'
+			'It doesn''t take long for him to groan out in pleasure, "You better swallow it all, slut!" Shortly after that you can taste his hot cum inside your mouth and you swallow every drip of it, somehow enjoying the taste. Then he stand up, buttons up his pants and takes your money. While you were still liking your fingers clean from any drips of cum, he smiles and says to you, "Have a nice day slut."'
+			gs 'arousal', 'end'
+
+			act 'Stand up and leave':gt 'park', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'junkies':
+	*clr & cla
+	gs 'stat'
+	SNarkPriton = 1
+	'The junkies look at you with a daunted gaze. They probably thought you are a police officer. Then one of them said, "We don''t sell no drugs. Go to the Drug House, ye can get zome there."'
+
+	act 'Walk away from them':gt 'park', 'start'
+end
+
+
+--- park ---------------------------------
+

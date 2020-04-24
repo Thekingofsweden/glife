@@ -1,0 +1,83 @@
+# nichBathMaster
+
+CLOSE ALL
+
+$metka = ''
+$loc = 'nichBathMaster'
+$location_type = 'bathroom'
+$menu_loc = 'nichBathMaster'
+$nichLoc = 'masterBathroom'
+$menu_arg = ''
+menu_off = 0
+
+gs 'stat'
+gs 'themes', 'indoors'
+!! Argument return: PC has been in the room before, dont perform actions meant to be executed before or as she enters the room.
+if $ARGS[0] = '' or $ARGS[0] = 'start' or $ARGS[0] = 'return':
+	'<center><b><font color="maroon">Nicholas'' Bathroom</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/bathroomMaster.jpg"></center>'
+	'The bathroom is modern and well fitted, more than matching the display of wealth in the other rooms, from the elaborate decorations and spacious shower and tub to the underfloor heating.' 
+	if nichWork = 2:
+		'You have your own bathroom and should not use this one.'
+	end
+	
+	nichCleanAppropriate = 1
+	
+	$nichGalaAct = func('nichUtil','npcActivity','gala')
+	$nichNichAct = func('nichUtil','npcActivity','nicholas')
+	$nichTanyAct = func('nichUtil','npcActivity','tanya')
+	
+	nichGalaPresent = FUNC('nichUtil','isPresent','gala','masterBathroom')
+	nichNichPresent = FUNC('nichUtil','isPresent','nicholas','masterBathroom')
+	nichTanyPresent = FUNC('nichUtil','isPresent','tanya','masterBathroom')
+	
+	if $nichNichAct = 'bathMorning':
+		'Nicholas is currently in here using the shower.'
+		nichCleanAppropriate = 0
+	elseif $nichNichAct = 'bathClub':
+		'Nicholas is currently in here preparing himself to go out.'
+		nichCleanAppropriate = 0
+	elseif $nichNichAct = 'bathEvening':
+		'Nicholas is currently in here brushing his teeth.'	
+		nichCleanAppropriate = 0
+	end
+	
+	if $nichGalaAct = 'bathMorning':
+		'Gala is currently in here using the shower.'
+		nichCleanAppropriate = 0
+	elseif $nichGalaAct = 'bathEvening':
+		'Gala is currently in here brushing her teeth.'	
+		nichCleanAppropriate = 0
+	end
+	
+	if $nichTanyAct = 'bathMorning':
+		'<a href="exec: gt ''nichTanya'', ''bathroom''">Tanya</a> is currently in here using the shower.'
+		nichCleanAppropriate = 0
+	elseif $nichTanyAct = 'bathEvening':
+		'Tanya is currently in here brushing her teeth.'	
+		nichCleanAppropriate = 0
+	elseif $nichTanyAct = 'prepareClub':
+		'Tanya is currently in here doing her make-up.'	
+		nichCleanAppropriate = 0
+	end
+	
+	act 'Go to the master bedroom':
+		minut += 1
+		gt 'nichBedroomMaster'
+	end
+
+	act 'Go to Tanya''s room':
+		minut += 1
+		gt 'nichBedroomTanja'
+	end
+	
+	if nichWork = 2:
+		if nichCleanAppropriate = 0:
+			'It wouldn''t be appropriate to clean this room now.'
+		else
+			gs 'nichChore','inspect','masterbath'
+		end
+	end
+end
+
+--- nichBathMaster ---------------------------------

@@ -1,0 +1,188 @@
+# dom_gor
+
+menu_off = 1
+
+$metkaM = $ARGS[0]
+$locM = $CURLOC
+$metka = $ARGS[0]
+$loc = $CURLOC
+$location_type = 'private'
+clr
+gs 'stat'
+gs 'themes', 'indoors'
+'<center><b><font color="maroon">Your room</font></b></center>'
+'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/vitekhome/kotovkom.jpg"></center>'
+'Your room in a hostel. The room is small, leaving only the bare minimum. 2 <a href="exec:gt ''bed'', ''start''">beds</a>, a <a href="exec:gt ''mirror'', ''start''">mirror</a>, a <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> (where you can choose outfits and organize your clothing), and a small TV.'
+*nl
+'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+
+if $clothingworntype = 'exercise' and teachlevel > 20 and parkrunday ! daystart and hour < 21 and hour > 6:
+	act 'Go for a jog around the park (1:00)':
+		cla
+		*clr
+		parkrunday = daystart
+		minut += 30
+		pcs_mood += 10
+		run_exp += 2
+		fat -= 8
+		gs 'sweat', 'add', 30
+		'<center><img <<$set_imgh>> src="images/locations/shared/park/parkbeg.jpg"></center>'
+		'You run a few laps around the park.'
+		parkrand = rand (0, 10)
+
+		if parkrand > 4 and beguch < 3:
+			'In the park you meet a pupil from the school who asks to go for a run with you.'
+			act 'Run together':
+				cla
+				*clr
+				beguch += 1
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hostel/stop.jpg"></center>'
+				'You''re running with one of your pupils'', sometimes stopping and chatting with ease.'
+				'Pupil: "Miss <<$pcs_lastname>>, you are so beautiful, and we are all very fond of you!" You: "Hmm, thank you!"'
+
+				act 'Complete run':gt 'gskver', 'start'
+			end
+		elseif parkrand >4 and beguch >= 3 and beguch < 6:
+			'In the park you meet a pupil of the school who asks to go for a run with you.'
+
+			act 'Run together':
+				cla
+				*clr
+				beguch += 1
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hostel/stop2.jpg"></center>'
+				'You stop to do some stretching exercises for your muscles.'
+				'Pupil: "Ahh, if only our girls would be at least a little like you!" You: "Get to know them! You''ll find out how they really are."'
+				act 'Complete run':gt 'gskver', 'start'
+			end
+		elseif parkrand >4 and beguch >= 6 and beguch < 9:
+			'In the park you meet a pupil of the school who asks to go for a run with you.'
+			act 'Run together':
+				cla
+				*clr
+				beguch += 1
+				pcs_horny += 3
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hostel/stop3.jpg"></center>'
+				'You run with the pupil, sometimes stopping and chatting with ease.'
+				''
+				'Pupil: "<<$pcs_nickname>>, can I take a picture of you?" You: "What are you going to do with my photo?"'
+				'Pupil: "I would never masturbate on it!" You: "Aha! I never said you would!"'
+				'Pupil: "Im sorry, it was a bad idea." You: "I''m just kidding! Okay, but remember to give me a copy."'
+				''
+				'You pick a background, stand in a pose and let yourself be photographed.'
+				act 'Complete run':gt 'gskver', 'start'
+			end
+		end
+
+		act 'Complete run':gt 'gskver', 'start'
+	end
+end
+
+if hour < 23:
+	act 'Lie on the couch (1:00)':
+		cla
+		minut += 60
+		if pcs_sleep < 90:
+			pcs_sleep += 10
+		else
+			pcs_sleep = 100
+		end
+		'You relax lying on the couch.'
+
+		act 'Stretch':gt 'dom_gor'
+	end
+end
+
+if eda > 0:'In the refrigerator food is stored that''s good for <b><<eda>></b> servings.'
+if edaD = 0 and eda = 0:'<b><font color="red">The fridge is empty, nothing to eat in sight.</font></b>'
+if edaD > 0:'The refrigerator contains healthy meals that are good for <b><<edaD>></b> servings.'
+
+if eda >= 1:
+	act 'Prepare meals (2:00)':
+		cla
+		*clr
+		eda -= 1
+		minut += 120
+		frost = 0
+		edahot = 0
+		pcs_health += 10
+		pcs_mood += 20
+		gs 'stat'
+
+		if pcs_energy >= 100:
+			fat += 5
+			'You don''t feel like eatting.'
+		elseif pcs_energy >= 80:
+			fat += 3
+			pcs_energy = pcs_energy + 40
+		else
+			pcs_energy += 80
+			fat += 1
+			'You eat with pleasure.'
+		end
+
+		if pcs_hydra >= 80:
+			'You don''t really need any more tea.'
+		else
+			pcs_hydra += 80
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			'You gladly drink a cup of tea.'
+		end
+
+		act 'Get up from the table':gt 'dom_gor'
+	end
+end
+
+if edaD > 0:
+	act 'Eat diet food (0:30)':
+		cla
+		*clr
+		frost = 0
+		minut += 30
+		pcs_health += 10
+		pcs_mood += 20
+		edaD -= 1
+		'<center><img <<$set_imgh>> src="images/shared/food/food.jpg"></center>'
+		if pcs_energy >= 100:
+			'You can no longer eat...For now at least.'
+		elseif pcs_energy >= 80:
+			pcs_energy += 40
+			'You push through to eat your meal.'
+		else
+			pcs_energy += 80
+			'You gladly devoured the cooked meal.'
+		end
+
+		if pcs_hydra >= 80:
+			'You don''t need any more tea.'
+		else
+			pcs_hydra += 80
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			'You gladly drink a cup of tea.'
+		end
+
+		act 'Get up from the table':gt 'dom_gor'
+	end
+end
+
+if gor_dorm > 0:act 'Go to shared bathroom':gt 'etoexhib', 'pos41'
+
+act 'Go out onto the street':
+	cls
+	if $clothingworntype = 'nude':
+		'<b><font color="red">You need to get dressed.</font></b>'
+		xgt $curloc
+	elseif sick > 72:
+		'<b><font color="red">You feel too ill to travel through the streets.</font></b>'
+		xgt $curloc
+	else
+		xgt 'pavCommercial'
+	end
+
+end
+
+--- dom_gor ---------------------------------
+

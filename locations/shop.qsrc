@@ -1,0 +1,626 @@
+# shop
+!! This is the supermarket, located in several places
+
+!! Main entrance
+if $ARGS[0] = 'start':
+	$menu_loc = 'shop'
+	$menu_arg = 'start'
+	menu_off = 0
+	CLOSE ALL
+	$location_type = 'public_indoors'
+	gs 'themes', 'indoors'
+	if sound = 0:PLAY 'sound/shop.mp3',30
+	$shoplocation = 'main'
+end
+
+if $ARGS[0] = 'start' or $ARGS[0] = 'move': minut += 1
+
+!! Main area
+if $shoplocation = 'main':
+	*clr & cla
+	'<center><b><font color="maroon">Supermarket</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The supermarket is currently closed.'
+
+		if $loc = 'shop':
+			if $loc_bak = 'shop':
+				$loc = torgpred
+			else
+				$loc = $loc_bak
+			end
+		end
+		act 'Leave the store':minut += 3 & gt $loc
+		exit
+	end
+
+	'In the hall stands an <a href="exec:$shoplocation = ''ATM'' & gt ''shop'', ''move''">ATM</a>, from which you can withdraw money from your bank account.'
+	'There is a branch of communication giants <a href="exec:$shoplocation = ''megafon'' & gt ''shop'', ''move''">MegaFon</a>.'
+	'On the other side is on the wall <a href="exec: gs ''noticeboard'',''start''">Public notice board</a>, where you can check various private and official advertisement.'
+	'<br>Most of the space in the supermarket is taken up by the <a href="exec:$shoplocation = ''grocery'' & gt ''shop'', ''move''">grocery department</a>, but the store has many smaller departments as well. <a href="exec:$shoplocation=''cosmetics'' & gt ''shop'', ''move''">Cosmetics</a>, <a href="exec:$shoplocation = ''hardware'' & gt ''shop'', ''move''">hardware</a>, <a href="exec:$shoplocation = ''clothing'' & gt ''shop'', ''move''">clothing</a> and the department of <a href="exec:$shoplocation = ''tech'' & gt ''shop'', ''move''">household appliances</a>. Not far from the entrance is a <a href="exec:$shoplocation = ''icecream'' & gt ''shop'', ''move''">counter selling ice cream</a>.'
+	gs 'stat'
+	gs 'themes', 'indoors'
+	
+	!! The store in the town and in the altstart only
+	if $loc = 'pavCommercial' and StoryLine = 1:
+		if week < 6 and hour >= 8 and hour < 16:
+			*nl
+			'Your sister <a href="exec:$shoplocation = ''Anya'' & gt ''shop'', ''move''">Anya</a> is sitting at the cash register.'
+		end
+	end
+
+	!! Store in the residential district
+	if $loc = 'street':
+		if rand(1, 20) = 20:
+			if dimaQW = 0:
+				'By the store entrance a man is looking at you appreciatively.'
+				act 'Return the look':gt 'event', 'dima'
+			elseif dimaQW = 1:
+				'In the lobby of the store you notice Dima and you are frozen with fear, you want to run, but your legs won''t respond.'
+				'Your heart is thumping in your chest, your vision narrows, you feel faint.'
+				act 'Pass out':gt 'event', 'scoreslut1'
+			else
+				'You meet the same Dima who''s friend fucked and abused you. Dima grins confidently and says, "Hello."'
+
+				act 'Hello':
+					cla
+					'"Come with me, My wife''s away", says Dima.'
+					
+					gs 'willpower', 'sex', 'resist'
+					if will_cost <= pcs_willpwr:
+						act 'Fuck no (<<will_cost>> Willpower)':
+							gs 'willpower', 'pay', 'resist'
+							gt 'shop', 'start'
+						end
+					else
+						act 'Fuck no (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+					
+					act 'I deserve this':
+						*clr & cla
+
+						if rand(1, 2) = 1:
+							cla
+							oral += 1
+							pcs_throat += 1
+							spafinloc = 12
+							gs 'cum_manage'
+							swallow += 1
+							'Dima takes you to his house and orders you to lie across the sofa. You get on into position, he calls you a bitch and a starts fucking you in the mouth.'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/street/sex/gostdt2.jpg"></center>'
+							'Dima finally finishes in your mouth, you obediently swallow and lick the remnants of sperm off his big cock.'
+							
+							gs 'arousal', 'bj', 10, 'sub', 'deepthroat', 'humiliation'
+							gs 'arousal', 'end'
+							gs 'stat'
+							
+							act 'Leave': minut += 3 & gt 'street'
+						else
+							cla
+							gs 'pain', 6, 'asscheeks', 'slap'
+							spafinloc = 4
+							gs 'cum_manage'
+							spank += 1
+							boom = 5
+							'Dima has brings you to his house and right in the corridor begins to kiss and undress you. When you are naked he takes you to the bathroom.'
+							'There he unscrews the shower-head and puts the hose in your ass. Quickly you feel the fullness and Dima sits you on the toilet. After the rough enema, he bends you over and puts his big dick in your ass.'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/street/sex/gostanal2.jpg"></center>'
+							'Dima fucks you in the ass whilst slapping your butt, at first it is painful, but gradually you get it and it feels amazing. Finally, your ass fills with hot liquid and Dima moans and grabs your buttocks.'
+							
+							gs 'arousal', 'anal', 30, 'sub', 'rough', 'humiliation'
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Leave': minut += 3 & gt 'street'
+						end
+					end
+				end
+			end
+		end
+	end
+
+	'<br>The store is crowded with shoppers.'
+
+	!! This is connected to the trade mission
+	if TorgPredZ > 0:
+		!! the location of the shop hasn''t been done today
+		if ($loc = 'street' and StreetShopTPday ! daystart) or ($loc = 'Nord' and nordShopTPday ! daystart) or ($loc = 'torgcentr' and downShopTPday ! daystart):
+			act 'Arrange products':
+				*clr & cla
+				if $loc = 'street':StreetShopTPday = daystart
+				if $loc = 'Nord':nordShopTPday = daystart
+				if $loc = 'torgcentr':downShopTPday = daystart
+
+				mtprand = rand(40, 130)
+				minut += mtprand
+				TorgPredZ -= 1
+				TorgPredZV += 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/shared/store/shop.jpg"></center>'
+				'You arranged the products for quite a while and when I finally managed, then went to the cashier and you check it struck.'
+
+				act 'Exit':gt 'shop', 'start'
+			end
+
+		end
+	end
+
+	act 'Leave the store': minut += 3 & gt $loc
+	exit
+end
+
+if $shoplocation = 'ATM':
+	'<center><b><font color="maroon">ATM</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/atm.jpg"></center>'
+
+	if bankAccount = 1:
+		if karta >= 0:
+			'You have <<karta>> <b>₽</b> in your account.'
+			'You have an overdraft limit of <font color="blue"><<bankDebtLimit>></font>!'
+		else
+			'You are overdrawn by <font color="red"><<-1 * karta>> <b>₽</b></font>.'
+			'You have a remaining credit limit of <font color="blue"><<bankDebtLimit + karta>></font>!'
+		end
+
+		'<br>ATM Deposit Fee: 100 <b>₽</b>'
+
+		if atmDeposit = 0:
+			act 'Deposit money':
+				cla
+				minut += 5
+
+				kartaINATM = input ("How much money you want to deposit into the account? Note: A service charge of 100 <b>₽</b> will be deducted from the amount deposited.")
+				if kartaINATM < 100 or kartaINATM > money:
+					'This is not a valid input.'
+				else
+					atmDeposit += kartaINATM - 100
+					atmDepositDate = daystart + 2
+					money -= kartaINATM
+					'<br>You deposited <<kartaINATM>> <b>₽</b> into your account.'
+					'It will take 2 days for funds to be available. Your new balance will be <<karta+atmDeposit>> <b>₽</b>.'
+				end
+
+				gs 'stat'
+				act 'Move away': gt 'shop'
+			end
+		else
+			'<br>★ Processing deposit of <<atmDeposit>> <b>₽</b> in <<atmDepositDate - daystart>> days.'
+		end
+
+		if karta + bankDebtLimit > 0:
+			act 'Withdraw money from the ATM':
+				cla
+				minut += 5
+
+				kartaOUT = input ("How much money you want to withdraw?")
+				if kartaOUT <= 0 or kartaOUT > karta + bankDebtLimit:
+					'<br>Invalid operation.'
+				else
+					karta -= kartaOUT
+					money += kartaOUT
+					if karta > 0:
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have <<karta>> <b>₽</b> left in your bank account.'
+					elseif karta = 0:
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have no money left in your bank account.'
+					else
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. <font color="red">Your bank account is overdrawn by <b><<karta>> ₽</b>.</font>'
+					end
+				end
+
+				gs 'stat'
+				act 'Move away': gt 'shop'
+			end
+		else
+			'You have maxed out your overdraft.'
+		end
+	else
+		'You don''t have a bank account yet!'
+	end
+
+	act 'Move away':gt 'shop', 'start'
+end
+
+if $shoplocation = 'grocery':
+	*clr & cla
+	'<center><b><font color="maroon">Grocery</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop1.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The grocery is currently closed.'
+
+		act 'Leave the grocery':gt 'shop', 'start'
+		exit
+	end
+
+	!! output from purchase
+	if $message ! '':
+		'<center>'+$message+'</center>'
+		killvar '$message'
+	else
+		''
+	end
+	*pl '<center><table align="center" width=80%>'
+	*p func ('$stock_item', 1, 'Regular food', 80, 'eda', $curloc)
+	*p func ('$stock_item', 10, 'Regular food', 800, 'eda', $curloc)
+	*p func ('$stock_item', 1, 'Diet food', 300, 'edaD', $curloc)
+	*p func ('$stock_item', 10, 'Diet food', 3000, 'edaD', $curloc)
+	*p func ('$stock_item', 10, 'Tea biscuits', 400, 'pranik', $curloc)
+	*p func ('$single_stock_item', 1, 'Bottle of water', 100, 'bottle', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$single_stock_item', 1, 'Sandwich', 100, 'buterbrod', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$single_stock_item', 1, 'Cheap Bottle of wine', 200, 'wine', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p '</table></center>'
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	act 'Leave the grocery':gt 'shop', 'start'
+end
+
+if $shoplocation= 'cosmetics':
+	*clr & cla
+
+	'<center><b><font color="maroon">Cosmetics Department</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop2.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The cosmetics department is currently closed.'
+
+		act 'Leave the cosmetics department':gt 'shop', 'start'
+		exit
+	end
+
+	!! output from purchase
+	if $message ! '':
+		'<center>'+$message+'</center>'
+		killvar '$message'
+	else
+		''
+	end
+	*pl '<center><table align="center" width=80%>'
+	*p func ('$stock_item', 50, 'Cosmetics', 1300, 'kosmetica', $curloc)
+	*P func ('$stock_item', 30, 'Lip balm', 127, 'lipbalm', $curloc)
+	*p func ('$stock_item', 10, 'Plain false lashes', 1500, 'falselashesplain',$curloc)
+	*p func ('$stock_item', 3, 'Mink false lashes', 900, 'falselashesmink',$curloc)
+	*p func ('$stock_item', 25, 'Razors (number of shaves)', 350, 'stanok', $curloc)
+	*p func ('$stock_item', 20, 'Sunblock', 500, 'krem', $curloc)
+	*p func ('$stock_item', 40, 'Deodorant', 200, 'deodorant', $curloc)
+	*p func ('$stock_item', 20, 'Tampons', 200, 'tampon', $curloc)
+	*p func ('$stock_item', 20, 'Sanitary napkins', 100, 'sanpad', $curloc)
+	*p func ('$stock_item', 30, 'Shampoo', 250, 'shampoo', $curloc)
+	*p func ('$stock_item', 10, 'Hair scrunchies', 80, 'hscrunch', $curloc)
+	*p func ('$stock_item', 12, 'Hair pins', 100, 'hpingrip', $curloc)
+	*p func ('$stock_item', 10, 'Wipes', 50, 'salfetka', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$stock_item', 10, 'Portable makeup', 700, 'kosmetitka', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$stock_item', 20, 'Mouthwash', 150, 'mouthwash', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$single_stock_item', 1, 'Comb', 150, 'greben', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p func ('$single_stock_item', 1, 'Compact Mirror', 1150, 'compact_mirror', $curloc, '', iif(bag > 0, 0, 1), 'You need a handbag')
+	*p '</table></center>'
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	act 'Leave the cosmetics department': gt 'shop', 'start'
+	if $loc = 'torgcentr': gs 'shoplifting', 'city'
+end
+
+if $shoplocation = 'hardware':
+	*clr & cla
+	'<center><b><font color="maroon">Division of household goods</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop3.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The hardware department is currently closed.'
+
+		act 'Leave the hardware department':gt 'shop', 'start'
+		exit
+	end
+
+	!! output from purchase
+	if $message ! '':
+		'<center>'+$message+'</center>'
+		killvar '$message'
+	else
+		''
+	end
+	*pl '<center><table align="center" width=80%>'
+	*p func ('$stock_item', 20, 'Dishwashing detergent', 500, 'fairy', $curloc)
+	*p func ('$stock_item', 30, 'Clothing detergent', 500, 'poroshok', $curloc)
+	*p func ('$stock_item', 5, 'Plates', 450, 'cltarelka', $curloc)
+	*p func ('$stock_item', 5, 'Fabric', 250, 'tkan', $curloc)
+	*p func ('$single_stock_item', 1, 'Sewing kit', 500, 'sewing_kit', $curloc)
+	*p func ('$single_stock_item', 1, 'Umbrella', 1000, 'umbrella', $curloc, '', iif(bag > 0, 0, 1), 'You need a purse')
+	*p '</table></center>'
+	*nl
+
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	act 'Leave the hardware department':gt 'shop', 'start'
+
+	'On the counter you can see fabric suitable for sewing. It''s sold in large squares costing 50 <b>₽</b> each. You have <<tkan>> squares of fabric.'
+end
+
+if $shoplocation = 'clothing':
+	*clr & cla
+	'<center><b><font color="maroon">Department of Women''s Clothing</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop4.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The women''s clothing department is currently closed.'
+
+		act 'Leave the women''s clothing department':gt 'shop', 'start'
+		exit
+	else
+
+		if $message ! '':
+			'<center>'+$message+'</center>'
+			killvar '$message'
+		else
+			''
+		end
+		'Women''s clothing at unbeatable prices, panties and bras 300<b>₽</b> each'
+		gs 'stat'
+		gs 'themes', 'indoors'
+
+		act 'Leave the women''s clothing department':gt 'shop', 'start'
+
+		act 'View clothing': $shoplocation = 'clothing1' & gt 'shop'
+
+		act 'View underwear': $shoplocation = 'underwear' & gt 'shop'
+
+		if swimwear[4] = 0:
+			act 'View swimwear':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/pc/clothing/12swimwear/4.jpg"></center>'
+				gs 'clothing_attributes', 'swimwear', 4
+				'Swimwear 4'
+				func('$clothing_name', 'swimwear', 4)
+				if CloInhibit > pcs_inhib:'You don''t feel daring enough to buy an outfit this revealing.'
+				'Costs 1,000 <b>₽</b>.'
+
+				act 'Leave':gt 'shop'
+				if money >= 1000 and CloInhibit <= pcs_inhib:
+					act 'Buy':
+						cla
+						money -= 1000
+						swimwear[4] = 1
+						swimwearH[4] = 60
+						swimwearB[4] = pcs_hips
+						gt 'shop', '<font color="green">You bought <b>swimwear 4</b>.</font>'
+					end
+				end
+			end
+		end
+
+		if coat[1] = 0:
+			act 'View coats':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/pc/clothing/11coat/1.jpg"></center>'
+				gs 'clothing_attributes', 'coat', 1
+				'Coat 1'
+				func('$clothing_name', 'coat', 1)
+				if CloInhibit > pcs_inhib:'You don''t feel daring enough to buy an outfit this revealing.'
+				'Costs 1,400 <b>₽</b>.'
+
+				act 'Leave':gt 'shop'
+				if money >= 1400 and CloInhibit <= pcs_inhib:
+					act 'Buy':
+						cla
+						money -= 1400
+						coat[1] = 1
+						coatH[1] = 60
+						gt 'shop', '<font color="green">You bought <b>coat 1</b>.</font>'
+					end
+				end
+			end
+		end
+
+		if konki!1:
+			'A pair of ice-skates are available for 3000 <b>₽</b>.'
+			if money >= 3000:
+				act 'Buy ice skates (3000 <b>₽</b>)':
+					*clr & cla
+					money -= 3000
+					konki = 1
+
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/konki_shop.jpg"></center>'
+					'You buy a pair of skates.'
+
+					act 'Move away from the counter':gt'shop'
+				end
+			end
+		end
+	end
+end
+
+if $shoplocation = 'clothing1':
+	*clr & cla
+	if $loc ! 'shop': $loc_bak = $loc
+	$loc = 'shop'
+	'<center><B>Click on an outfit to view details</B></center>'
+
+	if office[1] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''office'', 1, 3000"><img src="images/pc/clothing/5office/1.jpg" 	height="250" /></a>'
+	if office[2] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''office'', 2, 3000"><img src="images/pc/clothing/5office/2.jpg" 	height="250" /></a>'
+	*nl
+	if cheap[68] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 68, 1500"><img src="images/pc/clothing/1cheap/68.jpg" 	height="250" /></a>'
+	if cheap[3] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 3, 1500"><img src="images/pc/clothing/1cheap/3.jpg" 	height="250" /></a>'
+	if cheap[80] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 80, 1500"><img src="images/pc/clothing/1cheap/80.jpg" 	height="250" /></a>'
+	if cheap[10] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 10, 1500"><img src="images/pc/clothing/1cheap/10.jpg" 	height="250" /></a>'
+	if cheap[45] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 45, 1500"><img src="images/pc/clothing/1cheap/45.jpg" 	height="250" /></a>'
+	if cheap[51] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''cheap'', 51, 1500"><img src="images/pc/clothing/1cheap/51.jpg" 	height="250" /></a>'
+	*nl
+	if exercise[4] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''exercise'', 4, 3000"><img src="images/pc/clothing/7exercise/4.jpg" 	height="250" /></a>'
+	if exercise[20] = 0: *p '<a href="exec:gt ''clothing'', ''view_clothing_item'', ''shop'', ''exercise'', 20, 3000"><img src="images/pc/clothing/7exercise/20.jpg" 	height="250" /></a>'
+
+	act 'Return':
+		$loc = $loc_bak
+		$shoplocation = 'clothing'
+		gt 'shop'
+	end
+end
+
+!! Women''s clothing underwear viewer
+if $shoplocation = 'underwear':
+	*clr & cla
+	if $loc ! 'shop': $loc_bak = $loc
+	$loc = 'shop'
+	'<center><B>Click on an item to view details</B></center>'
+
+	if basic_panties[7] = 0:*p '<a href="exec:gt ''panties'', ''view_panty_item'', ''shop'', ''cheap'', 7, 300"><img src="images/pc/panties/basic/7.jpg" 	height="250" /></a>'
+	if basic_panties[9] = 0:*p '<a href="exec:gt ''panties'', ''view_panty_item'', ''shop'', ''cheap'', 9, 300"><img src="images/pc/panties/basic/9.jpg" 	height="250" /></a>'
+	if basic_panties[12] = 0:*p '<a href="exec:gt ''panties'', ''view_panty_item'', ''shop'', ''cheap'', 12, 300"><img src="images/pc/panties/basic/12.jpg" 	height="250" /></a>'
+	if basic_panties[21] = 0:*p '<a href="exec:gt ''panties'', ''view_panty_item'', ''shop'', ''cheap'', 21, 300"><img src="images/pc/panties/basic/21.jpg" 	height="250" /></a>'
+	if basic_panties[37] = 0:*p '<a href="exec:gt ''panties'', ''view_panty_item'', ''shop'', ''cheap'', 37, 300"><img src="images/pc/panties/basic/37.jpg" 	height="250" /></a>'
+	*nl
+	if basic_bras[11] = 0:*p '<a href="exec:gt ''bras'', ''view_bra_item'', ''shop'', ''cheap'', 11, 300"><img src="images/pc/bras/basic/11.jpg" 	height="250" /></a>'
+	if basic_bras[12] = 0:*p '<a href="exec:gt ''bras'', ''view_bra_item'', ''shop'', ''cheap'', 12, 300"><img src="images/pc/bras/basic/12.jpg" 	height="250" /></a>'
+	if basic_bras[16] = 0:*p '<a href="exec:gt ''bras'', ''view_bra_item'', ''shop'', ''cheap'', 16, 300"><img src="images/pc/bras/basic/16.jpg" 	height="250" /></a>'
+	if basic_bras[18] = 0:*p '<a href="exec:gt ''bras'', ''view_bra_item'', ''shop'', ''cheap'', 18, 300"><img src="images/pc/bras/basic/18.jpg" 	height="250" /></a>'
+
+	act 'Return':
+		$loc = $loc_bak
+		$shoplocation = 'clothing'
+		gt 'shop'
+	end
+end
+
+!! Household appliances
+if $shoplocation = 'tech':
+	*clr & cla
+	'<center><b><font color="maroon">Department of household appliances</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/shared/store/shop5.jpg"></center>'
+
+	if hour < 8 or hour > 20:
+		'The household appliance department is currently closed.'
+
+		act 'Leave the appliance department':gt 'shop', 'start'
+		exit
+	end
+
+	if $message ! '':
+		'<center>'+$message+'</center>'
+		killvar '$message'
+	else
+		''
+	end
+	*pl '<center><table align="center" width=80%>'
+	*p func ('$single_stock_item', 1, 'Small TV', 15000, 'TV', $curloc, '', iif(home_owned[1] > 0 or home_owned[3] > 0 or home_owned[4] = 1 or home_owned[5] > 2, 0, 1), 'You need your own home')
+	*p func ('$single_stock_item', 2, 'Large Plasma TV', 30000, 'TV', $curloc, '', iif(home_owned[1] > 0 or home_owned[3] > 0 or home_owned[4] = 1 or home_owned[5] > 2, 0, 1), 'You need your own home')
+	*p func ('$single_stock_item', 1, 'Computer', 40000, 'komp', $curloc)
+	*p func ('$single_stock_item', 1, 'Computer game Dead Sunset', 800, 'GameCD2', $curloc, '', iif(komp > 0, 0, 1), 'You need a computer')
+	*p func ('$single_stock_item', 1, 'Dishwasher', 28000, 'posudomashina', $curloc, '', iif(home_owned[1] > 0 or home_owned[3] > 0 or home_owned[4] = 1 or home_owned[5] > 2, 0, 1), 'You need your own home')
+	*p func ('$single_stock_item', 1, 'Washing machine', 30000, 'stiralka', $curloc, '', iif(home_owned[1] > 0 or home_owned[3] > 0 or home_owned[4] = 1 or home_owned[5] > 2, 0, 1), 'You need your own home')
+	*p func ('$single_stock_item', 1, 'Camera', 20000, 'zenit', $curloc)
+	*p func ('$single_stock_item', 1, 'Mini camera disguised as a cigarette pack', 100000, 'minifoto', $curloc)
+	*p func ('$single_stock_item', 1, 'Webcam', 2000, 'webcamera', $curloc, '', iif((npc_rel['A11']>=30 and webcamera = 0) or (camwhore = 1 and webcamera = 0), 0, 1), 'You have no use for this')
+	*p '</table></center>'
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	act 'Leave the appliance department':gt 'shop', 'start'
+end
+
+!! Ice cream counter
+if $shoplocation = 'icecream':
+	'<center><img <<$set_imgh>> src="images/shared/store/icecreamcounter.jpg"></center>'
+	'Ice cream is available for sale for 50 <b>₽</b>.'
+	act 'Move away from the counter':gt 'shop', 'start'
+	if money >= 50:
+		act 'Buy ice cream':
+			*clr & cla
+			money -= 50
+			fat += 3
+			pcs_mood += 50
+			pcs_hydra += 60
+			pcs_energy += 30
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/food/icecreem.jpg"></center>'
+			'You bought ice cream and ate it not going far.'
+			act 'Move away from the counter':gt 'shop', 'start'
+		end
+	end
+end
+
+if $shoplocation = 'megafon':
+	*clr & cla
+	minut+=3
+	gs'stat'
+	i = 0
+	'<center><b><font color = maroon>MegaFon shop</font></B></center>'
+	'<center><img src="images/system/phone/megafon2.jpg" ></center>'
+
+	*pl '<center><table align="center">'
+
+	:loopcard
+
+	if i = 0:
+		n = 5
+		price = 60
+		$buy_link = '<a' + iif(money >= 60, ' href="exec: gs ''$buy_item'', <<n>>, ''hours of internet access'', <<price>>, ''internet'', ''shop''">buy ','>buy ') +'</a>'
+	elseif i = 1:
+		n = 10
+		price = 115
+		$buy_link = '<a' + iif(money >= 115, ' href="exec: gs ''$buy_item'', <<n>>, ''hours of internet access'', <<price>>, ''internet'', ''shop''">buy ','>buy ') +'</a>'
+	elseif i = 2:
+		n = 20
+		price = 220
+		$buy_link = '<a' + iif(money >= 220, ' href="exec: gs ''$buy_item'', <<n>>, ''hours of internet access'', <<price>>, ''internet'', ''shop''">buy ','>buy ') +'</a>'
+	elseif i = 3:
+		n = 50
+		price = 520
+		$buy_link = '<a' + iif(money >= 520, ' href="exec: gs ''$buy_item'', <<n>>, ''hours of internet access'', <<price>>, ''internet'', ''shop''">buy ','>buy ') +'</a>'
+	end
+
+	i += 1
+
+	'<tr><td align="center"><<n>> hour internet card </td><td align="right">(you have <<internet>> hours of internet access) </td><td align="right"><<$buy_link>> </td><td align="left">for <<price>> <b>₽</b></td></tr>'
+
+	if i < 4:
+		jump 'loopcard'
+	end
+
+	'</table></center>'
+
+
+	act 'Return to the Supermarket':gt'shop','start'
+
+	if money > 0:
+		act 'Put the money on the phone':
+			cla
+			set minut = minut + 5
+			obmennik = input ("How many <b>₽</b> do you want to deposit?")
+
+			if obmennik <= 0:
+				'<center><br><b>Do you want to think again?</b></center>'
+				act 'Exit Department':gt'shop','start'
+			else
+				if money < obmennik:
+					'<center><br>You do not have <b><<obmennik>></b> <b>₽</b>.</center>'
+					act 'Exit Department':gt'shop','start'
+				end
+
+				if money >= obmennik:
+					set balans = balans + obmennik
+					set money = money - obmennik
+					clr
+					gs'stat'
+					'<center><br>You put <b><<obmennik>></b> <b>₽</b> to the account.</center>'
+					act 'Exit Department':gt'shop','start'
+				end
+			end
+		end
+	end
+end
+
+if $shoplocation = 'Anya':
+	cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/anyabusywork.jpg"></center>'
+	gs 'sister_chat', 'checks'
+	'"<<$pcs_nickname>>, do not disturb me at work, can''t you see I have customers?""'
+	act '<B>Move away</B>':gt'shop','start'
+end
+
+--- shop ---------------------------------
+

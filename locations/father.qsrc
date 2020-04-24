@@ -1,0 +1,648 @@
+# father
+
+fatherAge = year - ((npc_dob['A28'] - (npc_dob['A28'] mod 10000)) / 10000)
+gs 'stat'
+
+$location_type = 'event'
+
+'<center><b><font color="maroon">Your stepfather, Vladimir Mikhailovich Scriabin</font></b></center>'
+'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+'Your stepfather is a greying, slightly flabby man working as a truck driver. He is <<fatherAge>> years old. Your mother divorced your biological father and married Vladimir when you were only one year old. You''ve never seen your biological father since their divorce, and as such you have no real memory of him.'
+
+$fatherRep = {
+*pl
+if npc_rel['A28'] < 20:
+    'You and your stepfather can''t stand each other, and spend as little time in the same room as possible.'
+elseif npc_rel['A28'] < 40:
+    'You and your stepfather don''t get along very well.'
+elseif npc_rel['A28'] < 60:
+    'You have a normal relationship with your stepfather.'
+elseif npc_rel['A28'] < 80:
+    'You have a good relationship with your stepfather.'
+else
+    'You have a great relationship with your stepfather.'
+end
+*pl
+}
+
+dynamic $fatherRep
+
+act 'Move away':gt $loc, $metka
+
+!--------------------------------father comments on appearance changes------------------------------------------------
+! hair color
+if hcolfronce = 0:
+    hcolfatherremember = pcs_haircol
+    hcolfronce = 1
+end
+if hcolfatherremember ! pcs_haircol:
+
+    if pcs_haircol = nathcol: 
+            $texthcol = 'Or, rather, un-dyed your hair. So you decided to go back to your natural color?'
+    elseif pcs_haircol = 0:
+        $texthcol = 'So you decided to go with black hair?'
+    elseif pcs_haircol = 1:
+        $texthcol = 'So you decided to become a brunette?'
+    elseif pcs_haircol = 2:
+        $texthcol = 'So you decided to become a brazen redhead?'
+    elseif pcs_haircol = 3:
+        $texthcol = 'So you decided to become a blonde?'
+    end
+    
+    'Your stepfather does a doulbe take of you as he notices your hair. "Oh <<$pcs_nickname>>, I see you dyed your hair! <<$texthcol>>" It looks good on you. He takes one last look at your new hair and goes back to watching T.V.'
+    hcolfatherremember = pcs_haircol
+end
+
+! tongue piercing
+if pirsA > 0 and pirsA < 10000 and pirsAfather=0 and pirsadaytalk!daystart:
+    pirseerand=rand(1,100)
+    pirsadaytalk=daystart
+    if pirseerand >= 75:
+        'Your stepfather looks at your mouth with a curious look as you greet him. "<<$pcs_nickname>>, do you have something shiny in your mouth?"'
+        act'"No"':
+            cla
+            'You shake your head: "Umm, no! No I don''t!"'
+            'You quickly turn away before he can get a good look at your tongue piercing.'
+            act 'Move away':gt $loc, $metka
+        end
+        
+        act'"Yes, would you like to see it?"':
+            *clr & cla
+            pirsAfather=1
+            gs'stat'
+            '<center><img <<$set_imgh>> src="images/pc/body/piercings/a<<pirsA>>.jpg" ></center>'
+            'You open your mouth and stick out your tongue and wiggle it at him showing him your piercing.'
+            if TouchedByFather=0:'Your stepfather shakes his head: "<<$pcs_nickname>>, tongue piercings are only for lewd women who use their mouth to please men."'
+            if TouchedByFather>0:'Your stepfather grins: "Nice, I bet you could make someone feel really good with that..."'
+            act 'Move away':gt $loc, $metka
+        end
+        exit
+    end
+end
+
+! lip piercing
+if pirsB > 0 and pirsB < 10000 and pirsBfather= 0 and pirsbdaytalk!daystart:
+    pirsadbytalk=daystart
+    'Your stepfather takes a long look at your mouth, specifically at your new piercing. He seems confused and asks: "Why did you get that?"'
+    act '"Don''t you like it? I thought it looked kind of cute."':
+        *clr & cla
+        pirsBfather=1
+        gs'stat'
+        '<center><img <<$set_imgh>> src="images/pc/body/piercings/b<<pirsB>>.jpg" ></center>'
+        'You shrug. "I don''t know... I just like the way lip rings look, so I got one. Don''t you think it looks cute?"'
+        if TouchedByFather=0:'Your stepfather shakes his head: "Kids these days, always adding new holes to themselves..."'
+
+        if TouchedByFather>0:'Your stepfather grins: "I must admit, it does look sexy on you."'
+        act 'Move away':gt 'father'
+    end
+    exit
+end
+
+! earrings
+if pirsC > 0 and pirsC < 10000 and pirsCfather=0:
+    pirsCfather=1
+    'Your stepfather looks at your ears, noting your earrings: "I see you got your ears pierced, Your earrings are very cute."'
+end
+
+! nose ring
+if pirsD > 0 and pirsD < 10000 and pirsDfather=0:
+    pirsDfather=1
+    'Your stepfather looks a bit shocked at your nose ring: "Jesus, <<$pcs_nickname>>, what is- why?! I understand putting a ring in a bull''s nose to lead them by, but on a person? There''s no reason to do that!"'
+end
+
+! eyebrow piercing
+if pirsE > 0 and pirsE < 10000 and pirsEfather=0:
+    pirsEfather=1
+    'Your stepfather looks surprised when he sees your eyebrow piercing: "<<$pcs_nickname>>, why would you want that thing in your eyebrow?" He shakes his head in exasperation. "Kids these days..."'
+end
+
+! lip tattoo
+if tatlip>0 and fatherTatLip=0 and npc_rel['A28']>=60:
+    act 'Show him your lip tattoo':
+        *clr & cla
+        fatherTatLip=1
+        minut+=1
+        gs'stat'
+        '<center><img <<$set_imgh>> src="images/pc/body/tattoos/lip/tatlip<<tatlip>>.jpg" ></center>'
+        if tatlip = 2: $textFatherTatLip = 'A tattoo on the inside of your lip?! That must''ve hurt like hell... it is cute, though.'
+        if tatlip ! 2: $textFatherTatLip = 'That''s crazy! Why would you get something like that written on you, much less there?! No one would even think of doing that when I was your age.'
+        'You pull your lip down, showing your stepfather the tattoo on the inside of your lip. Your stepfather looks surprised: "<<$textFatherTatLip>>"'
+        act 'Move away':gt $loc, $metka
+    end
+end
+
+if $clothingworntype = 'nude' and npc_pregtalk['A28'] = 0 and func('body_din','pregnancyVisibility') = 1:
+    'Your stepfather looks at your belly with a surprised look on his face. He shakes his head in disappointment before looking back at you.: "<<$pcs_nickname>>, you''re pregnant?"'
+    if npc_sex['A28']!0: 'You see him hesitate for a second, as if weighing whether he should say something or not. He finally does: "All i can say is that i hope the baby is not mine... i''m so disappointed in you "<<$pcs_nickname>>"'
+    npc_pregtalk['A28'] = 1
+    
+elseif $clothingworntype ! 'nude' and npc_pregtalk['A28'] = 0 and func('body_din','pregnancyVisibility') = 1:
+    'Your stepfather looks at your belly with a surprised look on his face. He shakes his head in disappointment before looking back at you.: "<<$pcs_nickname>>, you''re pregnant?"'
+    if npc_sex['A28']!0: 'You see him hesitate for a second, as if weighing whether he should say something or not. He finally does: "All i can say is that i hope that the baby is not mine... i''m so disappointed in you "<<$pcs_nickname>>"'
+    npc_pregtalk['A28'] = 1
+end
+
+!!----------------------------------------end reaction block---------------------------------------------
+
+if week < 6:
+    if hour = 8:
+        '"Alright <<$pcs_nickname>>. I need to leave for work now or i''ll be late. See you later."'
+        cla
+        act '<B>Continue</B>':gt $loc, $metka
+        exit
+    end
+        
+    if father_go = 0 and hour >= 21:
+        '"Alright <<$pcs_nickname>>. It''s getting late, I need to get to bed. See you tomorrow."'
+        cla
+        act '<B>Continue</B>':gt $loc, $metka
+        exit
+    end
+end
+
+if week >= 6:
+    if father_go = 0 and hour >= 21:
+        '"Alright <<$pcs_nickname>>. It''s getting late, I need to get to bed. See you tomorrow."'
+        cla
+        act '<B>Continue</B>':gt $loc, $metka
+        exit
+    elseif father_go = 1 and hour >= 16:
+        'Sorry <<$pcs_nickname>>, I have to go to the garage, got to get some more work done on the truck.'
+        cla
+        act '<B>Continue</B>':gt $loc, $metka
+        exit
+    end
+end
+
+act 'Chat':
+    *clr & cla
+    minut+=rand(10,15)
+    npc_rel['A28']+=1
+    gs 'stat'
+    '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+    '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+    'Your stepfather is sittting on the couch in the living room, he is watching TV. You decide to join him for a while and sit down next to him.'
+
+    dynamic $fatherRep
+
+    act 'Move away':gt 'father'
+
+    if npc_rel['A28'] < 20:
+        gs 'dinfather', 'father 1'
+        exit
+    elseif npc_rel['A28'] >= 20 and npc_rel['A28'] < 40:
+        gs 'dinfather', 'father 2'
+        exit
+    elseif npc_rel['A28'] >= 40:
+        if pcs_apprnc + (npc_rel['A28']/10) <= 60:
+            gs 'dinfather', 'father 3'
+            exit
+        end
+        if pcs_apprnc + (npc_rel['A28']/10)>60:
+            gs 'dinfather', 'father 4'
+            exit
+        end
+    end
+end
+
+if (hour > 10 and week < 6) or week >= 6:
+    act 'Ask for money':
+        *clr & cla
+        minut += 5
+        gs 'stat'
+        '<center><b><font color="maroon">Your stepfather, Vladimir Mikhailovich Scriabin</font></b></center>'
+        '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+        'Your stepfather is sitting on the couch, watching some boring TV show. You sit down next to him.'
+        dynamic $fatherRep
+        act 'Move away':gt 'father'
+
+        if fatherPayDay = daystart:
+            'Trying your cutest face on your stepfather, you ask him for some money. He just shakes his head wearily: "No, <<$pcs_nickname>>. I''ve already given you some money today, don''t be greedy."'
+        else
+            if (npc_rel['A28'] <= 40 or (pcs_apprnc + (npc_rel['A28']/10)) <= 60) and TouchedByFather = 0:
+                'You ask your stepfather for some money, but he shakes his head in response: "I already gave my salary to your mother, go ask her."'
+            else
+                'You ask your stepfather for some money, but he shakes his head in response: "I already gave my salary to your mother, go ask her."'
+                if npc_rel['A28'] >= 40 and npc_rel['A28'] < 60 and fatherPayDay ! daystart:FatherMolest = rand(1,4)
+                if npc_rel['A28'] >= 60 and npc_rel['A28'] < 80 and fatherPayDay ! daystart:FatherMolest = rand(1,2)
+                if npc_rel['A28'] >=80 and fatherPayDay ! daystart:FatherMolest = 1
+                if FatherMolest = 1:
+                    'While you''re talking with him, you notice your stepfather is in a good mood today. Perhaps you can persuade him...'
+                    act '"Oh please?"':
+                        cla
+						menu_off = 1
+                        minut+=5
+                        gs 'stat'
+                        pcs_horny += rand(1,5)
+                        '"Oh come on, please Daddy?" you beg him, batting your eyelids and trying to look as cute as possible.'
+                        if pcs_apprnc + (npc_rel['A28']/10) >= 200:
+                            fatherLust = 1
+                        elseif pcs_apprnc + (npc_rel['A28']/10) >= 120:
+                            fatherLust = rand(1,2)
+                        elseif pcs_apprnc + (npc_rel['A28']/10) >= 60:
+                            fatherLust = rand(1,4)
+                        else
+                            fatherLust = 2
+                        end
+
+                        if fatherLust >= 2:
+                            '"Sorry <<$pcs_nickname>>, like I said, I have no money. Go ask your mother."'
+                        else
+                            money += rand(200,300)
+                            persuas_exp += rand(0,2)
+                            fatherPayDay = daystart
+                            gs 'stat'
+                            '"Oh, alright then. Just don''t tell your mother!" he says in a tired voice, keeping his eyes on the doorway as he gives you the money. You act genuinely happy as you take the money from him, giving him a kiss on the cheek as you go.'
+                        end
+
+                        act 'Move away':gt $loc, $metka
+                    end
+
+                    if npc_sex['A28']!0:
+                        act 'Blackmail him':
+                            cla
+							menu_off = 1
+                            minut += 5
+                            money += rand(300,500)
+                            fatherPayDay = daystart
+                            gs 'stat'
+                            '"Aren''t you forgetting something?" you say in a serious voice, referring to your recent intimate moments with him.'
+                            'Your stepfather is clearly embarrassed by this, and surprised at you for bringing it up. He clears his throat loudly, and the following silence makes you feel slightly uncomfortable. Nevertheless, he reaches for his wallet.'
+                            '"Here you go, you leech! You know you shouldn''t be taking advantage of me like that! Here, take your money and get out of here. Just keep your mouth shut!" You nod and pocket the money, feeling slightly worse for blackmailing him for it.'
+                            act 'Move away':gt $loc, $metka
+                        end
+                    end
+                end
+
+                if FatherMolest > 1:'"<<$pcs_nickname>>, I already said no."'
+            end
+        end
+    end
+
+    act 'Ask about him and your mother':
+        *clr & cla
+		menu_off = 1
+        minut += 5
+        gs 'stat'
+        '<center><b><font color="maroon">Your stepfather, Vladimir Mikhailovich Scriabin</font></b></center>'
+        '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+        'You ask your stepfather how he met your mother. Your stepfather scratches his slightly balding head and replies: "I used to work as a taxi driver back then, drove your mother to places from time to time and we got along very well. Natasha is a strong and independant woman, raising you and Anya all by herself after she left your father. I didn''t know him very well, I''ve only met him a couple of times. All I know is that his name is Mikhail Kuznetsov, and that he moved to a different city soon after he and your mother divorced."'
+
+        act 'Move away':gt 'father'
+    end
+
+    act 'Ask about his work':
+        *clr & cla
+		menu_off = 1
+        minut += 5
+        gs 'stat'
+        '<center><b><font color="maroon">Your stepfather, Vladimir Mikhailovich Scriabin</font></b></center>'
+        '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+        'You ask your stepfather about his work. Your stepfather reaches for his aching joints, with a grimace on his face. "I used to be a taxi driver. It was hard work though, often working many hours a day, and it could be dangerous too. With some money we saved up I bought a Gazelle pickup truck, and now I drive that selling goods and making deliveries. As you know I have two garages; one for our Volga, and the other one for the Gazelle."'
+
+        act 'Move away':gt 'father'
+    end
+
+    if motherKnowSpravka = 1 and npc_sex['A28']=0:
+        cla
+		menu_off = 1
+        npc_rel['A28'] = 0
+        motherKnowSpravka = 2
+        'Your stepfather angrily walked up to you: "Damnit <<$pcs_nickname>>, your mother told me you''re sexually active already! You''re still so young! I know I can''t stop you, but at least have some decency and don''t bring them to our house." His facial expression then softens, and he adds in a milder voice: "And please... be careful, okay?" You can tell your stepfather is very disappointed in you.'
+
+        act 'Move away':gt 'father'
+        exit
+    end
+
+    if alko > 1 and alkoday ! daystart:
+        alkoday = daystart
+        npc_rel['A28'] -= 1
+        'Your stepfather notices the sharp smell of booze on you and looks disappointed. "<<$pcs_nickname>>, you smell like alcohol, what are you getting yourself into? You''re too young to drink that!"'
+    end
+
+    if TorgVokzalTimes>0 and YouCanGar=0:
+        act 'Ask him permission to store things in his garage':
+            *clr & cla
+			menu_off = 1
+            minut+=5
+            gs'stat'
+            '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+            '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg" ></center>'
+            'You ask your stepfather if it is okay for you to store some things in his garage.'
+            if npc_rel['A28'] >= 60 or TouchedByFather = 1:
+                YouCanGar=1
+                'Your stepfather reluctantly agrees to let you store some things in his garage. You can hide some of your trinkets there now.'
+            else
+                'Your stepfather shook his head and said "Sorry <<$pcs_nickname>>. The garage already has more stuff in it than I would like, there''s simply no room."'
+            end
+			act 'Move away':gt 'father'			
+        end
+    end
+
+    act 'Ask him what he thinks of your outfit':
+        *clr & cla
+		menu_off = 1
+        minut += rand(10,15)
+        gs 'stat'
+        '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+        '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+        'Your stepfather is sitting on the couch, watching TV. You sat next to him on the sofa.'
+
+        dynamic $fatherRep
+        act 'Move away':gt 'father'
+
+        ''
+        if npc_rel['A28'] <= 40 or (pcs_apprnc + (npc_rel['A28']/10)) <= 60:
+            'You ask your stepfather what he thinks of your outfit. It looks like he''s not in the mood to indulge you, and impatiently waves you away with his hand: "Don''t bother me <<$pcs_nickname>>, I''m busy.'
+        else
+            'You move slightly closer towards your stepfather, flirtatiously smile at him and ask him what he thinks of your outfit.'
+            if pcs_hairbsh <= 0:
+                pcs_mood -= 5
+                'You notice your stepfather keeps glancing at your disheveled hair with a disapproving look on his face. "Silly me, I should really take better care of my hair!" you think to yourself.'
+            end
+
+            if npc_rel['A28'] >= 40 and npc_rel['A28'] < 60:FatherMolest = rand(1,8)
+            if npc_rel['A28'] >= 60 and npc_rel['A28'] < 80:FatherMolest = rand(1,4)
+            if npc_rel['A28'] >= 80:FatherMolest = rand(1,2)
+
+            if FatherMolest=1:
+                pcs_horny += rand(1,5)
+                gs 'stat'
+                'He seems happy to oblige, and asks you to twirl your body so he can look at your outfit from all angles. The approving nod and hungry look in his eyes that follow, show that he would like to do more than just watch.'
+                if pcs_horny >= 50 or TouchedByFather = 1:
+                    act 'Sway your hips back and forth':
+                        *clr & cla
+                        gs 'arousal', 'foreplay', 5, 'incest', 'exhibitionism'
+                        gs 'arousal', 'end'
+                        gs 'stat'
+                        'In the heat of the moment you gently start to sway your hips back and forth, without even realizing it. When you realize what you''re doing, you stare your stepfather in the eye for a second with a mischievous smile on your lips. You then turn your back to him and keep swaying your ass seductively.'
+
+                        if pcs_apprnc + (npc_rel['A28']/10) < 60:fatherLust = 2
+                        if pcs_apprnc + (npc_rel['A28']/10) >= 60 and pcs_apprnc + (npc_rel['A28']/10) < 120:fatherLust = rand(1,4)
+                        if pcs_apprnc + (npc_rel['A28']/10) >= 120 and pcs_apprnc + (npc_rel['A28']/10) < 200:fatherLust = rand(1,2)
+                        if pcs_apprnc + (npc_rel['A28']/10) >= 200 or TouchedByFather=1:fatherLust = 1
+
+                        if fatherLust>=2:
+                            pcs_horny -= rand(1,5)
+                            gs 'stat'
+                            if $pantyworntype ! 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim47.jpg"></center>' & 'Even though your body is definitely having an effect on him your stepfather is clearly embarrassed, and surprised you would do such a thing. He clears his throat loudly and looks at you disapprovingly, and the silence that follows makes you feel a bit uncomfortable.'
+                            if $pantyworntype = 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim48.jpg"></center>' & 'You avoid his gaze while you keep swaying your ass back and forth, slowly pulling your clothes away so he can see you''re not wearing any underwear. He sighs wistfully and tries to look away, saying in a stern voice: "<<$pcs_nickname>>, this is not fair, you know I am not made of stone. Don''t show me your bare ass like that." Realizing he wants no more part of your little show, you leave.'
+                        elseif fatherLust=1:
+                            if $pantyworntype ! 'none':
+                                '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim49.jpg"></center>'
+                                'As you slowly sway your ass for his viewing pleasure, you notice your stepfather focusing sharply on your ass crack. It takes a few seconds for you to figure out why, but then you remember one of his fetishes: he likes it when girls don''t wear underwear. You bet you could really turn him on if you took them off.'
+                                if pcs_horny >=  90:
+                                    act 'Give him your panties':
+                                        *clr & cla
+                                        gs 'stat'
+                                        gs 'panties', 'dispose'
+                                        '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim50.jpg"></center>'
+                                        'Wanting to see just how riled up you can get your stepfather, you bend over and slowly pull your panties down. "Is this better, Daddy?" you sweetly ask him, and your stepfather panics while you run your hands over your naked ass, gently kneading your ass cheeks. "<<$pcs_nickname>>, please don''t do that! Someone could come in at any second! What do you think your mother would do to you AND me if she saw this!?" he whispers, as he moves to you and frantically tries to cover you up. You sweetly smile at him and whisper: "Relax Daddy, we''re fine! Here, for later," as you stuff your panties in his pocket.'
+                                        act 'Move away':gt $loc, $metka
+                                    end
+                                end
+                            elseif $pantyworntype = 'none':
+                                TouchedByFather = 1
+								'<center><video autoplay loop src="images/characters/pavlovsk/resident/vladimir/sex/fatherim51.mp4"></video></center>' & 'As you sway your ass in front of your stepfather, you notice his eyes fixating on your ass crack. "What''s this <<$pcs_nickname>>, no panties?" He pushes you down onto your hands and knees and roughly kneads your ass cheeks, pulling them apart. Looks like he is done being teased, and turned the tables on you. He lowers his hands to your upper thighs and pulls your pussy wide open. The wet sheen on your pussy lips gives away how much you enjoy his treatment, and you do your best to stifle your moans so no one else in the house will hear. Thoroughly enjoying the stimulations he is giving you, you can feel your pussy moisten more and more.'
+                            end
+                        end
+                        act 'Move away':gt $loc, $metka
+                    end
+                    if fatherLust=1:'"Even though he did not expect this from you, you can tell by the spark in his eyes and his heavier breathing that he is, at least, pleasantly surprised by your request.'
+                end
+
+                if pcs_horny >= 90 or TouchedByFather = 1:
+                    if $clothingworntype ! 'nude':
+                        act 'Let him touch your clothes':
+                            *clr & cla
+                            gs 'arousal', 'foreplay', 5, 'incest', 'exhibitionism'
+                            gs 'arousal', 'end'
+                            gs 'stat'
+                            'You innocently offer him to have a feel at the fabric, pretending you''re really interested to know what he thinks of your the quality of your clothing. Your stepfather looks at you with a slightly puzzled look on his face. "Go on, touch it, it''s so nice and soft!" you encourage him, and you take his hand and pull it towards you.'
+
+                            if pcs_apprnc + (npc_rel['A28']/10) < 60:fatherLust = 2
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 60 and pcs_apprnc + (npc_rel['A28']/10) < 120:fatherLust = rand(1,4)
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 120 and pcs_apprnc + (npc_rel['A28']/10) < 200:fatherLust = rand(1,2)
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 200 or TouchedByFather=1:fatherLust = 1
+
+                            if fatherLust>=2:
+                                pcs_horny -= rand(1,5)
+                                gs 'stat'
+                                '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim41.jpg"></center>'
+                                'Your stepfather clearly doesn''t want to, and is slightly embarrassed by the whole situation. He quickly pulls his hand away and tells you to go straighten your clothes.'
+                            end
+                            if fatherLust=1:
+                                TouchedByFather=1
+                                if $pantyworntype ! 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim42.jpg"></center>' & 'Your stepfather smiles and eagerly reaches for your ass, kneading it rougher than you had anticipated. A bit startled at his roughness you squeak out a soft "Oh!" as he gives it a few slaps. He then sits back on the couch, amused at your embarrassed expression and red face. "You''re right, <<$pcs_nickname>>... it''s very soft indeed. Very nice."'
+                                if $pantyworntype = 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim25.jpg"></center>' & 'Judging from your stepfather''s flustered face, he is more than happy to oblige. He grabs you and bends you over the rear of the couch. You can''t see what he''s doing, but immediately feel his hand brushing against your wet pussy. He slides a finger in and pumps it in and out for a little while, filling the room with squishy noises. You let out a needy moan and feel a tinge of regret when he pulls his hand away and helps you back up. "Daddy, you didn''t even touch my clothes!" you pout. He simply gives you a wink and then returns his attention to the TV.'
+                            end
+                            act 'Move away':gt $loc, $metka
+                        end
+
+                        act 'Adjust your clothes':
+                            *clr & cla
+                            gs 'arousal', 'foreplay', 5, 'incest', 'exhibitionism'
+                            gs 'arousal', 'end'
+                            gs 'stat'
+                            'Encouraged by your stepfather''s reaction, you put your hands on your breasts and pretend you''re straightening your clothes. You run your fingers down to your stomach and groin while plucking at the fabric, giving him one hell of a show. He can''t take his eyes off your body and you can tell your actions make him want you more than ever.'
+
+                            if pcs_apprnc + (npc_rel['A28']/10) < 60:fatherLust = 2
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 60 and pcs_apprnc + (npc_rel['A28']/10) < 120:fatherLust = rand(1,4)
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 120 and pcs_apprnc + (npc_rel['A28']/10) < 200:fatherLust = rand(1,2)
+                            if pcs_apprnc + (npc_rel['A28']/10) >= 200 or TouchedByFather=1:fatherLust = 1
+
+                            if fatherLust>=2:
+                                pcs_horny -= rand(1,5)
+                                gs 'stat'
+                                if $pantyworntype ! 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim45.jpg"></center>' & 'Your stepfather realizes you''re going too far, and interrupts you by clearing his throat loudly. He tells you to go away, making you feel rather uncomfortable.'
+                                if $pantyworntype = 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim46.jpg"></center>' & 'Deciding to take your teasing to the next level, you pull your clothes to the side and show him your bare pussy. Your stepfather realizes you''re taking it too far, and sends you off: "<<$pcs_nickname>>, stop that. And go put on some underwear, that''s no way for a lady to behave."'
+                            end
+
+                            if fatherLust=1:
+                                if $pantyworntype ! 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim43.jpg"></center>' & 'You run your hands over your shoulders and slide the straps off to the side, pretending it is an accident. "Oh no, I can be so clumsy sometimes!" you exclaim, while taking way longer than you need to put them back where they need to be. All the while your stepfather''s eyes are glued to your <<$titsize>> breasts, and his face turns beet red.'
+                                if $pantyworntype = 'none':'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/sex/fatherim44.jpg"></center>' & 'You''re not wearing any panties today, and decide to tease your stepfather with it. Moving over to the window you reach for the curtains and begin to rustle them, while the contours of your body are illuminated by the sun. Your clothes are so thin, your stepfather can clearly see the outline of your bare pussy through the semi-transparent clothes. You turn to face him and innocently say "Oh I''m sorry Daddy, I didn''t mean to disturb you. Should I go?" It takes him a few seconds to nod, but his greedy look tells you there are a lot of things he would want to do to you right here, right now.'
+                            end
+                            act 'Move away':gt $loc, $metka
+                        end
+                    end
+                end
+            else
+                'You twirl on the spot, showing off your outfit from all sides.'
+                cla
+                act 'Move away':gt 'father'
+            end
+        end
+    end
+
+    act 'Watch TV together':
+        *clr & cla
+		menu_off = 1
+        minut += 60
+        pcs_mood += rand(10,50)
+        gs 'stat'
+        '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+        '<center><img <<$set_imgh>> src="images/shared/home/telek.jpg"></center>'
+
+        dynamic $fatherRep
+        act 'Move away':gt $loc, $metka
+
+        if npc_rel['A28'] < 20:
+            gs 'dinfather', 'watchtv1'
+            exit
+        elseif npc_rel['A28'] >= 20 and npc_rel['A28'] < 40:
+            gs 'dinfather', 'watchtv2'
+            exit
+        elseif npc_rel['A28'] >= 40:
+            if pcs_apprnc + (npc_rel['A28']/10) <= 0:
+                gs 'dinfather', 'watchtv4'
+                exit
+            end
+            if pcs_apprnc + (npc_rel['A28']/10) > 60:
+                gs 'dinfather', 'watchtv4'
+                exit
+            end
+        end
+    end
+end
+
+if mother_go = 1 and hour = 16 and TouchedByFather = 1 and pcs_horny >= 50 or npc_sex['A28']!0 and mother_go = 1 and hour = 16:
+    act 'Seduce him':
+		menu_off = 1
+        if npc_rel['A28'] < 20:
+            'Your stepfather seems to misunderstand your advances.'
+            gs 'dinfather', 'father 1'
+            exit
+        elseif npc_rel['A28'] >= 20 and npc_rel['A28'] < 40:
+            'Your stepfather seems to misunderstand your advances.'        
+            gs 'dinfather', 'father 2'
+            exit
+        elseif npc_rel['A28'] >= 40:
+            if pcs_apprnc + (npc_rel['A28']/10) <= 60:
+                'Your stepfather clears his throat and changes the subject.'
+                gs 'dinfather', 'father 3'
+                exit
+            end
+            if pcs_apprnc + (npc_rel['A28']/10) > 60:
+                *clr & cla
+                gs 'stat'
+                minut+=30
+                npc_rel['A28']+=20
+                if analplugIN = 1:
+                    gs 'fathersex', 'fatherbend_1'
+                else
+                    if $pantyworntype ! 'none':
+                        gs 'fathersex', 'fatherbend_2'
+                    else
+                        gs 'fathersex', 'fatherbend_3'
+                    end
+                end
+            end
+        end
+    end
+end
+
+! WD: Fix old nude variable
+if $clothingworntype = 'nude':
+	menu_off = 1
+    if tatvag > 0 and Putsawtatvag = 0 and $pantyworntype = 'none':
+        if npc_rel['A28'] >= 70:
+            'With your naked body on display, your pubic tattoo catches your stepfather''s eye. "Wow, that is one hard to miss tattoo. Obviously you didn''t get that one just for yourself", he says as he moves towards you and has a closer look.'
+            npc_rel['A28'] += 1
+            Putsawtatvag = 1
+            act 'Move away':gt $loc, $metka
+            exit
+        else
+            '"Damn tattoo, I can''t believe you would soil your body like that." Your stepfather obviously doesn''t like the tattoo you have in your pubic area. '
+            npc_rel['A28'] -= 1
+            Putsawtatvag = 1
+            act 'Move away':gt $loc, $metka
+            exit
+        end
+    end
+    if pirsF > 0 and pirsF < 10000 and PutsawpirsF = 0:
+        if npc_sex['A28']=0:
+            if npc_rel['A28'] >= 60:
+                '"Hey, those look nice on you!" your stepfather says, nodding at your nipple piercings. He seems to like them.'
+                npc_rel['A28'] += 3
+                PutsawpirsF = 1
+                act 'Move away':gt $loc, $metka
+                exit
+            else
+                '"Why would you do that... you should probably take those out", your stepfather says as he shakes his head, pointing at the piercings in your nipples.'
+                npc_rel['A28'] -= 1
+                act 'Move away':gt $loc, $metka
+                exit
+            end
+        else
+            if hour >= 18 and hour < 21:
+                '"Hey, those look nice on you!" your stepfather says, nodding at your nipple piercings. He seems to like them.'
+                npc_rel['A28'] += 3
+                PutsawpirsF = 1
+                act 'Move away':gt $loc, $metka
+                exit
+            else
+                '"Wow, those are sexy!" your stepfather says, as he reaches out and touches your nipple piercings. You can''t help but let out an involuntary groan. He admires them for a moment, rubbing his fingers on your nipples and lightly tugging at them before he lets you go.'
+                npc_rel['A28'] += 3
+                PutsawpirsF = 1
+                pcs_horny += 10
+                act 'Move away':gt $loc, $metka
+                exit
+            end
+        end
+    end
+
+    'Your stepfather stares at your naked body, you can''t help but notice the admiring look on his face mixed with the torment of him knowing that he should know better. "<<$pcs_nickname>>, have you no shame? You shouldn''t be flaunting your naked body like that, you have no idea what kind of effect it has on men!"'
+    if npc_sex['A28']=0:
+        if npc_rel['A28'] >= 40:
+            'He reluctantly turned his face away from you, and added: "Your body does look fantastic... but you really should go put some clothes on, your mother is around the house somewhere. Who knows what she''ll do when she sees you walking around like this!"'
+            npc_rel['A28'] += 1
+            act 'Move away':gt 'bedrPar'
+            exit
+        else
+            'He decisively turns his face away from you, avoiding the looks of your naked body. "Don''t be such a whore <<$pcs_nickname>>, go put some clothes on right now."'
+            npc_rel['A28'] -= 1
+            act 'Move away':gt 'bedrPar'
+            exit
+        end
+    else
+        if mother_go = 0:$mother_go_text = '"You really should go put some clothes on though, your mother is home."'
+            'His eyes never stop looking at your naked body, you can tell he''s very much impressed by your beauty as you walk around the room.<<$mother_go_text>>"'
+        if mother_go = 0:
+            act 'Move away':gt 'bedrPar'
+            exit
+        end
+    end
+end
+
+if npc_sex['A28']!0 and pirsG > 0 and pirsG < 10000 and PutsawpirsG = 0 and (hour <= 18 or hour > 21):
+    act 'Show off your pubic piercing':
+        *clr & cla
+		menu_off = 1        
+        minut += 5		
+        pcs_horny += 15
+		gs'stat'
+        PutsawpirsG = 1
+        '<center><img <<$set_imgh>> src="images/pc/body/piercings/g<<pirsG>>.jpg" ></center>'
+        'Moving closer to your stepfather, you tease him by showing him your pussy. He doesn''t know you have a pubic piercing yet, and you plan on showing it off today. As you absently rub your fingers across your labia, the glint of metal catches his eye and he pushes your hand away before you get a chance to tell him about it. "Well well, what do we have here?" he mutters, gently rubbing his fingers over the shiny new piercing. "<<$pcs_nickname>>, you are such a horny devil... I love it, we''re going to have a lot of fun with this." He spends the next few minutes rubbing and tugging on your new piercing, making lewd comments the whole time. After that he reluctantly lets you go, leaving you hornier than before.'
+        act 'Move away':gt $loc, $metka
+    end
+end
+
+if npc_sex['A28']!0:fatherwantssex = rand(1,2)
+
+if $clothingworntype = 'nude': fatherwantssex = 1
+if npc_sex['A28']!0 and fatherwantssex = 1 and mother_go = 1 and hour = 16 and npc_rel['A28'] > 60:
+    *clr & cla
+	menu_off = 1
+    gs 'stat'
+    '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+    '<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+    ! WD: Fix old nude variable
+    if $clothingworntype = 'nude': 'You give your stepfather a lewd smile. "I figured my clothes would only get in the way Daddy, so I took them off for you."'
+    'No words are neccessary, your stepfather simply unbuttons his pants revealing his stiff cock: "<<$pcs_nickname>>, help your old man out will you?"'
+    act 'Change your mind and leave':gt $loc, $metka
+    act 'Get down on your knees': gs 'fathersex', 'fatherblow4'
+end
+
+--- father ---------------------------------
+

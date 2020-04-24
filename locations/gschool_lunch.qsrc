@@ -1,0 +1,926 @@
+# gschool_lunch
+
+if $ARGS[0] = 'lunch':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+
+	if breakevent_lunch_day ! daystart:
+		breakevent_lunch_day = daystart
+		$eventtype = 'lunch'
+		gt 'gschool_events', 'break_events'
+	end
+
+	if dimaRevenge = 3:
+		gt 'dimaRevenge', 3
+	elseif dimaRevenge = 4 and dimaRevChoice = 0:
+		gt 'dimaRevenge', dimaRevenge
+	elseif dimaRevenge = 5 and dimaRevChoice = 1:
+		gt 'dimaRevenge', dimaRevenge, 'lunch'
+	elseif dimaRevenge = 6 and dimaRevChoice = 1:
+		gt 'dimaRevenge', dimaRevenge, 'lunch'
+	elseif dimaRevenge = 4 and dimaRevChoice = 2:
+		gt 'dimaRevenge', dimaRevenge, 'lunch'
+	elseif dimaRevenge = 4 and dimaRevChoice = 3:
+		gt 'dimaRevenge', dimaRevenge
+	elseif dimaRevenge = 5 and dimaRevChoice = 5:
+		gt 'dimaRevenge', dimaRevenge, 'afterlunch'
+	elseif dimaRevenge = 5 and dimaRevChoice = 6:
+		gt 'dimaRevenge', dimaRevenge
+	end
+
+	if marcus_event ! daystart and Marcus_sextype > 0 and rand(0,3) = 0:gt 'gschool_lunch', 'marcus_event'
+
+	gt 'gschool_lunch', 'cafeteria'
+end
+
+if $ARGS[0] = 'cafeteria':
+	*clr & cla
+	$loc = 'gschool_lunch'
+	$metka = 'cafeteria'
+	$menu_loc = 'gschool_lunch'
+	$menu_arg = 'cafeteria'
+	$location_type = 'public_indoors'
+	menu_off = 0
+	minut += 10
+	gs 'stat'
+	if school_lunch = 0:
+		if NikoVolkovQW = 5 and NikoEv = 5 and NikoDate = 0 and NikoDate_Day ! daystart:
+			school_lunch = 1
+			gt 'NikoDates', 'Hallway Strip'
+		elseif NikoVolkovQW = 10 and NikoEv = 12:
+			school_lunch = 1
+			gt 'NikoDreams', 'Classroom Dream'
+		elseif NikoVolkovQW = 10 and NikoEv = 13 and NikoDate_Day ! daystart:
+			school_lunch = 1
+			gt 'NikoEv2', 'Lunch Chat'
+		elseif NikoVolkovQW = 10 and NikoEv = 15 and NikoDate_Day ! daystart:
+			school_lunch = 1
+			gt 'NikoEv2', 'Lunch Chat 2'
+		elseif NikoVolkovQW = 10 and NikoEv = 21 and NikoDate_Day ! daystart:
+			school_lunch = 1
+			gt 'NikoEv2', 'Natalia Talk 2'
+		elseif VKLenaBully = 1 and VKLena_Day ! daystart and VKWip = 100:
+			school_lunch = 1
+			gt 'NikoBully', 'Lena Bully'
+		end
+	end
+
+	if dimaRevenge = 5 and dimaRevChoice = 5:
+		'<center><b><font color="maroon">Cafeteria</font></b></center>'
+		'<center><img src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+		'As you wait in line for your meal, you hear the other students talking about a girl you don''t know. None of them are talking about you anymore. Dimka works quick. You enjoy the rest of your lunch break.'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+		*nl
+		'During the break, students and some of the teachers are standing in line near the kitchen, waiting for their food.'
+		*nl
+		gs 'gschool_groups', 'teachers'
+	end
+
+	act 'Skip lunch':
+		cla
+		menu_off = 1
+		gs 'gschool_gossip', 'skipping'
+		act 'Continue': gt 'gschool_lunch', 'break'
+	end
+
+	if home_owned[2] = 1:
+		act 'Eat bagged lunch':
+			cla
+			menu_off = 1
+			gs 'food', 'bag_lunch'
+			delact 'Finish'
+			gs 'gschool_gossip', 'bagged'
+			act 'Continue': gt 'gschool_lunch', 'break'
+		end
+	end
+
+	if money >= 50:
+		act 'Buy food (50 <b>₽</b>)':
+			cla
+			menu_off = 1
+			money -= 50
+			gs 'food', 'm_meal'
+			delact 'Finish'
+			gs 'gschool_gossip', 'buying'
+			act 'Continue': gt 'gschool_lunch', 'break'
+		end
+	else
+		'You don''t have enough money (50 <b>₽</b>) to buy food.'
+	end
+end
+
+if $ARGS[0] = 'break':
+	*clr & cla
+	$loc = 'gschool_lunch'
+	$metka = 'break'
+	$menu_loc = 'gschool_lunch'
+	$menu_arg = 'break'
+	$location_type = 'public_indoors'
+	menu_off = 0
+	gs 'stat'
+	urand = rand(0,8)
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/chat/cooljocks.jpg"></center>'
+	'During break many of the kids split up to hang out with those in their same social groups. The nerds and outcast hangout in the classrooms, while the cool kids and jocks hang out in the hallway near the lockers, and the gopniks hangout in the stairwell, near the classrooms that are not used.'
+
+	$eventtype = 'long_break'
+
+	if cheerleadingQW['skipped_ev'] + cheerleadingQW['skipped_g_ev'] > 0:
+		gs 'gschool_cheerleading', 'skipped_ev'
+		act 'Continue down the hall': gt 'gschool_events', 'leave_break_events2'
+		exit
+	elseif grupTipe = 3 and nerd_game['invite_day'] < daystart - week:
+		gt 'nerd_game_night', 'invite', 'lunch'
+	end
+
+	if $breaktype ! 'long':
+		if dimaRevenge = 4 and dimaRevChoice = 2 and hour < 10: '<br>"Hi Nat did you happen to see Dimka?" "Hi <<$pcs_nickname>>, he was here before speaking with Lena and Lera.'
+
+		if dimaRevenge = 2:
+			gt 'dimaRevenge', 2
+		elseif NikoVolkovQW = 0 and NikoLuv >= 4:
+			gt 'NikoEv', 'Date Intro'
+		elseif NikoVolkovQW = 5 and NikoEv = 4 and NikoDate = 0:
+			lunch_event = daystart
+			gt 'NikoDates', 'Cafeteria'
+		elseif NikoPayback > 1 and FedorVsNiko = 1:
+			gt 'NikoPayback', 'Fedor Help 2'
+		elseif NikoPayback > 1 and FyodorVsNiko = 1:
+			gt 'NikoPayback', 'Fyodor Help'
+		elseif NikoPayback > 1 and IvanVsNiko = 1:
+			gt 'NikoPayback', 'Ivan Help 2'
+		elseif NikoPayback = 1 and NikoPayback_Day ! daystart:
+			gt 'NikoPayback', 'Payback'
+		elseif NikoPayback = 2 and NikoPayback_Day ! daystart:
+			gt 'NikoPayback', 'Payback 2'
+		elseif NikoVolkovQW = 10 and NikoEv = 14:
+			lunch_event = daystart
+			gt 'NikoEv2', 'Vicky Talk'	
+		elseif NikoVolkovQW = 10 and NikoEv = 16:
+			lunch_event = daystart
+			gt 'NikoEv2', 'Natalia Talk'		
+		end
+
+		if school_period = 6:
+			if lunch_event ! daystart: lunch_event = daystart & gt 'gschool_lunch', 'events'
+
+			if soniaPS = 2: soniaPS = 3 & 'During break, while you''re wandering through the school hallways killing time, you notice Sonia Ivanko and Vitek Kotov talking about something. Sonia looks like she''s about to cry, but eventually she gives a quiet nod as Vitek whispers something in her ear.'
+
+			act 'Use water cooler': $breaktype = 'long' & gt 'gschool_break', 'watercooler'
+			act 'Go to the girls restroom': $breaktype = 'long' & gt 'gschool_break', 'girls_restroom'
+			act 'Go to the boys restroom': $breaktype = 'long' & gt 'gschool_break', 'boys_restroom'
+		else
+			if breakevent_break_day ! daystart:
+				breakevent_break_day = daystart
+				gt 'gschool_events', 'break_events'
+			end
+
+			if soniaPS = 2: soniaPS = 3 & 'During break, while you''re wandering through the school hallways killing time, you notice Sonia Ivanko and Vitek Kotov talking about something. Sonia looks like she''s about to cry, but eventually she gives a quiet nod as Vitek whispers something in her ear.'
+
+			act 'Use water cooler': $breaktype = 'short' & gt 'gschool_break', 'watercooler'
+			act 'Go to the girls restroom': $breaktype = 'short' & gt 'gschool_break', 'girls_restroom'
+			act 'Go to the boys restroom': $breaktype = 'short' & gt 'gschool_break', 'boys_restroom'
+		end
+	end
+
+	act 'Relax in a classroom': gt 'gschool_chats', 'nerds'
+	act 'Hang out in the hallway': gt 'gschool_chats', 'cooljocks'
+	act 'Go hangout with the gopniks': gt 'gschool_chats', 'gopniks'
+
+	if school_period = 6:
+		act 'Stay in cafeteria':
+			*clr & cla
+			menu_off = 1
+			minut += 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+			'You stay in the cafeteria where some of the teachers are eating or watching over the kids making sure there is no trouble.'
+			gs 'gschool_groups', 'teachers'
+			act 'Leave': gt 'gschool_lessons', 'short_break'
+			if rolanmeet < 1:
+				'Rolan is sitting with his head on the table, he seems lonely.'
+				act 'Look for the lonely man': gt 'gschool_lunch', 'rolan_meet'
+			elseif rolanmeet < 2:
+				'Rolan is sleeping at the table as usual.'
+				act 'Wake him': gt 'gschool_lunch', 'rolan_meet'
+			elseif rolanmeet < 8:
+				act 'Look for Rolan': gt 'gschool_lunch', 'rolan_meet'
+			end
+		end
+	end
+
+	if zverevaQW = 2 and zverRageQW = 0 or zverevaQW = 3 and zverRageQW = 0:
+		act 'Spread rumors about Christina':
+			*clr & cla
+			menu_off = 1
+			if zverRageQW = 0:zverRageQW = 1
+			minut += 5
+			gs 'stat'
+			'You spread rumors about how Christina Zvereva has sex with Mr. Pavlovich, the P.E. teacher. The rumor spreads like wildfire: within the hour, everyone knows how she stays ahead.'
+			xgt 'gschool_lessons', 'short_break','nopict'
+		end
+	end
+end
+
+if $ARGS[0] = 'marcus_event':
+	menu_off = 1
+	marcus_event = daystart
+	*clr & cla
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/marcus/marcusflirt.jpg"></center>'
+	'As you stop at your locker before lunch, Marcus walks over. "Hey <<$pcs_nickname>> you are looking fine today, damn but you look good in that little plaid skirt."'
+	'You can''t help but smile and shake your head a little, you can tell by the way his eyes roam all over your body that despite his compliments there is only one thing on his mind right now right now. If the way he''s flirting wasn''t obvious enough, the bulge straining against his pants is a dead give away. "Well you''re not looking too bad yourself Marcus and by the look of things, you sure are VERY happy to see me." You say with a giggle and deliberately staring at his crotch.'
+	*nl
+	'He blushes slightly and pulls out his shirt so it hangs over his crotch, trying to hide his erection a little. "Oh fuck, sorry about that. I just had two girls in my last class who took turns flashing me. I swear those girls get a huge kick out of teasing me." He looks around a bit and then leans in a little close to you and says softly. "Hey, think you might be able to you know... help me out with this?" He says indicating the evident bulge in his pants.'
+	gs 'willpower', 'bj', 'resist'
+	if will_cost <= pcs_willpwr:
+		act 'Make an excuse and go (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'bj', 'resist'
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big146.jpg"></center>'
+			'"Sorry Marcus but I got some stuff I got to do, maybe some other time?" You can see he is fairly disappointed but he nods in agreement.'
+			'"Sure not a problem, talk to you later then?"'
+			'"Yeah, talk to you later." With that you walk off.'
+			act 'Go to lunch': gt 'gschool_lunch', 'lunch'
+		end
+	else
+		act 'Make an excuse and go (<font color="red"><<will_cost>> Willpower</font>)':'<br><font color="red">You don''t have enough willpower to refuse.</font>'
+	end
+	gs 'willpower', 'bj', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Not today (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'willpower', 'bj', 'resist', 'hard'
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big146.jpg"></center>'
+			'You shake your head no. "Sorry not today Marcus."'
+			'He nods his head in understanding. "Yeah ok, not a problem. I figured, you know it wouldn''t hurt to ask, but don''t worry about it. But hey you want to sit with me at lunch and talk?"'
+			act 'Yeah that would be nice':
+				*clr & cla
+				npc_rel['A146'] += 4
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/hall.jpg"></center>'
+				'"Sure I would love that." With that, the two of you walk to the lunch room together.'
+				'As you stand in line talking he asks you. "You want something to eat? My treat."'
+				act 'No':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+					'"I''m not hungry thank you anyway Marcus, but I would love to sit with you." With that he buys his lunch, you find a table and sit together. While he eats his lunch, the two of you talk for the whole lunch period.'
+					act 'Continue': gt 'gschool_lessons', 'short_break'
+				end
+				act 'Yes':
+					*clr & cla
+					pcs_energy += 40
+					pcs_health += 10
+					fat += 3
+					pcs_hydra += 40
+					cumspclnt = 2
+					gs 'cum_cleanup'
+					pcs_breath = 0
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+					'"Yes thank you Marcus, that is sweet." With that he buys both your lunches, you find a table and sit while you eat and talk for the whole lunch period.'
+					act 'Continue': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	else
+		act 'Not today (<font color="red"><<will_cost>> Willpower</font>)':'<br><font color="red">You don''t have enough willpower to refuse.</font>'
+	end
+	act 'Help him out':
+		*clr & cla
+		npc_sex['A146'] += 1
+		gs 'boyStat', 'A146'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/marcus/sex/school/marcl.jpg"></center>'
+		'You purse your lips a moment in thought and then figure, what the hell! You grab him by the hand and when no one is looking you lead him into one of the empty class rooms. You squat down in front of him as he frees his rock hard <<dick>>cm <<$dick_girth>> cock from his pants, putting it right in your face. You take it in your hand, giving it several lengthy strokes while you listen to many of your classmates out in the hall, just on the other side of the door. You briefly wonder how many of them do similar things on different days or how many might even be doing something similar right this minute.'
+		gs 'arousal', 'hj', 5
+		gs 'stat'
+		act 'Blow him':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/marcus/sex/school/marclbj.jpg"></center>'
+			'After giving his <<dick>>cm <<$dick_girth>> cock a few strokes, you can already feel it pulsing in your hand. You can tell he''s been struggling with this hard on for some time now. Leaning forward, you open your mouth nice and wide, before slowly wrapping your lips around the shaft of his cock, sucking him down deep. You use one of your hands to massage his balls while the other strokes up and down his shaft at the same pace of your lips. He starts moaning louder and louder, you briefly remove your hands so you can pull down your shirt and give him a nice view of your perky titties, before reaching back for his cock and balls.'
+			gs 'arousal', 'bj', 5
+			gs 'stat'
+			act 'Finish him':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/marcus/sex/school/marclcum.jpg"></center>'
+				'He doesn''t last very long, just a few minutes of sucking is all it takes for his cum to blast the back of your throat. He shudders and pulls back, his dick popping out from between your lips even as you keep stroking his shaft with one hand. Spurt after spurt of his sticky semen splashes across your face, into your hair, upon your exposed boobs in what seems like a never ending stream of cum. You are seriously starting to wonder whether it''s going stop, it just keeps going for as long as you''re stroking until finally, the last tiny spurt shoots out and lands on the floor. You take his now softening dick back in your mouth and suck on it softly, cleaning him off and milking out the last few warm drops.'
+				gs 'arousal', 'bj', 5
+				gs 'cum_call', 'mouth'
+				gs 'stat'
+				'With a loud sigh, he leans back against the teacher''s desk. "Fuck yeah, thanks <<$pcs_nickname>> I really needed that. Hey, why don''t you come sit with me at lunch? I will even buy you some lunch, if you are not already full." He adds with a smirk.'
+				'You can''t help but rolling your eyes at that as you do the best you can to clean yourself up, <i>Jesus, your whole face is nearly coated in his cum</i>. You can''t believe it all came from just one guy. Sitting with him at lunch sounds nice, but he does kinda have a point. Do you really want anything to eat, well anything else to eat that is?'
+				act 'No':
+					*clr & cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+					'"I''m not really hungry Marcus, but thank you anyway, I would love to sit with you." With that, the two of you walk to the cafeteria together. He buys his lunch, you find a table and sit together while he eats, you talk for the rest lunch time.'
+					act 'Continue': gt 'gschool_lessons', 'short_break'
+				end
+				act 'Yes':
+					*clr & cla
+					pcs_energy += 40
+					pcs_health += 10
+					fat += 3
+					pcs_hydra += 40
+					cumspclnt = 2
+					gs 'cum_cleanup'
+					pcs_breath = 0
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunch.jpg"></center>'
+					'"Sure, I would love to have lunch with you! After all you wasted most of it on my face and tits!" With that, the two of you burst in laughter and you walk into the cafeteria together. He buys lunch for both, you find a table and sit together while you eat and talk for the rest lunch time.'
+					act 'Continue': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'events':
+	menu_off = 1
+	if npc_sex['A14'] = 1 and KatjaLust >= 50 and Katjahorny + KatjaSlut >= 100 and KatjaHorny > 50:
+		cla
+		'During the break Katja Meynold approaches you, her face flushed in a mixture of shame and what seems to be arousal. After a few seconds, she gathers enough courage to ask if you want go somewhere quiet with her.'
+		act 'Refuse': KatjaDom -= 1 & gt 'gschool_lunch', 'break'
+		act 'Go with Katja':
+			*clr & cla
+			minut += 60
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/katja/sex/school/petting.jpg"></center>'
+			'You nod at Katja and she quickly takes you by the hand, leading you to a small storage closet. The door has barely closed behind you when she pulls you tightly against her, kissing your lips aggressively. She leans in and softly whispers in your ear, "<<$pcs_nickname>>, I want you."'
+			if rand(1,2) = 1 and katschoolsex >= 1:
+				act 'Go somewhere private': gt 'Katja_Tanga', 'secretroom'
+			else
+				act 'Eat Katja out':
+					*clr & cla
+					KatjaDom += 1
+					katschoolsex += 1
+					KatjaSlut += 1
+					KatjaHorny = 0
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/katja/sex/school/lesbian.jpg"></center>'
+					'Katja lightly presses down on your shoulders, letting you know to get down on your knees in front of her, as she lifts up her skirt and pulls her panties to the side. You waste no time, nuzzling at her groin as your tongue deftly starts licking her tiny clitoris. You can feel her pussy getting wetter and wetter from your thorough licking, and you enjoy the taste of her pussy a lot.'
+					*nl
+					'As Katja gets closer to her orgasm, she firmly clutches your hair and roughly pulls your face even harder into her crotch, encouraging you to work harder. A short while later, you can feel her pussy convulsing against your mouth, a few drops of girl cum squirting out and landing on your mouth. You slowly keep lapping at her twitching pussy, bringing her down carefully while she recovers from her orgasm. When you look up into her eyes, you see her staring down at you lovingly for a second, before pushing your face away and quickly straightening her clothes.'
+					'"Damn, next period is about to start! I''m sorry <<$pcs_nickname>>, I owe you one!" she apologizes, as she quickly gathers her things and leaves the closet. You''re hornier than ever, but you need to get going too.'
+
+					gs 'arousal', 'cuni_give', 20, 'sub', 'lesbian'
+					gs 'arousal', 'end'
+					gs 'stat'
+
+					act 'Continue': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	elseif npc_rel['A144'] >= 50 and anush_sex >= 10 and hotcat >= 6 and rand(0,5) = 0:
+		pcs_horny += 20
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/anushka/sex/school/want.jpg"></center>'
+		'As you are leaving the canteen, Anushka grabs you and pushes you up against the wall. She starts kissing you passionately, while one of her hands slides up your skirt and starts rubbing your clit. You can hear several of your fellow classmates whistling, hooting and hollering, but right now you don''t really care. She breaks the kiss just long enough to moan into your ear. "I want to fuck you, come with me," her fingers sliding up into your pussy as she says it.'
+
+		gs 'willpower', 'sex', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Not today (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/anushka/nomake.jpg"></center>'
+				'You are barely able to tear yourself away, mostly because you don''t really want to, but after struggling with yourself for a bit you finally manage to break away and shake your head at Anushka. "I''m sorry but I can''t right now... sorry." With that you hurry away.'
+				act 'Continue': gt 'gschool_lunch', 'break'
+			end
+		else
+			act 'Not today (<font color="red"><<will_cost>> Willpower</font>)':'<br><font color="red">You don''t have enough willpower to refuse.</font>'
+		end
+
+		act 'Go with it':
+			*clr & cla
+			Anush_lunch = 2
+			npc_rel['A144'] += 2
+			pcs_horny += 20
+			'<center><video autoplay loop src="images/characters/pavlovsk/school/girl/anushka/makeout.mp4"></video></center>'
+			'As her fingers invade your already dripping pussy, you spread your legs a bit wider to give her easier access, barely even aware of your fellow students in the hall and you softly moan back at her. "Mmm yes, I want you to fuck me." She smiles and grabs you by the hand and leads you away so you can find somewhere private.'
+			act 'Go somewhere private': gt 'gschool_sex', 'Anush_private'
+		end
+	elseif npc_rel['A144'] >= 50 and anush_sex >= 15 and hotcat >= 6 and rand(0, 5) = 0:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/hall.jpg"></center>'
+		'As you stop by your locker after lunch, Anushka comes over and rests against the locker next to yours. She leans in close to you "Hey <<$pcs_nickname>>, you wanna come have some fun? The boys brought something special and they are waiting for us in one of the unused classrooms." By the look in her eyes and the way she is acting, you know exactly what she means by having fun with the boys.'
+
+		gs 'willpower', 'sex', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Not today (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				grupvalue[4] -= 1
+				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big144.jpg"></center>'
+				'You think a moment about it but decide that you have other things you need to do. So you shake your head. "Sorry Nush not today, maybe some other time, I got some stuff I need to do."'
+				'She gives a little shrug "Whatever." Then she turns and walks off. Leaving you behind wondering if you made the right decision.'
+				act 'Continue': gt 'gschool_lunch', 'break'
+			end
+		else
+			act 'Not today (<font color="red"><<will_cost>> Willpower</font>)':'<br>You don''t have enough willpower to refuse.'
+		end
+		act 'Go somewhere private':gt 'gschool_sex', 'Anush_private2'
+	elseif gruptipe = 4 and rand(0,3) = 0:
+		cla
+		'During the break, you are approached by some of the local Gopniks in your school, "<<$pcs_nickname>>, come to the bathroom with us so we can have a little fun. You look like you could use a protein snack anyways." A couple of them snicker at that, as they put their hands around your arms and try to guide you towards the restrooms.'
+		*nl
+		'You pull back, slapping their hands away playfully, "Give a girl a chance to consider her options." You already know what you plan to do, but you like to tease them when you get the chance. Give them all a quick suck or just leave them high and dry? Hmm... choices choices.'
+		act 'Nah I don''t think so':
+			*clr & cla
+			if $pantyworntype ! 'none':
+				'<center><video autoplay loop src="images/locations/pavlovsk/school/lunch/buttflash.mp4"></video></center>'
+			else
+				'<center><video autoplay loop src="images/locations/pavlovsk/school/lunch/nudebflash.mp4"></video></center>'
+			end
+			'Shaking your head you say, "Not today boys, maybe some other time." Their expressions are an amusing mixture of anger, disappointment and acceptance. As you walk off you decide to give them a parting shot, lifting your skirt and giving them them a nice view of your ass.'
+			act 'Continue': gt 'gschool_lunch', 'break'
+		end
+		act 'Enter the men''s restroom':
+			*clr & cla
+			gs 'stat'
+			gs 'fame', 'pav', 'sex', 2
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/bathroom/boysbathroom.jpg"></center>'
+			'Your heart is pounding as you let them guide you along. You know perfectly well that they won''t let you go now, no matter what you say. When you arrive at the men''s restroom, one of the Gopniks stays by the door to keep watch while the others shove you in. The walls are covered in all sorts of crude text. A lot of it involves you. Across the entire wall, a large text reads "<<$pcs_firstname>> <<$pcs_lastname>> = <<$gnikname>>".'
+			*nl
+			'Vitek quickly grabs you by your hair, snarling in your your face, "You know why you''re here, slut. Now get down and get to work."'
+			act 'Suck Vitek''s dick':
+				*clr & cla
+				gs 'boyStat', 'A9'
+				npc_sex[$boy] += 1
+				gs 'arousal','bj',10,'sub'
+				gs 'cum_call','mouth',$boy,1
+				swallow += 1
+				gs 'arousal', 'end'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/toiletbj.jpg"></center>'
+				'You obediently kneel before him, rubbing your hand over the bulge in Vitek''s sweatpants before pulling out his dick. Clasping your <<$liptalk3>> around the head, you run your tongue around it a few times before starting to suck it in a bit deeper. You don''t want him to get angry, so you put some effort into it, sometimes licking his balls and taking his cock down your throat without really straining yourself. He mistakes your obedience for enthusiasm though and laughin, he turns to his friends and says, "Guys just look at this slut going at it, she''s loving it!"'
+				*nl
+				'A few minutes later, Vitek is about to cum and tells you, "Good job, cocksucker. I''m going to drop my load in your mouth now and when I do, you ''re going to swallow it all and lick me clean. If you spill anything, you''re going to lick it up from the floor. Got that?" You nod up at him and as soon as his cum hits your tongue, you diligently swallow his load, making sure not to let a single drop escape. When you''re sure he''s finished, you lick and suck his slowly softening dick clean, before tucking it back into his pants for him.'
+				*nl
+				'"That was great, <<$pcs_nickname>>, I see you''ve certainly earned your reputation. We''ll definitely be doing this more often, maybe next time I''ll make sure the other boys can have a turn as well. We''ll come find you when we want you. Understood?"'
+				*nl
+				'You''re not looking forward to the perspective, but not knowing what else to do you just nod. After the guys leave the bathroom you quickly have a drink, trying to wash the nasty taste of his cum out of your mouth.'
+				act 'Continue': gt 'gschool_lessons', 'short_break'
+			end
+		end
+	elseif rand(1,100) < 3:
+		cla
+		'<center><video autoplay loop src="images/locations/pavlovsk/school/lunch/foodfight.mp4"></video></center>'
+		'As you are in the cafeteria you see a girl flirting with a boy, another girl comes up behind her and pours her drink over her head. Which quickly turns into a chase and fight that has to be broken up between the two girls.'
+		act 'Continue your break': gt 'gschool_lunch', 'break'
+	elseif rand(1,100) < 3:
+		cla
+		gs 'gschool_events', 'rand_girl_arg', 1, 1, 0, 1, 0, 0
+		gs 'gschool_events', 'rand_girl_arg1', 1, 1, 0, 1, 0, 0
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/hallbutt.jpg"></center>'
+		'Two girls are dancing around in the hall, at one point they turn to face the lockers. As they do <<$rand_girl>> grabs the back of <<$rand_girl1>> gym pants and pulls them part way down, exposing her naked butt to everyone in the hall. <<$rand_girl1>> quickly pulls up her pants while swearing at <<$rand_girl>>, with her friend joining in. Before it can go any further a teacher breaks things up. It is hard to tell if it was friendly messing around or if there is now bad blood.'
+		act 'Continue your break': gt 'gschool_lunch', 'break'
+	elseif rand(1,100) < 3:
+		cla
+		gs 'gschool_events', 'rand_girl_arg', 1, 1, 0, 0, 0, 0
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunchsleep.jpg"></center>'
+		'While in the cafeteria you notice <<$rand_girl>> is laying down on her back on one of the benches. Her eyes are closed, her chest raises up slowly as she breathes. You think she has fallen asleep, despite all the noise around her. She must really be tired.'
+		act 'Continue your break': gt 'gschool_lunch', 'break'
+	elseif rand(1,100) < 3:
+		cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/lunchdhump.jpg"></center>'
+		'While in the cafeteria you see a couple of the gopnik girls hanging out by one of the tables. One of them is slightly bent over with her skirt hiked almost all the way up to her breasts, her panties and tight ass exposed to anyone who cares to look. The second girl stands behind her with her hands on her hips. She thrusts her hips forward hard, bouncing off the panty clad ass of the first girl, pretending like she is giving her a pounding fuck. Both girls let out loud fake moans with each slap of their bodies. The quite public fake fucking gets laughs from all the other gopniks, while most of the other boys and more than one teacher watch with a gleam of lust in their eyes at their antics. The raunchy display has an obvious effect and many of the boys in the audience do their best to inconspicuously cover their groins with whatever happens to be available. Even a couple of the girls seem to be lightly rubbing their legs together, faces slightly flushed, possibly even unaware of how they are affected. But knowing many of the girls of this school, they are probably quite aware.'
+		gs 'arousal', 'voyeur', 10
+		act 'Continue your break': gt 'gschool_lunch', 'break'
+	elseif rand(1,100) < 3:
+		cla
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/lunch/bust.jpg"></center>'
+		'You walk into the bathroom and find two other girls in there. One of them has her shirt half unbuttoned with her hands on either side of her breasts, looking at them in the mirror. "Do my tits look bigger? I don''t think they''re bigger," she says as she turns from side to side, then leans forward a bit, her lips slightly pursed as she evaluates her melons from every angle. She has a fairly impressive bust already, you don''t know why she is so worried about it. Her friend replies as you wash your hands. "They look bigger to me, I think they are still growing, unlike mine." True, her breasts are a lot smaller than her friend''s, you think as you walk out.'
+		gs 'arousal', 'voyeur', 5
+		act 'Continue your break': gt 'gschool_lunch', 'break'
+	else
+		gt 'gschool_lunch', 'break'
+	end
+end
+
+if $ARGS[0] = 'rolan_meet':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	if rolanmeet < 1:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images\locations\pavlovsk\resident\apartment\aptrolan\rolanmeet0.jpg"></center>'
+		'He looks like he''s sleeping. You try waking him, "Hey mister, you shouldn''t sleep here!"'
+		'He''s snoring pretty loudly. It''s a wonder no one else has tried to wake him.'
+		'"Hey... Hey... Wake up!"'
+		'"...I don''t know anything... no, Miss Volkov, I wasn''t working that day..."'
+		'Is he talking in his sleep? "SIR!"'
+		'"...you can''t prove anything, Miss Volkov..."'
+		act 'Poke him':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet1.jpg"></center>'
+			'You poke him in the shoulder, "Hey... Hey... Mister!" He doesn''t stir.'
+			'"...please, Miss Volkov... leave me alone..."'
+			'You grow frustrated, "What th-?" You try shaking his char, "Wake up!"'
+			'He continues to snore, "...the staircases are clean... leave me alone..."'
+			'Finally, you give up. "He must be drunk."'
+			act 'Leave ': gt 'gschool_lessons', 'short_break'
+		end
+	elseif rolanmeet = 1:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet2.jpg"></center>'
+		'Once again, you approach the man but he doesn''t seem to be asleep this time, he''s eyeing a glass that you''re sure is filled with something alcoholic. "Hey! You can''t drink here at school!"'
+		'The man doesn''t look at you, "Leave me alone, I''m enjoying my break..."'
+		'You scold him, "I''m telling you that you can''t drink here!"'
+		'He starts swirling his glass around, "Miss Volkov, I''m not doing anything, and besides, I''ve finished my work. Shouldn''t you be worrying about yours?"'
+		'You raise your voice, "I''m <b>NOT</b> Miss Volkov and <b>YOU</b> are giving us a bad example!"'
+		'He suddenly looks up at you, "Wha-?"'
+		act 'Pull his chair out':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet3.jpg"></center>'
+			'He comically falls on the floor, "Hey! What are you doing!?"'
+			'"You are in no position to question me! Why are you drunk? You''re in a school, do you know that? I should call the police!"'
+			'He starts to reach for the chair you pulled out from under him, "Hey! I''m not drunk and I''m on break!"'
+			'"Right, like I believe that. What are you doing here? Are you... homeless?" You start feeling a little bit of remorse.'
+			'"Huh? No, I''m the janitor! <i>I</i> should be the one reporting <i>you</i>! Who do you think you are, throwing people around like this? I should have a word with Miss Volkov..."'
+			'"Wha-" you start to ask when you notice the name tag on the table. <i>Rolan Matveev: Janitor</i>. Shit! He really does work here! "Oh, uh, I''m really sorry, sir. I didn''t see your badge..."'
+			'He stands back up, "Hmph. Fine, you can go, I''ll let you off with a warning <b>this time</b>. Now, shoo, leave me alone!"'
+			'You feel a little guilty, but still he is drinking in a school. "I''m really sorry, sir, but... why are you drinking at school? If Miss Volkov finds out, you could be fired!"'
+			'"Didn''t I say ''shoo''? Anyways, this isn''t alcohol." He takes a quick swig of his drink.'
+			'With how he''s been acting and drinking his beverage, you''re not sure you believe that.'
+			'"Are you mocking me? No one ever wants to talk to me..."'
+			'"No, I''m just curious about you that''s all."'
+			'He sighs and laughs, "Oh, okay, I''m dreaming again. Hmm, the doctor said to let my dreams play out to better understand myself. Alright, <i>Miss Dream</i> this drink is actually..."'
+			act 'Continue':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet4.jpg"></center>'
+				'He holds up a bottle you hadn''t noticed before, "Leninade! The only normal thing this school offers to wake you up!"'
+				'You eye the bottle, then his glass, "That doesn''t look like what''s in your glass! The color is completely different!"'
+				'He gazes at you curiously, "Uh? The dream doesn''t usually talk back... what in the...?"'
+				'"Hey! I''m not a dream! Why on the Earth would Leninade wake up you? It''s just a soda."'
+				'"Okay, wow, for a cration of my imagination, you sure are pretty dumb..."'
+				'What did he say about you? You slap at his arm.'
+				'"Hey! I really felt that! You are real! But, why are speaking to me?"'
+				'"Are you for real? If that is Leninade then why is the color different? You''re lying, this is alcohol!" You grab the glass and smell it for alcohol. While it certainly doesn''t smell good, you don''t actually smell any alcohol. "Huh, what is this?"'
+				'He snatches his glass back from you, "I already told you, it''s Leninade. It just has some coffee and tea mixed in with it."'
+				'If he mixes those three drinks together... "You must really need the energy. Why don''t you eat the food here instead, Mister..." Dammit! You''ve forgotten his name already!'
+				'"Matveev, Rolan Matveev. I can understand a girl not liking a drink like this. What you would you know about needing energy for work, Miss..."'
+				'"<<$pcs_lastname>>, <<$pcs_firstname>> <<$pcs_lastname>>... anyways, you didn''t answer my question: Why don''t you eat here like everyone else?"'
+				'"Well, Miss <<$pcs_lastname>>, I don''t trust the cook. She never lets me enter the kitchen."'
+				'"Well, if something were wrong with the food, you''d see a lot of people in the hospital. I think you''re being paranoid." The bell rings. "I have to go. See you around, Mr. Matveev!"'
+				'"Sure, see you around, Miss <<$pcs_lastname>>."'
+				act 'Leave': gt 'gschool_lessons', 'short_break'
+			end
+		end
+	elseif rolanmeet = 2:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet5.jpg"></center>'
+		'You see Rolan sitting alone at his usual table and decide to approach him, "Hello, Mr. Matveev!"'
+		'"Huh? Me? Oh..." Rolan raises his eyes to yours, "G-good morning, Miss <<$pcs_lastname>>."'
+		'"Do you mind if I sit with you? It seems like there''s plenty of space."'
+		'"Um, hey! Where''s the camera? Is this another joke?" He sounds a bit agitated.'
+		'You''re a bit confused, "Huh? What are you talking about?"'
+		'"So there''s no camera?" Rolan quickly looks around, "This isn''t some kind of joke or prank...?"'
+		'"Mr. Matveev, I don''t understand. I wanted to apologize for last time."'
+		'"Oh, okay... apologies accepted." He sounds somewhat relieved but still hesitant, "You can go now, Miss <<$pcs_lastname>>."'
+		'"You don''t want me to sit with you? Are you waiting for someone?" You peak around the cafeteria.'
+		act 'Continue':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet6.jpg"></center>'
+			'"Waiting for someone? Me?" You take his answer as a no and sit in the table.'
+			'"I can leave if you really want me to. I just wanted to show you that the school''s food isn''t that bad."'
+			'"You can stay, if you want. It''s just, no one has ever wanted to stay near me."'
+			'"Well, i was rude to you last time. And besides, you need to eat something. Let me go grab some food and I''ll be right back!"'
+			'"I don''t know, Miss <<$pcs_lastname>>..."'
+			'"What''s the problem? C''mon, it''s my treat! I''ll even take a few bites first to show you it''s okay!"'
+			'Roman stammers, trying to make an excuse.'
+			'"I''ll be back in a minute!" You walk away from the table and grab some food.'
+			'Roman is still stammering when you get back.'
+			'"Here we go! I''ll take the first bite!" You savour a little of the lunch, "See? It''s all good! Now you try a bite!"'
+			'Rolan grabs at a piece with his bare hands.'
+			'"No, silly! Use the knife and fork You''re making a mess..."'
+			act 'Help Rolan':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet7.jpg"></center>'
+				'"Err, are you sure this is a good idea?"'
+				'"Yes, you don''t want to make a mess, do you? Here, let me help you." You show Mr. Matveev the proper way to use a knife and fork.'
+				'Rolan takes a few bites of his food, "Oh, this is not so bad, actually."'
+				'"See? Neither of us died. I know it''s not the best but it still fills you up and gives you energy."'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet8.jpg"></center>'
+					'Rolan starts sniffling.'
+					'"Oh, too much onion? Next time we''ll try something different then."'
+					'Rolan clears his throat "...t-thanks... M-Miss <<$pcs_lastname>>..."'
+					'"Take a drink of some water, that should help. I have to leave now. I''ll see you next time, Mr. Matveev."'
+					'You can''t help but think that Rolan seems like a lonely man. You make a mental note to try and spend more time with him.'
+					act 'Leave ': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	elseif rolanmeet = 3:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet9.jpg"></center>'
+		'You decided to visit Rolan in your free time, but he''s not at his usual table. You turn and see he''s mopping the floor. "Hi, Mr. Matveev!"'
+		'"M-miss <<$pcs_lastname>>, good morning. You shouldn''t be seen talking to me!"'
+		'"Hmm? Why not? I can talk with whoever I like."'
+		'He only stammers.'
+		'"Oh, I guess you''re busy working?"'
+		'"Well, no. To be honest, I was waiting for the lunch break to finish."'
+		'"Great!" You tell him. "Then grab some lunch, it''s free for staff you know... I''ll wait for you at our table."'
+		'He seems surprised. "What, our lunches are free?"'
+		'"Um, yes, they are. Did you not know that? Just grab your food and show your badge to the cashier."'
+		'"No..." Rolan stands in the lunch line apprehensively, as if he still doesn''t believe you. When he returns with his food, he smiles at you. "Hey, it worked!"'
+		'You lightly laugh, "I told you, didn''t I?"'
+		'"So, now what?"'
+		'"Uh, we go and eat."'
+		'"Oh, right..."'
+		'You motion Rolan to follow you, "Come on, Mr. Matveev, or someone will take our table."'
+		act 'Go sit':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet10.jpg"></center>'
+			'When you get seated, you noticed Rolan is staring at his food. "Is there something wrong, Mr. Matveev?"'
+			'"Uh..."'
+			'"Oh, let me take a bite first." You grab a piece of lettuce and munch on it.'
+			'"Hmm." Rolan is still staring at the food.'
+			'"What is it, Mr. Matveev?"'
+			'He stares for another moment before looking up at you, "Umm, what is this?"'
+			'Did he really just ask you that? "It''s a salad with walnuts..."'
+			'"I remember walnuts being bigger and i could crack them with my hands."'
+			'You have to stifle a laugh, "Well, they removed the shells. It would be awkward if you had to crack them while you ate."'
+			'"Hmm? Strange."'
+			'"Okay, you don''t have all day to eat. And don''t forget to use your fork."'
+			act 'Continue':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet11.jpg"></center>'
+				'"Use a fork? Again?" He almost sounds like a child.'
+				'"Yes, it''s not polite to eat with your hands," you explain.'
+				'"Oh, okay." Rolan start to eat.'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet12.jpg"></center>'
+					'After a few bites, Rolan looks a bit happier. "It''s good, right, Mr. Matveev?"'
+					'He continues eating.'
+					'"Well, how is it?"'
+					'He''s chomping on a few of the walnuts, "Hmm, no tooth loss..."'
+					'"Uh? Ha-ha, okay." He is really strange sometimes. "I have to get to class now. I''ll see you later, Mr. Matveev!"'
+					'"Oh, goodbye Miss <<$pcs_lastname>>..."'
+					act 'Leave ': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	elseif rolanmeet = 4:
+		*clr & cla
+		minut += 4
+		gs 'stat'
+		'You decide to spend a little of your free time with Rolan. You wonder if his goofy behaviour is due to his loneliness or if that''s just who he is. You''ll have to spend a little more time with him to find the answer. "Hmm, where is he today? Maybe it''s his off day?"'
+		'<i><b>WHOOOSSSHHH!</b></i>'
+		'The wind howls as the door next to you opens.'
+		act 'Continue':
+			*clr & cla
+			minut += 4
+			gs 'stat'
+			rolanmeet += 1
+			$track_loop = 'sound/windhowl.mp3'
+			volume = 50
+			music_loop = 1
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet13.jpg"></center>'
+			'<i><b>WHOOOSSSHHH!</b></i>'
+			'Rolan walks through the door. "Woah, windy day, isn''t it, Miss <<$pcs_lastname>>!"'
+			'"Uh? Mr. Matveev?"'
+			'Rolan is struggling to close the door. "Could you lend me a hand, Miss <<$pcs_lastname>>? It''s hard with this wind..."'
+			'<i><b>WHOOOSSSHHH!</b></i>'
+			'"Sure!" You rush over to Rolan to offer your help.'
+			'<i><b>WHOOOSSSHHH!</b></i>'
+			'It''s a really windy day...'
+			act 'Close the door':
+				*clr & cla
+				music_loop = 0 & close all
+				minut += 4
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet14.jpg"></center>'
+				'You''re both a little out of breath, "Whew, thank you, Miss <<$pcs_lastname>>. Excuse me for a second, the wind messed up my hair."'
+				'"Okay, Mr. Matveev."'
+				'"I was trying to clean the courtyard outside, but with this wind today it''s nearly impossible! I''ll have to try again later."'
+				'"Well, in that case, you should eat something so you have energy for later."'
+				'"Mmm, yes, I think I could eat something."'
+				'"Good! Why don''t you grab a lunch? I think they''re serving steak today. I''ll save you a seat, Mr. Matveev." You find an empty table and wait for Rolan.'
+				act 'Wait for Rolan':
+					*clr & cla
+					minut += 4
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet15.jpg"></center>'
+					'You see Rolan with his plate and wave at him, "Mr. Matveev, over here!"'
+					'"Oh there you are, Miss <<$pcs_lastname>>." Rolan walks over to you and sits down.'
+					'You snatch a small piece and ''test'' it for Rolan. It tastes really good but you know Rolan needs to eat, "It''s good! Eat so you have your energy for later."'
+					'Rolan starts to eat. With his hands. Again.'
+					'You lightly smack the table, "No! Fork and knife, fork and knife... We are civilized people, Mr. Matveev!"'
+					'"Ehh, right, right."'
+					'Rolan takes his fork and knife and quickly cuts his steak into two pieces before basically swallowing both. Did he even chew either piece?'
+					'"Wow, Mr. Matveev! You must have really enjoyed that steak. Well, since you''re finished eating so soon, we have some time to talk."'
+					'"Talk? I-I dont''t know... Usually only Miss Volkov talks to me when she gives me the tasks for the day..."'
+					'You pout, "Aww, you don''t want to talk with me..."'
+					'"Oh no! No, no, no, no... Miss <<$pcs_lastname>>... I-I... just don''t know what to talk about. I''m not used to speaking with anyone."'
+					'"Well, what kind of hobbies do you have? What do you do when you''re done working?"'
+					'"Oh, uh, I go home." Suddenly, the bell rings.'
+					act 'Say goodbye':
+						*clr & cla
+						minut += 4
+						gs 'stat'
+						'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet16.jpg"></center>'
+						'"I have to go, I don''t want to be late! We''ll continue another time if you don''t mind. Bye, Mr. Matveev!"'
+						'"Goodbye, Miss <<$pcs_lastname>>."'
+						act 'Leave ': gt 'gschool_lessons', 'short_break'
+					end
+				end
+			end
+		end
+	elseif rolanmeet = 5:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet17.jpg"></center>'
+		'"Miss <<$pcs_lastname>>!" Rolan seems cheerful this morning.'
+		'You wave at him, "Mr. Matveev! Good morning!"'
+		'He points to an empty seat, "Do you want to sit with me? You always ask me, so I feel it''s my turn to ask you."'
+		'"Of course, Mr. Matveev. I actually wanted to see how you are." You sit down across from him.'
+		'"I''m doing pretty well, Miss <<$pcs_lastname>>. I feel full of energy today!"'
+		'"I see that." You notice him holding something. It looks like food. "What have you got there? It doesn''t look like something they were serving today."'
+		'"Oh this? I''ve brought something from home, a sandwich I made with my own hands! I''d like you to try some of it! It''s delicious... Not that what they serve here isn''t good."'
+		act 'Continue':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet18.jpg"></center>'
+			'Rolan is actually eating his sandwich with a fork and knife. You find it somewhat amusing. "Mr. Matveev, it''s okay to eat a sandwich with your hands!"'
+			'He shakes his head, "No, no, we are civilized people, remember?"'
+			'You laugh, "Yes, Mr. Matveev, I remember. But i assure you, that it''s okay this time."'
+			'"Okay, if you say so, Miss <<$pcs_lastname>>." He tears off a piece and hands it towards you, "Please, have a bite. It''s safe, I promise!"'
+			'You''re a bit hesitant, but you don''t want to offend Rolan.'
+			act 'Take a bite':
+				*clr & cla
+				minut += 5
+				pcs_mood -= 10
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet19.jpg"></center>'
+				'You almost retch after taking a bite. What... the hell is there in this? It''s a medley of different flavors, none of which should go together. You also taste... <i>CHEWING GUM</i>?'
+				'You attempt to gather yourself before speaking. "...t-thanks. So, um, last time we were talking about what you do in your free time...?"'
+				'Rolan takes back his sandwich and continues to eat, oblivious to your disgust. "Yes, when I get off work, I go home. Sometimes I like to go for a walk or do chores, maybe take a bath. Do you want another bite?" He offers you the ''sandwich'' again.'
+				'"Er, no thanks, Mr. Matveev..." Rolan stops chewing.'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet20.jpg"></center>'
+					'"Was there too much garlic? You can pinch your nose if it bothers you..."'
+					'You really don''t want to insult Rolan so you make up an excuse, "No, no. I''m, uh, I''m going to be a model some day, so I need to watch my figure, you know?"'
+					'"Oh, is there a class you take for that? I wasn''t aware." He actually fell for that?'
+					'You suddenly feel your stomach lurch, the sandwich is making a return trip. You quickly get up, "I''m sorry, Mr. Matveev, but I have to go. I just remembered something I have to do!"'
+					'Rolan continues eating, "Oh? Goodbye, Miss <<$pcs_lastname>>!"'
+					act 'RUN!':
+						*clr & cla
+						minut += 5
+						gs 'stat'
+						'<center><img src="images/locations/pavlovsk/resident/apartment/aptrolan/rolansoup0.jpg"></center>'
+						'"...shit!...i hate to puke... " ... BLUURB...And you spend some time to clean your stomach. "What the fuck!...that ... roll... . Better clean..." Fortunately you avoid to make a mess...just in time.'
+						'<i>Shit! I''m going to puke!</i> You race to the restroom and find an empty stall just in time. If you''d thought it tasted awful the first time...'
+						act 'Leave ': gt 'gschool_lessons', 'short_break'
+					end
+				end
+			end
+		end
+	elseif rolanmeet = 6:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet21.jpg"></center>'
+		'You spot Rolan and he''s already waving you over, "Miss <<$pcs_lastname>>, good morning! I''ll get our lunch today!"'
+		'"NO! Um, I mean, good morning to you as well, Mr. Matveev!" You remember your last lunch together, "Let''s keep our meal light today, yeah?"'
+		'"Uh?" He looks a little perplexed.'
+		'You turn him around and gently push him towards the tables, "Yes, why don''t you find us a spot to sit and I''ll grab our food!"'
+		'"Uh, okay, Miss <<$pcs_lastname>>..."'
+		act 'Continue':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet22.jpg"></center>'
+			'You opt to grab two ice cream cones instead. Surely Rolan can''t mess that up?'
+			'He looks at you a bit confused, "Hmm, I didn''t know you could have ice cream for lunch. Is this beef flavored?"'
+			'You laugh at Rolan for a few seconds, "Uh? No, silly... when would they ever... oh, I see, you''re mocking me!"'
+			'Mr. Matveev quickly eats his ice cream. If you ate ice cream that fast, you''d definitely have a brain freeze...'
+			act 'Continue':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet23.jpg"></center>'
+				'"Wow, that was fast! I guess you really liked it? Oh, but now you''re a little dirty..."'
+				'"Huh?"'
+				act 'Uh?':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet24.jpg"></center>'
+					'Rolan looks down, "Oh! You mean my jacket?"'
+					'You stare at Mr. Matveev for a moment. "How do you eve-never mind... Well i assume you enjoyed that?"'
+					'"It was... sweet tasting. What flavor was it?"'
+					'"It was white ... i assume it was vanilla."'
+					'"Vanilla? I think I''ve heard of that before. Tastes different from beef though. Very sweet."'
+					'You keep yourself from shuddering at the thought of meat flavored ice cream. "I''m no expert on ice cream flavors but i think that the sweetness comes from the sugar..."'
+					'"Sugar, huh? I should add that to my foods..." You don''t doubt he would.'
+					'"I''m happy you liked it." The bell rings, "Oh! I gotta run. Goodbye, Mr Matveev. I''ll see you next time!"'
+					'You stand up. "Rolan. You call me Rolan," he says to you. "See you soon, Miss <<$pcs_lastname>>."'
+					'"Oh sure... Rolan. You can call me <<$pcs_nickname>>."'
+					'"No, that wouldn''t be polite for a man to do to a woman. Goodbye, Miss <<$pcs_lastname>>."'
+					'"Ah, okay. Goodbye Mr Matv... I mean, Rolan!"'
+					act 'Leave ': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	elseif rolanmeet = 7:
+		*clr & cla
+		minut += 5
+		gs 'stat'
+		rolanmeet += 1
+		'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet25.jpg"></center>'
+		'"Miss <<$pcs_lastname>>! It''s a pleasure to see you again. Having a nice day?"'
+		'"Oh, the same as always. Good morning, Mr... uh, Rolan. It''s a bit odd that I can call you by your first name, but you can''t do the same."'
+		'"I told you, it''s not polite for a man to address a lady in such a way. Besides," he smiles, "calling me ''Rolan'' helps me feel a bit younger."'
+		'You look down at your feet, "Well ''Miss <<$pcs_lastname>>'' makes me feel old..."'
+		'He shakes his head, "Nonsense! Women cannot be old!"'
+		'You giggle, "Oh, well I''ll take it as a compliment then, Rolan!"'
+		'"It''s simply the truth, Miss <<$pcs_lastname>>."'
+		'"Tell me Rolan... have you had lunch yet? We could eat together?"'
+		act 'Continue':
+			*clr & cla
+			minut += 5
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet26.jpg"></center>'
+			'"I''m sorry, Miss <<$pcs_lastname>>. Miss Volkov has increased my work duties and I''m afraid I can only eat after I''m done working..." He sounds pretty disappointed.'
+			'"Aww," you return his disappointment. "I was enjoying our lunch talks."'
+			'"As was I, Miss <<$pcs_lastname>>, but unfortunately that is my job. I cannot say no to Miss Volkov." He stares down at his mop.'
+			'"Can''t you do something? Surely, you do enough work for the school already?" You''re almost pleading with him now.'
+			'"No, it''s perfectly legal. Plus, I am getting paid more for the extra work."'
+			'"Oh, well." You think it over. "Maybe I could come by and see you after school?"'
+			'"I don''t know, Miss <<$pcs_lastname>>. A young girl visiting an older man outside of school, people might talk..."'
+			'"What''s wrong with a visit from a friend?"'
+			'"I-I don''t know..." he stammers.'
+			'"Come on... where do you live? I''ll stop by sometime and we could have tea?"'
+			'"Maybe you''re right."'
+			act 'Give him a sheet of paper':
+				*clr & cla
+				minut += 5
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet27.jpg"></center>'
+				'"Great! Here, write down your address, Rolan! I''ll come visit you sometime. Just keep some water heated up for our tea!"'
+				'He eyes the paper, "Err, okay, water for the tea. But are you sure about this?"'
+				'"Of course! We are friends and I want to know you better."'
+				'"Sure, we''re friends. I like that! Okay, but..."'
+				'"No buts, Rolan! Now write your address down, I have to get to class!"'
+				'"Oh, uh, right." Rolan writes down his address and hands you the paper. "Here''s where I live. I know it''s not the greatest place..."'
+				'You look over the address. Hey! It''s on the <b>first floor of the apartment complex west of yours</b>!'
+				'"Oh, we live in the same area! Don''t worry, I know how awful the complexes are. I really have to go now, bye bye Rolan!"'
+				act 'Continue':
+					*clr & cla
+					minut += 5
+					gs 'stat'
+					'<center><img src="images/characters/pavlovsk/school/teacher/rolan/school/rolanmeet28.jpg"></center>'
+					'"Goodbye, Miss <<$pcs_lastname>>! Don''t be late for your class... Bah, water for the tea. Kids this days!"'
+					act 'Leave': gt 'gschool_lessons', 'short_break'
+				end
+			end
+		end
+	end
+end
+
+--- gschool_lunch ---------------------------------
+

@@ -1,0 +1,533 @@
+# nichApartment
+!! code for the hallway and everything that involves the apartment as a whole
+CLOSE ALL
+
+$metka = ''
+$loc = 'nichApartment'
+$menu_loc = 'nichApartment'
+$nichLoc = 'hallway'
+$menu_arg = ''
+menu_off = 0
+$location_type = 'private'
+!! A list of used variables is included in nichUtil
+
+!! Has to happen before there is any output
+if nichWork = 2:
+	if nichLastWorkDay ! daystart:
+		gs 'nichUtil', 'startWorkday'
+	end
+	!! this code has to be included everywhere where PC can change clothes or enter the apartment
+	gs 'nichUtil', 'checkOutfit'
+end
+
+!! Argument return: PC has been in the room before, dont perform actions meant to be executed before or as she enters the room.
+if $ARGS[0] = '' or $ARGS[0] = 'start' or $ARGS[0] = 'return':
+	if nichWork = 0: gt 'nichApartment', 'visitTanya'
+
+	*clr & cla
+	tanhouse1 = 1
+	$location_type = 'private'
+	killvar '$locclass'
+		
+	gs 'stat'
+	'<center><b>Nicholas'' Apartment</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/nichApartment/hallway.jpg"></center>'
+		
+	'You are standing in a luxurious and spacious city center home.'
+	
+	$nickFamDesc = 'It belongs to <a href="exec: gt ''nichNicholas'', ''desc''">Nicholas</a>, who is also the head of home.'
+	if nichGalaDisabled = 0: $nickFamDesc += ' He lives here with his wife <a href="exec: gt ''nichGala'', ''desc''">Gala</a>.'
+	$nickFamDesc += ' <a href="exec: gt ''nichTanya'', ''desc''">Tanya</a> is the daughter of Gala and step-daughter of Nicholas. She also lives here.'
+	$nickFamDesc
+	killvar '$nickFamDesc'
+	
+	if nichWork = 2:
+		'You work here as a live-in maid.'
+		
+		
+		if nichNote = 1:
+			*nl
+			'<font color = red><b>You see a note hanging at the door to your room:</b></font>'
+			'"<<$pcs_nickname>>, you missed work. This is unacceptable. Take your stuff and leave. You are fired. -Nicholas"'
+			'You see all your belongings standing in front of the door prepared for your departure.'
+			act 'Fired':
+				gt 'nichUtil', 'fired'
+			end
+			exit
+		elseif nichNote = 2:
+			*nl
+			'<font color = red><b>You see a note hanging at the door to your room:</b></font>'
+			'"<<$pcs_nickname>>, you missed work. This is unacceptable. I expect this not to happen again. -Nicholas"'
+			'<a href="exec: gt ''nichApartment'', ''removeNote''">Remove note</a>'
+			*nl
+		elseif nichNote = 11:
+			*nl
+			'<font color = red><b>You see a note hanging at the door to your room:</b></font>'
+			'"<<$pcs_nickname>>, you missed your last mandatory evaluation. This is unacceptable. Take your stuff and leave. You are fired. -Nicholas"'
+			'You see all your belongings standing in front of the door prepared for your departure.'
+			act 'Fired':
+				gt 'nichUtil', 'fired'
+			end
+			exit
+		elseif nichNote = 12:
+			*nl
+			'<font color = red><b>You see a note hanging at the door to your room:</b></font>'
+			'"<<$pcs_nickname>>, you missed your last mandatory evaluation. This is unacceptable. I expect this not to happen again. -Nicholas"'
+			'<a href="exec: gt ''nichApartment'', ''removeNote''">Remove note</a>'
+			*nl
+		end
+	elseif nichWork > 2:
+		'You used to work here.'
+	end
+	'The corridor''s floor and walls are a tasteful mix of marble and wood. Besides several paintings and small statues for decoration, the only thing of note in it is are a coat and shoe rack for guests.'
+	
+	$nichGalaAct = func('nichUtil','npcActivity','gala')
+	$nichNichAct = func('nichUtil','npcActivity','nicholas')
+	$nichTanyAct = func('nichUtil','npcActivity','tanya')
+	if $nichNichAct = 'leaveWork': 
+		'<a href="exec: gt ''nichNicholas'', ''start''">Nicholas</a> is wearing an expensive suit and is about to leave for work.'
+	elseif $nichNichAct = 'returnWork':  
+		'Nicholas is wearing one of his expensive suits. Apparently he just returned from work.'
+	elseif $nichNichAct = 'leaveShopping':  
+		'Nicholas is about to leave the apartment. It looks as if he wants to go shopping.'
+	elseif $nichNichAct = 'returnShopping':  
+		'Nicholas just returned from shopping. Apparently he bought some things from expensive shops.'
+	elseif $nichNichAct = 'leaveClub':  
+		'Nicholas is wearing one of his finest black tie suits. Apperently he is about to leave for his club.'
+		if $nichGalaAct = 'leaveClub': 
+			'Gala accompanies him. She is wearing her silver jewelry and an expensive looking dress which is a perfect combination of classy and sexy.'
+		end
+	elseif $nichNichAct = 'returnClub':  
+		if $nichGalaAct = 'returnClub': 
+			'Nicholas and Gala just returned from their club.'
+		end
+		'Nicholas just returned from his club.'
+	end
+	
+	if $nichGalaAct = 'leaveSpa': 
+		'Gala is about to leave the apartment. As far as you know she is going to her spa.'
+	elseif $nichGalaAct = 'returnSpa':  
+		'Gala just entered the apartment. She seems to be very releaxed. Apparently she was at her spa.'
+	elseif $nichGalaAct = 'leaveFriend':  
+		'Gala is about to leave the apartment. She is wearing one of her favorite short dresses and apparently spent much effort applying her make-up. As far as you know she wants to visit a friend of hers.'
+	elseif $nichGalaAct = 'returnFriend':  
+		'Gala just entered the apartment. As far as you know she visited a friend.'
+	end
+	
+	if $nichTanyAct = 'leaveUni': 
+		'Tanya is about to leave the apartment. It looks as if she is about to attend her classes at university.'
+	elseif $nichTanyAct = 'returnUni':  
+		'Tanya just entered the apartment. Apparently she returned from university.'
+	elseif $nichTanyAct = 'leaveBallet':  
+		'Tanya is about to leave the apartment. Apperently she is going to attend to her ballet lessons.'
+	elseif $nichTanyAct = 'returnBallet':  
+		'Tanya just entered the apartment. As far as you know she was at her ballet lessons.'
+	elseif $nichTanyAct = 'leaveFriend': 
+		'Tanya is about to leave the apartment. As far as you know she is going to visit a friend.'
+	elseif $nichTanyAct = 'returnFriend':  
+		'Tanya just entered the apartment. As far as you know she visited a friend.'
+	elseif $nichTanyAct = 'leaveShopping':  
+		'Tanya is about to leave the apartment. From the way she is dresses you assume that she is heading for a shopping trip.'
+	elseif $nichTanyAct = 'returnShopping':  
+		'Tanya just entered the apartment. She carries some plastic bags with her, indicating that she bought some new clothes and shoes.'
+	elseif $nichTanyAct = 'leaveClub':  
+		'Tanya is about to leave to a dance club.'
+	elseif $nichTanyAct = 'returnClub':  
+		'Tanya just entered the apartment. She wears the clothes she usually wears to her dance club. She appears to be a little bit exhausted.'
+	end
+	
+	killvar '$nichNichAct'
+	killvar '$nichGalaAct'
+
+	act '<b>Leave and go to the city center</b>':
+		if $clothingworntype ! 'nude':
+			minut += 5
+			gt'down'
+		else
+			msg'<b><font color = red>You can''t walk around the city like that! You need to get dressed first.</font></b>'
+			gt $CURLOC
+		end
+	end
+	
+	if nichWork = 2:
+		act '<b>Go to your bedroom</b>':
+			minut += 1
+			gt 'nichBedroomServant'
+		end
+	else
+		act 'Go to the servant bedroom':
+			minut += 1
+			gt 'nichBedroomServant'
+		end
+	end
+	
+	act 'Go to the living room':
+		minut += 1
+		gt 'nichLivingroom'
+	end
+
+	act 'Go to the master bedroom':
+		minut += 1
+		gt 'nichBedroomMaster'
+	end
+
+	
+
+	act 'Go to Tanya''s room':
+		minut += 1
+		gt 'nichBedroomTanja'
+	end
+	
+	act 'Go to the study':
+		minut += 1
+		gt 'nichStudy'
+	end
+	
+	act 'Go to the guest cloakroom':
+		minut += 1
+		gt 'nichBathGuest'
+	end
+
+	if nichWork = 2:
+	
+		gs 'nichChore','inspect','hallway'
+		
+		if nichWorkState > 0:
+			act 'Clean apartment':
+				gt 'nichChore', 'cleanApartment', 'start'
+			end
+		end
+	end
+	
+	if nichDebug = 1:
+		act 'Debug Menu':
+			gt 'nichUtil', 'debug'
+		end
+	end
+		
+elseif $ARGS[0] = 'jobInterview':
+	*clr & cla
+	$location_type = 'event'
+	menu_off = 1
+	
+	'The adress you have been given leads you to a very expensive looking apartment building. A porter stands at the door, inspecting you while you come closer.'
+	'"Hello, I am here to apply for the job as live-in maid."'
+	
+	if $clothingworntype ! 'uniform':
+		'"I am afraid I am not allowed to let you pass dressed like this, Miss. Master Nicholas made it very clear that every applicant for this position has to be dressed in an appropriate outfit. Meaning you have to wear a maid uniform for the job interview. You can get one at the mall nearby."'
+		act 'Turn around': gt 'down'
+	else
+		'"Very well. Just give me a minute."'
+		'He turns around and steps a few feet away from you. Then he activates what appears to be a wireless device in his ear.'
+		'"We have another applicant for the maid job... A young girl... Yes, she is dressed correctly... Very well."'
+		'He turns back to you.'
+		'"Master Nicholas is informed of your arrival and will expect you in his living room. His wife, Mistress Gala, and his daughter, Miss Tanya, will also be present."'
+		'He calls the elevator for you and presses the button for the uppest floor after you stepped inside.'
+		'"Good luck, Miss." he says before the doors close.'
+		act 'Wait':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/characters/city/tanya/01.jpg"></center>'
+			'Finally the elevator stops and the its doors open.'
+			
+			if nichTanyaKnown = 0:
+				'In front of you stands a cute girl smiling at you.'
+				'"Hello. My name is Tanya. You are here for the maid-job I guess? Just follow me to the living room. My parents are waiting for you."'
+			else
+				'In front of you stands a cute girl smiling at you. It is Tanya!'
+				'"<<$pcs_nickname>>? You are the girl applying as a maid? Why didn''t you tell me that you are interested in a maid-job? Anyways, follow me. My parents want to meet you."'
+			end
+			
+			act 'Follow her': gt 'nichApartment', 'hiring'
+		end
+	end
+elseif $ARGS[0] = 'hiring':
+	$location_type = 'event'
+	menu_off = 1
+	
+	if nichHotelReferral = 2:
+		nichHireMode = 1
+	else	
+		nichHireMode = 2
+	end
+	
+	'<center><img <<$set_imgh>> src="images/characters/city/nicholas/01.jpg"></center>'
+	'Tanya leads you into the living room. Nicholas, her step-father, and her mother Gala are already sitting there.'
+	
+	
+	if nichHireMode = 1:
+		'"This is <<$pcs_nickname>>." Tanya says before sitting down next to her mother. You have the feeling that you are expected to keep standing.'
+	elseif nichHireMode = 2:
+		'"This is <<$pcs_nickname>>, the girl I told you about." Tanya says before sitting down next to her mother. You have the feeling that you are expected to keep standing.'
+	end
+	
+	if FUNC('body_din','pregnancyVisibility',0,'nude') = 1:
+		'Nicholas only takes a short look at you.'
+		'"I am sorry, but I can''t have a pregnant woman be my maid. You might apply again once you have given birth. If the position is still open then."'
+		if thinkpreg = 0 and knowpreg = 0:
+			'Pregnant? He can''t be serious! You are not pregnant!'
+		end
+		'You are escorted out of the apartment building.'
+		act 'Leave': gt 'down'
+		exit
+	end
+	
+	if CloInhibit > 20:
+		nichGalaOpinion = 1
+		if nichHireMode = 1:
+			'Gala look at your uniform disparagingly. "Nicholas, what did you say you wanted the new maid to wear? This girl looks like a hooker."'
+			'"The rule is to wear a maid uniform. If <<$pcs_nickname>> is comfortable showing her skin we won''t judge her." Nicholas'' voice is friendly but also commands authority.'
+		elseif nichHireMode = 2:
+			'Gala look at your uniform disparagingly. "Tanya, what did you tell this girl we would hire her as? Did you tell her to dress like a hooker?"'
+			'Tanya squirms a little and her head turns red "Of course not..."'
+			'Nicholas raises his hand. The gesture is subtle. Nevertheless it imidiately silences both women. "The rule is to wear a maid uniform. If <<$pcs_nickname>> is comfortable showing her skin we won''t judge her." Nicholas'' voice is friendly but also commands authority.'
+		end
+		'Gala nods though it''s clear that she does not agree with her husband.'
+	elseif pcs_apprnc >= 120:
+		'Gala leans forward to take a closer look at you. "She is gorgeous."'
+		'"Maybe so. But that''s not the reason we consider hiring her." Nicholas'' voice is friendly but also commands authority.'
+		'Gala nods though it''s clear that she does not completely believe her husband.'
+	else
+		'Gala leans forward to take a closer look at you. "Finally a girl who looks like a real maid. I was afraid you would present us with yet another slut."'
+		'"I don''t think Katinka was a slut." Tanya protests.'
+		'Nicholas raises his hand. The gesture is subtle. Nevertheless it imidiately silences both women. "This is not the time to discuss that matter." Nicholas'' voice is friendly but also commands authority.'
+		'Gala nods though it''s clear that she does not agree with her husband.'
+	end
+	'Nicholas stands up and walks around you, inspecting your from every side.'
+	if spdirty > 0 or (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or cumloc[1] = 1 or cumloc[2] = 1 or cumloc[4] = 1 or cumloc[5] = 1 or cumloc[6] = 1 or cumloc[7] = 1 or cumloc[14] = 1 or cumloc[12] = 1:
+		*nl
+		'Whether it''s a whiff of the smell or something he spotted - the cum on you cannot escape his senses; he wrinkles his nose and you can see is expression harden.'
+		'"I cannot believe you have the audacity to come before me like a prostitute after a busy night. Is that how you intend to leave a good impression with me?" He doesn''t give you time to respond, dismissively waving his hand: "I won''t hire anybody who can''t even clean herself up. Get out!"'
+		'You are escorted out of the apartment building.'
+		!! TODO: prevent Sveta from applying again
+		act 'Leave': gt 'down'
+		exit
+	end
+	nichImperfections = 0
+	if ShoHeels < 4:
+		nichImperfections += 1
+		*nl
+		'He makes a nod in the direction of your feet.'
+		'"I do understand that wearing heels may cause discomfort. Especially while doing manual labor. But as a maid that is something you have to get comfortable with."'
+	elseif ShoHeels >= 5:
+		*nl
+		'He makes a nod in the direction of your feet.'
+		'"I hope you are able to work in these heels. I approve of your choice of footwear but there is no sense in wearing these shoes if you can''t perform to my satisfaction."'
+	end
+	if lashair ! 1 and pcs_pubes > 3 or pcs_leghair > 3:
+		nichImperfections += 1
+		*nl
+		'"Are your legs, armpits and sex clean-shaved?"'
+		'Looking down and realizing that you are, in fact, not, you shake your head no, and he nods gravely.'
+		'"I expect my maids to have nothing short of a perfect personal hygiene", he states. "If you can''t take care of yourself, how are you going to care for this household? You will take care of this if we hire you."'
+	end
+	if pcs_hairbsh = 0:
+		nichImperfections += 1
+		*nl
+		'Of course, he cannot miss the fact that your hair is tangled and uncombed. He almost imperceptibly shakes his head at you.'
+		'"<<$pcs_nickname>>, I expect from my maids what I expect from all of my employees, and what they can expect of me: An immaculate appearance that commands respect, for you, for me, for my company, for my family. If you want to work for us you will start taking care of your hair."'
+	end
+	if nichImperfections = 0:
+		'Unable to find anything to criticize, he gives you an approving nod.' 
+		'"The uniform suits you, <<$pcs_nickname>>, and it seems you know how to take care of your appearance. Good."'
+	end
+	killvar 'nichImperfections'
+	
+	if nichHireMode = 1:
+		'He sits back down and takes a look at your referral. Then he looks at the two women sitting next to him. Both of them shrug.'
+	elseif nichHireMode = 2:
+		'He sits back down. "Tanya told me that you will do a good job as our maid. And I trust her judgment." He takes a look at the two women sitting next to him. Tanya beams back while Gala shrugs.'
+	end
+	
+	'"Well then. In the name of my family I would like to offer you the job as our live-in maid. There are a few rules you should be aware of:'
+	*nl
+	'1. You have to look presentable at all times. During work you will wear your uniform.'
+	'2. Your job is to clean the apartment, to buy groceries and to pepare breakfast. Sometimes we will have special requests which you are also required to follow.'
+	'3. You have your own bedroom and a personal bathroom. Every other room is your working place only and you will always act and be treated as a maid there.'
+	'4. You will work from Thursday to Tuesday. Once your probations is over Wednesday will be your free day.'
+	'5. Your payment is 10.000 <b>₽</b> each month. I will transfer the money to your bank account at the first day of each month.'
+	if day > 24:
+		'Since only a few days of this month remain your first salary will be 2.500 <b>₽</b>.'
+		nichSalaryNext = 2500
+	elseif day > 15:
+		'Since you start in the middle of the month your first salary will be 5.000 <b>₽</b>.'
+		nichSalaryNext = 5000
+	else
+		nichSalaryNext = 10000
+	end
+	'6. You will call me Master Nicholas, my wife is Mistress Gala and from now on Tanya is Miss Tanya to you. You will also curtsy when you approach one of us.'
+	'7. Starting tomorrow you are on probation. You will do all your chores during the day and report to me in the evening. If you do everything to my satisfaction for three days I will formally employ you.'
+	*nl
+	'Do you accept these conditions?"'
+	act 'Yes':
+		cla
+		gs 'nichUtil', 'hired'
+
+		'"I do, Master Nicholas."'
+		'"Good. Your work will start tomorrow. You are dismissed for the evening. Tanya will show you your room."'
+		if nichHireMode = 1:
+			'Tanya stands up. She looks not too excited. "Of course. Follow me, <<$pcs_nickname>>!"'
+		elseif nichHireMode = 2:
+			'Tanya jumps up. She looks excited. "Of course. Follow me, <<$pcs_nickname>>!"'
+		end
+		act 'Follow her':
+			*clr & cla
+			$loc = 'nichBedroomServant'
+			if nichHireMode = 2:
+				'<center><img <<$set_imgh>> src="images/characters/city/tanya/bedroom_servant0.jpg"></center>'
+			end
+			'She leads you to your new room.'
+			'It has a small double bed, a wardrobe, a desk and enough free space for doing excercises. A door leads to your personal bathroom.'
+			if nichHireMode = 1:
+				killvar 'nichHireMode'
+				'After showing you around your tiny new home she leaves you.'
+				act 'Continue': gt 'nichBedroomServant'
+			elseif nichHireMode = 2:
+				killvar 'nichHireMode'
+				'After showing you around your tiny new home she sits down on your bed.'
+				'"Do I really have to call you Miss Tanya now, Miss Tanya?"'
+				'She laughs out. "No, of course not. Only when Nicholas is around. Following the ''protocol'' is very important to him."'
+				'She drives her hand over the fabric of your duvet cover. Looking at you she bites down on her lower lip. "You''re looking hot in this uniform..." You feel like she is undressing you with her eyes.'
+				act 'Fuck her':
+					gt 'nichTanya', 'sexL'
+				end
+				act 'Not in the mood':
+					cla
+					'"Sorry Tanya, but I''m not in the mood right now. It was a very stressful day."'
+					'"I understand." She jumps up and gives you a hug before heading for the door. "If you change your mind just come over to my room." With a wink she leaves and closes the door behind her.'
+					act 'Continue': gt 'nichBedroomServant'
+				end
+			end
+		end
+	end
+	act 'No':
+		cla
+		'"I... Uh, I don''t know if this is right for me", you stutter.'
+		'Nicholas seems surprised and annoyed - he most likely isn''t used to people just telling him they changed their mind at the very last second - but he maintains a friendly face and simply states: "That is unfortunate, but I''m sure you have your reasons."' 
+		if nichHireMode = 2:
+			'Tanya, however, looks livid. She doesn''t say a word, her lips so tightly pressed together she probably wouldn''t be able to say anything without yelling, but her silence says more than her screams possibly could: You dealt severe damage to your relationship with her by making her look stupid like this.' 
+			'As you excuse yourself, turn and quietly leave the apartment, you realize that you will have to put some effort into restoring Tanya''s friendship with you... if you can save it at all.'
+			
+			npc_rel['A218'] = 1
+			nichWork = 0
+			nichJobRefused = 1
+			nichJobRefusedTReact = 1
+		end
+		
+		act 'Leave now before you can do anymore damage':gt 'down'
+	end
+	
+elseif $ARGS[0] = 'visitTanya':
+	!! Visiting Tanya is only possible if PC is not employed by Nicholas. If she is she can find Tanya by going to her room.
+	
+	$location_type = 'event'
+	menu_off = 1
+	
+	if nichWork = 1:
+		*clr & cla
+		!! PC agreed to meet the parents for the job interview. Tanya expects her to be unemployed and dressed as a maid.
+		if nichTanyaFuckLast = daystart:
+			!! Tanya and PC just had sex because PC cant go to the job interview yet
+			'Now that the immediate lust is sated and you''re both enjoying your postcoital bliss, you rest naked in each other''s arms.'
+			if $clothingworntype = 'uniform':
+				'"<<$pcs_nickname>>, I really enjoy this. But I kind of promised to my parents that you will apply for the maid job. I really need you to quit your current job."'
+				'You promise her to do it as soon as possible before putting your uniform back on.'
+			else
+				'"<<$pcs_nickname>>, I really enjoy this. But I kind of promised to my parents that you will apply for the maid job. I really need you to wear a maid uniform the next time you come over."'
+				'You promise her to do so before putting your clothes back on.'
+			end
+			act 'Leave the apartment':gt 'down'
+		elseif (work = 0 or cheatWork = 0) and $clothingworntype = 'uniform':
+			'When Tanya opens the door she takes a few seconds to admire your look. "Wow, <<$pcs_nickname>>, this uniform really suits you. How does it feel?"'
+			act 'Great':
+				cla
+				'"Good, I guess. I think I could really get used to wearing it."'
+				'Tanya smiles brightly. That''s great, because you will need to wear it a lot.'
+				'"Come on now. My parents are waiting in the living room."'
+				act 'Follow her': minut += 3 & gt 'nichApartment', 'hiring'
+			end
+			act 'Embarrassing':
+				cla
+				'"I don''t know. It felt a little bit embarrassing walking through the streets dressed like this."'
+				'Tanya smiles comfortingly. "Don''t worry. You will get used to it."'
+				'"Come on now. My parents are waiting in the living room."'
+				act 'Follow her': minut += 3 & gt 'nichApartment', 'hiring'
+			end
+		elseif $clothingworntype = 'uniform':
+			'When Tanya opens the door she takes a few seconds to admire your look. "Wow, <<$pcs_nickname>>, this uniform really suits you. Are you ready to have your interview with my parents?"'
+			'"Not yet. I still have to quit my current job."'
+			'Tanya looks a little bit dissapointed but then she smirks at you. "Oh, I understand. You are wearing this outfit for me and not for my parents."'
+			'Not giving you a chance to say a word, she leads you to her room and pushes you on her bed.'
+			act 'Have sex with Tanya': gt 'nichTanya', 'sexL'
+		elseif (work = 0 or cheatWork = 0):
+			'When Tanya opens the door she looks a little be dissapointed.'
+			'"<<$pcs_nickname>>, I told you that you need to wear a maid uniform when you meet my parents. Remember?"'
+			'She bites down on her lip. "But since you are here we could have some fun as well."'
+			'Not giving you a chance to say a word, she leads you to her room and pushes you on her bed.'
+			act 'Have sex with Tanya': gt 'nichTanya', 'sexL'
+		end
+	elseif nichTanyaFuckCounter > rand(3,5) and nichJobRefused < 1 and nichWork = 0 and FUNC('body_din','pregnancyVisibility',0,'nude') = 0:
+		!! Tanya will only offer the job while she believes that Sveta is not pregnant. Note that it is assumed that Tanya knows how Sveta looks naked and bases her decision on that!
+		'<center><img <<$set_imgh>> src="images/characters/city/tanya/door_01.jpg"></center>'
+		'Tanya opens the door for you. As you look into her eyes, they seem to be sparkling with excitement, and her entire face lights up as she smiles at you.'
+		'"<<$pcs_nickname>>, it''s so good you are here. I have the best idea ever! Our maid left us recently, and my stepfather is looking for a replacement. I could suggest <b>you</b> to him! He pays really well, and all you gotta do is tidy up a bit, but you would be able to live right here with us!"'
+		'Tanya is so giddy that you almost don''t dare to voice your concerns: "And where do you get the idea that your stepfather would employ me? I''ve never worked as a maid before and I''m sure that, with his kind of money, he could get a much better one."'
+		!!TODO: check whether PC has worked as maid in hotel. If so she will mention or think it.
+		'"Believe me, if I ask him <i>nicely</i>, he will hire you", Tanya smiles lasciviously.'
+		
+		act 'Refuse':
+			cla
+			npc_rel['A218'] = 25
+			nichTanyaFuckLast = daystart
+			'"I don''t know about this, Tanya", you say carefully. "I mean, can you imagine me cleaning up and cooking, day in and day out? It doesn''t sound like me."'
+			'Her joyful expression falters and is quickly replaced with a cold, angry stare. "You just don''t want to be around me."'
+			'"No!", you exclaim, "No, of course I''d love to be around yo-"'
+			'She cuts you off: "Then why are you telling me this shit?! You could live with me, with us, and you''d be getting free money for dusting off a table or something!"'
+			'You realize you can''t really reach her with logic while she''s in this mood, so you try to appease her. "Look, I... It''s just really sudden, and I need time to think about it. It sounds great, but if I offered you something that would change your life, you would want to have some time to think too, right?"'
+			'Tanya still doesn''t look happy about your refusal, but her anger seems to dissipate somewhat and she looks away. "Yeah, sure, whatever." You think you can see tears in her eyes when she turns her back on you and says: "I''ve gotta go do something now."'
+			'You understand immediately: "Yeah, okay, I had to leave anyway. Talk to you soon?"'
+			'"Sure", is the last thing you hear from her that day.'
+			nichJobRefused = 1
+			act 'Leave the apartment':gt 'down'
+		end
+		
+		act 'Agree':
+			xgt 'nichTanya','hire'
+		end
+		
+		act 'Maybe later':
+			cla
+			nichJobRefused = 2
+			'"Sorry Tanya, this sounds like a great opportunity, but I just don''t have time for this."'
+			'She looks a little bit disappointed.'
+			'"So maybe in the future? When you have settled whatever is holding you back? Just talk to me when you can start working here."'
+			
+			'Without saying another word she takes your hand and leads you to her room.'
+		act 'Have sex with Tanya': gt 'nichTanya', 'sexL'
+		end
+	else
+		'<center><img <<$set_imgh>> src="images/characters/city/tanya/door_01.jpg"></center>'
+		if nichJobRefusedTReact = 1:
+			'Tanya opens the door looking angrily at you. "You got some nerve showing up like nothing happened, <<$pcs_nickname>>! Do you even realize how I felt after you changed your mind about working for us in the very last second?!"'
+			'She bites down on her lip. Apparently her lust for you is bigger than her anger.'
+			'"Well, since you are here you could as well come in. Maybe you find a good way to apologize."'
+			killvar 'nichJobRefusedTReact'
+		elseif nichTanyaFuckLast = daystart - 1:
+			'Tanya opens the door and smiles warmly at you. "Hello <<$pcs_nickname>>! I didn''t expect to see you so soon again."'
+		elseif nichTanyaFuckLast > daystart - 8:
+			'Tanya opens the door and smiles warmly at you. "Hello <<$pcs_nickname>>! I was hoping you would show up today."'
+		elseif nichTanyaFuckLast > daystart - 30:
+			'Tanya opens the door and smiles warmly at you. "Hello <<$pcs_nickname>>! Where have you been in the past weeks? I was beginning to wonder if you had forgotten me."'
+		else
+			'Tanya opens the door and smiles warmly at you. "Hello <<$pcs_nickname>>! After all these weeks of not hearing anything from you I was beginning to wonder if you would show up again. I''m very happy you did."'
+		end
+		
+		'Without saying another word she takes your hand and leads you to her room.'
+		act 'Have sex with Tanya': gt 'nichTanya', 'sexL'
+	end
+elseif $ARGS[0] = 'removeNote':
+	nichNote = 0
+	gt $loc,'return'
+end
+
+--- nichApartment ---------------------------------
+

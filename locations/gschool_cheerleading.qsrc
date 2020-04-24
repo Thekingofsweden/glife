@@ -1,0 +1,454 @@
+# gschool_cheerleading
+
+!! cheerleadingQW['quest_stage']	- stage of quest (-2 blocked, -1 rejected/ignored, 1 tryouts, 2 backup, 3 member)
+!! cheerleadingQW['reject']			- day you ignored the poster/got rejected at tryouts. primes one more attempt after 30 days
+!! cheerleadingQW['try_count']		- times Sveta tried joining (for text variation)
+!! cheerleadingQW['try_social']		- Sveta''s social score for success/failure calculation at tryouts
+!! cheerleadingQW['try_physical']	- Sveta''s physical score for success/failure calculation at tryouts
+!! cheerleadingQW['grupTipe']		- grupTipe at first tryouts (for tracking and commenting on changes)
+!! cheerleadingQW['day']			- prevents repeating practice/game day triggers
+!! cheerleadingQW['practice_count']	- number of practice sessions attended
+!! cheerleadingQW['backup_game']	- flag for Albina letting Sveta attend game day as a backup
+!! cheerleadingQW['game_count']		- number of game day performances participated in
+!! cheerleadingQW['skipped']		- tracks times Sveta skipped practice/game day (3 > gets you kicked out)
+!! cheerleadingQW['skipped_ev']		- primes Albina confronting Sveta about missing practice next time she sees her
+!! cheerleadingQW['skipped_ev_g']	- primes Albina confronting Sveta about missing the game next time she sees her
+
+menu_off = 1
+$location_type = 'event'
+
+if $ARGS[0] = 'poster':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/poster.jpg"></center>'
+	'Walking through the hallway, you notice a poster saying that a spot has opened up on the school''s cheerleading squad and that tryouts are being held after school today. The squad is ruled with an iron fist by Albina and is made up of only the most popular and athletic girls in school.'
+	'However, this hasn''t stopped some of the nerds from working out and even attending dance practice to try out for a spot, despite them spreading rumours about the squad, most of them sexual.'   
+	*nl
+	if grupTipe = 1 or grupTipe = 2:
+		'You''re just the kind of person that the squad is looking for and feel that Albina will heavily approve of you.'
+	elseif grupTipe = 3 or grupTipe = 4:
+		'You know that Albina would judge you harshly since you''re not a jock or part of the cool group.'
+	elseif grupTipe = 5:
+		'You are an outcast. Albina wouldn''t even look at you, never mind give you a chance. Would it even be worth trying?'
+	end
+	*nl
+	act 'Decide to give it a try':
+		cla
+		cheerleadingQW['quest_stage'] = 1
+		if grupTipe = 1 or grupTipe = 2:
+			'"I''m one of them. They would be mad to not at least consider me! Those nerds and their rumours are just jealous losers." you think to yourself as you decide to attend the tryouts and show them that you deserve that spot.'
+		else
+			'While you''re not as athletically inclined and they have no respect for you, you decide that you''re going to try anyway.'
+			'"I''ll show these stuck up bimbos that I can be as good as any one of them!" you tell yourself, as you walk away with a steely confidence.'
+		end
+		gs 'gschool_events', 'leave_break_events'
+	end
+	
+	act 'This doesn''t interest you':
+		cla
+		cheerleadingQW['reject'] = daystart
+		cheerleadingQW['quest_stage'] = -1
+		if grupTipe = 1 or grupTipe = 2:
+			'Even though you''re capable enough to try out, prancing around on the field to amuse people doesn''t sound fun to you at all. You shake your head and continue on your way.'
+		else
+			'"Why would I ever want to join a group of skimpily dressed sluts prancing around a field for the amusement of perverts?" you think to yourself as you walk away in disgust.'
+		end
+		gs 'gschool_events', 'leave_break_events'
+	end
+end
+
+if $ARGS[0] = 'poster_repeat':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/poster.jpg"></center>'
+	'Walking through the hallway, you notice the poster for the school''s cheerleading tryouts again. It looka like they still have that open spot and are trying to fill it. You recall how the squad only allows popular or athletic girls to join but that nerds still try out regardless. You also remember some of the sexual rumours you''ve heard about them. '
+	*nl
+	!! Slightly different text if Sveta tried once already
+	if cheerleadingQW['try_count'] > 0:
+		if grupTipe = 3 or grupTipe = 4:
+			$temp = 'You already know you won''t be given a fair chance, just like last time.'
+			if cheerleadingQW['try_social'] < npc_rel['A23'] + grupvalue[npc_grupTipe['A23']]/2 and cheerleadingQW['try_physical'] < pcs_agil + pcs_vital + pcs_danc + pcs_cheer:
+				$temp += ' On the other hand, you''ve become better friends with Albina and the cool kids since then, and you''re in better shape too! Maybe things will be different this time?'
+			elseif cheerleadingQW['try_social'] < npc_rel['A23'] + grupvalue[npc_grupTipe['A23']]/2:
+				$temp += ' On the other hand, you''ve become better friends with Albina and the cool kids since then, so maybe they''ll take you seriously this time?'
+			elseif cheerleadingQW['try_physical'] < pcs_agil + pcs_vital + pcs_danc + pcs_cheer: 
+				$temp += ' On the other hand, you''re in better shape than you were then, so maybe you''ll have a chance this time?'
+			end
+		elseif grupTipe = 5:
+			if cheerleadingQW['grupTipe'] = grupTipe:
+				'They laughed you right out of the hall last time. They will never accept you, no matter how good you are. There''s probably not much point in trying.'
+			else
+				'They didn''t accept you last time, so there''s no chance at all now that you''re an outcast. Why even bother trying?'
+			end
+		else
+			if cheerleadingQW['grupTipe'] ! grupTipe:
+			 !! if Sveta changed groups
+				'Now that you''re part of their clique, they''re bound to treat you better than last time. It''s worth giving it another shot.'
+			else
+			 !! if Sveta somehow got rejected as a cool kid/jock (would have to fall out with Albina somehow)
+				'"I''m sure Albina just had a bad day last time, she wouldn''t treat me like that again, would she?" you think to yourself as you consider attending the tryouts one more time.'
+			end
+		end
+	else
+		if grupTipe = 3 or grupTipe = 4:
+			'You know that Albina would judge you harshly since you''re not a jock or part of the cool group.'
+		elseif grupTipe = 5:
+			'You are an outcast. Albina wouldn''t even look at you, never mind give you a chance. Would it even be worth trying?'
+		end
+	end
+	*nl
+	act iif(cheerleadingQW['try_count'] > 0, 'Decide to try one more time', 'Decide to give it a try this time'):
+		cla
+		cheerleadingQW['quest_stage'] = 1
+		if grupTipe = 1 or grupTipe = 2:
+			'"I''m one of them. They would be mad to not at least consider me! Those nerds and their rumours are just jealous losers." you think to yourself as you decide to attend the tryouts and show them that you deserve that spot.'
+		else
+			'While you''re not as athletically inclined and they have no respect for you, you decide that you''re going to try anyway.'
+			'"I''ll show these stuck up bimbos that I can be as good as any one of them!" you tell yourself, as you walk away with a steely confidence.'
+		end
+		gs 'gschool_events', 'leave_break_events'
+	end
+	
+	act iif(cheerleadingQW['try_count'] > 0, 'It''s not worth the hassle ', 'Ignore the poster')+' <font color="red">(Last chance to join cheerleading)</font>':
+		cla
+		cheerleadingQW['quest_stage'] = -2
+		if grupTipe = 1 or grupTipe = 2:
+			'Even though you''re capable enough to try out, prancing around on the field to amuse people doesn''t sound fun to you at all. You shake your head and continue on your way.'
+		else
+			'"Why would I ever want to join a group of skimpily dressed sluts prancing around a field for the amusement of perverts?" you think to yourself as you walk away in disgust.'
+		end
+		gs 'gschool_events', 'leave_break_events'
+	end
+end
+
+if $ARGS[0] = 'tryouts':
+	*clr & cla
+	cheerleadingQW['try_count'] += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/tryouts.jpg"></center>'
+	'After school you head to the PE hall to try out for the cheerleading team'+iif(cheerleadingQW['try_count'] > 1, ' again','')+'. There''s a group of hopeful girls already here. Albina is standing with Vicky, Christina, Lina, Lariska and Bella, who make up the squad.' 
+	'Once everyone is gathered, Albina speaks up. "Before we begin, you should all know that training is every Tuesday and Thursday and game days are every second Friday. Anyone who can''t commit to the squad on those days, fuck off!"' 
+	'A few girls leave as Albina starts showing you part of the cheerleading routine as an example and asks everyone to copy it.'
+	act 'Try to follow Albina''s example':
+		*clr & cla
+		!! double cheer_exp so it progresses faster given that Sveta cant get it anywhere else
+		gs 'exercise', 'tier2', 0, 'agil_exp', 'vital_exp', 'cheer_exp', 'cheer_exp', 'danc_exp'
+		gs 'exercise', 'tier2', 0, 'agil_exp', 'vital_exp', 'cheer_exp', 'cheer_exp', 'danc_exp'
+		!! Success calculation - Contributing factors: social group, cool kids standing, Albina friendship, agility, endurance, dance skill, natural cheerleading talent
+		!!  New game character comparison:
+		!!  Cool kids would just about pass								~250 (100 cool + 55 friendship + 30 agi + 30 end + 20 dance + 15 talent)
+		!!  Any jock start would easily pass (especially dancers)		~280+(100 jock + 30 friendship + 50 agi + 50 end + 25 dance + 25 talent)
+		!!  Nerds would need a lot of work 								~112 (0 rep + 20 friendship + 30 agi + 30 end + 15 dance + 15 talent)
+		!!  Gopniks would also need a lot of work						~134 (0 rep + 30 friendship + 35 agi + 35 end + 17 dance + 17 talent)
+		!!  Outcasts stand no chance									~-80 (-200 outcast + 30 friendship + 30 agi + 30 end + 15 dance + 15 talent)
+		cheerleadingQW['try_physical'] = pcs_agil + pcs_vital + pcs_danc + pcs_cheer
+		cheerleadingQW['try_social'] = npc_rel['A23']
+		if grupTipe = 1 or grupTipe = 2:
+			cheerleadingQW['try_social'] += 100
+		elseif grupTipe = 5:
+			cheerleadingQW['try_social'] -= 200
+		else
+			!! If not jock or cool kid, adds half of your rep with Albina''s group
+			cheerleadingQW['try_social'] += grupvalue[npc_grupTipe['A23']]/2
+		end
+		
+		if cheerleadingQW['try_physical'] + cheerleadingQW['try_social'] >= 250:
+		 !! Success
+			cheerleadingQW['day'] = daystart
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/lineup.jpg"></center>'
+			!! Different text based on what contributed more
+			if cheerleadingQW['try_physical'] < cheerleadingQW['try_social']:
+				'While you are a bit clumsy during your turn, you are able to somewhat match the example set and Albina and the girls seem impressed.'
+			else
+				'While they clearly judge you more harshly than some of the other girls, you are able to impress Albina and the girls with your physical abilities.'
+			end
+			'After you finish, they line the group up and start moving along, viciously mocking and laughing at those they reject until only you and one other girl remain.'
+			if grupTipe = 1 or grupTipe = 2:
+				!! Stage 3 = regular member
+				cheerleadingQW['quest_stage'] = 3
+				'"You, <<$pcs_nickname>>, you actually impressed us'+iif(cheerleadingQW['try_count'] > 1, ' this time','')+'. '+iif(cheerleadingQW['try_physical'] < cheerleadingQW['try_social'],'Sure, you were a bumbling idiot in your execution, but we have a good feeling about you.','I didn''t think you had it in you, but those moves really were quite good.')+' I expect to see you on time at next practice!"'
+				'You barely have time to react before Albina and her girls walk away. You ignore the jealous stares you recieve from the others and get ready to leave.'
+			else
+				!! Stage 2 = backup
+				cheerleadingQW['quest_stage'] = 2
+				'"I like your moves <<$pcs_nickname>>, but I can''t let someone like you on my squad. I''ve got a reputation to uphold. Tell you what, how does being a backup sound?"'
+				'Being asked to be a backup is further than anyone like you has ever made it! You nod your head and try not to look too excited. Albina then selects the girl she wants on the team.'
+				'There are a lot of puzzled stares and whispers directed at you as everyone prepares to leave.'
+			end
+		else
+		 !! Failure
+			cheerleadingQW['quest_stage'] -= 1
+			cheerleadingQW['reject'] = daystart
+			!! Saving current social group number here so it can get mentioned on the second tryouts if it changes
+			cheerleadingQW['grupTipe'] = grupTipe
+			pcs_mood -= 20
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/lineup.jpg"></center>'
+			!! Different text based on what contributed more
+			if cheerleadingQW['try_physical'] < cheerleadingQW['try_social']:
+				'You '+iif(cheerleadingQW['try_count'] > 1, 'still','just')+' don''t have the capability to match Albina''s high standards. You mess up almost every move and you can hear the mocking laughter of the girls.'
+			else
+				'You have the feeling you''re doing at least as good as some of the others, maybe even better, but Albina and her girls constantly keep pointing in your direction and laughing at the tiniest mistakes'+iif(cheerleadingQW['try_count'] > 1, ', just like last time','')+'. Being under such scrutiny causes you to stumble even more, provoking yet more mocking.'
+			end
+			'Embarrassed, you sheepishly line up with the group as Albina and the girls move along, rejecting girls with vicious mockery.'
+			'When they get to you, the girls behind Albina can''t control themselves and burst out laughing. Albina speaks to you: "'+iif(cheerleadingQW['try_count'] > 1, 'I didn''t think you could do any worse than last time, but you sure showed us!','I don''t think I''ve ever seen such a horrific attempt as that.')+' Why are you even here <<$pcs_nickname>>? We''re cheerleaders, not a circus, you clown!"'
+			'Feeling dejected, you watch her continue down the line and select the girl she wants on the team. '+iif(cheerleadingQW['try_physical'] < cheerleadingQW['try_social'],'You don''t think much of it as you quickly leave to avoid further humiliation.','"There''s no way that girl performed better than me! She just chose her because they''re friends!" you tell yourself as you angrily turn to leave.')
+		end
+		act 'Leave the hall': gt 'gschool_grounds', 'main'
+	end
+end
+
+if $ARGS[0] = 'afterschool_practice':
+	*clr & cla
+	cheerleadingQW['day'] = daystart
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/gymdoors.jpg"></center>'
+	
+	'You are standing next to the doors leading to the PE hall. You have cheerleading practice at 14:15 and should go and change if you don''t want to be late.'
+	*nl
+	if cheerleadingQW['skipped'] = 0:
+		'You recall how angry Albina was at that Karine girl who skipped practice. It probably wouldn''t be a good idea to do it yourself.'
+	elseif cheerleadingQW['skipped'] = 1 or cheerleadingQW['skipped'] = 2:
+		'You remember how angry Albina was last time you were missing. It wouldn''t be a good idea to do it again.'
+	elseif cheerleadingQW['skipped'] >= 3:
+		'You remember Albina telling you the next time you aren''t there, she''s kicking you off the squad.'
+	end
+	
+	act 'Attend cheerleading practice': gt 'gschool_cheerleading', 'practice'
+	gs 'willpower', 'misc', 'self', iif(cheerleadingQW['skipped'] > 0, 'hard', '')
+	if will_cost <= pcs_willpwr:
+		act 'Skip practice (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'self'
+			cheerleadingQW['skipped'] += 1
+			!! Trigger for Albina confronting Sveta next time she sees her at school
+			cheerleadingQW['skipped_ev'] = 1
+			gt 'gschool_grounds', 'main'
+		end
+	else
+		act 'Skip practice (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+end
+
+if $ARGS[0] = 'afterschool_game':
+	*clr & cla
+	cheerleadingQW['day'] = daystart
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/field.jpg"></center>'
+	
+	'There is a football game at 14:15 on the sports field behind the school today.'
+	*nl
+	if cheerleadingQW['skipped'] = 0:
+		'You recall how angry Albina was at that Karine girl, and that was just for skipping practice. It probably wouldn''t be a good idea to skip a game.'
+	elseif cheerleadingQW['skipped'] = 1 or cheerleadingQW['skipped'] = 2:
+		'You remember how angry Albina was last time you were missing. It wouldn''t be a good idea to do it again.'
+	elseif cheerleadingQW['skipped'] >= 3:
+		'You remember Albina telling you the next time you aren''t there, she''s kicking you out off the squad.'
+	end
+	
+	act 'Go cheer for your school': gt 'gschool_cheerleading', 'game'
+	gs 'willpower', 'misc', 'self', iif(cheerleadingQW['skipped'] > 0, 'hard', '')
+	if will_cost <= pcs_willpwr:
+		act 'Skip the game (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'self'
+			cheerleadingQW['skipped'] += 1
+			!! Trigger for Albina confronting Sveta next time she sees her at school (different one for games)
+			cheerleadingQW['skipped_g_ev'] = 1
+			gt 'gschool_grounds', 'main'
+		end
+	else
+		act 'Skip the game (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+end
+
+if $ARGS[0] = 'practice':
+	*clr & cla
+	minut += 5
+	cheerleadingQW['practice_count'] += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/changing.jpg"></center>'
+	
+	!! First time scene
+	if cheerleadingQW['practice_count'] = 1:
+		if cheerleadingQW['quest_stage'] = 2:
+			'Albina is impatiently waiting for you in the locker room as you arrive. "Hurry up <<$pcs_firstname>>, I don''t have all day! Get changed and get out there already!" She pushes past you and out the door.'
+			'You quickly change into your regular sports clothes and head out.'
+		else
+			'You walk into the locker room and see Albina waiting. She is holding a cheerleading uniform and hands it to you.'
+			'"Hey girl! I hope this is your size. So why don''t you try it on and join us out in the hall? Welcome to the cheerleading squad <<$pcs_nickname>>!!"'
+			'She leaves you to admire how pretty your new outfit is and slip it on with utter glee.'
+		end
+	elseif cheerleadingQW['quest_stage'] = 2:
+		'The squad is already out practicing when you arrive at the locker room and change. You don''t have the privelege of owning a uniform and instead train in your sports clothing.'
+	else
+		'Heading into the locker room, you see Albina and the rest of the squad have already arrived and are in various states of changing into their outfits while chatting to each other. You head to your locker and and strip down. You pull your uniform out and start getting dressed. You just finish tying your shoes when Albina gives the order to head out into the PE hall.'
+	end
+	
+	act 'Follow the others into the hall':
+		*clr & cla
+		temp_time = 6
+		temp_count = 1
+		:cheerleading_practice_loop
+		!! double cheer_exp so it progresses faster given that Sveta cant get it anywhere else
+		gs 'exercise', 'tier2', 0, 'agil_exp', 'vital_exp', 'cheer_exp', 'cheer_exp', 'danc_exp'
+		if temp_count < temp_time: temp_count += 1 & jump 'cheerleading_practice_loop'
+		killvar 'temp_count'
+		killvar 'temp_time'
+		
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/school/afterschool/cheerleading/practice.mp4"></video></center>'
+		
+		!! First time scene
+		if cheerleadingQW['practice_count'] = 1:
+			if cheerleadingQW['quest_stage'] = 3:
+				'Albina heads over to you and cheerfully greets you. "Don''t you just look delightful!" She then explains what your role in the squad will be and leads you over to the group.' 
+				'"It''s all really simple. Just follow our lead and you''ll be fine. From the top girls!"'
+                'You take your place and Albina begins. You practice tumbling and flips and manage not only to impress Albina, but the rest of the squad too. "Not bad for your first time <<$pcs_nickname>>. I expect great things from you."'				
+			elseif cheerleadingQW['quest_stage'] = 2:
+				pcs_mood += 10
+				gs 'stat'
+				'You head into the hall and Albina comes over to begrudgingly greet you. "Look, I''m taking a risk trusting you here <<$pcs_firstname>>, so don''t make me regret it. Just get in the corner and try to follow along."'
+				'She heads back to the girls and resumes what she was doing. You closely follow the movements of each girl and attempt to copy them with varying degrees of success. Albina watches you with a mixed look of amusement and intrigue on her face.'
+				'Albina ends the training session and lets the girls leave. She comes over to you. "Not bad <<$pcs_firstname>>, not bad. You''ve a long way to go before I even let you near my squad but I have no doubts that I can rely on you in the future."'
+				'You actually got praised by the best dancer in school! You contain your excitement as Albina leaves.'
+			end
+		elseif cheerleadingQW['quest_stage'] = 2:
+		 !! Backup variant
+			gs 'npc_relationship', 'modify', 'A23', 'like'
+			'You head into the hall and into your corner. You watch the girls closely and copy their moves. You feel like you''re getting better with each training session and Albina seems to think so too, even giving you a smile a few times as she observes you.'
+			! Sveta has to have attended practice for at least 2 weeks, it has to be Thursday and there''s a 33% chance it happens
+			if cheerleadingQW['practice_count'] > 4 and week = 4 and rand(0,2) = 0:
+				*nl
+				cheerleadingQW['backup_game'] = 1
+				'You finish practicing the last of your moves as Albina heads your way. "<<$pcs_firstname>>, I need you to stand in for one of the girls at the game tomorrow. Don''t get ahead of yourself, you''re only serving your purpose. So be here tomorrow after school."'
+				'Albina walks away, but your excited eagerness is suddenly shattered when she turns and glares directly at you. "Don''t make me regret choosing you!"'
+				'You are left with a slight feeling of dread within you.'
+			end
+		elseif cheerleadingQW['quest_stage'] = 3:
+		 !! Regular variant
+			if pcs_cheer < 20:
+				'Once in the hall, you take your place as Albina explains what you will be practicing and has you begin. You try your best to follow the unfamiliar routine, Albina keeping a watchful eye on you the entire time.'
+				'"Can you at least try to put some effort into not looking like an idiot <<$pcs_nickname>>?"'
+			elseif pcs_cheer < 30:
+				gs 'npc_relationship', 'modify', 'A23', 'like'
+				'Once in the hall, you take your place as Albina explains what you will be practicing and has you begin. You are starting to learn your moves and can perform them with less clumsiness, but Albina is still critical.'
+				'Raise your head and lift your feet <<$pcs_nickname>>! At least look like you''re happy to be here.'
+			elseif pcs_cheer < 40:
+				gs 'npc_relationship', 'modify', 'A23', 'like'
+				'Once in the hall, you take your place as Albina explains what you will be practicing and has you begin. Your training is starting to take hold and you are able to perform almost to Albina''s exacting standards.' 
+				'You''re actually starting to impress me <<$pcs_nickname>>. Keep it up!'
+			elseif pcs_cheer < 50:
+				gs 'npc_relationship', 'modify', 'A23', 'love'
+				'Once in the hall, you take your place as Albina explains what you will be practicing and has you begin. You have performed the routines dozens of times now and can execute your moves flawlessly to Albina''s satisfaction.'
+				'Perfect <<$pcs_nickname>>! Now that''s how it''s done!'
+			else
+				gs 'npc_relationship', 'modify', 'A23', 'love'
+				'Once in the hall, you take your place as Albina explains what you will be practicing and has you begin. Your skill having drastically improved, Albina now considers you one of her best girls and uses you as an example to the others.'
+			end
+		end
+		
+		act 'Go take a shower': gt 'gschool_cheerleading', 'shower'
+	end
+end
+
+if $ARGS[0] = 'game':
+	*clr & cla
+	minut += 5
+	cheerleadingQW['game_count'] += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/changing.jpg"></center>'
+	
+	'Heading into the locker room, you see Albina and the rest of the squad have already arrived and are in various states of changing into their uniforms while chatting to each other. You head to your locker and and strip down. You pull your uniform out and start getting dressed.'+iif(cheerleadingQW['backup_game'] = 1,' The fact that you are actually wearing the uniform and are going out to perform with them doesn''t seem real to you, even if the girls have only reluctantly let you join them.','')+' You finish tying your shoes when Albina stands on the bench. "You already know that today is game day! So let''s go out there and cheer our boys to victory! Maybe we''ll get some perverts all hot and bothered as well!"'
+	'The squad cheers in unison as you all head out onto the field.'
+	
+	act 'Go to the field':
+		*clr & cla
+		!! double cheer_exp so it progresses faster given that Sveta cant get it anywhere else
+		gs 'exercise', 'tier2', 0, 'agil_exp', 'vital_exp', 'cheer_exp', 'cheer_exp', 'danc_exp'
+		gs 'stat'
+	    '<center><video autoplay loop src="images/locations/pavlovsk/school/afterschool/cheerleading/opening.mp4"></video></center>'
+		
+		'Out on the field, you and the girls perform your opening routine flawlessly under Albina''s direction and spend the rest of the game chanting and cheering your team. You see some guys in the crowd appreciating the view of your ass as you are performing right in front of them.'
+		
+		act 'Wait until the end of the game':
+			*clr & cla
+			minut += 90
+			!! double cheer_exp so it progresses faster given that Sveta cant get it anywhere else
+			gs 'exercise', 'tier2', 0, 'agil_exp', 'vital_exp', 'cheer_exp', 'cheer_exp', 'danc_exp'
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/school/afterschool/cheerleading/closing.mp4"></video></center>'
+			
+			'The game ends and you and you perform your closing routine to the crowd as the players leave the field. You soon join them in returning to the locker room.'
+			'Once in the locker room, you strip from your uniform and head into the showers.'
+			
+			!! Resets the flag letting backups attend games
+			if cheerleadingQW['backup_game'] = 1:
+				cheerleadingQW['backup_game'] = 0
+				'After the game, Albina comes over to you. "I''l give it to you <<$pcs_firstname>>, you didn''t embarrass us as much as I thought you would. Don''t go taking that uniform by the way, you haven''t earned it."'
+			end
+			
+			'She leaves you to walk back to the locker room yourself. Maybe you''ll earn her respect and this uniform one day if you keep this up?'
+			act 'Take a shower': gt 'gschool_cheerleading', 'shower'
+		end
+	end
+end
+
+if $ARGS[0] = 'shower':
+	*clr & cla
+	minut += 10
+	dynamic $showerdin
+	if deodorant_on = 1: gs 'sweat', 'remove_deo' & 'Your deodorant gets washed away in the shower.'
+	
+	'<center><video autoplay loop src="images/shared/home/bathroom/dush<<rand(1,6)>>.mp4"></video></center>'
+	
+	'You head back to the locker room, where you strip from your uniform and head into the showers. You find an empty stall and step inside. You turn the water on and enjoy the sensation of it on your skin.'
+	'You turn the water off, grab your towel and head back to the lockers. You get dressed, place your uniform back in your locker and get ready to leave.'
+	
+	act 'Leave school': gt 'gschool_grounds', 'main'
+end
+
+if $ARGS[0] = 'skipped_ev':
+	*clr & cla
+	if cheerleadingQW['skipped_ev'] = 1: cheerleadingQW['skipped_ev'] = 0
+	if cheerleadingQW['skipped_g_ev'] = 1: cheerleadingQW['skipped_g_ev'] = 0
+	minut += 2
+	'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big23.jpg"></center>'
+	
+	if cheerleadingQW['skipped'] = 1:
+		gs 'npc_relationship', 'modify', 'A23', -5
+		'Albina is waiting for you in the hall and pulls you to the side.'
+		'"Where were you yesterday <<$pcs_nickname>>? '+iif(cheerleadingQW['skipped_ev'] = 1, 'You missed learning about and practicing the new parts we added to our routine. You really let the team down."','You missed the game and it was really hard adjusting the routine. You seriously disappointed us <<$pcs_nickname>>."')
+		'You meekly reply. "Sorry, Albina. I... had a family thing I had to deal with yesterday and I didn''t have time to tell you."'
+		'She doesn''t look completely convinced. "Right... Well if you care about your place on the team then you''ll be at the next '+iif(cheerleadingQW['skipped_ev'] = 1,'practice session','game')+' on time. No excuses."'
+		'You nod at her and she gives you a pat on the head before walking away. It looks like you got off lightly this time.'
+	elseif cheerleadingQW['skipped'] = 2:
+		gs 'npc_relationship', 'modify', 'A23', -10
+		pcs_mood -= 5
+		'You notice Albina watching you walk down the hall towards her and she drags you to the side when you reach her.'
+		'"Skipping '+iif(cheerleadingQW['skipped_ev'] = 1,'practice','the game')+' <i>again</i>, <<$pcs_nickname>>?! I thought I told you that you were to be '+iif(cheerleadingQW['skipped_ev'] = 1,'at practice','at the next game')+'... <b>no excuses</b>?! I don''t care about what miserable story you have to defend yourself with. You either commit to the squad or you''re out. Don''t test me <<$pcs_firstname>>!"'
+		'You don''t have a chance to speak as she storms off. Maybe it''s best for both of you if you stopped pissing her off?'
+	elseif cheerleadingQW['skipped'] = 3:
+		gs 'npc_relationship', 'modify', 'A23', -20
+		grupvalue[1] -= 3
+		grupvalue[2] -= 2
+		grupvalue[4] += 1
+		pcs_mood -= 10
+		'You are walking down the hall when you clock a furious Albina heading straight for you. You barely have time to react before she grabs your shirt and forcefully pins you against the lockers, silencing the hall as everyone looks at you.'
+		'Albina glares directly into your eyes. "ARE YOU DOING THIS TO MOCK ME YOU FUCKING BITCH?! I''VE GIVEN YOU CHANCE AFTER FUCKING CHANCE AND YOU STILL SKIP '+iif(cheerleadingQW['skipped_ev'] = 1,'PRACTICE','GAME DAY')+'?! Luckily for you, Vicky convinced me to give you one. Last. Fucking. Chance <<$pcs_firstname>>. You dare miss even ONE FUCKING SECOND of our next '+iif(cheerleadingQW['skipped_ev'] = 1,'session','performance')+', you better pray that I don''t find you."'
+		'She releases you and angrily walks off, shoving other students out of her way. You compose yourself and continue on your way, trying to ignore the stares.'
+	else
+	 ! Getting kicked after skipping practice 4 times
+		gs 'npc_relationship', 'set', 'A23', 20
+		gs 'npc_relationship', 'modify', 'A15', 'dislike'
+		grupvalue[1] -= 10
+		grupvalue[2] -= 7
+		grupvalue[3] -= 2
+		grupvalue[4] += 3
+		pcs_mood -= 20
+		'As you walk down the hall, you hear your name echo off the walls and the angry stomping of heels as you see an absolutely livid Albina, fists clenched, storming down the hall at you, Vicky following close behind.'
+		'"You think this is funny don''t you <<$pcs_firstname>>? Well, you''re FUCKING DONE WITH MOCKING ME!!" Vicky stops her from attacking you in a fit of rage.'
+		'"That''s right. Done. I''m kicking your fucking bitch ass off the team. Right here, right fucking now. If I EVER see you anywhere near us..." She walks right up to you. "then you better hope I''m in a good fucking mood, bitch!"'
+		'She stares at you enraged before she relaxes her clenched fist as Vicky places a hand on her shoulder and leads her away, while looking extremely disappointed with you.'
+		'The other students start talking among themselves as you are left feeling somewhat intimidated by Albina''s actions.'
+	end
+	gs 'stat'
+end
+
+--- gschool_cheerleading ---------------------------------
+

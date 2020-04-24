@@ -1,0 +1,305 @@
+# atakA1
+
+menu_off = 1
+
+if $ARGS[0] = 'atak':
+	cla
+	!payment hit dodge
+	poSp = speedV*20/100
+	uvAg = pcs_agil*20/100
+	poBox = reactV*20/100
+	uvBox = pcs_react*20/100
+	popad = RAND(reactV-poBox,reactV+poBox) + RAND(speedV-poSp,speedV+poSp) + bonusShV
+	uvorot = RAND(pcs_react-uvBox,pcs_react+uvBox) + RAND(pcs_agil-uvAg,pcs_agil+uvAg)
+	uvorKoef = uvorot*50/100
+	popKoef = popad*50/100
+
+	if popad > uvorot:
+		if popad >= uvorot+uvorKoef:
+			!Crete, very direct hit
+			'<b><font color = red>Critical hits</font></b>'
+
+			xgt'atakA1','uronKrit'
+		elseif popad < uvorot+uvorKoef:
+			!Normal hit
+			!He attacks the enemy
+			'<b><font color = red>EYE</font></b>'
+
+			xgt'atakA1','uron'
+		end
+	elseif popad <= uvorot:
+		'<b><font color = green>LOST</font></b>'
+
+		xgt'fight','sta'
+	end
+end
+
+if $ARGS[0] = 'uronKrit':
+	cla
+	damKoef = damTipV*20/100
+	damage = RAND(damTipV+damKoef,damTipV+damKoef*2)
+
+	if damTipMV > 0:
+		damKoefM = damTipMV*20/100
+		damageM = RAND(damTipMV+damKoefM,damTipMV+damKoefM*2)
+	end
+
+	xgt'atakA1','damage'
+end
+
+if $ARGS[0] = 'uron':
+	cla
+	damKoef = damTipV*20/100
+	damage = RAND(damTipV-damKoef,damTipV+damKoef)
+
+	if damTipMV > 0:
+		damKoefM = damTipMV*20/100
+		damageM = RAND(damTipMV-damKoefM,damTipMV+damKoefM)
+	end
+
+	xgt'atakA1','damage'
+end
+
+if $ARGS[0] = 'damage':
+	cla
+	if defence <= 0 and klon <= 0 and unmaterial <= 0 and barier <= 0:
+		if dospeh > 0:damage = damage - dospehDef & dospehEn = dospehEn - 1
+		if damage < 0:damage = 0
+		pcs_health = pcs_health - damage
+
+		if hidanAtk = 1:
+			hidanAtk = 0
+			zerkaloV = zerkaloV + 50
+			bloodV = bloodV + 50
+
+			'<b><font color = red><<$boydesc>> drink your blood.</font></b>'
+		end
+
+		if damTipMV > 0:
+			pcs_mana = pcs_mana - damageM
+			pcs_mana = pcs_mana + damageM
+
+			'<b><font color = red><<$boydesc>> swallowed <<damageM>> Units mana you.</font></b>'
+		end
+
+		if poisonAV = 1:
+			poisonV = 50
+
+			'<b><font color = red><<$boydesc>> hit the needle poisoned you.</font></b>'
+		end
+
+		!pcs_mana = pcs_mana - damageM
+
+		if eleShV > 0:
+			stun = RAND(eleShV,eleShV*3)
+
+			'<b><font color = red>You paralyzed on <<stunV>> Rounds</font></b>'
+		end
+
+		'<b><font color = red><<$boydesc>> Damage caused to you <<damage>> units</font></b>'
+		!'<b><font color = red>Your mana harmed <<damageM>> units</font></b>'
+
+		if zerkalo > 0:
+			zerkalo = zerkalo - 1
+			healthV = healthV - damage
+
+			'<b><font color = green>You are repelled and the damage <<$boydesc>> got a <<damage>> points of damage</font></b>'
+		end
+
+		xgt'fight','sta'
+	end
+
+	if defence > 0 and klon <= 0 and unmaterial <= 0:
+		!damSum = damage + damageM
+		!defence = defence - damSum
+		defence = defence - damage
+
+		'<b><font color = red>Your protection harmed <<damage>> units</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if klon > 0 and unmaterial <= 0:
+		klon = klon - 1
+
+		'<b><font color = red>It destroys your clone</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if unmaterial > 0:
+		unmaterial = unmaterial - 1
+
+		'<b><font color = green>Beat the enemy passed through you. YOU are not material</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if barier > 0:
+		!imeniteta barrier for damage
+		if barier >= damage:
+			'<b><font color = green>You can easily withstand the impact of the enemy</font></b>'
+
+			xgt'fight','sta'
+		elseif barier < damage:
+			!pcs_mana = pcs_mana - damageM
+			!pcs_health = pcs_health - damage
+			pcs_health = pcs_health - damage
+
+			if damTipM > 0:
+				pcs_mana = pcs_mana - damageM
+				manaV = manaV + damageM
+
+				'<b><font color = green>You swallowed <<damageM>> mana enemy units.</font></b>'
+			end
+
+			if eleShV > 0:
+				stun = RAND(eleShV,eleShV*3)
+
+				'<b><font color = green><<$boydesc>> paralyzed <<stunV>> Rounds</font></b>'
+			end
+
+			if poisonAV = 1:
+				poisonV = 50
+
+				'<b><font color = red><<$boydesc>> hit the needle poisoned you.</font></b>'
+			end
+
+			'<b><font color = red>You have caused damage <<damage>> units</font></b>'
+			!'<b><font color = red>Your mana harmed <<damageM>> units</font></b>'
+
+			if zerkalo > 0:
+				zerkalo = zerkalo - 1
+				healthV = healthV - damage
+
+				'<b><font color = green>You have reflected the damage and the opponent was <<damage>> points of damage</font></b>'
+			end
+		end
+
+		xgt'fight','sta'
+	end
+end
+
+if $ARGS[0] = 'atakW':
+	cla
+	!payment hit dodge
+	poSp = speedV*20/100
+	uvAg = pcs_agil*20/100
+	poBox = reactV*20/100
+	uvBox = pcs_react*20/100
+	popad = RAND(reactV-poBox,reactV+poBox) + RAND(speedV-poSp,speedV+poSp)
+	uvorot = RAND(pcs_react-uvBox,pcs_react+uvBox) + RAND(pcs_agil-uvAg,pcs_agil+uvAg)
+	uvorKoef = uvorot*50/100
+	popKoef = popad*50/100
+
+	if popad > uvorot:
+		if popad >= uvorot+uvorKoef:
+			!Crete, very direct hit
+			'<b><font color = red>Critical hits</font></b>'
+
+			xgt'atakA1','uronKritW'
+		elseif popad < uvorot+uvorKoef:
+			!Normal hit
+			'<b><font color = red>EYE</font></b>'
+
+			xgt'atakA1','uronW'
+		end
+	elseif popad <= uvorot:
+		'<b><font color = green>LOST</font></b>'
+
+		xgt'fight','sta'
+	end
+end
+
+if $ARGS[0] = 'uronKritW':
+	cla
+	damKoef = damTipV*20/100
+	damage = RAND(damTipV+damKoef,damTipV+damKoef*2)
+	damKoefM = damTipMV*20/100
+	damageM = RAND(damTipMV+damKoefM,damTipMV+damKoefM*2)
+	xgt'atakA1','damageW'
+end
+
+if $ARGS[0] = 'uronW':
+	cla
+	damKoef = damTipV*20/100
+	damage = RAND(damTipV-damKoef,damTipV+damKoef)
+	damKoefM = damTipMV*20/100
+	damageM = RAND(damTipMV-damKoefM,damTipMV+damKoefM)
+	xgt'atakA1','damageW'
+end
+
+if $ARGS[0] = 'damageW':
+	cla
+	if defence <= 0 and klon <= 0 and unmaterial <= 0 and barier <= 0:
+		if dospeh > 0:damage = damage - dospehDef & dospehEn = dospehEn - 1
+		if damage < 0:damage = 0
+		pcs_health = pcs_health - damage
+		pcs_mana = pcs_mana - damageM
+
+		'<b><font color = green>You harmed <<damage>> units</font></b>'
+		'<b><font color = green>You have caused damage to the enemy mana <<damageM>> units</font></b>'
+
+		if zerkalo > 0:
+			zerkalo = zerkalo - 1
+			pcs_health = pcs_health - damage
+
+			'<b><font color = red><<$boydesc>> reflected the damage and you get <<damage>> points of damage</font></b>'
+		end
+		xgt'fight','sta'
+	end
+
+	if defence > 0 and klon <= 0 and unmaterial <= 0:
+		damSum = damage + damageM
+		defence = defence - damSum
+		!defenceV = defenceV - damage
+
+		'<b><font color = green>You have caused damage <<damSum>> Protection of enemy units</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if klon > 0 and unmaterial <= 0:
+		klon = klon - 1
+
+		'<b><font color = green>Destroyed enemy clone</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if unmaterial > 0:
+		unmaterial = unmaterial - 1
+
+		'<b><font color = red>Your blow has passed through the body of the enemy. Opponents do not materials</font></b>'
+
+		xgt'fight','sta'
+	end
+
+	if barier > 0:
+		!imeniteta barrier for damage
+		if barier >= damage:
+			'<b><font color = red><<$boydesc>> easily weathered blow your</font></b>'
+
+			xgt'fight','sta'
+		elseif barier < damage:
+			pcs_mana = pcs_mana - damageM
+			pcs_health = pcs_health - damage
+			!healthV = healthV - damage
+
+			'<b><font color = green>You have caused damage <<damage>> units</font></b>'
+			'<b><font color = green>You have caused damage to the enemy mana <<damageM>> units</font></b>'
+
+			if zerkalo > 0:
+				zerkalo = zerkalo - 1
+				healthV = healthV - damage
+
+				'<b><font color = red>Opponent reflected damage and you get <<damage>> points of damage</font></b>'
+			end
+		end
+
+		xgt'fight','sta'
+	end
+end
+
+--- atakA1 ---------------------------------
+

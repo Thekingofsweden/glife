@@ -1,0 +1,686 @@
+# cardgame_durak
+!-----------------------------------------------!
+!-----Playing cards with the guys on the strip-----!
+!===============================================!
+
+menu_off = 1
+
+if $ARGS[0] = 'start':
+	CLOSE ALL
+	cla
+	minut += 5
+
+	if playcardgame_count > 0:
+		*clr
+		!choice of set pictures for you
+		cgd_cs = RAND(1,20)
+		!zero out winnings NPC:
+		gs 'boyStat', 'A9','3'
+		gs 'boyStat', 'A10','1'
+		gs 'boyStat', 'A11','2'
+		if cgd_cs < 3 or cgd_cs > 17: 
+			$cgd_clothes = ' shirt, skirt, socks, bra, panties' 
+		elseif cgd_cs = 4 or cgd_cs = 7: 
+			$cgd_clothes = ' shirt, pants, socks, bra, panties' 
+		elseif cgd_cs = 5 or cgd_cs = 6 or cgd_cs = 8 or cgd_cs = 13 or cgd_cs > 14: 
+			$cgd_clothes = ' shirt, jeans, socks, bra, panties' 
+		else
+			$cgd_clothes = ' shirt, shorts, socks, bra, panties' 
+		end
+		$cgd_clothes['A11'] = ' shirt, shorts, socks, briefs'
+		$cgd_clothes['A10'] = ' track jacket, tracksuit pants, socks, briefs'
+		$cgd_clothes['A9'] = ' shirt, jeans, socks, briefs'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/durak.jpg"></center>'
+		'"Cards? We can deal you in, but only if you want to play strip poker", Vitek grins. "The loser does whatever the winner wants them to do. Because you''re a girl, you''ll get one extra piece of clothing to start with. Sound fair?"'
+		'Your game statistics: You''ve won <<card_game_durak_win>> times, lost <<card_game_durak_loss>> times, managed a draw <<card_game_durak_draw>> times, and ended up naked <<card_game_durak_nude>> times.'
+		act 'Play': gt 'cardgame_durak', 'card_game_durak_play'
+		gs 'willpower', 'misc', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Not now (<<will_cost>> Willpower)':
+				gs 'willpower', 'misc', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'shulga_room', 'start'
+			end
+		else
+			act 'Not now (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	else
+		'<<iif(RAND(0,1) = 0,''Dan'',''Vitek'')>> sighs: "I''m tired of playing cards. Let''s just watch some TV or something, or have some more beers."'
+		act 'Leave': gt 'shulga_room', 'start'
+	end
+	gs 'stat'
+end
+!game
+
+if $ARGS[0] = 'card_game_durak_play':
+	minut +=3
+	gs 'stat'
+	!Pictures undressing
+	$cgdp_pc_state = iif($cgd_clothes='','You are naked!','You are wearing:<<$cgd_clothes>>.')
+	$cgdp_A11_state = iif($cgd_clothes['A11']='','Vasily is naked!','Vasily is wearing:<<$cgd_clothes[''A11'']>>.')
+	$cgdp_A10_state = iif($cgd_clothes['A10']='','Dan is naked!','Dan is wearing:<<$cgd_clothes[''A10'']>>.')
+	$cgdp_A9_state = iif($cgd_clothes['A9']='','Vitek is naked!','Vitek is wearing:<<$cgd_clothes[''A9'']>>.')
+	'<center><b>You''re playing strip poker with the guys. The game will continue until one of you is completely naked.</b></center>'
+	'<table width="100%" cellspacing="0" cellpadding="5"><td width="200" valign="top"><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/<<cgd_cs>>-<<6-(3+len($cgd_clothes))/7>>.jpg"></td><td valign="top">'
+	'<br><<$cgdp_pc_state>><br><<$cgdp_A11_state>><br><<$cgdp_A10_state>><br><<$cgdp_A9_state>><br>'
+
+	if $cgd_clothes = '':
+		card_game_durak_nude += 1
+		playcardgame_day = daystart
+		playcardgame_count -= 1
+		gs 'boyStat', 'A<<9+RAND(0,2)>>'
+		'<b>The game is over! You have no clothes left, you lose!</b>'
+		'Winner: <b><<$boydesc>>.</b>'
+		'You will have to carry out his wish.'
+		
+		if pav_slut < 75 or kotovLoveQW > 0: 
+			act 'Continue': gt 'cardgame_durak', 'card_game_nosex'
+		elseif pav_slut >= 75 and cg_clother_cum < 5:
+			if rand(1,100) <= 90:
+				if rand(1,100) <= 33: 
+					act 'Continue': gt 'cardgame_durak', 'card_game_gsex'
+				else
+					act 'Continue': gt 'cardgame_durak', 'card_game_rough_sex'
+				end
+			else
+				act 'Continue': gt 'cardgame_durak', 'card_game_nosex'
+			end
+		elseif pav_slut >= 75 and cg_clother_cum >= 5:
+			if rand(1,100) <= 70:
+				if rand(1,100) <= 33: 
+					act 'Continue': gt 'cardgame_durak', 'card_game_gsex'
+				else
+					act 'Continue': gt 'cardgame_durak', 'card_game_rough_sex'
+				end
+			elseif rand(1,100) <= 33:
+				act 'Continue': gt 'cardgame_durak', 'card_game_casual_sex'
+			else
+				act 'Continue': gt 'cardgame_durak', 'card_game_nosex'
+			end
+		end
+	end
+	if $cgd_clothes['A11'] = '' or $cgd_clothes['A10'] = '' or $cgd_clothes['A9'] = '':
+		pcs_horny += 10
+		pcs_health += 10
+		pcs_mood += 5
+		playcardgame_day = daystart
+		playcardgame_count -= 1
+		if $cgd_clothes['A11'] = '': 
+			gs 'boyStat', 'A11'
+			$loss_npc_img = '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+		end
+		if $cgd_clothes['A10'] = '': 
+			gs 'boyStat', 'A10'
+			$loss_npc_img = '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+		end
+		if $cgd_clothes['A9'] = '':
+			gs 'boyStat', 'A9'
+			$loss_npc_img = '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vitek/vitek.jpg"></center>'
+		end
+		$loss_npc_name = $boydesc
+		*nl '<b>The game is over! <<$npc_usedname[$cgd_name_npc]>> has no clothes left and loses!</b>.'
+		if pav_slut < 75:
+			gs 'willpower', 'exhib', 'force', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Make <<$loss_npc_name>> expose himself to a random girl (<<will_cost>> Willpower)':
+					gs 'willpower', 'exhib', 'force', 'easy'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gt 'cardgame_durak', 'card_game_ggwin_penis'
+				end
+			else
+				act 'Make <<$loss_npc_name>> expose himself to a random girl (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+
+			act 'Make <<$loss_npc_name>> expose a random girl': gt 'cardgame_durak', 'card_game_ggwin_clother'
+
+		elseif pav_slut >= 75:
+			gs 'willpower', 'anal', 'force', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Make <<$loss_npc_name>> fuck your ass (<<will_cost>> Willpower)':
+					gs 'willpower', 'anal', 'force', 'easy'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gt 'cardgame_durak', 'card_game_gg_sex'
+				end
+			else
+				act 'Make <<$loss_npc_name>> fuck your ass (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			
+			gs 'willpower', 'cuni', 'force', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Make <<$loss_npc_name>> lick your pussy (<<will_cost>> Willpower)':
+					gs 'willpower', 'cuni', 'force', 'easy'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gt 'cardgame_durak', 'card_game_gg_lick'
+				end
+			else
+				act 'Make <<$loss_npc_name>> lick your pussy (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			
+			gs 'willpower', 'mast', 'force', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Make <<$loss_npc_name>> cum on a random girl (<<will_cost>> Willpower)':
+					gs 'willpower', 'mast', 'force', 'easy'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gt 'cardgame_durak', 'card_game_ggwin_clothercum'
+				end
+			else
+				act 'Make <<$loss_npc_name>> cum on a random girl (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+
+			gs 'willpower', 'exhib', 'force', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Make <<$loss_npc_name>> expose himself to a random girl (<<will_cost>> Willpower)':
+					gs 'willpower', 'exhib', 'force', 'easy'
+					gs 'willpower', 'pay', 'force'
+					gs 'stat'
+					gt 'cardgame_durak', 'card_game_ggwin_penis'
+				end
+			else
+				act 'Make <<$loss_npc_name>> expose himself to a random girl (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+
+			act 'Make <<$loss_npc_name>> expose a random girl': gt 'cardgame_durak', 'card_game_ggwin_clother'
+		end
+	end
+	if $cgd_clothes ! '' and $cgd_clothes['A11'] ! '' and $cgd_clothes['A10'] ! '' and $cgd_clothes['A9'] ! '':
+		if RAND(1,100) <= 60:
+			card_game_durak_win += 1
+			pcs_horny += 5
+			pcs_mood += 5
+			$cgd_name_npc = 'A<<9+RAND(0,2)>>'
+			if strpos($cgd_clothes[$cgd_name_npc],'socks')>0:
+				$clo_str = ' socks'
+				$cgd_clothes[$cgd_name_npc] = replace($cgd_clothes[$cgd_name_npc],' socks,','')
+			elseif strpos($cgd_clothes[$cgd_name_npc],',')>0:
+				$clo_str = MID($cgd_clothes[$cgd_name_npc],1,strpos($cgd_clothes[$cgd_name_npc],',')-1)
+				$cgd_clothes[$cgd_name_npc] = replace($cgd_clothes[$cgd_name_npc],'<<$clo_str>>,','')
+			else
+				$clo_str = $cgd_clothes[$cgd_name_npc]
+				$cgd_clothes[$cgd_name_npc] = ''
+			end
+			'<img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/card3.jpg">'
+			'You have a great set of cards in your hand, and easily win the round. <<$npc_usedname[$cgd_name_npc]>> loses, and reluctantly takes off his<<$clo_str>>.'
+			act 'Deal': gt 'cardgame_durak', 'card_game_durak_play'
+		elseif RAND(1,40) < 35:
+			card_game_durak_loss += 1
+			if strpos($cgd_clothes,'socks')>0:
+				$clo_str = ' socks'
+				$cgd_clothes = replace($cgd_clothes,' socks,','')
+			elseif strpos($cgd_clothes,',')>0:
+				$clo_str = MID($cgd_clothes,1,strpos($cgd_clothes,',')-1)
+				$cgd_clothes = replace($cgd_clothes,'<<$clo_str>>,','')
+			else
+				$clo_str = $cgd_clothes
+				$cgd_clothes = ''
+			end
+			'<img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/card1.jpg">'
+			'Your hand is very poor, and you don''t stand a chance. You slowly undress for the guys, removing your<<$clo_str>>'
+			act 'Deal': gt 'cardgame_durak', 'card_game_durak_play'
+		else
+			card_game_durak_draw += 1
+			'<img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/card1.jpg">'
+			'Your hand is not very good, but with some skill you manage to squeeze out a draw. That was close, but you get to keep your clothes on for now!'
+			act 'Deal': gt 'cardgame_durak', 'card_game_durak_play'
+		end
+	end
+	'</td></tr></table>'
+	killvar '$cgdp_pc_state'
+	killvar '$cgdp_A11_state'
+	killvar '$cgdp_A10_state'
+	killvar '$cgdp_A9_state'
+end
+
+!--------------------------!
+!when years lost cards!
+!==========================!
+!fulfillment of desire NPC (turnip pav_slut < 75, then a small show)
+if $ARGS[0] = 'card_game_nosex_dance':
+	minut +=5
+	inhib_exp += rand(2,3)
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/gif/dance'+rand(1,9)+'.mp4"></video></center>'
+	'The guys put on a popular track with a lot of bass, and lean back. You realize this is your cue to start moving, and somewhat awkwardly begin to dance for them. After a while you get into the song more and become less hesitant in shaking your hips and boobs, trying to give the guys a good show. They did win, after all.'
+	'They all watch you intently, cheering you on and high-fiving their friend who made this possible.'
+	act 'Finish and put your clothes back on': gt 'shulga_room', 'start'
+end
+!making wishes NPC (turnip pav_slut < 75)
+if $ARGS[0] = 'card_game_nosex':
+	minut +=5
+	gs 'stat'
+	card_game_texta = rand(0,6)
+		if card_game_texta = 0:$card_game_texta = 'I want you to suck me off.'
+		if card_game_texta = 1:$card_game_texta = 'I want you to masturbate in front of us.'
+		if card_game_texta = 2:$card_game_texta = 'I want you to give my dick a kiss.'
+		if card_game_texta = 3:$card_game_texta = 'I want to touch your tits.'
+		if card_game_texta = 4:$card_game_texta = 'I want to fuck you.'
+		if card_game_texta = 5:$card_game_texta = 'I want to touch your pussy.'
+		if card_game_texta = 6:$card_game_texta = 'I want a boob job from you.'
+	if $boy = 'A11':
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+		''+func('gopsex','hide','Shulga_var_name')+' ponders for a second, and says: "<<$card_game_texta>>"'
+		'"Are you out of your mind!? There''s absolutely no way I''m doing that!", you shout, deeply offended by his suggestion.'
+		'He raises his hands defensively and smiles: "Relax, I was just kidding. I just had to try, who knows what kind of party girl you might''ve been!"'
+		'You sigh and tell him: "Seriously though, what do you want me to do?"'
+		''+func('gopsex','hide','Shulga_var_name')+' thinks long and hard, and carefully suggests: "<<$pcs_nickname>>, how about you perform a little dance for us? You know... shake your boobs, show off your body a little?"'
+		'You bite your lip while you think for a moment, and then say: "Fine. I''m naked, so it''s not like you haven''t seen it all already anyway. I''ll do it."'
+	end
+	if $boy = 'A10':
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+		'Dan says what he wants: "<<$pcs_nickname>>, <<$card_game_texta>>"'
+		'"Are you out of your mind!? There''s absolutely no way I''m doing that!", you shout, deeply offended by his suggestion.'
+		'He raises his hands defensively and smiles: "Relax, I was just kidding. I just had to try, who knows what kind of party girl you might''ve been!"'
+		'You sigh and tell him: "Seriously though, what do you want me to do?"'
+		'Dan shrugs and says: "<<$pcs_nickname>>, how about we put up some music, and you shake your tits and perform a nice little dance for the three of us then?"'
+		'You bite your lip while you think for a moment, and then say: "Fine. I''m naked, so it''s not like you haven''t seen it all already anyway. I''ll do it."'
+	end
+	if $boy = 'A9':
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vitek/vitek.jpg"></center>'
+		'Vitek confidently says: "<<$card_game_texta>>"'
+		'"Are you out of your mind!? There''s absolutely no way I''m doing that!", you shout, deeply offended by his suggestion.'
+		'"Hey, you''re the one who agreed to do what we say if you lose. I didn''t realize you were going to be so modest", Vitek smirks.'
+		'You sigh and tell him: "Don''t be such a pervert! Seriously though, what do you want me to do?"'
+		'Vitek shrugs and says: "<<$pcs_nickname>>, how about we put up some music, and you shake your tits and perform a nice little dance for the three of us then?"'
+		'You bite your lip while you think for a moment, and then say: "Fine. I''m naked, so it''s not like you haven''t seen it all already anyway. I''ll do it."'
+	end
+	act 'Dance for them': gt 'cardgame_durak', 'card_game_nosex_dance'
+	killvar 'card_game_texta'
+end
+!when years lost cards (turnip pav_slut >= 75), sex
+if $ARGS[0] = 'card_game_gsex':
+	minut +=2
+	pcs_horny += 10
+	npc_sex['A9'] += 1
+	npc_sex['A10'] += 1
+	npc_sex['A11'] += 1
+	gang += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_1.jpg"></center>'
+	'"Now that you''ve lost... how about we all get naked, and then see what we will do with you?" <<$boydesc>> says with a grin, as he takes the remainder of his clothes off. The other guys nod eagerly, and begin to undress as well.'
+	act 'Continue': 
+		*clr & cla
+		gs 'arousal','foreplay',3,'gangbang'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_2.jpg"></center>'
+		'<<$boydesc>> says: "I''ve given it some thought, and I''ve decided that it is bad to be selfish. Therefore, as my wish: I will share your body with my friends, and we will all fuck you good!"'
+		'"But, that''s not fair..." you mutter weakly. "You won, they did not. Only you get a wish!'
+		'"Exactly! I get a wish, and you have to do what I want. My wish is to share your body with my friends", <<$boydesc>> tells you, while he plays with your boobs. "Now stop complaining and get on your back."'
+		act 'Continue': 
+			*clr & cla
+			gs 'arousal','bj',5,'dick[1]','gangbang'
+			gs 'arousal','bj',5,'dick[2]','gangbang'
+			gs 'arousal','hj',2,'dick[1]','gangbang'
+			gs 'arousal','hj',2,'dick[2]','gangbang'
+			gs 'arousal','vaginal_finger',6,'dick[3]','gangbang'
+			minut -= 10
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_3.jpg"></center>'
+			'Well, he''s got you there. With a deep sigh you lie down on your back, and immediately '+func('gopsex','hide','Shulga_var_name')+' and Dan get on their knees next to you, offering their already fully erect cocks to you.'
+			'Vitek moves between your legs, and begins to play with your pussy. He occasionally thrusts a finger inside, but is mostly content to just play with your pussy lips and your clitoris for now.'
+			'You hesitantly lean towards Vasily''s cock and lick the head of his cock testively, before taking it into your mouth. Meanwhile Dan grabs your wrist and guides your hand to his cock, and he begins to play with your breasts once you get the message and masturbate him gently.'
+			'Wow, the three of them are making you feel really good! You do your best to repay them by giving Vasily and Dan a good blowjob, taking their cocks as far as possible in your mouth in turns while you masturbate the other.'
+			if pcs_horny >= 70:
+				$orgasm_or = 'yes'
+				$orgasm_txt = 'Vitek''s constant rubbing on your clit brings you to a thunderous orgasm, and you moan and groan loudly despite the penis that''s lodged deeply into your mouth.'
+				gs 'arousal','vaginal_finger',6,'dick[3]','gangbang','exhibitionism'
+				'For a moment you feel ashamed, your orgasm was very obvious to the guys and was met with loud cheers. Then you relax and just give in, why should you feel bad about them making you feel great?'
+			end
+			act 'Continue': 
+				*clr & cla
+				gs 'arousal','bj',5,'dick[1]','gangbang'
+				gs 'arousal','vaginal',5,'dick[2]','gangbang'
+				gs 'arousal','bj',5,'dick[3]','gangbang'
+				minut -= 10
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_4.jpg"></center>'
+				'Then the guys pull you up, and put you down on your hands and knees. Dan immediately moves behind you, claiming he gets to fuck you first. Vasily and Vitek shrug and take place near your head, expecting you to give them blowjobs while Dan slips his cock inside your eager cunt and begins to thrust his hips against yours.'
+				'Dan''s dick feels great inside you, and you''re not afraid to show the guys that you''re enjoying it. You moan excitedly and eagerly switch from Vasily''s to Vitek''s cock and back, trying to please all of them.'
+				act 'Continue': 
+					*clr & cla
+					gs 'arousal','hj',5,'dick[1]','gangbang'
+					gs 'arousal','vaginal',5,'dick[2]','gangbang'
+					gs 'arousal','hj',5,'dick[3]','gangbang'
+					minut -= 10
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_5.jpg"></center>'
+					'For a moment, you try to take both of the dicks inside your mouth while Dan fucks you from behind.'
+					'However, Dan can no longer hold back and begins to vigorously slam his hips into yours, making your butt cheeks bounce whenever he bottoms out in you.'
+					'You fully surrender to him and can''t really focus on the blowjob you''re giving any more, only making some weak attempts to lick Vitek''s and Shulga''s cocks to make sure they don''t feel left out entirely.'
+					act 'Continue': 
+						*clr & cla
+						gs 'arousal','vaginal',5,'dick[2]','gangbang'
+						gs 'arousal','bj',5,'dick[3]','deepthroat'
+						minut -= 5
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_6.jpg"></center>'
+						'When you next take Vitek''s cock in your mouth, he puts his hands behind your head and forces you to take his full length down your throat. Your nose is against his hairy groin before you know it, and you cough in surprise. At least, you try to.'
+						'With his dick all the way down your throat, you can''t do much but convulsively swallow, and try to pull away from him. He realizes you''re having trouble deepthroating him, and pulls away from you.'
+						'You gasp loudly once you can breathe again, and sob and retch for a while... with Dan still fucking you all the same. You can tell Vitek feels bad for pushing you too hard, and you give him a grateful look when he lets go of your head and lets you take over again. You carefully lick and kiss the head of his penis for a moment, as your way of thanking him.'
+						act 'Continue': 
+							*clr & cla
+							minut += 5
+							gs 'cum_call','face',$boy[2],1,'','',30
+							gs 'cum_call','hair',$boy[2],1,'','',10
+							gs 'cum_call','face',$boy[1],1,'','',10
+							gs 'cum_call','hair',$boy[1],1,'','',30
+							gs 'cum_call','face',$boy[3],1,'','',30
+							gs 'cum_call','breasts',$boy[3],1,'','',10
+							gs 'arousal', 'end'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/gsex/ev1_7.jpg"></center>'
+							'A little while later the guys tell you to get down on your knees, and surround you. They jerk themselves off, and shoot their hot cum all over your face and in your hair.'
+							'They all sit down and take a minute to catch your breaths, with your naked body sprawled out on the floor in front of them. When you sit back up again, you catch a glimpse of yourself in a large mirror: you look like a mess! Your hair is seriously disheveled and has sperm in it and your face looks all messy and puffy, with gobs of cum smeared all over your cheeks and chin.'
+							'That was definitely not what you bargained for, when you wanted to play a game of cards with the guys...'
+							act 'Put your clothes back on': gt 'shulga_room', 'start'
+						end
+					end
+				end
+			end
+		end
+	end
+end
+!when years lost cards (turnip pav_slut >= 75), rough sex
+if $ARGS[0] = 'card_game_rough_sex':
+	gs 'arousal','bj',5,'deepthroat','sub'
+	gs 'stat'
+	npc_sex[$boy] += 1
+	'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sexrough/bj'+rand(1,10)+'.mp4"></video></center>'
+	'<<$boydesc>> unceremoniously moves up to you, and thrusts his erect dick into your mouth without saying a word.'
+	'"This is for you, slut", he hisses as he grabs your hair in his hands, and begins to thrust his hips against your face, fucking your throat roughly.'
+	act 'Continue':
+		*clr & cla
+		gs 'arousal','anal',10
+		gs 'cum_call','anus',$boy,1
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sexrough/sex1_'+rand(1,10)+'.mp4"></video></center>'
+		'"I want your ass next, bitch", <<$boydesc>> says. "Get on your hands and knees, and offer yourself to me."'
+		'You hesitantly do as he says, spreading your buttocks with your hands once you lower yourself to the ground.'
+		if analplugin = 1:
+			analplugin = 0
+			'<<$boydesc>> laughs: "This would only get in the way. Out you go!", and he tugs the plug out of your ass and tosses it aside.'
+		end
+		if lubri > 0:
+			agape = 2
+			pcs_horny += 10
+			'"Wait! I have some lubricant with me somewhere, you could use that!" you offer.'
+			'When you reach up in an effort to go get it, <<$boydesc>> pushes you back down and says matter-of-factly: "No. You''re my prize, and I can fuck you how I want. I want to fuck you dry, so that''s what I''m going to do. Cute of you to always have lube on you just in case you might get your ass fucked that day though, very classy!"'
+			'You bite your lip and move back in position, hoping he will take it easy on you. All you can do at this point is relax, hopefully that will make it easier.'
+		end
+		'Unfortunately for you, <<$boydesc>> is not very careful and just crams the head of his cock in.' 
+		'You groan and scream and cry, hoping the pain will subside soon while <<$boydesc>> begins to fuck your ass. He''s not even particularly rough with you, but it still stings a lot. You''re not even sure why he insists on doing this... when you look back you occasionally see him wince too. If this is not comfortable for either of you, why does he insist on going on?'
+		'After a few minutes of you obediently enduring the ass fucking you''re receiving, it doesn''t hurt that much any more. There''s still a little discomfort, but you''re able to ignore that and even gain some pleasure out of it.'
+		'Then <<$boydesc>> shoots his load inside your ass, and says with a grin: "Who''s next? If we want her to be a good little butt slut for us in the future, she''s going to need more training! Stretch that hole, guys!"'
+		act 'Continue':
+			*clr & cla
+			gang +=1
+			gs 'boyStat',$boy,'c'
+			if $boy = 'A9': gs 'boyStat', 'A10','a' else gs 'boyStat', 'A9','a'
+			gs 'arousal','anal',8,'dick1','gangbang'
+			gs 'cum_call','anus',$boy1,1
+			npc_sex[$boy1] += 1
+			if $boy = 'A11': gs 'boyStat', 'A10','b' else gs 'boyStat', 'A11','b'
+			gs 'arousal','anal',8,'dick2','gangbang'
+			gs 'cum_call','anus',$boy2,1
+			npc_sex[$boy2] += 1
+			gs 'arousal','anal',5,'dick3','gangbang'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sexrough/sex2_'+rand(1,10)+'.mp4"></video></center>'
+			'You were about to get up once <<$boydesc3>> finished in you, but his friends stop you. "Everyone gets to have a go, slut. I won your ass, so I decide when you''re done. Stay down", he orders you.'
+			'You meekly hang your head and get back in the position, deciding to just get it over with. Getting assfucked like some 50 ruble whore is not how you expected this game to end... but there are three of them, and they''re all stronger than you. What can you do?'
+			'Luckily, <<$boydesc3>>''s cum acts as a lubricant to an extent, and when someone else pushes their dick inside your already opened sphincter, it doesn''t hurt quite as much any more. In fact... it actually feels kind of nice! You moan softly, trying to hide how much you''re enjoying this from the guys. They''d just get the wrong idea...'
+			'The guys use your asshole as they see fit for the next twenty minutes, not really paying any attention to your feelings. When his friends finish <<$boydesc3>>''s cock is hard again, and he eagerly fucks you again while he still can.'
+			if pcs_horny >=70:
+				$orgasm_or = 'yes'
+				$orgasm_txt = 'Your pussy is drenched by the time <<$boydesc3>> fucks you again. The guys haven''t shown any interest in it today, fully focusing on fucking your ass as if you''re just a rubber doll. You feel greatly aroused despite (or maybe because of?) the way they''re treating you, and gently masturbate yourself while <<$boydesc3>> fucks you. You stifle your moans and have a quiet orgasm, trying to not let the guys find out.'
+				gs 'arousal','masturbation',2,'exhibitionism'
+			end
+			'"Almost done, whore. Show us your ass", <<$boydesc3>> smirks with contempt.'
+			gs 'stat'
+			act 'Show them':
+				*clr & cla
+				gs 'arousal','flash',5
+				gs 'arousal', 'end'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sexrough/ass'+rand(1,9)+'.jpg"></center>'
+				'You obediently spread your ass cheeks, showing your gaping anus to the boys. That''s going to take a while before it closes again.'
+				'They look at you for a few minutes, proudly discussing on what a good job they did today.'
+				'Then <<$boydesc3>> slaps your ass cheek and grins: "Alright, slut. We''ve trained your hole enough for today. Go freshen up."'
+				act 'Go to the bathroom': gt 'shulgabath', 'start'
+			end
+		end
+	end
+end
+if $ARGS[0] = 'card_game_casual_sex':
+	minut +=5
+	gs 'stat'
+	if $boy = 'A11': '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vasya/vasya.jpg"></center>'
+	if $boy = 'A10': '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/dan/dan.jpg"></center>'
+	if $boy = 'A9': '<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/vitek/vitek.jpg"></center>'
+	'"Well, you lost <<$pcs_nickname>>. Now you have to pay for all the shit, you cooked up for us!" <<$boydesc>> says.'
+	'"Come on, you can barely come up with something beyond fuck me, anyway." You make a snide comment.'
+	'"That''s not true! I want you to go out onto the street and we will find a stranger and let him fuck you right there.'
+	'"What the fucking kind of shit is that! I''ve not forced you to fuck anyone..."'
+	'"You''re a bitch, for coming up with all that rubbish you made us do and now you will have to pay for it. So stop your bitching, you lost, so pay up!"'
+	'You have no choice, you lost and now have to pay up the debt by fulfilling his wish.'
+	
+	act 'Further':
+		*clr & cla
+		guy += 1
+		$orgasm_or = 'no'
+		gs 'npcgeneratec', 0, 'stranger', rand(18,40)
+		gs 'boyStat', $npclastgenerated
+		npc_sex[$npclastgenerated] += 1
+		gs 'arousal','bj',10,'sub'
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/sexbj1.mp4" width="642" height="490"></video></center>'
+		'The boys point at a man. You approach the guy and offer to have sex. No wonder that the stranger quickly agreed ... '
+		'You quickly find a secluded area, once you do he pulls his dick out and tells you to start sucking it. You squat down and take his dick in your mouth.'
+		'"You are great! You must do this a lot, don''t you?", The man asks you.'
+		'"Yes, every day." You answer honestly.'
+		'"I got a good slut today. Bend over so I can fuck you doggie!" The man commands you.'
+		act 'Further':
+			*clr & cla
+			$orgasm_or = 'no'
+			gs 'arousal','vaginal',10
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/sex1.mp4" width="570" height="576"></video></center>'
+			'You turn around and lean against the wall. The guy starts to fuck you from behind, at first slowly and gradually increases the pace of screwing.'
+			'"Do you also let boys fuck you ever day?" The guy asks.'
+			'You grasp that he is excited with such talk and you decide to play along.'
+			'"Yes, they use my body every day, I get off and letting guys fuck me like a whore. The more I can find to fuck me, the happier I am."'
+			if pcs_horny >=70:
+				$orgasm_or = 'yes'
+				$orgasm_txt = 'You are overcome by surging emotions and your body convulses with waves of pleasure. You let out a loud moan. "Oh! More...don''t stop. Oh yeah! Oh!"'
+				gs 'arousal','masturbation',2,'exhibitionism'
+				'"The guy is surprised by your stormy climax and he says with a grin: "You cum like a wild cat, I love nymphos like you. Could you give me your phone number?"'
+				'"Maybe, but first you should finish", You answer with a smirk.'
+			end
+			'A few minutes later the man pulls his dick out, strips off his condom and shoots his load on the wall. Before he could bat an eye, you pull your clothes on and run away.'
+			'The boys are nearby all the time and record everything on a mobile phone.'
+			gs 'arousal', 'end'
+			act 'Leave': gt 'shulga_room', 'start' 
+		end
+	end
+end
+!-------------------!
+!gg won cards!
+!===================!
+!When the years won, make a wish (turnip pav_slut < 75) (clothing stall)
+if $ARGS[0] = 'card_game_ggwin_clother':
+	minut +=3
+	gs 'stat'
+	'<<$loss_npc_img>>'
+	'You can barely hide the smirk on your face as you say: "So... <<$loss_npc_name>>, you lose. Now you have to do what I want!"'
+	'"We''ll see... what is it you want?" asks <<$loss_npc_name>>.'
+	'You grin evilly and say: "I want you to go out on the street, and find a beautiful girl. When you do, you will pull her clothes away, exposing either her tits or her bare ass to us, while we film it with our phones!"'
+	'You laugh at his distraught look, and add: "Your choice... do what feels right."'
+	'"Come on, <<$pcs_nickname>>! Can''t you think of anything else?" <<$loss_npc_name>> pleads, lightly frustrated.'
+	'Before you can reply, his friends say: "You knew the rules! If you lose, you have to do what the winner wants. No questions asked."'
+	'<<$loss_npc_name>> slumps a little, but he knows his friends are right: "Alright then, let''s get this over with..."'
+	act 'Continue':
+		*clr & cla
+		minut +=15
+		gs 'stat'
+		'<<$loss_npc_name>> exits the house, and the rest of you follow him. He does as you ask, and can barely escape when the furious lady chases him all the way down the street.'
+		'A few minutes later, he returns to you. His face is all red from the running, and he''s still out of breath when he says: "There... happy? She looked like she wanted to kill me!"'
+		'You grin, and show him the video you shot with your mobile phone:'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/j'+rand(1,12)+'.mp4"></video></center>'
+		'"Why is the camera shaking so much!? This looks like shit!" <<$loss_npc_name>> asks, clearly frustrated now.'
+		'His friends are also nearly out of breath, but it''s from laughing so hard. Finally, one of them manages to say: "I''m sorry, man! It just looked hilarious! None of us could hold our cameras still, we were laughing so hard!"'
+		act 'Finish': gt 'shulga_room', 'start'
+	end
+end
+!When the years won, make a wish (turnip pav_slut < 75) (shake genitals)
+if $ARGS[0] = 'card_game_ggwin_penis':
+	minut +=5
+	gs 'stat'
+	'<<$loss_npc_img>>'
+	'You can barely hide the smirk on your face as you say: "So... <<$loss_npc_name>>, you lose. Now you have to do what I want!"'
+	'"We''ll see... what is it you want?" asks <<$loss_npc_name>>.'
+	'You grin evilly and say: "I want you to go out on the street, and find a beautiful girl. When you do, you will show her your dick, while we film it with our phones!"'
+	'"Come on, <<$pcs_nickname>>! Can''t you think of anything else?" <<$loss_npc_name>> pleads, lightly frustrated.'
+	'Before you can reply, his friends say: "You knew the rules! If you lose, you have to do what the winner wants. No questions asked."'
+	'<<$loss_npc_name>> slumps a little, but he knows his friends are right: "Alright then, let''s get this over with..."'
+	act 'Continue':
+		*clr & cla
+		minut +=15
+		gs'stat'
+		'<<$loss_npc_name>> exits the house, and the rest of you follow him. He does as you ask, and can barely escape when the furious lady chases him all the way down the street.'
+		'A few minutes later, he returns to you. His face is all red from the running, and he''s still out of breath when he says: "There... happy? She looked like she wanted to kill me!"'
+		'You grin, and show him the video you shot with your mobile phone:'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/p'+rand(1,3)+'.mp4"></video></center>'
+		'"Why is the camera shaking so much!? This looks like shit!" <<$loss_npc_name>> asks, clearly frustrated now.'
+		'His friends are also nearly out of breath, but it''s from laughing so hard. Finally, one of them manages to say: "I''m sorry, man! It just looked hilarious! None of us could hold our cameras still, we were laughing so hard!"'
+		act 'Finish': gt 'shulga_room', 'start'
+	end
+end
+!When the years won, make a wish (turnip pav_slut >= 75) (cum on the victim)
+if $ARGS[0] = 'card_game_ggwin_clothercum':
+	minut +=5
+	cg_clother_cum +=1 
+	gs 'stat'
+	'<<$loss_npc_img>>'
+	'You grin at <<$loss_npc_name>> and say: "Aww <<$loss_npc_name>>, what a bad time for you to lose! My wish today won''t be easy!"'
+	'<<$loss_npc_name>> sighs: "Let''s get it over with. What do you want?"'
+	'"Let''s go find you a nice girl", you smile mysteriously. "I''ll pick someone, and you have to run up and jerk off over her clothes! Of course, we''ll be recording it with our phones..."'
+	'<<$loss_npc_name>> looks concerned: "What, are you crazy!? That''s insane... and besides, I can''t cum that fast! That would never work!"'
+	'"I thought you would say that, <<$loss_npc_name>>. Don''t worry, I thought of that... how about if I help you get close?" you smile at him, licking your <<$liptalk3>> lips lewdly.'
+	'His friends are laughing, but <<$loss_npc_name>> suddenly shows a lot more interest in your plan. If you''re willing to blow him until he''s about to burst, that''s more than the others are getting from you today!'
+	'You leave the apartment with the guys, who are clearly excited to see this plan of yours play out. "Let''s go find a nice girl for <<$loss_npc_name>>, guys!" you shout happily.'
+	act 'Continue':
+		*clr & cla
+		gs 'arousal','bj',10
+		gs 'stat'
+		npc_sex[$boy] += 1
+		'After a few minutes, you find someone. "Alright, <<$loss_npc_name>>, come here", you whisper to him as you drag him out of view.'
+		'You quickly drop to your knees and take his cock in your mouth, giving him a skilful blowjob. The other guys are actually a bit jealous when they see you on your knees before your friend, and pull out their phones to record you:'
+		'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/bj'+rand(1,2)+'.mp4"></video></center>'
+		'When you lick <<$loss_npc_name>> close to his orgasm, he runs to his victim.'
+		act 'Continue': 
+			*clr & cla
+			minut +=5
+			gs 'stat'
+			'<center><video autoplay loop src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/street_event/cum'+rand(1,2)+'.mp4"></video></center>'
+			'While you idly wipe your lips with the back of your hand and watch <<$loss_npc_name>> run, his friends are shooting everything on film with their mobiles.'
+			'When you watch the video back with the guys, it turns out that the video''s quality is downright lousy. It''s very shaky, and there''s a lot of background noise of the three of you laughing your butts off.'
+			'<<$loss_npc_name>> comes back, his face as red as a lobster. As he gasps for breath, he groans: "I''m never doing that again! <<$pcs_nickname>>, the next time you lose... I''m going to make you pay!"'
+			'You and the other guys are laughing loudly as you return to Vasily''s apartment. The next time you lose? You''ll see about that...'
+			act 'Finish': gt 'shulga_room', 'start'
+		end
+	end
+end
+!When the years won, make a wish (turnip pav_slut >= 75), lick
+if $ARGS[0] = 'card_game_gg_lick':
+	minut +=1
+	npc_sex[$boy] += 1
+	if $boy = 'A11':
+		'<<$loss_npc_img>>'
+		'You grin: "I''m actually feeling rather horny. Be a dear and lick my pussy for me, would you?"'
+		'Vasily grins eagerly and says: "What, really? I thought you were going to make me do something I didn''t want to do!"'
+		'He eagerly drops to his knees and begins to lick your wet snatch, being egged on by his friends.'
+	elseif $boy = 'A10':
+		'<<$loss_npc_img>>'
+		'You look at Dan commandingly, and tell him: "Dan, lick my pussy. Now."'
+		'Dan is not particularly eager, but he lost. And rules are rules. He obediently puts his tongue against your pussy, and reluctantly begins to eat you out.'
+	else
+		'<<$loss_npc_img>>'
+		'You grin: "Vitek, darling... I''m actually feeling rather horny. Be a dear and lick my pussy for me, would you?"'
+		'Vitek shakes his head and quickly looks around, looking for a way out of his predicament. His friends love the idea though, and stop him from refusing. Vasily says: "You know the rules of strip poker! If you lose, you have to do what the winner says!"'
+		'With a deep sigh, Vitek drops to his knees and reluctantly puts his tongue against your wet folds. You can tell he feels thoroughly humiliated.'
+	end
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		gs 'arousal','cuni',8
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/lick'+rand(1,6)+'.jpg"></center>'
+		'For the next ten minutes, <<$boydesc>> does his best to bring you to orgasm with his tongue and lips.'
+		if pcs_horny >= 70:
+			$orgasm_or = 'yes'
+			$orgasm_txt = 'He does a fantastic job of it, and within minutes you''re mewling and breathing in short gasps as you hover on the edge of your orgasm. When you finally have to yield, his friends cheer loudly and even <<$boydesc>> has a smug look on his face when he continues to lick you. Rules are rules, after all; you didn''t say he was done.'
+			gs 'arousal','cuni',2
+		elseif pcs_horny < 70:
+			'<<$boydesc>> does his best to get you to orgasm. He''s doing all the right things and you feel very aroused, but in the end you can''t quite reach an orgasm this time. After a while you can tell his tongue is starting to feel exhausted, and you tell him he can stop.'
+			gs 'arousal','cuni',2
+		end
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Finish': gt 'shulga_room', 'start'
+	end
+end
+!When the years won, make a wish (turnip pav_slut >= 75), sex
+if $ARGS[0] = 'card_game_gg_sex':
+	minut +=1
+	npc_sex[$boy] += 1
+	if $boy = 'A11':
+		'<<$loss_npc_img>>'
+		'You smile at Vasily and say: "Vasily, dear... it''s been a while since a real man fucked my ass. Perhaps you could help me with that?"'
+		'Vasily''s eyes light up, he was expecting you to pick something humiliating. Instead, he gets to fuck you!? He immediately grabs you by the arm and drags you go the couch, before you can change your mind.'
+	elseif $boy = 'A10':
+		'<<$loss_npc_img>>'
+		'"Hey Dan, when is the last time you fucked a girl in the ass?" you prompt.'
+		'"Uhhh..." Dan replies, not sure what to say.'
+		'You wink at him and say: "If anyone asks you in fifteen minutes, you can say: fifteen minutes ago!"'
+		'It takes him a while to realize what you want; getting to fuck your ass was the last thing on his mind! He immediately grabs you by the arm and drags you go the couch, before you can change your mind.'
+	else
+		'<<$loss_npc_img>>'
+		'You state your wish to Vitek: "Fuck me properly!"'
+		'Vitek looks at you a tad confused, and you add: "In my ass, silly!"'
+		'His eyes light up, he was expecting you to pick something humiliating. Instead, he gets to fuck you!? He immediately grabs you by the arm and drags you go the couch, before you can change your mind.'
+	end
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		$temp1 = $mid('0117 1917 3717 5518 7421 9622',5*rand(0,5)+1,4)
+		$temp2 = $mid('104cumass/cumass5 204cumass/cumass4 304cumass/cumass6 504cumass/cumass13 614cumbelly/cumbelly4 714cumbelly/cumbelly10',val($mid($temp1,1,2)),val($mid($temp1,3,2)))
+!!What is the hell? Well, I wanted to pair two pictures and also an action and beside it also preserve the randomness.
+!!The variable $temp1 contains pointers and lengths and the variable $temp2 contains data.
+		gs 'arousal','anal',10
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/shulginhome/bigroom/card/sex/sex<<$mid($temp2,1,1)>>.jpg"></center>'
+		'<<$boydesc>> fucks you in the ass, like you demanded of him. He''s surprisingly careful with you, using plenty of lube and ensuring that he''s making you feel good as he does it. What a nice change from the normal way the boys treat you...'
+		gs 'gopsex', 'gg_sex_orgasm'
+		gs 'stat'
+		act 'Continue':
+			*clr & cla
+			minut += 5
+			sexpartkno = 1
+			spafinloc = val($mid($temp2,2,2))
+			pcs_mood += 35
+			gs 'cum_manage'
+			gs 'arousal', 'end'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/pc/body/cum/<<$mid($temp2,4,val($mid($temp1,3,2))-3)>>.jpg"></center>'
+			'After a while he can''t hold back any longer, and you feel the hot jets of his sperm land on your body.'
+			'You drag your finger through some of it and bring it to your tongue, to have a taste. It doesn''t taste particularly good, but it''s not bad either.'
+			'"Mmmm... delicious, babe!" you muse, more to make him feel good than anything. You smile at the proud grin <<$boydesc>> has on his face afterwards, and feel slightly better for having made his day.'
+			act 'Finish': gt 'shulga_room', 'start'
+			killvar '$temp1'
+			killvar '$temp2'
+		end
+	end
+end
+
+--- cardgame_durak ---------------------------------
+

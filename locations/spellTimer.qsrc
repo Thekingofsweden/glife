@@ -1,0 +1,91 @@
+#spellTimer
+! Run the durational components of a spell.
+! Two parts:
+!	1) "Ticks" - defined things that happen every minute that passes.
+!		Examples: HoTs or DoTs type thing - Reneneration might heal some hitpoints every minute.
+!	2) "Completion" - Something that happens when a spells duration completes.
+!		Examples: A disguise spell might last for 60 minutes, and the Completion, you set back to normal.
+!
+! Arrays involved:
+!	1) spellComplete - this holds the totminut when the spell will end
+!	2) $spellCompExec - this holds some code to run once the spell ends
+!	3) $spellTickExec - this holds some code to be executed every minute the spell is in effect
+!	4) $spellTimeName - hold the name of the spell being run
+!
+! If First Parameter is 'add', then we add an entry to the arrays
+!	In that case Expected Parameters are:
+!	$ARGS[1] = $spellTimeName - hold the name of the spell being run
+!	 ARGS[2] = Length of spell in minutes
+!	$ARGS[3] = $spellCompExec - this holds some code to run once the spell ends
+!	$ARGS[4] = $spellTickExec - this holds some code to be executed every minute the spell is in effect
+!
+! Else this will process the ticks with these Parameters:
+!	ARGS[0] = prevtotmin = Previous Total Minutes
+!	ARGS[1] = totminut = current Total Minutes since midnight Jan 1st 2016
+
+if $ARGS[0] = 'add':
+	! Call this to instantiate a timed spell.
+	! Expected Args:
+	!	$ARGS[1] = $spellTimeName - hold the name of the spell being run
+	!	 ARGS[2] = Length of spell in minutes
+	!	$ARGS[3] = $spellCompExec - this holds some code to run once the spell ends
+	!	$ARGS[4] = $spellTickExec - this holds some code to be executed every minute the spell is in effect
+	*pl ""
+	spellCompSize = arrsize('spellComplete')
+	spellComplete[spellCompSize] = totminut + ARGS[2]
+	$spellTimeName[spellCompSize] = $ARGS[1]
+	$spellCompExec[spellCompSize] = $ARGS[3]
+	$spellTickExec[spellCompSize] = $ARGS[4]
+	killvar 'spellCompSize'
+else
+	if ARGS[0] = 0:
+		BeforeTime = prevtotmin
+	else
+		BeforeTime = ARGS[0]
+	end
+	if ARGS[1] = 0:
+		AfterTime = totminut
+	else
+		AfterTime = ARGS[1]
+	end
+	i=0
+	SpellEnds = 0
+	:SpellTimerLoop
+	if i < arrsize('spellComplete'):
+		NumTicks = AfterTime - BeforeTime
+		if spellComplete[i] <= AfterTime:
+			NumTicks -= AfterTime - spellComplete[i]
+			SpellEnds = 1
+		else
+			SpellEnds = 0
+		end
+		if NumTicks > 0 and $spellTickExec[i] ! '':
+			j=0
+			:SpellTickLoop
+			if j < NumTicks:
+				dynamic $spellTickExec[i]
+				j += 1
+				jump 'SpellTickLoop'
+			end
+		end
+		if SpellEnds = 1:
+			if $spellCompExec[i] ! '':
+				dynamic $spellCompExec[i]
+			end
+			killvar 'spellComplete', i
+			killvar '$spellTickExec', i
+			killvar '$spellCompExec', i
+			killvar '$spellTimeName', i
+		end
+		i += 1
+		jump 'SpellTimerLoop'
+	end
+
+	killvar 'i'
+	killvar 'j'
+	killvar 'NumTicks'
+	killvar 'SpellEnds'
+	killvar 'BeforeTime'
+	Killvar 'AfterTime'
+end
+--- spellTimer ---------------------------------

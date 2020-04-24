@@ -1,0 +1,275 @@
+# bordel
+
+if $ARGS[0] = 'start' or $ARGS[0] = '':
+    $location_type = 'event'
+	menu_off = 1
+	gs 'stat'
+	'<center><b>Brothel</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/bordel.jpg"></center>'
+
+	if pcs_apprnc < 0:
+		'"You look half dead, get yourself treated."'
+
+		act 'Leave':gt 'Nord', 'redlight'
+	elseif pcs_apprnc < 100:
+		'"Look at you, no one will pay for such a product, get cleaned up and come back."'
+
+		act 'Leave':gt 'Nord', 'redlight'
+	else
+		act 'In the room':gt 'bordel', 'brothel'
+	end
+end
+
+if $ARGS[0] = 'brothel':
+	$sexloc = 'bordel'
+	$metka = $ARGS[0]
+	$loc = 'bordel'
+    $location_type = 'private'
+	$menu_loc = 'bordel'
+	$menu_arg = 'brothel'
+	menu_off = 0
+	cla
+	*clr
+	gs 'stat'
+	'<center><b>Your room in a brothel</b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/borroom.jpg"></center>'
+	'This is your room in the brothel. In the middle is a huge bed and not much else, there is a small side door to the <a href="exec:gt ''bordel'', ''dysh''">bathroom</a>.'
+	*nl
+	'In a brothel there is a lot of competition, in order to avoid a massacre they introduced a rule - no more than two clients per day'
+
+	act 'Leave':
+		if $clothingworntype ! 'nude':
+			gt 'Nord', 'redlight'
+		else
+			cla
+			'You can''t go outside naked.'
+
+			act 'Go to the bathroom':gt 'bordel', 'dysh'
+		end
+	end
+
+	act 'Go to the reception room and wait for customers':
+
+		if (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or pcs_makeup < 2 or pcs_leghair > 3 or pcs_pubes > 3 or sweat > 25 or pcs_hairbsh = 0:
+			cla
+			'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and with your hair looking nice. Go and sort yourself out, now!"'
+
+			act 'Go to the bathroom':gt 'bordel', 'dysh'
+		elseif $clothingworntype ! 'burlesque' and PCloStyle ! 4 and $clothingworntype ! 'nude':
+			cla
+			'You need to wear an outfit that can be used for prostitution. if you haven''t got anything suitable and you are desperate, you could work naked but you will get paid less and might get treated badly.'
+			'You can change your clothes in the bathroom.'
+
+			act 'Go to the bathroom':gt 'bordel', 'dysh'
+		else
+			gt 'bordel', 'var'
+		end
+	end
+end
+
+if $ARGS[0] = 'dysh':
+	$metka = $ARGS[0]
+	$loc = $CURLOC
+	$metkaM = 'dysh'
+	$locM = 'bordel'
+    $location_type = 'bathroom'
+	$menu_loc = 'bordel'
+	$menu_arg = 'dysh'
+	menu_off = 0
+	cla
+	*clr
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/bordysh.jpg"></center>'
+	'The bathroom is well fitted and clean as customers can access it and hygiene is very important in a brothel.'
+	'Your room is so dedicated to it purpose that your clothes are stored in here.'
+	*nl
+	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.' 
+	
+	act 'Return to your room':gt 'bordel', 'brothel'
+
+	act 'Bathroom functions':
+		bordysh = 1
+		gt 'vann', 'start'
+	end
+
+	act 'Mirror':
+		borMir = 1
+		gt 'mirror', 'start'
+	end
+
+	act 'Change your clothes': gt 'wardrobe', 'start'
+end
+
+if $ARGS[0] = 'var':
+    $location_type = 'event'
+	menu_off = 1
+	if borsexkol >= 2:gt 'bordel', 'brothel'
+	if $clothingworntype = 'nude':
+		bordelpay = 8
+	else
+		bordelpay = 10
+	end
+	gs 'npcgeneratec', 0, 'Client', rand(18,40)
+	gs 'boyStat', $npclastgenerated
+	minut += 30
+	borrand = rand(0, 10)
+
+	if borrand = 0:
+		'Customer orders one girl (1,000 <b>₽</b>).'
+		
+		gs 'willpower', 'sex', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'sex', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'bordel', 'brothel'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			borsexkol += 1
+			money += 100 * bordelpay
+			slutty += 1
+			bordelslutty += 1
+			minut += 10
+			zpprand = rand(0, 100)
+
+			if zpprand >= 70:gs 'dinSex', 'std_trigger'
+
+			picrand = rand(0,40)
+			gt 'sex', 'start'
+		end
+	elseif borrand = 1:
+		'Customer orders two girls (1,000 <b>₽</b>).'
+
+		gs 'willpower', 'sex', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'sex', 'resist', 'hard'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'bordel', 'brothel'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			borsexkol += 1
+			money += 100 * bordelpay
+			slutty += 1
+			bordelslutty += 1
+			minut += 10
+			zpprand = rand(0, 100)
+
+			if zpprand >= 70:gs 'dinSex', 'std_trigger'
+
+			gt 'podrsex', 'start'
+		end
+	elseif borrand = 2:
+		'Two clients book one girl (1,500 <b>₽</b>).'
+
+		gs 'willpower', 'sex', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'sex', 'resist', 'hard'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'bordel', 'brothel'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			borsexkol += 1
+			money += 150 * bordelpay
+			slutty += 1
+			bordelslutty += 1
+			minut += 10
+			zpprand = rand(0, 100)
+
+			if zpprand >= 70:gs 'dinSex', 'std_trigger'
+
+			gs 'npcgeneratec', 0, 'Client', rand(18,40)
+			gs 'boyStat', $npclastgenerated,'1'
+			gt 'sexdvoe', 'start'
+		end
+	elseif borrand = 3:
+		'Two clients book two girls (1,500 <b>₽</b>).'
+
+		gs 'willpower', 'sex', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'sex', 'resist'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'bordel', 'brothel'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			borsexkol += 1
+			money += 150 * bordelpay
+			slutty += 1
+			bordelslutty += 1
+			minut += 10
+			zpprand = rand(0, 100)
+
+			if zpprand >= 70:gs 'dinSex', 'std_trigger'
+
+			gs 'npcgeneratec', 0, 'Client', rand(18,40)
+			gs 'boyStat', $npclastgenerated,'1'
+			gt 'sexdvanadva', 'start'
+		end
+	elseif borrand = 4:
+		'Group of customers order one girl, price 2,000 <b>₽</b>.'
+
+		gs 'willpower', 'sex', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'sex', 'resist', 'hard'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'bordel', 'brothel'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act 'Agree':
+			borsexkol += 1
+			money += 200 * bordelpay
+			slutty += 1
+			bordelslutty += 1
+			minut += 10
+			zpprand = rand(0, 100)
+
+			if zpprand >= 70:gs 'dinSex', 'std_trigger'
+
+			guy += 3
+			killvar '$boy'
+			gs 'npcgeneratec', 0, 'Bordel Client', rand(18,40)
+			gs 'boyStat', $npclastgenerated
+			gs 'npcgeneratec', 0, 'Bordel Client', rand(18,40)
+			gs 'boyStat', $npclastgenerated,'1'
+			gs 'npcgeneratec', 0, 'Bordel Client', rand(18,40)
+			gs 'boyStat', $npclastgenerated,'2'
+			gt 'paysex', 'start'
+		end
+	elseif borrand > 4:
+		'You are not chosen.'
+
+		act 'Go to your room':gt 'bordel', 'brothel'
+		act 'Wait for another':gt 'bordel', 'var'
+	end
+end
+
+--- bordel ---------------------------------
+

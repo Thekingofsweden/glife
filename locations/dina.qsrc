@@ -1,0 +1,218 @@
+# dina
+
+$brodila = {
+	sexpartkno = 0
+	if home_owned[1] > 0:
+		gt'korr','start'
+	elseif home_owned[4] = 1:
+		gt'korr2x','start'
+	else
+		gt'street', 'start'
+	end
+}
+
+$brodilr = {
+	if StoryLine = 1 and home_owned[2] = 1:
+		gt 'pavResidential'
+	elseif home_owned[4] = 1:
+		gt'liames'
+	else
+		gt'street','start'
+	end
+}
+
+$brodilk = {
+	if home_owned[1] > 0:
+		gt'kuhr','start'
+	elseif home_owned[4] = 1:
+		gt'kuhr2x','start'
+	else
+		gt'street', 'start'
+	end
+}
+
+$brodils = {
+	if home_owned[1] > 0:
+		gt'sitr','start'
+	elseif home_owned[4] = 1:
+		gt'sitr2x','start'
+	elseif StoryLine = 1 and home_owned[2] = 1:
+		gt 'sitrPar'
+	else
+		gt'street', 'start'
+	end
+}
+
+!!This sets the default descriptors and folder names for each default image set
+$bodimgsets[0] = 'starving'
+$bodimgsets[1] = 'underweight'
+$bodimgsets[2] = 'slender'
+$bodimgsets[3] = 'healthy'
+$bodimgsets[4] = 'cute'
+$bodimgsets[5] = 'chubby'
+$bodimgsets[6] = 'overweight'
+$bodimgsets[7] = 'fat'
+$bodimgsets[8] = 'OOPS'
+$bodimgsets[9] = 'default_low'
+$bodimgsets[10] = 'starving'
+$bodimgsets[11] = 'slight'
+$bodimgsets[12] = 'skinny'
+$bodimgsets[13] = 'toned'
+$bodimgsets[14] = 'cute'
+$bodimgsets[15] = 'curvy'
+$bodimgsets[16] = 'overweight'
+$bodimgsets[17] = 'fat'
+$bodimgsets[18] = 'OOPS'
+$bodimgsets[19] = 'default_mid'
+$bodimgsets[20] = 'starving'
+$bodimgsets[21] = 'wiry'
+$bodimgsets[22] = 'lean'
+$bodimgsets[23] = 'ripped'
+$bodimgsets[24] = 'muscular'
+$bodimgsets[25] = 'herculean'
+$bodimgsets[26] = 'stocky'
+$bodimgsets[27] = 'heavy set'
+$bodimgsets[28] = 'OOPS'
+$bodimgsets[29] = 'default_high'
+$bodimgsets[30] = 'pregnant, but not showing'
+$bodimgsets[31] = 'glowing'
+$bodimgsets[32] = 'starting to show'
+$bodimgsets[33] = 'clearly showing'
+$bodimgsets[34] = 'fairly pregnant'
+$bodimgsets[35] = 'quite pregnant'
+$bodimgsets[36] = 'very pregnant'
+$bodimgsets[37] = 'extremely pregnant'
+$bodimgsets[38] = 'ready to pop'
+$bodimgsets[39] = 'default_preg'
+
+!!This sets the first 3 sets to not override images 6 and 7
+imgset6ovr[0] = 0
+imgset6ovr[1] = 0
+imgset6ovr[2] = 0
+imgset7ovr[0] = 0
+imgset7ovr[1] = 0
+imgset7ovr[2] = 0
+!!Sets the default image set count if it is 0
+if bodsetcnt <= 0: bodsetcnt = 3
+
+$week[1] = 'Monday'
+$week[2] = 'Tuesday'
+$week[3] = 'Wednesday'
+$week[4] = 'Thursday'
+$week[5] = 'Friday'
+$week[6] = 'Saturday'
+$week[7] = 'Sunday'
+
+$dogpot = {
+	gs 'boyStat', 'A191'
+}
+
+$rexpot = {
+	gs 'boyStat', 'A166'
+}
+
+$hypnoDaychange = {
+	!!if for some reason hypnoTime is too high
+	if hypnoTime > 15:hypnoTime = 15
+	timeTresh = 76 - 4*hypnoType
+	!!Withdrawal effect begings if too strong influence and no visitation
+	if daystart-hypnoDay > 7:
+		if hypnoAddict = 1:
+			hypnoWithdrawal = 1
+		elseif hypnoAddict = 2:
+			hypnoWithdrawal = 2
+		end
+	end
+	!!daily weaning of therapist influence
+	if hypnoStrength > 0: hypnoStrength -= 1
+	if hypnoTime > 0 and hypnoStrength = 0:
+		if hypnoAddict = 0:
+			hypnoStrength = 19
+			hypnoTime -= 1
+		elseif hypnoAddict = 1:
+			if rand(0,1) = 0:
+				hypnoStrength = 19
+				hypnoTime -= 1
+				if hypnoTime < 7:hypnoAddict = 0 & hypnoWithdrawal = 0
+			end
+		else
+			if rand(0,4) = 0:
+				hypnoStrength = 19
+				hypnoTime -= 1
+				if hypnoTime < 10:hypnoAddict = 1 & hypnoBlock = 0 & hypnoWithdrawal = 1
+			end
+		end
+	end
+}
+
+$hypnoAddiction = {
+	if cumloc[0] = 1 or cumloc[3] = 1:
+		killvar 'missCum'
+		if hypnoAddict = 1:
+			pcs_mood += 5
+		else
+			pcs_mood += 10
+		end
+	else
+		missCum += 1
+	end
+
+	if missCum > timeTresh:
+		if hypnoAddict = 1:
+			pcs_mood -= 5
+			pcs_horny += 10
+		else
+			pcs_mood -= 10
+			pcs_horny += 20
+		end
+	end
+
+	if hypnoWithdrawal > 0:
+		if hypnoWithdrawal = 1:
+			if missCum >= timeTresh:
+				sprt_deg -= 2*hypnoAddict
+				pcs_mood -= 10
+			else
+				if rand(0,1) = 0:sprt_deg -= hypnoAddict
+				pcs_mood -= 5
+			end
+		end
+	end
+}
+
+!!---------------
+
+$prezik = {
+	if prezik > 0:
+		if badprezik > 0:
+			if rand(1,prezik) <= badprezik: badprezik -= 1 & noprotect = 1
+		else
+			noprotect = 0
+		end
+		prezik -= 1
+	elseif prezik < 0:
+		prezik = 0
+	end
+}
+
+$ferteggfather = {
+	if fertegg > 0:
+		if thinkpreg = 0 and knowpreg = 0 and sparrppt[sparrtemp] > 0:
+			if cumarrkno[cumarrtemp] = 1:
+				if arrcomp('$cumfthname',$boy) = -1:
+					i = arrsize('$cumfthname')
+					$cumfthname[i] = $boy
+					cumtime[i] = 1
+				else
+					i = arrpos('$cumfthname', $boy)
+					cumtime[i] += 1
+				end
+			elseif cumarrkno[cumarrtemp] = 0:
+				cumtime[0] += 1
+			end
+		end
+	end
+}
+
+--- dina ---------------------------------
+

@@ -1,0 +1,750 @@
+# hunter_favors
+
+!Non-sexual favors
+if $ARGS[0] = 'housekeeping_request':
+
+	if hunters_here > 0 and huntersKnow = 1 and swiss_army_random_number < 3:
+		*clr & cla
+		swiss_army_random_number = rand(1,3)
+		minut += 5
+		if swiss_army_random_number = 1:
+			gs 'boyStat', 'A172'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big172.jpg"></center>'
+		elseif swiss_army_random_number = 2:
+			gs 'boyStat', 'A174'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big174.jpg"></center>'
+		elseif swiss_army_random_number = 3:
+			gs 'boyStat', 'A173'
+			'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big173.jpg"></center>'
+		end
+		gs 'stat'
+
+		'<<$boydesc>> approaches you. "Hey I need your help with something"'
+
+		act 'Sure what is it?':
+			cla
+			!TODO: If collective opinion is low, make the opinion gain also low
+			!If fire is not going hunters nag at Sveta
+			if campfire = 0:
+				if hunter_collective_opinion >= 15: '"<<$pcs_nickname>>," he says. "The fire is out, can you please make sure it always keeps going while we are outside?"'
+				if hunter_collective_opinion < 15:'"<<$pcs_nickname>>," he uses his stern voice. "The fire is out. You can at least keep the fire going, no way you are that much of a whiny princess"'
+				act 'Further':hunter_collective_opinion -= 3 & gt 'swamp_yard', 'campfire'
+			!Clean up the hut
+			elseif dirty_swamphouse > 5:
+				if hunter_collective_opinion >= 15: '"<<$pcs_nickname>>," he says. "The hut is a mess, could you take care of it please?"'
+				if hunter_collective_opinion < 15:'"<<$pcs_nickname>>," he uses his stern voice. "The house is a mess, take care of it."'
+				act 'Clean the hut':hunter_collective_opinion += 2 & gt 'hunter_favors', 'dirty_swamphouse'
+			!Clean up the yard if hut is clean
+			elseif dirty_swamp_yard > 5:
+				if hunter_collective_opinion >= 15:'"<<$pcs_nickname>>," he says. "The yard is a mess. Can you please take care of it?"'
+				if hunter_collective_opinion < 15:'"<<$pcs_nickname>>," he says sternly. "What the hell is all this trash doing out there? Go and pick it all."'
+				act 'Clean the yard':hunter_collective_opinion += 3 & gs 'hunter_favors', 'yard_cleanup'
+			!Cook some mushroom soup or meat stew if yard is also clean and a fire is going on in the yard
+			elseif mushroom_soup + meat_stew < 2:
+				if hunter_collective_opinion >= 15:'"<<$pcs_nickname>>," he says. "We don''t have anything for dinner. Could you please cook something?"'
+				if hunter_collective_opinion < 15:'"<<$pcs_nickname>>," he says sternly. "We don''t have anything to eat for dinner you useless bitch. Go make something before we starve."'
+				if boletus > 0:
+					act 'Cook some mushroom soup (0:30)':hunter_collective_opinion += 4 & gs 'hunter_favors', 'mushroom_soup'
+				elseif raw_meat > 0:
+					act 'Cook some meat stew (1:00)':hunter_collective_opinion += 3 & gs 'hunter_favors', 'meat_stew'
+				else
+					!TODO: Add mechanic for hunters to ask Sveta to find food
+					act '"There is nothing to cook though..."': gt 'swamp_yard', 'start'
+				end
+			else
+				if hunter_collective_opinion >= 15:'"Actually, nevermind. I got this, thanks though."'
+				if hunter_collective_opinion < 15:'"Actually, nevermind. I do not have anything you are useful for."'
+				act 'Okay':hunter_collective_opinion += 5 & gt 'swamp_yard', 'start'
+			end
+		end
+
+		gs 'willpower', 'misc', 'resist', 'easy'
+		if will_cost <= pcs_willpwr:
+			act '"I''ll help later, busy right now" (<<will_cost>> Willpower)':
+				*clr & cla
+				minut += 5
+				hunter_collective_opinion -= 3
+
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+
+				!TODO: Find new image
+				gt 'swamp_yard', 'start'
+			end
+		else
+			act '"I''ll help later, busy right now" (<font color="red"><<will_cost>> Willpower)':'<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+
+		act '"What?! Do I look like a servant to you?':
+			'<center><img <<$set_imgh>> src="images/pc/speak_to_the_hand.jpg"></center>'
+			'You walk away from <<$boydesc>>'
+			hunter_collective_opinion -= 10
+			act 'Continue': gt 'swamp_yard', 'start'
+		end
+	end
+end
+
+if $ARGS[0] = 'yard_cleanup':
+	cla & *clr
+
+	if dirty_swamp_yard < 10:
+		minut += 60 & gs 'sweat', 'add', 10
+	elseif dirty_swamp_yard < 20:
+		minut += 120 & gs 'sweat', 'add', 20
+	else
+		minut += 180 & gs 'sweat', 'add', 30
+	end
+
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/dirty_swamp_yard.jpg"></center>'
+	'You notice that the yard has gotten pretty dirty. "I need to do something about this." you think to yourself.'
+	'You grab a garbage bag and start picking up trash.'
+	'After a while you''ve finished tidying up the yard and put the trash in the garbage bag. You''re quite pleased with yourself.'
+
+	act 'Done':dirty_swamp_yard = 0 & hunter_collective_opinion += 2 & gt 'swamp_yard', 'start'
+end
+
+if $ARGS[0] = 'dirty_swamphouse':
+	cla
+	*clr
+	menu_off = 1
+	if dirty_swamphouse > 10:minut += 60 & gs 'sweat', 'add', 10
+	if dirty_swamphouse >= 10 and dirty_swamphouse < 20:minut += 120 & gs 'sweat', 'add', 20
+	if dirty_swamphouse >= 20:minut += 180 & gs 'sweat', 'add', 30
+	if huntersAndreiQw < 15:huntersAndreiQw += 1
+	if huntersIgorQw < 15:huntersIgorQw += 1
+	if huntersSergeiQw < 15:huntersSergeiQw += 1
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/dirty_swamphouse.jpg"></center>'
+	*nl
+	'Visiting the hut, you notice that the hut has gotten pretty dirty. "I need to do something about this." you think to yourself. You grab a broom and a rag and began cleaning.'
+	'After a while you''ve finished cleaning and put back everything in order again. You''re quite pleased with yourself.'
+
+	act 'Continue':dirty_swamphouse = 0 & gt 'swamphouse', 'start'
+end
+
+if $ARGS[0] = 'meat_stew':
+	cla
+	*clr
+	raw_meat -= 1
+	minut += 60
+	bucket -= 1
+	meat_stew = 2
+
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hotsoup.jpg"></center>'
+	*nl
+
+	'You cooked a stew with the meat hunters brought. There''s enough for <<mushroom_soup>> servings'
+
+	act 'Continue': gt $loc, $metka
+end
+
+if $ARGS[0] = 'mushroom_soup':
+	cla
+	*clr
+	boletus -= 1
+	minut += 30
+	bucket -= 1
+	mushroom_soup = 4
+
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hotsoup.jpg"></center>'
+	*nl
+
+	'You made a simple mushroom soup by the camppfire and carried it inside the hut. There''s enough for <<mushroom_soup>> servings'
+
+	act 'Continue': gt $loc, $metka
+end
+
+!Sexual favors
+if $ARGS[0] = 'creekside_gangbang_request':
+	*clr & cla
+	minut += 5
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/backwaterrelax2.jpg"></center>'
+	'You''re sitting down in the meadow near the road, relaxing, enjoying the nice weather, when all of a sudden Andrei, Sergei and Igor approach you. They quickly surround you not letting move away.'
+	'"Hey, <<$pcs_nickname>>, we''ve been talking with each other, and we feel that you need to repay us somehow for the lessons. So what do you say?"'
+
+	!TODO: WP check to agree?
+	act 'Agree':
+		*clr & cla
+
+		!TODO: Come back here to revamp opinion changes
+		hunter_sexual_comfort += 25
+
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/hantersgroupundress.jpg"></center>'
+		'"I guess you''re right I need to repay you somehow..."'
+		'As soon you''ve agreed the guys change their attitude towards you. Igor helps you up and leads you away from the road while Andrei and Sergei already began taking your clothes off...'
+
+		gs 'arousal', 'foreplay', 5, 'sub', 'gangbang'
+		gs 'stat'
+
+		act 'Further':
+			*clr & cla
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/hantersgrouptanga.jpg"></center>'
+			'They lay you down on the blanket and quickly pull off your panties. They drop their pants and are standing in front of you with their cocks hanging in the open. "So what are you waiting for? Start sucking."'
+
+			$clothingworntype = 'nude'
+			$pantyworntype = 'none'
+
+			gs 'arousal', 'foreplay', 2, 'sub', 'gangbang'
+			gs 'stat'
+
+			act 'Further': gt 'hunter_interactions', 'creekside_gangbang'
+		end
+	end
+
+	gs 'willpower', 'gangbang', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		!TODO: Add scene for succeeding willpower check
+		act 'Refuse (<<will_cost>> Willpower)':
+			*clr & cla
+			minut += 5
+
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+
+			hunter_collective_opinion += 5
+			hunter_sexual_comfort -= 10
+
+			gs 'stat'
+			gt 'backwater'
+		end
+	else
+		act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)':
+		*clr & cla
+		minut += 5
+
+		hunter_collective_opinion -= 25
+		hunter_sexual_comfort += 15
+
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/backwaterrelax3.jpg"></center>'
+		'You politely refuse saying you don''t owe them anything, but the men won''t accept a no and you can see that they''re clearly not satisfied with your answer.'
+		'"<<$pcs_nickname>>, don''t fuck around with us. Deep inside you know you need to repay us." said Andrei, grabbing you by the hair.'
+
+		gs 'hunter_interactions', 'creekside_rape'
+		end
+	end
+end
+
+!TODO: WP needed for bondage?
+if $ARGS[0] = 'yard_bondage':
+	if $ARGS[1] = '':
+		yard_bound_temprand = rand(1,9)
+
+		if hour >= 22 or hour < 5:
+			gs 'arousal', 'end'
+
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/released_from_bondage.jpg"></center>'
+			'Finally with the hour getting so late, Igor comes to free you from your bounds. You are so drained you almost stumble down as you feel blood rushing back to your hands.'
+			'Even though you are glad to be able to move around again, part of you aches to be tied back and used as a naked and ready sex toy'
+
+			act 'Further': gt 'swamp_yard', 'start'
+		end
+
+		cla & *clr
+
+		hunter_sexual_comfort  += 1
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_outdoors4.jpg"></center>'
+		'You are bound completely naked to some trees by the yard. Just the thought of being so helpless and exposed makes you feel butterflies in your stomach'
+		'Anyone could do anything they wanted with your body right now. You are especially aware of the nakedness of your most intimate areas, and how they are available for the hunters to do anything they might want.'
+
+		gs 'arousal', 'flash', 5, 'bound', 'exhibitionism', 'sub'
+		gs 'arousal', 'end'
+
+		minut += 5
+		gs 'stat'
+
+		hunter_selector_temprand = rand(1,3)
+		if hunter_selector_temprand = 1:
+			gs 'boyStat', 'A172'
+		elseif hunter_selector_temprand = 2:
+			gs 'boyStat', 'A173'
+		elseif hunter_selector_temprand = 3:
+			gs 'boyStat', 'A174'
+		end
+
+		if yard_bound_temprand = 4:
+			act 'Further': gt 'hunter_favors', 'yard_bondage', 'passing_bj'
+		elseif yard_bound_temprand = 5:
+			act 'Further': gt 'hunter_favors', 'yard_bondage', 'passing_fuck'
+		elseif yard_bound_temprand = 6:
+			act 'Further': gt 'hunter_favors', 'yard_bondage', 'clamp_fuck'
+		elseif yard_bound_temprand = 8:
+			act 'Further': gt 'hunter_favors', 'yard_bondage', 'unbound_fuck'
+		!elseif yard_bound_temprand = 9:
+			!act 'Further': gs 'hunter_favors', 'yard_bondage', 'unbound_gangbang'
+		!elseif yard_bound_temprand = 10:
+			!act 'Further': gs 'hunter_favors', 'yard_bondage', 'bound_gangbang'
+		else
+			act 'Wait': gt 'hunter_favors', 'yard_bondage'
+		end
+	end
+
+	if $ARGS[1] = 'lost_bet':
+		*clr & cla
+
+		hunter_collective_opinion -= 20
+		hunter_sexual_comfort += 40
+		gs 'arousal', 'flash', 15, 'bound', 'exhibitionism', 'humiliation'
+		gs 'arousal', 'end'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_outdoors2.jpg"></center>'
+		'You let Andrei bind you right by the yard. After he is done, he leaves you hanging there to take care of something'
+		'You are completely helpless and feel your nipples start to harden as you feel the breeze on your bare skin.'
+
+		act 'Wait for him to come back': gt 'hunter_favors', 'yard_bondage'
+	end
+
+	!TODO: Add variety per hunter as opposed to the same event for all
+	if $ARGS[1] = 'passing_bj':
+		cla & *clr
+		hunter_sexual_comfort += 6
+		hunter_collective_opinion -= 3
+		gs 'arousal', 'bj', 10, 'sub', 'bound', 'deepthroat'
+		gs 'arousal', 'end'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_fucked_mouth1.jpg"></center>'
+		'You notice <<$boydesc>> walking towards you. Without saying a word, he slackens your ties and pushes you down to your knees before tightening them back.'
+		'He does not waste too much time unzipping his cock and pushing it on your face. You comply and start sucking his dick.'
+		'After a minute grabs your head and starts fucking your mouth. You struggle between trying to breathe and trying not to puke as his cock rams in and out of your throat'
+
+		act 'Try and match his rythm':
+				cla & *clr
+				*nl
+				hunter_sexual_comfort += 4
+				hunter_collective_opinion -= 2
+				gs 'arousal', 'bj', 5, 'sub', 'bound', 'deepthroat'
+				gs 'arousal', 'end'
+				spafinloc = 12
+				gs 'cum_manage'
+				swallow += 1
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_fucked_mouth2.jpg"></center>'
+				'You decide to make it some more fun for for him. You start bobbing your head in rhythm with his pumping.'
+				'Whenever he is all the way down your throat, you swallow to massage his cock.'
+
+				gs 'dinsex', 'bj_random'
+				*nl
+				'Your efforts start paying off pretty quickly as he grabs your head and starts pumping even more quickly before he buries his cock all the way in'
+
+				gs 'dinsex', 'bj_swallow_random'
+				'He gives you a pat on the head and says "Now that''s a good girl" before tying you upright and walking off, satisfied and drained.'
+
+				act 'Further': gt 'hunter_favors', 'yard_bondage'
+		end
+		act 'Let him have his way':
+				cla & *clr
+				*nl
+				gs 'arousal', 'bj', 10, 'rough', 'bound', 'deepthroat'
+				gs 'arousal', 'end'
+				spafinloc = 11
+				gs 'cum_manage'
+				spafinloc = 15
+				gs 'cum_manage'
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_fucked_mouth3.jpg"></center>'
+				'You decide if you relax your throat and face it will be easier not to puke all over his dick.'
+				'He strokes your hair as he keeps furiously ramming his cock up and down your throat, fucking your face like as if it was a sex toy.'
+
+				gs 'dinsex', 'bj_random'
+				*nl
+				'After a few minutes he pulls out of your mouth and jerks off to your face, splattering your face and chest with his spunk.'
+				'As you blink the cum off your eyes, he zips up and ties you back upright before walking away without saying anything else.'
+
+				act 'Further': gt 'hunter_favors', 'yard_bondage'
+		end
+	end
+
+	if $ARGS[1] = 'passing_fuck':
+		cla & *clr
+		hunter_sexual_comfort += 10
+		hunter_collective_opinion -= 5
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_fucked2.jpg"></center>'
+		'You notice <<$boydesc>> walking towards you. Without saying a word, he unzips and bends you over.'
+		'He rubs the tip of his dick against your already wet pussy lips a few times before pushing all the way in. You cannot help but gasp as <<$boydesc>>''s cock fills your pussy'
+		'After letting you settle in to the sensation for a second he slowly starts pumping your pussy. In a minute you are screaming and moaning as he picks his pace up.'
+
+		gs 'dinsex', 'vaginal_sex', 10, 'bound'
+
+		act 'Start pumping your hips to match him':
+			cla & *clr
+			*nl
+			hunter_sexual_comfort += 5
+			hunter_collective_opinion -= 2
+
+			gs 'arousal', 'vaginal', 5, 'sub', 'bound'
+			gs 'arousal', 'end'
+			spafinloc = 0
+			pose = 3
+			gs 'cum_manage'
+			gs 'stat'
+
+			'<center><video autoplay loop src="images/locations/gadukino/sex/hunter/bound_fucked.mp4"></video></center>'
+			'You cannot get enough of the sensation of <<$boydesc>>''s cock sliding inside you. You start pumping your hips to get more of his cock.'
+
+			*nl
+			'<<$boydesc>> starts fucking you even harder before he buries his cock all the way to the hilt inside you.'
+			gs 'dinsex', 'sexcum'
+			'After catching his breath, <<$boydesc>> gives your ass a fondle before walking away, leaving you hanging.'
+
+			act 'Further': gt 'hunter_favors', 'yard_bondage'
+		end
+		act 'Let him have his way':
+				cla & *clr
+				*nl
+				gs 'arousal', 'vaginal', 10, 'rough', 'bound'
+				gs 'arousal', 'end'
+				spafinloc = 1
+				gs 'cum_manage'
+				spafinloc = 4
+				gs 'cum_manage'
+				spafinloc = 9
+				gs 'cum_manage'
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bound_fucked1.jpg"></center>'
+				'You are pretty much overwhelmed by <<$boydesc>> pumping your pussy while you are bound helpless and naked like this.'
+				'You decide to give in and enjoy the sensation of being casually fucked like a blow-up doll.'
+				*nl
+				'He roughly grabs your ass to brace himself as he picks his pace even further, pounding your pussy with near fury.'
+				'Sounds of his hips rhythmically slamming against your ass fills your surrondings, mixed with the lewd smacking sounds of his cock pumping in your pussy and your loud moans and screams'
+
+				*nl
+				'Just as you start feeling his cock throbbing in your pussy, he pulls out and blows his load all over your ass and pussy.'
+				'Without saying anything, <<$boydesc>> zips up and walks away, leaving you with cum running down your legs.'
+
+				act 'Further': gt 'hunter_favors', 'yard_bondage'
+		end
+	end
+
+	if $ARGS[1] = 'clamp_fuck':
+		cla & *clr
+		hunter_sexual_comfort += 15
+		hunter_collective_opinion -= 10
+		gs 'boyStat', 'A172'
+		gs 'pain', 6, 'pinch', 'nipples'
+		gs 'pain', 3, 'pinch', 'breasts'
+
+		gs 'arousal', 'foreplay', 5, 'rough', 'masochism'
+		gs 'arousal', 'end'
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bondage_clamps3.jpg"></center>'
+		'You are so proccupied with thinking how you are tied up to some tree completely naked and exposed, you do not hear Andrei approaching from behind.'
+		'Not missing the opportunity, he yanks you by the nipple, making you yelp loudly.'
+		'"Hey now, don''t fall asleep just yet. I have something special for you." he says before showing you a piece of leather strap and a clamp with a weight attached.'
+		'"Hope you are into a bit of fun. Or, at least we will find out." he says. You do not object, having already agreed to ''anything''.'
+
+		act 'Further':
+			cla & *clr
+			gs 'pain', 3, 'spank', 'nipples'
+			gs 'arousal', 'foreplay', 5, 'rough', 'masochism'
+			gs 'arousal', 'end'
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bondage_clamps2.jpg"></center>'
+			'Andrei does not lose time starting to pay some special attention to your nipples.'
+			'The leather strip really stings and you cannot help but yelp with each hit. But you somehow actually enjoy the sensation.'
+
+			act 'Further':
+				cla & *clr
+				gs 'pain', 10, 'pinch', 'nipples'
+				gs 'arousal', 'foreplay', 10, 'rough', 'masochism'
+				minut -= 5
+				gs 'arousal', 'end'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bondage_clamps1.jpg"></center>'
+				'Satisfied with the ''warm-up'', Andrei picks up the clamps and attaches them to your nipples'
+				'The mix of pain and pleasure from the clamps biting on your nipples is almost unbearable.'
+				'It really hurts and you want to shake them off, but yet you feel your pussy throbbing and getting wet the more you think about the pain.'
+				*nl
+				'"Please, I can''t take it anymore!" you plead.'
+				'"''Please'' what, little princess?" Andrei asks'
+
+				gs 'willpower', 'sex', 'resist'
+				if will_cost <= pcs_willpwr:
+					act 'Seriousy, please let me go! (<<will_cost>> Willpower</font>)':
+						cla & *clr
+
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+
+						hunter_collective_opinion += 10
+						hunter_sexual_comfort -= 15
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/released_from_bondage.jpg"></center>'
+						'"Well, alright, you are no fun" says Andrei before releasing you from your bonds.'
+						'You rub your sore breasts for a few seconds before shooing away Andrei staring at you giving him a last show.'
+						act 'Further': gt 'swamp_yard', 'start'
+					end
+				else
+					act 'Seriousy, please let me go! (<font color="red"><<will_cost>> Willpower</font>)':'<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+				act 'Please fuck me!':
+					cla & *clr
+					hunter_collective_opinion -= 5
+					hunter_sexual_comfort += 25
+
+					gs 'dinsex', 'vaginal_sex', 10, 'sub', 'bound', 'masochism', 'humiliation'
+					gs 'arousal', 'vaginal', 5, 'sub', 'bound', 'masochism', 'humiliation'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/bondage_clamps_fuck.jpg"></center>'
+					'"You really like this don''t you now." says Andrei before roughly penetrating you.'
+					'You let out a loud moan from the relief of finally having your aching pussy filled. It does not take Andrei long to cum with you pumping your hips and doing most of the fucking,'
+
+					gs 'arousal', 'end'
+					spafinloc = 0
+					pose = 3
+					gs 'cum_manage'
+					gs 'stat'
+
+					gs 'dinsex', 'sexcum'
+
+					*nl
+					'After catching his breath, Andrei releases you from your bonds. "We should do this again" he says, before walking away.'
+					act 'Further': gt 'swamp_yard', 'start'
+				end
+			end
+		end
+	end
+
+
+	if $ARGS[1] = 'unbound_fuck':
+		cla & *clr
+		hunter_sexual_comfort += 15
+		hunter_collective_opinion += 15
+
+		gs 'boyStat', 'A173'
+
+		gs 'arousal', 'foreplay', 5, 'exhibitionism'
+		gs 'arousal', 'kiss', 5, 'exhibitionism'
+		gs 'arousal', 'end'
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/unbound_fucked2.jpg"></center>'
+		'You do not notice Igor approaching you from behind before he starts stroking your body as he rubs his cock over your pussy lips.'
+		'"You are driving me crazy, <<$pcs_nickname>>" he says. "I cannot help it any longer, I need to have you."'
+		'You turn your head to give him a kiss as he undoes the last of the ropes'
+
+		act 'Further':
+			cla & *clr
+			gs 'arousal', 'vaginal', 5, 'exhibitionism'
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/unbound_fucked1.jpg"></center>'
+			'Igor settles on the ground and you settle on his crotch, mounting him.'
+			'You start bouncing up and down, gasping from the feeling of his cock pumping inside you'
+			gs 'dinsex', 'vaginal_sex', 10, 'exhibitonism'
+
+			act 'Further':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/unbound_fucked3.jpg"></center>'
+				'After some minutes, Igor pushes you on your hands and starts fucking you from behind.'
+				'He really picks up the pace as you start moaning and screaming like a wanton whore, getting fucked like that right out in the open.'
+
+				gs 'dinsex', 'vaginal_sex', 10, 'exhibitonism', 'rough', 'humiliation'
+				spafinloc = 4
+				gs 'cum_manage'
+				spafinloc = 8
+				gs 'cum_manage'
+				gs 'stat'
+
+				*nl 'After a few more minutes of railing your pussy, you feel Ifor pulling out and cumming all over your ass and back'
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/unbound_fucked_cum.jpg"></center>'
+
+				act 'Further':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/unbound_nude.jpg"></center>'
+					'After a couple of seconds catching your breath, you both get up. Before you walk away, Igor asks:'
+					'"<<$pcs_nickname>>, can I ask you for a favor? All of us have rather gotten used to seeing you in the nude."'
+					'"So," he says "Can you just walk around like that all the time?"'
+					'"You mean, never wear clothes around and stay naked the whole time?" you ask, surprised'
+					'"Yes, at least while it is only us around." he says. "So what do you say?"'
+
+					gs 'willpower', 'exhib', 'self', 'hard'
+					if will_cost <= pcs_willpwr:
+						act 'Agree (<<will_cost>> Willpower)':
+							cla
+							*nl
+							hunter_collective_opinion += 20
+							hunter_sexual_comfort += 30
+
+							gs 'willpower', 'pay', 'self'
+							gs 'stat'
+
+							forced_naked_day = 999999999999999
+							gs 'stat'
+
+							'"Well," you respond. "At this point we are well past the point of being shy about a bit of nudity. So sure, why not?" you reply.'
+							'"Thanks <<$pcs_nickname>>" he says, before walking away'
+							act 'Further': gt 'swamp_yard', 'start'
+						end
+					else
+						act 'Agree (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+					end
+					act 'Refuse':
+						cla
+						*nl
+						hunter_collective_opinion -= 5
+						hunter_sexual_comfort += 15
+						gs 'stat'
+
+						'"Well," you respond. "Do I look like some sex toy to you?" you reply. "What is next, you just randomly fuck me whenever?"'
+						'"You are not exactly all pure and innocent, <<$pcs_nickname>>" he says. "I think you are just being a bitchy cocktease" and walks away'
+						act 'Further': gt 'swamp_yard', 'start'
+					end
+				end
+			end
+		end
+	end
+
+	!if $ARGS[1] = 'unbound_gangbang':
+	!end
+
+	!if $ARGS[1] = 'bound_gangbang':
+	!end
+
+
+		!gs 'arousal', 'bj', 20, 'sub', 'rough', 'group'
+		!gs 'arousal', 'vaginal', 20, 'sub', 'rough', 'group'
+		!gs 'arousal', 'end'
+		!gs 'stat'
+
+		!gs 'dinsex','vaginal_sex',10,'sub'
+
+		!gs 'arousal', 'bj', 240, 'sub', 'gangbang', 'humiliation'
+		!gs 'arousal', 'hj', 240, 'sub', 'gangbang', 'humiliation'
+		!gs 'arousal', 'vaginal', 240, 'sub', 'gangbang', 'humiliation'
+		!gs 'arousal', 'anal', 240, 'sub', 'gangbang', 'humiliation'
+		!minut -= 720
+end
+
+if $ARGS[0] = 'nighttime_entertainment':
+
+	*clr & cla
+	if hunter_collective_opinion < 15:
+		hunter_collective_opinion += 3
+		hunter_sexual_comfort += 8
+	else
+		hunter_collective_opinion -= 4
+		hunter_sexual_comfort += 12
+	end
+
+	gs 'stat'
+
+	'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/bj_1.jpg"></center>'
+	'The boys immediately encircle you, pulling out their cocks. You can''t help but giggle a little at how quickly they are ready for you.'
+
+	act 'Grab Igor and Sergei':
+
+		*clr & cla
+		gs 'arousal', 'hj', 7, 'gangbang'
+		minut -= 5
+		gs 'stat'
+
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/bj_2.jpg"></center>'
+		'You grab Igor and Sergei''s cocks, jerking them off. You can feel both their dicks engorge, filling out your hands more firmly.'
+
+		act 'Suck Sergei':
+
+			*clr & cla
+			gs 'arousal', 'bj', 10, 'gangbang'
+			minut -= 7
+			gs 'stat'
+
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/bj_3.jpg"></center>'
+			'You take Sergei''s head in your mouth, slowly making your way down his shaft.'
+
+			act 'Continue':
+
+				*clr & cla
+				gs 'arousal', 'bj', 7, 'gangbang'
+				gs 'arousal', 'foreplay', 2, 'gangbang'
+				minut -= 5
+				gs 'stat'
+
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/bj_3.5.jpg"></center>'
+				'Meanwhile you feel Igor reaching under your shirt, tweaking and playing with your nipple as you bob up and down Sergei''s cock.'
+
+				act 'Suck Igor':
+
+					*clr & cla
+					gs 'arousal', 'bj', 8, 'gangbang', 'deepthroat'
+					minut -= 5
+					gs 'stat'
+
+					'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/bj_4.jpg"></center>'
+					'You let Sergei''s dick pop out of your mouth and switch to sucking Igor instead. You suck all the way down to the hilt, letting his diamond hard pulsing cock fill your throat.'
+
+					act 'Continue':
+
+						*clr & cla
+						gs 'arousal', 'bj', 8, 'gangbang', 'deepthroat'
+						gs 'arousal', 'flash', 3
+						minut -= 5
+						gs 'stat'
+
+						'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/buk_tit_expose_3.jpg"></center>'
+						'As you pick up your pace with Igor, Andrei reaches under your shirt, pulling out your tit. You feel your nipple slightly harden at the breeze.'
+						'Meanwhile Igor calls out he is going to cum soon. On cue, you suck him all the way down, milking his violently pulsing cock with your throat.'
+
+						gs	'cum_call', 'mouth', 'A173', 1
+
+						act 'Continue':
+
+							*clr & cla
+							gs 'arousal', 'foreplay', 4
+							gs 'arousal', 'flash', 3
+							minut -= 5
+							gs 'stat'
+
+							'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/buk_tit_expose_4.jpg"></center>'
+							'Satisfied, Igor idly plays with your exposed breast as Andrei pulls out the other one, letting both of your tits air out as he keeps jerking himself off.'
+
+							act 'Continue':
+
+								*clr & cla
+								gs 'arousal', 'flash', 8
+								minut -= 5
+								gs 'stat'
+
+								'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/buk_1.jpg"></center>'
+								'It does not take long before Andrei reaches his climax, ejaculating all over your face and hair.'
+								gs	'cum_call', 'face', 'A172', 1
+
+								act 'Continue':
+
+									*clr & cla
+									gs 'arousal', 'flash', 7
+									minut -= 5
+									gs 'stat'
+
+									'<center><img <<$set_imgh>> src="images/locations/gadukino/sex/hunter/nighttime_entertainment/buk_2.jpg"></center>'
+									'Seeing this, Sergei makes his way right next to you and picks up his pace for a hot moment before also jizzing all over the other side of your face, a couple drops finding their way to your exposed chest.'
+									gs	'cum_call', 'mouth', 'A174', 1
+
+									act 'Further': gt 'swamp_yard', 'campfire'
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+--- hunter_favors ---------------------------------
+

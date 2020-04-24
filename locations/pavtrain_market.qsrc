@@ -1,0 +1,927 @@
+# pavtrain_market
+
+$location_type = 'public_outdoors'
+if $ARGS[0] = 'start':
+	$metka = 'start'
+	$loc = 'pavtrain_market'
+	$menu_loc = 'pavtrain_market'
+	$menu_arg = 'start'
+	menu_off = 0
+	CLOSE ALL
+	if sound = 0:
+		if month >=11 and month <= 12 or month >=1 and month <=3:
+			if hour >= 8 and hour <= 23: PLAY 'sound/rynok.mp3',30 & PLAY 'sound/zima.mp3',30
+			if hour >= 0 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/rynok.mp3',30 & PLAY 'sound/street_leto.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+		end
+	end
+
+	clr
+	gs 'stat'
+	'<center><h2>Market</h2></center>'
+	if month >= 11 or month <= 3:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/grinokw.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/grinok.jpg"></center>'
+	end
+	*nl
+	'This small open air market is located near the train station.'
+	if arturQW = 1 and (week = 6 or week = 7) and hour < 12: act 'Wait for Arthur to arrive':hour = 12 & gt 'pavtrain_market', 'start'
+	*nl
+	if hour >= 8 and hour <= 18:
+		'The market stalls are buzzing with shoppers. Everyone seems to be in a good mood and you can hear back and forth bargaining as you pass by.'
+		if pav_slut >= 50 and rand(0,9) = 0:
+			menu_off = 1
+			gs 'stat'
+			'An Armenian man comes up to you and in broken Russian says, "You girl who like men, no? Come meet real men have good time."'
+			act 'Reject him':
+				*clr & cla
+				'You pretend not to understand what he is saying, smiling and shaking your head as you move away from him.'
+				act 'Return':gt 'pavtrain_market', 'start'
+			end
+			act 'Go with him':gt 'gevent', '3'
+			
+			exit
+		end
+		
+		act 'Go back to the station': minut += 3 & gt 'pavtrain'
+		act 'Wander through the market': gt 'pavtrain_market','events'
+		if pavtrain_book = 1: act 'Go to the book stall': minut += 5 & gt 'pavtrain_market', 3
+		if pavmarket_porn = 1: act 'Go to the porn stall': minut += 5 & gt 'pavtrain_market', 4
+
+		if arturKnow = 1 and arturQW = 0:
+			act 'Look for Arthur':gt 'arturRinok', 'start'
+		elseif arturQW = 1 and (week = 6 or week = 7):
+			if hour = 12 or hour = 13:
+				act 'Look for Arthur':gt 'arturRinok', 'work_1'
+			end
+		elseif arturQW = 2:
+			if hour = 16 and minut <= 30:
+				act 'Look for Arthur':gt 'arturRinok', 'work_2'
+			elseif hour < 16:
+				act 'Wait for Arthur to arrive':hour = 16 & minut = 0 & gt 'pavtrain_market', 'start'
+			end
+		end
+
+		if gobelen > 0 and gobQW = 0:
+			act'Sell ​​tapestry':
+				menu_off = 1
+				*clr & cla
+				gobQW = 1
+				minut += 15
+				gs'stat'
+				'You stand quietly by the entrance to the market, waiting for customers and displaying your tapestries. Shortly buyers start to gather, but a large, muscular man approaches you and says, "It is illegal to trade in the market without a trader''s license, but I may be interesting in buying your tapestries, 1000 <b>₽</b> apiece. Come and see me at my stall."'
+				'Not wanting to get into trouble, you pack your stuff away. The man was already gone, but you saw which direction he went and he should be easy to find.'
+				act 'Leave':gt 'pavtrain_market', 'start'
+			end
+		elseif gobelen > 0 and gobQW >= 1:
+			act'Sell ​​tapestry':
+				menu_off = 1
+				*clr & cla
+				minut += 15
+				gs'stat'
+				'You go to the man who offered to buy your tapestries for 1000 <b>₽</b>. You find him by his stall, smiling.'
+				if gobQW = 2:
+					'Roman welcomes you. He is interested and businesslike as he asks what you have for sale.'
+				elseif gobQW = 1:
+					gobQW = 2
+					minut += 5
+					'The man greets you and introduces himself as Roman, you tell him that your name is <<$pcs_nickname>>. After a brief chat Roman says that he is interested in seeing what you have for sale.'
+				end
+				act 'Leave':gt 'pavtrain_market', 'start'
+				act'Show your tapestry':
+					*clr & cla
+					gobelen -= 1
+					money += 1000
+					gs'stat'
+					'You show your tapestry to Roman and he gives you five hundred for it. You take the money and give him the tapestry.'
+					act 'Leave':gt 'pavtrain_market', 'start'
+				end
+				if gobelen > 1:
+					act'Sell all of your tapestries':
+						*clr & cla
+						'You show Roman your tapestries and he gives you <<gobelen * 1000>> <b>₽</b> for them. You take the money and give him the tapestries.'
+						money += gobelen * 1000
+						gobelen = 0
+						gs'stat'
+						act 'Leave':gt 'pavtrain_market', 'start'
+					end
+				end
+			end
+		end
+		if ShowerIvan = 5 and porndeal = 0 and rand(1,10) <= 4 and ricewine ! 1 and lookwine ! daystart:
+			*clr & cla
+			gs 'stat'
+			minut += 20
+			menu_off = 1
+			lookwine = daystart
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/chinese_stall01.jpg"></center>'
+			'You were looking through the market when you came upon a stall selling Chinese foods. On a shelf behind the old woman minding the stall there are a number of bottles.'
+			act 'Ask about wang-goo':
+				cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/chinese_stall01.jpg"></center>'
+				'You asked the old woman if she has any rice wine to sell. She smiles at you and points to a basket filled with rice.'
+				'"Onry 2 <b>₽</b>, hundred glam." she said in badly accented Russian, "You buy?"'
+				'"No," you reply, "I need rice wine, rice wine."'
+				'She looks at you in confusion for a moment then suddenly brightened, "Ah!" she exclaims, "Come, come!"'
+				'The old woman hurries to the other side of the stall as you follow her to where a number of smoked piglets are hung in a row.'
+				'"Here," the old woman crowed handing you one of the pigs, "Nice swine, vely nice swine."'
+				'"No, not nice swine," you sigh out in despair, "Rice! Wine."'
+				'"Yes, yes," the woman counters, "Nice swine, only 5 <b>₽</b>."'
+				*nl
+				'Just as you were about to give up, a young Chinese boy about your brother''s age arrives.'
+				'"I am sorry, my grandmother does not speak much Russian." he says as he steps beside the old woman who started to speak rapidly to him in what you assume is Chinese.'
+				'"My grandmother asks why you don''t like the piglets?" he translates as the old woman stops.'
+				'"I don''t want a pig," you reply in relief as his Russian is quite good, "I am looking for rice wine, wang-goo."'
+				'"Ah, huangjiu!" he exclaims as he turns to his grandmother and starts speaking in Chinese.'
+				'The old woman glares at you, hangs back the smoked pig and shuffles over to the shelf with the bottles. She finally picks up one of them and brings it over to you.'
+				'"Why you not say wanted rice wine." she asked in aggrieved tones, "500 <b>₽</b>."'
+				if money >= 500:
+					act 'Buy the wine':
+						*clr & cla
+						money -= 500
+						ricewine = 1
+						'You hand the woman the money and she gives you the wine.'
+						act 'Leave': gt 'pavtrain_market', 'start'
+					end
+				else
+					'You are chocked by the high price and realize that you cannot afford the wine. You apologize and turn away.'
+					
+					act 'Leave the market': gt 'pavtrain_market', 'start'
+					
+					act 'Continue browsing the market':
+						*clr & cla
+						gs 'stat'
+						minut += 15
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/market_boy01.jpg"></center>'
+						'You continue to wander through the market for another 15 minutes when the boy from the Chinese stall comes up to you.'
+						'"Hey, you really want that rice wine?" he asks after checking to make sure that no one is watching.'
+						'"Yes," you answer him, "But it''s too expensive. I can''t afford it."'
+						'"How about we make a deal." he says, "Go to the porn dealer and buy me a porn magazine and I''ll get you the wine."'
+						if pornmarkonce = 0: pornmarkonce = 1 & '"Where can I find the porn dealer?" you ask and he happily gives you directions.'
+						
+						act 'Refuse':
+							'You decline his offer as he upsettingly walks away.'
+							act 'Leave': gt 'pavtrain_market', 'start'
+						end
+						act 'Agree': porndeal = 1 & gt 'pavtrain_market', 4
+					end
+				end
+			end
+		elseif ShowerIvan = 5 and ricewine ! 1 and lookwine ! daystart:
+			*clr & cla
+			menu_off = 1
+			gs 'stat'
+			lookwine = daystart
+			if month >= 11 or month <= 3:
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/grinokw.jpg"></center>'
+			else
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/grinok.jpg"></center>'
+			end
+			'You look around the market, but the Chinese vendors don''t seem to be here today.'
+			
+			act 'Leave': gt 'pavtrain_market', 'start'
+		end
+		if porndeal = 1 and ricewine ! 1 and porndealday ! daystart:
+			*clr & cla
+			menu_off = 1
+			gs 'stat'
+			porndealday = daystart
+			lookboy = 0
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/market_boy01.jpg"></center>'
+			'The boy from the Chinese stall comes up to you as you enter the market.'
+			'"Do you have it?" he asks eagerly.'
+			if haveporn = 1: 
+				porndeal = 2 & ! to close the ricewine event
+				ricewine = 1
+				'"Do you have the wine?" you counter.'
+				'He pulls the bottle out of his backpack and you trade items.'
+				act 'Leave': gt 'pavtrain_market', 'start'
+			else
+				'You tell him that you haven''t had time to pick up the magazine yet but you were working on it.'
+				act 'Leave': gt 'pavtrain_market', 'start'
+			end 
+		elseif porndeal = 1 and ricewine ! 1 and porndealday = daystart and lookboy = 0:
+			*clr & cla
+			menu_off = 1
+			gs 'stat'
+			lookboy = 1
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/chinese_stall01.jpg"></center>'
+			'You look around the market for the boy from the Chinese stall, but you can''t find him. You decide to look for him another day.'
+			act 'Leave': gt 'pavtrain_market', 'start'
+		end
+	else
+		'The market stalls are empty. The market is only open between 08:00 and 19:00.'
+		act 'Go back to the station': minut += 3 & gt 'pavtrain'
+	end
+end
+
+if $ARGS[0] = 'events':
+	*clr & cla
+	minut += 10
+	menu_off = 1
+	gs 'stat'
+	'<center><h2>Market</h2></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/brodit'+rand(1,16)+'.jpg"></center>'
+	'You wander around the market taking in the sounds and colours but nothing catches your eye.'
+	
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	
+	if rand(0,3) = 0: gt 'pavtrain_market', rand(1,19)
+end
+
+if ARGS[0] = 1:
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/poproshaika1.jpg"></center>'
+	'You are strolling through the market when a beggar asks you for some change.'
+	act 'Don''t give money': 
+		*clr & cla
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/poproshaika2.jpg"></center>'
+		'You ignore the beggar and pretend not to hear him.'
+		act 'Stop wandering': gt 'pavtrain_market', 'start'
+		if hour >= 8 and hour <= 18:
+			act 'Wander around the market': gt 'pavtrain_market','events'
+		end
+	end
+	act 'Give some money': 
+		*clr & cla
+		money -= rand(3,20)
+		pcs_mood += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/podaet.jpg"></center>'
+		'You give the beggar a few rubles which he kindly thanks you for.'
+		act 'Stop wandering': gt 'pavtrain_market', 'start'
+		if hour >= 8 and hour <= 18:
+			act 'Wander around the market': gt 'pavtrain_market','events'
+		end
+	end
+end
+
+if ARGS[0] = 2:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/dedgitara.jpg"></center>'
+	'You see an old man playing the guitar. He''s trying to avert as much attention as he can to himself.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 3:
+	*clr & cla
+	menu_off = 1
+	pavtrain_book = 1
+	gs 'stat'
+	if month >= 11 or month <= 3:
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/bookw.jpg"></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/book.jpg"></center>'
+	end
+	'You find a stall selling various books, there are fantasy books, science fiction and romance novels, all of which costs only 350 <b>₽</b> each.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= 350:
+		act 'Buy a fantasy book (350 <b>₽</b>)':
+			*clr & cla
+			minut += 15
+			money -= 350
+			f_book += 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/accessories/books/fantasy' + rand(1,9) + '.jpg"></center>'
+			'You bought a fantasy book for 350 <b>₽</b>.'
+			act 'Leave':gt 'pavtrain_market', 'start'
+		end
+	end
+	if money >= 350:
+		act 'Buy a science fiction book (350 <b>₽</b>)':
+			*clr & cla
+			minut += 15
+			money -= 350
+			f_book += 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/accessories/books/scifi' + rand(1,6) + '.jpg"></center>'
+			'You bought a science ficiton book for 350 <b>₽</b>.'
+			act 'Leave':gt 'pavtrain_market', 'start'
+		end
+	end
+	if money >= 350:
+		act 'Buy a romance novel (350 <b>₽</b>)':
+			*clr & cla
+			minut += 15
+			money -= 350
+			w_book += 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/shared/accessories/books/romance' + rand(1,20) + '.jpg"></center>'
+			'You bought a romance novel for 350 <b>₽</b>.'
+			act 'Leave':gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+if ARGS[0] = 4:
+	*clr & cla
+	menu_off = 1
+	pavmarket_porn = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+	'You find a small stall that has many shelves with a large variety of porn magazines, a pack of brand new porn playing cards, and you can see several sex toys just behind the counter. The salesman watches over his stall with shifty eyes.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= 699 and card < 2:
+		act 'Buy cards (699 <b>₽</b>)':
+			*clr & cla
+			minut += 5
+			money -= 699
+			card = 2
+			TimesBuyPorno += 1
+			delact 'Buy cards'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+			'You try not to look into the eyes of the porn dealer as you count the money. You quickly grab the cards and shove them in your purse.'
+			act 'Leave':gt 'pavtrain_market', 'start'
+			act 'Buy something else':gt 'pavtrain_market', 4
+		end
+	end
+	if porndeal = 1:
+		if money >= 400:
+			act 'Buy a porn magazine for the Chinese boy (400 <b>₽</b>)':
+				*clr & cla
+				minut += 5
+				money -= 400
+				haveporn = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+				'You try your best not to look into the eyes of the porn dealer as you count the money. You take the magazine and quickly hide it.'
+				act 'Leave':gt 'pavtrain_market', 'start'
+				act 'Buy something else':gt 'pavtrain_market', 4
+			end
+		end
+	else
+		act 'Browse the porn magazines':
+			*clr & cla
+			gs 'arousal', 'voyeur', 5
+			gs 'arousal', 'end'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+			act 'Leave':gt 'pavtrain_market', 'start'
+			act 'Look for something else':gt 'pavtrain_market', 4
+			if TimesBuyPorno = 0:
+				'You look over the magazine covers, covered in images of half-naked girls on them. Many of them appear to be near your own age. The porn dealer notices your interest and looks at you expectantly.'
+				act 'Look through a magazine':
+					cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+					'You pick up one of the magazines and flip through the pages. Inside the magazines, you see men with large erect penis engaging in sexual acts with women who are either half-naked or fully naked, most of them look close to your own age. You feel yourself getting aroused looking at the images.'
+					act 'Leave':gt 'pavtrain_market', 'start'
+					act 'Look for something else':gt 'pavtrain_market', 4
+					act 'Ask for the price':
+						*clr & cla
+						minut += 5
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+						'Blushing profusely right down to your roots, you approach the porn dealer and stammeringly ask him the price on the magazines. The porn dealer smiles at you and says, "All magazines are 400 <b>₽</b> each."'
+						act 'Leave':gt 'pavtrain_market', 'start'
+						act 'Look for something else':gt 'pavtrain_market', 4
+						if money >= 400:
+							act 'Buy magazine (400 <b>₽</b>)':
+								*clr & cla
+								minut += 5
+								money -= 400
+								pornMagazine = 40
+								TimesBuyPorno += 1
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+								'You try not to look into the porn dealers eyes as you hand him the money. You take the magazine and quickly hide it under your shirt.'
+								act 'Leave':gt 'pavtrain_market', 'start'
+								act 'Buy something else':gt 'pavtrain_market', 4
+							end
+						end
+					end
+				end
+			elseif TimesBuyPorno > 0 and TimesBuyPorno < 5:
+				'The porn dealer notices you coming over and asks, "Looking to buy a magazine? They''re only 400 <b>₽</b> each."'
+				act 'Look through a magazine':
+					cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+					'You pick up one of the magazines and flip through the pages. Inside the magazines, you see men with large erect penis engaging in sexual acts with women who are either half-naked or fully naked, most of them look close to your own age. You feel yourself getting aroused looking at the images.'
+					act 'Leave':gt 'pavtrain_market', 'start'
+					act 'Look for something else':gt 'pavtrain_market', 4
+					if money >= 400:
+						act 'Buy magazine (400 <b>₽</b>)':
+							*clr & cla
+							minut += 5
+							money -= 400
+							pornMagazine = 40
+							TimesBuyPorno += 1
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+							'You try not to look into the porn dealers eyes as you hand him the money. You take the magazine and quickly hide it under your shirt.'
+							act 'Leave':gt 'pavtrain_market', 'start'
+							act 'Buy something else':gt 'pavtrain_market', 4
+						end
+					end
+				end
+			elseif TimesBuyPorno >= 5:
+				'The porn dealer sees you approaching the stall, "Ah, my best customer! Welcome back!"'
+				act 'Look through a magazine':
+					cla
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+					'You pick up one of the magazines and flip through the pages. Inside the magazines, you see men with large erect penis engaging in sexual acts with women who are either half-naked or fully naked, most of them look close to your own age. You feel yourself getting aroused looking at the images.'
+					act 'Leave':gt 'pavtrain_market', 'start'
+					act 'Look for something else':gt 'pavtrain_market', 4
+					if money >= 400:
+						act 'Buy magazine (400 <b>₽</b>)':
+							*clr & cla
+							minut += 5
+							money -= 400
+							pornMagazine = 40
+							TimesBuyPorno += 1
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pornmag.jpg"></center>'
+							'You try not to look into the porn dealers eyes as you hand him the money. You take the magazine and quickly hide it under your shirt.'
+							act 'Leave':gt 'pavtrain_market', 'start'
+							act 'Buy something else':gt 'pavtrain_market', 4
+						end
+					end
+				end
+			end
+		end
+	end
+	act 'Ask to see the sex toys':
+		*clr & cla
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/sextoys.jpg"></center>'
+		'He lets you step behind the counter so you can get a better look, as you do he says. "Take a look and let me know what you would like." You see several 15cm dildos. Each with a tag, "Only 700 <b>₽</b> each." You also see a small selection of vibrators in various colors, mostly pink. "Only 700 <b>₽</b> each." To one side you see many butt plugs, rubber and metal. "Only 700 <b>₽</b>each." Near the bottom is several strapon harnesses without a dildo. "Only 500 <b>₽</b>each."'
+		act 'Leave':gt 'pavtrain_market', 'start'
+		act 'Look for something else':gt 'pavtrain_market', 4
+		if money >= 700 and middildo = 0:
+			act 'Buy a 15cm dildo (700 <b>₽</b>)':
+				cla
+				minut += 5
+				middildo = 1
+				money -= 700
+				pcs_horny += 10
+				TimesBuyPorno += 1
+				'<center><img <<$set_imgh>> src="images/pc/items/15cm.jpg"></center>'
+				if pcs_horny >= 50 and pav_slut < 75:
+					'You buy a dildo and hastily hide it, while your face blushes with embarrassment.'
+				else
+					'You buy a dildo and calmly hide it.'
+				end
+				act 'Leave':gt 'pavtrain_market', 'start'
+				act 'Buy something else':gt 'pavtrain_market', 4
+			end
+		end
+		if money >= 700 and vibrator = 0:
+			act 'Buy vibrator (700 <b>₽</b>)':
+				cla
+				minut += 5
+				vibrator = 1
+				money -= 700
+				pcs_horny += 10
+				TimesBuyPorno += 1
+				if pcs_horny >= 50 and pav_slut < 75:
+					'You buy a vibrator and hastily hide it, while your face blushes with embarrassment.'
+				else
+					'You buy a vibrator and calmly hide it.'
+				end
+				act 'Leave':gt 'pavtrain_market', 'start'
+				act 'Buy something else':gt 'pavtrain_market', 4
+			end
+		end
+		if money >= 700 and analplug = 0:
+			act 'Buy butt plug (700 <b>₽</b>)':
+				cla
+				minut += 5
+				money -= 700
+				analplug = 1
+!!this needs to be changed from analplug bought to smallbp for the smallone
+				pcs_horny += 10
+				TimesBuyPorno += 1
+				'<center><img <<$set_imgh>> src="images/pc/items/smallbp.jpg"></center>'
+				if pcs_horny >= 50 and pav_slut < 75:
+					'You buy a butt plug and hastily hide it, while your face blushes with embarrassment.'
+				else
+					'You buy a butt plug and calmly hide it.'
+				end
+				act 'Leave':gt 'pavtrain_market', 'start'
+				act 'Buy something else':gt 'pavtrain_market', 4
+			end
+		end
+		if dildo = 1:
+			if money >= 500 and strapon = 0:
+				act 'Buy strap-on harness (500 <b>₽</b>)':
+					cla
+					minut += 5
+					strapon = 1
+					strapnumber = 1
+					money -= 500
+					pcs_horny += 10
+					TimesBuyPorno += 1
+					'<center><img <<$set_imgh>> src="images/pc/items/harness.jpg"></center>'
+					if pcs_horny >= 50 and pav_slut < 75:
+						'You buy a strap-on harness and hastily hide it, while your face blushes with embarrassment.'
+					else
+						'You buy a strap-on harness and calmly hide it.'
+					end
+					act 'Leave':gt 'pavtrain_market', 'start'
+					act 'Buy something else':gt 'pavtrain_market', 4
+				end
+			end
+		else
+			if money >= 1200 and strapon = 0 and middildo = 0:
+				act 'Buy strap-on harness with a 15cm dildo (1200 <b>₽</b>)':
+					cla
+					minut += 5
+					strapon = 1
+					middildo = 1
+					strapnumber = 1
+					money -= 1200
+					pcs_horny += 10
+					TimesBuyPorno += 1
+					'<center><img <<$set_imgh>> src="images/pc/items/harness.jpg"></center>'
+					if pcs_horny >= 50 and pav_slut < 75:
+						'You buy a strap-on harness and hastily hide it, while your face blushes with embarrassment.'
+					else
+						'You buy a strap-on harness and calmly hide it.'
+					end
+					act 'Leave':gt 'pavtrain_market', 'start'
+					act 'Buy something else':gt 'pavtrain_market', 4
+				end
+			end
+		end
+	end
+end
+
+if ARGS[0] = 5:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/dedgitara.jpg"></center>'
+	'You see an old man playing the guitar. He''s trying to avert as much attention as he can to himself.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 6:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/nenavizublyadcigan.jpg"></center>'
+	'You meet a Gypsy woman. She offers to tell your fortune.'
+	act 'Decline': gt 'pavtrain_market', 'start'
+	act 'Accept':
+		*clr & cla
+		minut += 5
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/gadaet'+rand(1,2)+'.jpg"></center>'
+		'You agree and Gypsy takes your hand before she predicts you will have great happiness and lots of money. Afterwards, she promptly walks away.'
+		act 'Something''s wrong':
+			*clr & cla
+			money = 0
+			pcs_mood -= 50
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pusto.jpg"></center>'
+			'With a sneaking suspicion you start looking through your stuff. Your wallet is nowhere to be found!'
+			act 'Find the Gypsy':
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/okliknut.jpg"></center>'
+				'You search the area hoping to find the thief, but she has already disappeared into the crowd.'
+				act 'Back': gt 'pavtrain_market', 'start'
+			end
+		end
+	end
+end
+
+if ARGS[0] = 7:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/kosmetic.jpg"></center>'
+	tovpay = 800
+	'You see some cosmetics on sale for <<tovpay>> <b>₽</b>.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= tovpay:
+		act 'Buy the cosmetics (800 <b>₽</b>)':
+			minut += 15
+			money -= tovpay
+			kosmetica += 50
+			gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+if ARGS[0] = 8:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/vitaminki.jpg"></center>'
+	tovpay = 105
+	'You see some vitamins on sale for <<tovpay>> <b>₽</b>.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= tovpay:
+		act 'Buy vitamins (105 <b>₽</b>)':
+			minut += 15
+			vitamin += 20
+			money -= tovpay
+			gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+if ARGS[0] = 9:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/condoms.jpg"></center>'
+	tovpay = 80
+	'You see a booth selling condoms for <<tovpay>> <b>₽</b>.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= tovpay:
+		act 'Buy condoms (80 <b>₽</b>)':
+			minut += 15
+			prezik += 5
+			i = 5
+			:cndmlp
+			if rand(0,49)-6*(8-tovpay/10) <= 0:badprezik += 1
+			if i > 0: i-= 1 & jump 'cndmlp'
+			killvar 'i'
+			money -= tovpay
+			gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+if ARGS[0] = 10:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/balzam.jpg"></center>'
+	tovpay = 100
+	'There is lip balm on sale for <<tovpay>> <b>₽</b>.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= tovpay:
+		act 'Buy lip balm (100 <b>₽</b>)':
+			*clr & cla
+			minut += 15
+			lipbalm += 30
+			money -= tovpay
+			gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+if ARGS[0] = 11:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/arthur/artur.jpg"></center>'
+	if arturKnow = 0:
+		'Someone suddenly calls out to you, "Hey pretty girl, do you want a fresh, juicy tangerine?"'
+		act 'Look': gt 'arturRinok','start'
+	else
+		'Someone suddenly calls out to you, "Hey <<$pcs_nickname>>, do you want a fresh, juicy tangerine?"'
+		act 'Go and see Arthur': gt 'arturRinok','start'
+	end
+end
+
+if ARGS[0] = 12:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/cheburek.jpg"></center>'
+	'Walking through the market, you came across an old woman selling pies.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if pcs_energy <= 80:
+		act 'Buy a pie for 20 <b>₽</b>':
+			*clr & cla
+			fat+=3
+			frost = 0
+			pcs_health += 5
+			pcs_mood += 5
+			pcs_hydra -= 5
+			pcs_energy+=5
+			money-=20
+			minut+=10
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/eat.jpg"></center>'
+			'The pie is still warm as the woman hands it over to you. Barely able to keep yourself away from it, you find a place to sit down and enjoy the pie.'
+			act 'Continue walking through the market': gt 'pavtrain_market','events'
+		end
+	else
+		*p ', But you are not hungry right now.'
+	end
+end
+
+if ARGS[0] = 13:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/dropwallet.jpg"></center>'
+	'You see a wallet fall out of a woman''s purse.'
+	act 'Tell her':
+		*clr & cla
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/vernutwallet.jpg"></center>'
+		'You call to the woman and hold out her wallet. She looks at you and releasing she gratefully takes her wallet back and walks away.'
+		act 'Continue walking through the market': gt 'pavtrain_market','events'
+	end
+	act 'Look through the purse':
+		*clr & cla
+		minut += 5
+		i = rand(40,200)
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/zaglanut.jpg"></center>'
+		'You open the wallet and you see that there''s <<i>> <b>₽</b>'
+
+		gs 'willpower', 'misc', 'self', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Take the money and throw away the wallet (<<will_cost>> Willpower)':
+				*clr & cla
+				money += i
+				pcs_mood += 10
+				killvar 'i'
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'You just need the money.'
+				
+				act 'Continue': gt 'pavtrain_market','start'
+			end
+		else
+			act 'Take the money and throw away the wallet (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Catch up with the woman and return her purse':
+			*clr & cla
+			pcs_mood += 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/proverka.jpg"></center>'
+			'You catch up with the woman and telling her she dropped something you hand her the purse. The woman checks her money is still there and seeing that everything is in place, she thanks you and walked away.'
+			act 'Stop wandering': gt 'pavtrain_market', 'start'
+			if hour >= 8 and hour <= 18:
+				act 'Wander around the market': gt 'pavtrain_market','events'
+			end
+		end
+	end
+end
+
+if ARGS[0] = 14:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/rebenok.jpg"></center>'
+	'You see a young mother and her crying baby.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 15:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/rezba.jpg"></center>'
+	'You find a stall with beautiful things carved out of wood and metal.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 16:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/gruzchik.jpg"></center>'
+	'Looking around, you almost collide with a man pulling a small cart.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 17:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/meatlavka.jpg"></center>'
+	'You wander past a the meet seller and see a butcher working with an axe.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+end
+
+if ARGS[0] = 18:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/dirka.jpg"></center>'
+	'As you walk past a stall you notice a small hole torn in the canvas.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	gs 'willpower', 'voyeur', 'self', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Look through the hole (<<will_cost>> Willpower)':
+			*clr & cla
+			gs 'arousal', 'voyeur', 2
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/pereodev'+rand(1,15)+'.jpg"></center>'
+			'You look inside the tent and see ' + $pavtrain_marketrandtext[rand(3,7)]
+			act 'Leave': gt 'pavtrain_market', 'start'
+		end
+	else
+		act 'Look through the hole (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+end
+
+if ARGS[0] = 19:
+	*clr & cla
+	menu_off = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/market/birthcontrolpills.jpg"></center>'
+	tovpay = 1500
+	'You see a booth selling birth control pills for <<tovpay>> <b>₽</b>.'
+	act 'Stop wandering': gt 'pavtrain_market', 'start'
+	if hour >= 8 and hour <= 18:
+		act 'Wander around the market': gt 'pavtrain_market','events'
+	end
+	if money >= tovpay:
+		act 'Buy birth control pills (1500 <b>₽</b>)':
+			*clr & cla
+			minut += 15
+			tabletki += 1
+			if rand(0,49) - (6*(8-tovpay/50)) <= 0: 
+				temp = rand(0,3)
+				if temp = 0: 
+					tabletkiold += 1 & !Pills are expired and less effective
+				elseif temp = 1:
+					tabletkifake += 1 & !Pills are counterfeit and useless
+				elseif temp = 2: 
+					tabletkirej += 1 & !Pills are factory rejects with variable strength
+				else
+					!Pills were tampered with
+					if rand(0,100) = 0:
+						tabletkifert += 1 & ! pills were replaced with fertility hormones
+					else
+						tabletkisug += 1 & ! pills were all replaced with sugar pills
+					end
+				end
+			end
+			money -= tovpay
+			gt 'pavtrain_market', 'start'
+		end
+	end
+end
+
+--- pavtrain_market ---------------------------------
+

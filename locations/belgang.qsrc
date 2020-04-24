@@ -1,0 +1,231 @@
+# belgang
+
+menu_off = 1
+
+if $ARGS[0] = 'workofdebt':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+	'The tinted window slides down and you find yourself staring directly into Vadim''s face. "Slut, get in. It''s time for you to work off your debts."'
+	*nl
+	'You owe him: <<belgangPay>> <b>₽</b>'
+	if belgangPayWeek >= 0:
+		'This week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+	else
+		'This week you need to pay him: 0 <b>₽</b>'
+		'You have reduced your next weeks payment by: <<-1*belgangPayWeek>> <b>₽</b>'
+	end
+	
+	if money >= belgangPay: 
+		act 'Pay the remaining debt (<<belgangPay>> <b>₽</b>)': gt 'belgang', 'payremaining'
+	end
+	
+	if money >= belgangPayWeek and money < belgangPay:
+		act 'Pay for this week (<<belgangPayWeek>> <b>₽</b>)':
+			cla & *clr
+			minut += 5
+			money -= belgangPayWeek
+			belgangPay -= belgangPayWeek
+			belgangPayWeek = 0
+			
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/vadim/belymoney.jpg"></center>'
+			'You don''t get in, instead you hand him the payment for this week. "That''s it, everything for this week."'
+			'He takes a moment to count the money and nods approvingly. "Very good, it''s the full amount. See you next week, <<$pcs_nickname>>."'
+			*nl
+			'You owe him: <<belgangPay>> <b>₽</b>'
+			'This week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+			
+			act 'Move on': gt $loc	
+		end
+	end
+	
+	act 'Get into the jeep':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/vadim/belyjeep.jpg"></center>'
+		'You open the door and take a seat in the back as Vadim drives through the city.'
+		if temper >= 18 and sunWeather = 1 and hour <= 19 and rand (0,2) = 0:
+			cla & *clr
+			minut += 30
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/vadim/belyjeep.jpg"></center>'
+			'As the car leaves the city and goes off-road at some point, one of the more silent criminals feels the need to explain: "We have a little picnic planned for today. We know just the place... nice and quiet. You''ll be able to entertain us there without interruptions."'
+			'The way he says it sends a shiver down your spine.'
+			'Finally, a few minutes after the car has left the main roads, you stop somewhere. You have absolutely no idea where you are. The criminals get out of the car and Vadim does the same, telling you to get out and follow them.'
+			
+			act 'Get out of the car': gt'belpicknick'
+		else
+			cla & *clr
+			minut += 5
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+			'A few minutes later you arrive at an apartment block, it isn''t is great shape but Vadim leads you inside and up to a second floor apartment.'
+			'The apartment is actually in decent shape. The minimal amount of furniture and decorations don''t make it look very hospitable though, and you assume this might just be one of the places Vadim rented for business or pleasure, not for living in.'
+			'Noticing you''re spending too much time looking around and aren''t following him swiftly enough, he grabs you by your hair and pulls your face to his, roughly shoving his tongue in your mouth. You can smell the tobacco on his breath, and do your best to ignore the taste as he kisses you.'
+	
+			act 'Kiss him': gt 'BelSex', 'sex'
+		end
+	end
+elseif $ARGS[0] = 'payday':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+	'Vadim Bely steps out, along with several of his henchmen. He gives you a smile that you know is 100% fake and behaves amicably while he says: "Long time no see, <<$pcs_nickname>>! How are you? I hope you bear good news?"'
+	*nl
+	'You owe him: <<belgangPay>> <b>₽</b>'
+	if belgangPayWeek >= 0:
+		'This week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+	else
+		'This week you need to pay him: 0 <b>₽</b>'
+		'You have reduced your next weeks payment by: <<-1*belgangPayWeek>> <b>₽</b>'
+	end
+	
+	if money >= belgangPay: 
+		act 'Pay the remaining debt (<<belgangPay>> <b>₽</b>)': gt 'belgang', 'payremaining'
+	elseif money >= belgangPayWeek and money < belgangPay and belgangPayWeek > 0:
+		act 'Pay for this week (<<belgangPayWeek>> <b>₽</b>)':
+			cla & *clr
+			minut += 5
+			money -= belgangPayWeek
+			belgangPay -= belgangPayWeek
+			belgangPayWeek = 0
+			
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/vadim/belymoney.jpg"></center>'
+			'You hand over the payment for this week. "That''s it, everything for this week."'
+			'He takes a moment to count the money and nods approvingly. "Very good, it''s the full amount."'
+			gs 'belgang', 'saunamention'
+			
+			act 'Continue':
+				cla & *clr
+				minut += 5
+				belgangPayWeek += belgangPayWeekAmount
+				if belgangPayWeek > belgangPay:
+					belgangPayWeek = belgangPay
+				end
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+				'He gives you a fake smile. "See you next week, <<$pcs_nickname>>."'
+				*nl
+				'You owe him: <<belgangPay>> <b>₽</b>'
+				'Next week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+				
+				act 'Move on': gt $loc
+			end
+		end
+	elseif belgangPayWeek <= 0:
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+		if belfirstweek = 1:
+			belfirstweek = 0
+			'Vadim Bely steps out, along with several of his henchmen. He gives you a smile that you know is 100% fake and behaves amicably while he says: "Long time no see, <<$pcs_nickname>>! Remember next Sunday you need to start paying us," he says.'
+		else
+			'Vadim Bely steps out, along with several of his henchmen. He gives you a smile that you know is 100% fake and behaves amicably while he says: "Long time no see, <<$pcs_nickname>>! You are doing good. If you keep paying early, this will work out for the both of us," he says.' 
+		end
+		gs 'belgang', 'saunamention'
+		act 'Continue':
+			cla & *clr
+			minut += 5
+			belgangPayWeek += belgangPayWeekAmount
+			if belgangPayWeek > belgangPay:
+				belgangPayWeek = belgangPay
+			end
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+			'He gives you a fake smile, gets back in his jeep and drives away.'
+			*nl
+			'You owe him: <<belgangPay>> <b>₽</b>'
+			'Next week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+			
+			act 'Move on': gt $loc
+		end
+	else 
+		act 'You don''t have the money':
+			cla & *clr
+			minut += 5
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+			'You''re tearing up as you look down at your shoes, not daring to look him in the eye. "I''m... I''m sorry, mister Bely. I simply don''t have the of money. If you give me some more time, I wi-"'
+			if belgangPayextension = 0:	
+				belgangPayextension += 1
+				belgangPay += 2000
+				belgangPayWeek += 2000
+				if belgangPayWeek > belgangPay:
+					belgangPayWeek = belgangPay
+				end
+				'He frowns, abruptly cutting you off. You can see the disapproval in his eyes when you glance up. "That is very unfortunate, <<$pcs_nickname>>," he says. "You can pay me next week, but I expect 2000 <b>₽</b> extra."'
+				if belgangProstitute = 0:
+					belgangProstitute = 1
+					'"And don''t worry, <<$pcs_nickname>>. I''ll give you some opportunities to help you pay your debts," he says with a dangerous smile.'
+				end
+				gs 'belgang', 'saunamention'
+				*nl
+				'You owe him: <<belgangPay>> <b>₽</b>'
+				'Next week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+				
+				act 'Move on': gt $loc
+			elseif belgangPayextension = 1:	
+				belgangPayextension += 1
+				belgangPay += 5000
+				belgangPayWeek += 5000
+				if belgangPayWeek > belgangPay:
+					belgangPayWeek = belgangPay
+				end
+				'He frowns, abruptly cutting you off. You can see the disapproval in his eyes when you glance up. "That is the last time, <<$pcs_nickname>>," he says. "You can pay me next week, but I expect 5000 <b>₽</b> extra.'
+				gs 'belgang', 'saunamention'
+				*nl
+				'You owe him: <<belgangPay>> <b>₽</b>'
+				'Next week you need to pay him: <<belgangPayWeek>> <b>₽</b>'
+				
+				act 'Move on': gt $loc
+			else 
+				'He frowns, abruptly cutting you off. You can see the disapproval in his eyes when you glance up. "That is very unfortunate <<$pcs_nickname>>. I had such high hopes for you," he says. "I guess we will have to find an alternative way for you to pay off your debts."'
+				'He then directs his attention to two of his henchmen: "She''s coming with us."'
+				'Too scared to resist, you simply let the two men grab you by your arms and pull you into the Mitsubishi. Vadim gets back behind the wheel and within minutes you''ve left Pavlovsk. You notice you''re being taken to the city, and you wonder what they''re planning for you there.'
+				
+				act 'In the city...':
+					cla & *clr
+					minut+=60
+					workDolg = belgangPay
+					workDolg -= money
+					money = 0
+					belgangPayWeek = 0
+					belgangPayWeekAmount = 0
+					belgangPay = 0
+					belgangProstitute = 0
+					
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+					'The car pulls over in front of the sauna. After one of the criminals makes sure the coast is clear, two of the men pull you out of the car and escort you to a room inside the building. Vadim follows them and asks to be left alone with you for a minute. After the other guys leave the room, he explains: "Until you pay off your debts, we own you. You will live here and work here. Any expenses you incur while you are here will be added to your debt. Understood?"'
+					'Silence fills the room as he waits for you to acknowledge what he just said. Mortified about what might happen if you don''t, you nod. He decides to paint the picture anyway: "If you try to escape or refuse to work, we''ll put a bullet in your head, chop you up and bury you in the woods in pieces. And that would be a waste, with such a pretty face as yours." He pinches your cheeks and then slaps your face; not hard enough to be painful, but it certainly drives the message home. You can tell he''s dead serious.'
+					'After looking you in the eyes for a few more seconds to make sure you get the message, he turns around and leaves. You are all alone now.'
+					
+					act 'Look around': gt 'sauna', 'saunaroom'
+				end	
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'payremaining':
+	cla & *clr
+	minut += 5
+	money -= belgangPay
+	belgangPay = 0
+	belgangPayWeek = 0
+	belgangPayWeekAmount = 0
+	belgangProstitute = 0
+	npc_QW['A113'] = 2
+	
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/vadim/belymoney.jpg"></center>'
+	'No, today you won''t work for him, you will never work for him again, today you will finally be free. "Here is everything. May debts are payed." You hand it over to Vadim while his henchmen keep a lookout. Once again, he gives you an awkward smile, very pleased how things have turned out. "It''s all there, right? I would hate to have to come back for the rest."'
+	'You nod at him, reassuring him. "It''s all there, mister Bely. Count it if you don''t believe me."'
+	'He takes a moment to count the money and nods approvingly. "Very good, it''s the full amount. Pleasure doing business with you, <<$pcs_nickname>>. Take care of yourself."'
+	gs 'belgang', 'saunamention'
+	'He signals his crew to get back in the jeep. You barely manage to dodge the spray of pebbles and dirt the spinning tires spew your way, as they drive off as fast as they can, probably on their way to another ''business appointment''.'
+	
+	act 'Move on': gt $loc
+end
+
+if $ARGS[0] = 'saunamention':
+	if slutty >= 20 and SaunaWhore = 0:
+		SaunaWhore = 1
+		'"Since you were such an obedient whore, <<$pcs_nickname>>, I''ll give you a small parting gift. If you ever need money, go to the sauna in the city and tell them Mr. Bely sent you. You will have plenty of opportunities to use your ''talents'' there."'
+	elseif slutty >= 10 and SaunaWhore = 0:
+		SaunaWhore = 1
+		'"If you ever need money, go to the sauna in the city and tell them Mr. Bely sends you. There you will have plenty of opportunities to use your ''talents''."'
+	end
+end
+
+--- belgang ---------------------------------
+

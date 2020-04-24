@@ -1,0 +1,808 @@
+# foto_shoot
+
+if $ARGS[0] = 'model':
+	menu_off = 1
+	if model = 0:model = 1
+	*clr & cla
+	minut += 5
+	modelpay = (pcs_mdlng/2 * 10) + ((min(city_modelling, 700) + pcs_apprnc)/2)
+	modelpayfin = 900 + (15*rand(0,5))
+	gs 'stat'
+	'<center><b><font color="maroon">Manager</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+	'"Hello <<$pcs_firstname>>. Are you here to work? What kind of shoot would you like to do today?"'
+	*nl
+!!	'<a href="exec:gs ''shortgs'',''msg'',''There are three types of shoots: Catalog, Fashion, and Glamour. A catalog shoot is any shoot that is meant to appear in a shopping magazine or online catalog. They don''t do much for your fame but the base pay is steady. A fashion shoot is more stylized and though the base pay is not as high, there will be a bonus tip based on your modelling skill and fame. A glamour shoot will always involve nudity or risqué clothing and will typically be erotic in nature. This type of modelling will have good pay with good bonuses based on skill and fame, but also will spread your fame beyond the city far more quickly. If you grew up in a small town outside St. Petersburg, the pictures may reach its populace sooner rather than later.''">Modelling Shoot Guide</a>'
+	'<center><b><font color="blue">Modelling guide</font></b></center>'
+	*pl '<center><table align="center" width=80%>'
+	'<b>Catalog</b> - A catalog shoot is any shoot that is meant to appear in a basic paper or online catalog. They don''t do much for your fame but the base pay is steady.'
+	'<b>Fashion</b> - A fashion shoot is more stylized and though the base pay is not as high, there will be a higher bonus based on your modelling skill and fame.'
+	'<b>Glamour</b> - A glamour shoot will always involve nudity or risqué clothing, though will always be artistic in nature. This type of modelling will have good pay with good bonuses based on skill and fame, but also will spread your fame beyond the city far more quickly. If you grew up in a small town outside St. Petersburg, the pictures may reach its populace sooner rather than later.'
+	'<b>Erotic</b> - An erotic shoot makes no excuses about its purpose. The intent is to capture sexual images of female bodies to sell to pornography sites and erotic magazines. This type of modelling will have the highest bonuses based on your appearance but will also increase your fame in the porn industry as well.'
+	*p '</table></center>'
+	act'Never mind':
+		cla
+		'"Sorry, I just realized that I have something to do right now. Can I come back later?"'
+		'"Sure, no problem <<$pcs_lastname>>, just let us know when you''re ready to work.'
+		act'Leave':gt 'foto','studio'
+	end
+	
+	act'Actually I''d like to practice':gt'foto','practicemodel'
+		
+	act'"I''d like to do a catalog shoot"':
+		cla & *clr
+		if modelfoto >= 10 and pcs_mdlng > 20 and modelfoto_fashion < 1:gt'foto_events','fashion_persuasion'
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+		'"Alright, what kind of shoot? Clothing or swimsuits?"'
+		
+		act'Clothing':
+			shoot_type = catalog
+			modelfoto_catalog += 1
+			cla & *clr
+			mdlng_exp += rand(2,5)
+			minut += 120
+			money += 450
+			'<center><video autoplay loop src="images/locations/city/citycenter/photo/fashion3.mp4"></video></center>'
+			'You spend two hours modelling for the online catalogs of retail clothing stores, wearing various different dresses but the same expression. It''s boring but it still gets you paid.'
+			*nl
+			'You recieve 450 <b>₽</b> for the job.'
+			act 'Leave':gt 'foto', 'end'
+		end
+		act'Swimsuits':
+			shoot_type = swim_catalog
+			modelfoto_catalog += 1
+			cla & *clr
+			mdlng_exp += rand(2,5)
+			minut += 120
+			money += 450
+			'<center><video autoplay loop src="images/locations/city/citycenter/photo/bikini/<<rand(1,3)>>.mp4"></video></center>'
+			bikinicatalog += 1
+			'You change in and out of various different bikinis, modelling them with the same pose and expression for use in online and department store catalogs.'
+			*nl
+			'You recieve 450 <b>₽</b> for the job.'
+			act 'Leave':gt 'foto', 'end'
+		end
+	end
+	
+	act'"I''d like to do a fashion shoot"':
+		if pcs_mdlng < 20:
+			msg'"Sorry, but you aren''t a skilled enough model to do this kind of publication yet. Maybe get some practice in on your off days."'
+		else
+			cla & *clr
+			
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+			'"Alright, what kind of shoot would you like to do? Fashion, bikini, or lingerie?"'
+			act 'Fashion':
+				shoot_type = fashion
+				if modelfoto_fashion >= 10 and modelfoto_bikini + modelfoto_lingerie < 1 and modelfoto_glamour < 1 and modelfoto_nude < 1: gt'foto_events','lingerie_persuasion'
+				cla
+				act 'Maybe not today':gt 'foto','studio'
+
+				act 'Agree (2:00)':gt 'foto_shoot','fashion'
+			end
+
+			act 'Bikini':
+				shoot_type = bikini
+				*clr & cla
+				if modelfoto_bikini + modelfoto_lingerie >= 10 and pcs_mdlng > 20 and modelfoto_glamour < 1 and modelfoto_nude < 1:gt'foto_events','glamour_persuasion'
+				if pcs_inhib < 20:
+					'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+					act 'Maybe not today':gt 'foto','studio'
+					act 'Look at other options':gt'foto_shoot','model'
+					
+					if pcs_mdlng > 20:
+						gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+					else
+						gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+					end
+					if will_cost <= pcs_willpwr:
+						*nl
+						'Or you could just force yourself do it anyways...'
+						act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','bikini'
+					end
+				else
+					cla
+					act 'Maybe not today':gt 'foto','studio'
+
+					act 'Agree (2:00)':gt'foto_shoot','bikini'
+				end
+			end
+
+
+			act 'Lingerie modelling':
+				shoot_type = lingerie
+				*clr & cla
+				if modelfoto_bikini + modelfoto_lingerie >= 10 and modelfoto_glamour < 1 and modelfoto_nude < 1:gt'foto_events','glamour_persuasion'
+				if pcs_inhib < 25:
+					'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+					act 'Maybe not today':gt 'foto','studio'
+					act 'Look at other options':gt'foto_shoot','model'
+					
+					if pcs_mdlng > 20:
+						gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+					else
+						gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+					end
+					if will_cost <= pcs_willpwr:
+						*nl
+						'Or you could just force yourself do it anyways...'
+						act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','lingerie'
+					end	
+				else
+					cla
+					act 'Maybe not today':gt 'foto','studio'
+
+					act 'Agree (2:00)':gt'foto_shoot','lingerie'
+				end
+			end
+		end
+	end
+
+	act'"I''d like to do a glamour shoot"':
+		if pcs_inhib < 30:
+			msg'You toy with the idea of exposing yourself on camera but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+		else
+			gt'foto_shoot', 'glamour_shoot'
+		end
+	end
+	
+	act'"I''d like to do a nude shoot"':
+		if pcs_inhib < 30:
+			msg'You toy with the idea of exposing yourself on camera but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+		else
+			gt'foto_shoot', 'nude_shoot'
+		end
+	end
+end
+
+if $ARGS[0] = 'glamour_shoot':
+	cla & *clr
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+	'"Alright, we can do that. What kind of glamour shoot?"'
+	
+!!	'Info guides:'
+!!	'<a href="exec:gs ''shortgs'',''msg'',''This type of shoot is not particularly more explicit, but the clothes being modelled are inherently more sensual and will require some confidence to be able to wear them.''">Erotic clothed</a>'
+!!	'<a href="exec:gs ''shortgs'',''msg'',''A topless shoot is any shoot that has you baring your breasts and shoulders while still wearing bottoms of some kind, whether that be trousers, skirt, or underwear.''">Topless</a>'
+!!	'<a href="exec:gs ''shortgs'',''msg'',''A tastefully nude shoot is one that does not show genitals of any kind, neither vagina or nipple. Your pay will be based more on your fame and appearance than your skill.''">Tasteful nude</a>'
+!!	'<a href="exec:gs ''shortgs'',''msg'',''A topless nude shoot is one step further in eroticism while still maintaining class. Your nipples will be exposed but your vagina will remain hidden. It is considered erotic without being slutty, like a character nude scene in a film. Skill plays a larger role in this type of shoot.''">Topless nude</a>'
+!!	'<a href="exec:gs ''shortgs'',''msg'',''A fully nude shoot bares all. Your breasts, nipples, and vagina will be visible. It is the most erotic, gives the highest bonus from appearance and fame, but will also spread your fame further and faster. If you are an aspiring star, this may be good for your publicity. But if there are people you want to hide your work from, this might reach them sooner than expected.''">Fully nude</a>'
+
+!!	act 'Erotic clothing with breast nudity':
+		!!already matched the exhibitionism value above
+!!		cla
+!!		act 'Maybe not today':gt 'foto','studio'
+
+!!		act 'Agree (2:00)':
+!!			*clr & cla
+
+!!			minut += 120
+!!			modelpayfin = 700 + (modelpay) + (15*rand(0,5))
+!!			modelfoto_nip += 1
+!!			mdlng_exp += rand(6,10)
+!!			city_modelling += rand(7,13)
+!!			pav_modelling += rand(1,city_modelling)/10
+!!			inhib_exp += 2
+!!			gs 'stat'
+!!			'<center><video autoplay loop src="images/locations/city/citycenter/photo/model5.mp4"></video></center>'
+!!			'You dressed up in sexy clothes and spend the next two hours striking various poses for a photographer, your nipples occasionally slipping out from behind the clothing.'
+!!			*nl
+!!			'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+!!			if pcs_mdlng >= 40 and commercial = 0:
+!!				act 'Leave':gt'foto_events','commercial'
+!!			else
+!!				act 'Leave':gt 'foto', 'end'
+!!			end
+!!		end
+!!	end
+	act 'Sexy clothing':
+		*clr & cla
+		shoot_type = sexy_clo
+		if modelfoto_ero_clo >= 10 and modelfoto_trans_ling + modelfoto_trans_ling < 1 and modelfoto_nip < 1 and modelfoto_nude < 1: gt'foto_events','trans_persuasion'
+		if pcs_inhib < 30:
+			if modelfoto_ero_clo > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 20:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','sexy'
+			end	
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+
+			act 'Agree (2:00)':gt'foto_shoot','sexy'
+		end
+	end
+
+	act 'Transparent clothing':
+		*clr & cla
+		shoot_type = trans_clo
+		if modelfoto_trans_ling + modelfoto_transparent >= 5 and modelfoto_topless < 1 and modelfoto_nude < 1: gt'foto_events','topless_persuasion'
+		if pcs_inhib < 45:
+			if modelfoto_transparent > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 40:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','transparent'
+			end	
+		else
+			cla
+			act 'Not for me':gt 'foto','studio'
+
+			act 'Agree (2:00)':gt'foto_shoot','transparent'
+		end
+	end
+	
+	act 'Transparent Lingerie':
+		shoot_type = trans_ling
+		*clr & cla
+		if modelfoto_trans_ling + modelfoto_transparent >= 5 and modelfoto_topless < 1 and modelfoto_nude < 1: shoot_type = trans_ling & gt'foto_events','topless_persuasion'
+		if pcs_inhib < 45:
+			if modelfoto_trans_ling > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 40:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','trans_ling'
+			end	
+		else
+			cla
+			act 'Not for me':gt 'foto','studio'
+
+			act 'Agree (2:00)':gt'foto_shoot','trans_ling'
+		end
+	end
+
+	act 'Topless':
+		shoot_type = topless
+		*clr & cla
+		if modelfoto_topless >= 5 and modelfoto_nude < 1: gt'foto_events','nude_persuasion'
+		if pcs_inhib < 50:
+			if modelfoto_topless > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 45:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','topless'
+			end
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+			
+			act 'Agree (2:00)':gt'foto_shoot','topless'
+		end
+	end
+end
+
+if $ARGS[0] = 'nude_shoot':
+	cla & *clr
+	menu_off = 1
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+	'"Alright, we can do that. What kind of nude shoot?"'
+	
+	act 'Tasteful nude':
+		shoot_type = taste_nude
+		*clr & cla
+		if modelfoto_tastenude >= 5 and modelfoto_topless + modelfoto_toplessnude + modelfoto_fullnude < 1: gt'foto_events','nude_persuasion'
+		if pcs_inhib < 40:
+			if modelfoto_tastenude > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end		
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 35:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','tasteful'
+			end
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+			
+			act 'Agree (2:00)':gt'foto_shoot','tasteful'
+		end
+	end
+	
+	act 'Topless nude':
+		shoot_type = top_nude
+		*clr & cla
+		if modelfoto_toplessnude >= 3 and modelfoto_pussy < 1:gt'foto_events','nude_persuasion'
+		if pcs_inhib < 55:
+			if modelfoto_toplessnude > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 50:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','topless_nude'
+			end
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+			
+			act 'Agree (2:00)':gt'foto_shoot','topless_nude'
+		end
+	end
+	
+	act 'Full nude':
+		shoot_type = full_nude
+		*clr & cla
+		if pcs_inhib < 60:
+			if modelfoto_fullnude > 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more of these kinds of pictures of you floating around?'
+			elseif modelfoto_pussy < 1:
+				'You think about asking to do this shoot but hesitate, not sure if you''re ready to put pictures of your pussy all over the internet.'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+			end
+		
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 55:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','nude'
+			end
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+
+			act 'Agree (2:00)':gt'foto_shoot','nude'
+		end
+	end
+	
+	act 'Erotic':
+		shoot_type = erotic
+		*clr & cla
+		if pcs_inhib < 65:
+			if modelfoto_pussy < 1:
+				'You think about asking to do this shoot but hesitate, not sure if you''re ready to put pictures of your pussy and asshole all over the internet, especially ones that focus on them!'
+			elseif modelfoto_erotic >= 0:
+				'You think about asking to do this shoot but hesitate. You''ve done it before but still... Are you really comfortable with <i>more</i> of these kinds of pictures of you floating around?'
+			else
+				'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'			
+			end
+			
+			act 'Maybe not today':gt 'foto','studio'
+			act 'Look at other options':gt'foto_shoot','model'
+			
+			if pcs_inhib > 60:
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'easy'
+			else
+				gs 'willpower', 'skill', 'pcs_inhib', 'self', 'hard'
+			end
+			if will_cost <= pcs_willpwr:
+				*nl
+				'Or you could just force yourself do it anyways...'
+				act 'Agree (2:00) (<<will_cost>> Willpower)':gt'foto_shoot','erotic'
+			end
+		else
+			cla
+			act 'Maybe not today':gt 'foto','studio'
+
+			act 'Agree (2:00)':gt'foto_shoot','erotic'
+		end
+	end
+end
+
+if $ARGS[0] = 'fashion':
+	*clr & cla
+	minut += 120
+	modelpayfin = 300 + (modelpay) + (15*rand(0,5)) + (pcs_apprnc) + (min(city_modelling, 700)/2) + (pcs_mdlng/2 * 10)
+	modelfoto_fashion += 1
+	mdlng_exp += rand(5,8)
+	gs 'fame', 'city', 'modelling', rand(7,12)
+	gs 'fame', 'pav', 'modelling', rand(1,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,6)
+	fashionshoot = rand(1,2)
+	gs 'stat'
+	if fashionshoot = 1:
+		'<center><video autoplay loop src="images/locations/city/citycenter/photo/fashion/<<rand(1,5)>>.mp4"></video></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fashion/<<rand(1,14)>>.jpg"></center>'
+	end
+	'You dress up in the latest in fashion wear and spend the next two hours posing for the photographer.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'bikini':
+	*clr & cla
+	minut += 120
+	modelpayfin = 325 + (modelpay) + (15*rand(0,5)) + (pcs_apprnc) + (min(city_modelling, 700)/2) + (pcs_mdlng/2 * 10)
+	modelfoto_bikini += 1
+	if pcs_inhib < 20: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(7,12)
+	gs 'fame', 'pav', 'modelling', rand(1,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,6)
+	minut += 120
+	mdlng_exp += rand(6,10)
+	if pcs_inhib < 50:inhib_exp += rand(0,1)
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/city/citycenter/photo/bikini/<<rand(4,5)>>.mp4"></video></center>'
+	*nl
+	'You spend the shoot in designer bikinis, modelling them to appear in various higher end magazines.'
+	*nl
+	'Two hours later, you''re all done. The photographer thanks you for your time and pays you <<modelpayfin>> <b>₽</b> for the job.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'lingerie':
+	*clr & cla
+	minut += 120
+	modelpayfin = 350 + (modelpay) + (15*rand(0,5)) + (pcs_apprnc) + (min(city_modelling, 700)/2) + (pcs_mdlng/2 * 10)
+	modelfoto_lingerie += 1
+	mdlng_exp += rand(6,10)
+	if pcs_inhib < 25: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(7,13)
+	gs 'fame', 'pav', 'modelling', rand(0,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,6)
+	inhib_exp += rand(0,2)
+	shoot = rand(1,2)
+	gs 'stat'
+	if shoot = 1:
+		'<center><video autoplay loop src="images/locations/city/citycenter/photo/lingerie/<<rand(1,5)>>.mp4"></video></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/lingerie/<<rand(1,11)>>.jpg"></center>'
+	end
+	'You put on some high end lingerie and spend the next two hours striking various poses for a photographer for use in fashion magazines.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+if $ARGS[0] = 'sexy':
+	*clr & cla
+	minut += 120
+	modelpayfin = 500 + (modelpay) + (15*rand(0,5)) + (pcs_apprnc) + (min(city_modelling, 700)/2) + (pcs_mdlng/2 * 10)
+	modelfoto_glamour += 1
+	modelfoto_ero_clo += 1
+	mdlng_exp += rand(5,10)
+	if pcs_inhib < 30: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(7,12)
+	gs 'fame', 'pav', 'modelling', rand(1,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(1,6)
+	inhib_exp += rand(0,1)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/sexy/<<rand(1,20)>>.jpg"></center>'
+	'You dress up in sexy clothes and spend the next two hours posing for the photographer.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	act 'Leave':gt 'foto','end'
+end
+
+if $ARGS[0] = 'transparent':
+	*clr & cla
+	minut += 120
+	modelpayfin = 600 + (modelpay) + (pcs_apprnc) + (15*rand(0,5))
+	modelfoto_glamour += 1
+	modelfoto_transparent += 1
+	modelfoto_nip += 1
+	mdlng_exp += rand(6,10)
+	if pcs_inhib < 45: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(7,13)
+	gs 'fame', 'pav', 'modelling', rand(1,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,8)
+	inhib_exp += rand(0,2)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/seethru/<<rand(1,10)>>.jpg"></center>'
+	'You put on a transparent top and spend the next two hours in various poses for the photographer, a flash highlighting your breasts with every click of the camera.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'trans_ling':
+	*clr & cla
+	minut += 120
+	modelpayfin = 650 + (modelpay * 2) + (pcs_apprnc) + (15*rand(0,7))
+	modelfoto_glamour += 1
+	modelfoto_trans_ling += 1
+	modelfoto_nip += 1
+	modelfoto_lingerie += 1
+	mdlng_exp += rand(8,10)
+	if pcs_inhib < 45: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(9,14)
+	gs 'fame', 'pav', 'modelling', rand(0,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,8)
+	inhib_exp += rand(0,2)
+	gs 'stat'
+	if rand(0,1) = 1:
+		'<center><video autoplay loop src="images/locations/city/citycenter/photo/ling_trans/<<rand(1,3)>>.mp4"></video></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/ling_trans/<<rand(1,12)>>.jpg"></center>'
+	end
+	'You put on some very lacy, very transparent underwear and get to posing, your nipples often showing through the thin fabric.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	*nl
+	if pornstudio = 0:pornstudio = 2 & 'At the end of the shoot a staff member comes up to you. "By the way, you should take this," he says, handing you a business card. You''re shocked to see that it''s for a porn production company in St. Petersburg. "Since you''ve shown that you''re willing to go full nude, we figure we might as well let you know this opportunity exists. We share a couple of models with them and from what we can tell, it increases sales for both of us. If you feel like you''re up to it, use this card and tell them we sent you. That will get you a special audition. But we understand if you don''t go. We know it''s not for everyone and that some of you want more legitimate fame."'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+
+if $ARGS[0] = 'topless':
+	*clr & cla
+	minut += 120
+	modelpayfin = 700 + (modelpay) + (pcs_apprnc) + (15*rand(0,5))
+	modelfoto_nip += 1
+	modelfoto_topless += 1
+	mdlng_exp += rand(6,10)
+	if pcs_inhib < 50: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(8,14)
+	gs 'fame', 'pav', 'modelling', rand(1,city_modelling)/10
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,8)
+	inhib_exp += rand(0,2)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/topless/<<rand(1,27)>>.jpg"></center>'
+	'You spend two hours striking various posing with topless breasts, listening to instruction while the photographer takes pictures of you.'
+	*nl
+	'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'tasteful':
+	*clr & cla
+	minut += 120
+	modelpay = (pcs_mdlng/2 * 10) + min(city_modelling, 700) + pcs_apprnc
+	modelpayfin = 600 + (modelpay * 2) + (15*rand(0,5))
+	modelfoto_tastenude += 1
+	mdlng_exp += rand(9,10)
+	if pcs_inhib < 40: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(10,20)
+	gs 'fame', 'pav', 'modelling', rand(0,city_modelling)/4
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,10)
+	inhib_exp += rand(0,2)
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/tastenude/<<rand(1,14)>>.jpg"></center>'
+	'Already naked, you step onto the set and begin the shoot immediately.'
+	*nl
+	'You spend two hours posing confidently for a photographer taking pictures of you, often being asked to carefully position your hands or legs in ways that tastefully hides your pussy and nipples. These images, though incredibly provocative, are still somehow considered to be conservative enough to be allowed on the front cover of fashion, sports, and other tabloid magazines. When the shoot ends, both you and the photographers are very proud of the results and you are paid <<modelpayfin>> <b>₽</b> for your work.'
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'topless_nude':
+	*clr & cla
+	modelpay = (pcs_mdlng/2 * 10) + min(city_modelling, 700) + pcs_apprnc
+	minut += 120
+	modelpayfin = 600 + (modelpay * 2) + (15*rand(0,5))
+	modelfoto_nude += 1
+	modelfoto_toplessnude += 1
+	mdlng_exp += rand(9,10)
+	if pcs_inhib < 55: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(10,20)
+	gs 'fame', 'pav', 'modelling', rand(0,city_modelling)/4
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(3,10)
+	inhib_exp += rand(1,3)
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/topnude/<<rand(1,40)>>.jpg"></center>'
+	'Already naked, you step onto the set and begin the shoot immediately.'
+	*nl
+	'You spend two hours posing confidently for a photographer taking pictures of you, often using props, hands, legs, or shadow to shield your pussy while simultaneously teasing the would-be readers of what they cannot see. When the shoot ends, both you and the photographers are very proud of the results and you are paid <<modelpayfin>> <b>₽</b> for your work.'
+	if pornstudio = 0:pornstudio = 2 & 'At the end of the shoot a staff member comes up to you. "By the way, you should take this," he says, handing you a business card. You''re shocked to see that it''s for a porn production company in St. Petersburg. "Since you''ve shown that you''re willing to go full nude, we figure we might as well let you know this opportunity exists. We share a couple of models with them and from what we can tell, it increases sales for both of us. If you feel like you''re up to it, use this card and tell them we sent you. That will get you a special audition. But we understand if you don''t go. We know it''s not for everyone and that some of you want more legitimate fame."'
+			
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'nude':
+	*clr & cla
+	minut += 120
+	modelpay = (pcs_mdlng/2 * 10) + min(city_modelling, 700) + pcs_apprnc
+	modelpayfin = 600 + (modelpay * 2) + (15*rand(0,5))
+	if modelfoto_nude = 0: modelpayfin = modelpayfin * 2 & foto_persuade = 0
+	modelfoto_nude += 1
+	modelfoto_fullnude += 1
+	modelfoto_nip += 1
+	modelfoto_pussy += 1
+	mdlng_exp += rand(9,10)
+	if pcs_inhib < 60: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(10,20)
+	gs 'fame', 'pav', 'modelling', rand(10,15)
+	if city_modelling > 200: gs 'fame', 'city', 'modelling', rand(5,10)
+	inhib_exp += rand(1,3)
+	if pcs_pubes <= 20:
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/nude/<<rand(1,17)>>.jpg"></center>'
+		'Already naked, you step onto the set and begin the shoot immediately.'
+		*nl
+		'You spend two hours posing confidently for a photographer taking pictures of you that fully expose your breasts and pussy. When the shoot ends, both you and the photographers are very proud of the results and you are paid <<modelpayfin>> <b>₽</b> for your work.'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/bnude/<<rand(1,12)>>.jpg"></center>'
+		'Already naked, you step onto the set and begin the shoot immediately.'
+		*nl
+		'You spend two hours posing confidently for a photographer taking pictures of you, your <<$pcdesc_pubes>> pussy providing a nice contrast to the rest of your smooth body. When the shoot ends, both you and the photographers are very proud of the results and you are paid <<modelpayfin>> <b>₽</b> for your work.'
+	end
+	if modelfoto_nude = 1 and foto_persuade ! 5:
+		'You blink at the amount but the person who gave it to you reassures you it''s normal. The studio has a policy of doubling the pay for a model''s nude debut.'
+	elseif modelfoto_nude = 1 and foto_persuade = 5:
+		'It even includes the bonus the manager said they''d give you for your debut!'
+	end
+	if pornstudio = 0:pornstudio = 2 & *nl & 'At the end of the shoot a staff member comes up to you. "By the way, you should take this," he says, handing you a business card. You''re shocked to see that it''s for a porn production company in St. Petersburg. "Since you''ve shown that you''re willing to go full nude, we figure we might as well let you know this opportunity exists. We share a couple of models with them and from what we can tell, it increases sales for both of us. If you feel like you''re up to it, use this card and tell them we sent you. That will get you a special audition. But we understand if you don''t go. We know it''s not for everyone and that some of you want more legitimate fame."'
+
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+end
+
+if $ARGS[0] = 'erotic':
+	*clr & cla
+	minut += 120
+	modelpay = (pcs_mdlng/2 * 10) + (pcs_apprnc * 3)
+	modelpayfin = 1000 + (modelpay * 2) + (15*rand(0,5))
+	modelfoto_erotic += 1
+	modelfoto_nude += 1
+	modelfoto_nip += 1
+	modelfoto_pussy += 1
+	modelfoto_asshole += 1
+	mdlng_exp += rand(1,4)
+	if pcs_inhib < 65: gs 'willpower','pay','self'
+	gs 'fame', 'city', 'modelling', rand(5,10)
+	gs 'fame', 'city', 'porn', rand(5,15)
+	gs 'fame', 'pav', 'porn', rand(0,15)
+	if pcs_inhib < 60:inhib_exp += rand(1,3)
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/erotic/<<rand(1,10)>>.jpg"></center>'
+	if $pantyworntype ! 'none':
+		
+	else
+	
+		'Already naked, you step onto the set and begin the shoot immediately.'
+	end
+	*nl
+	'You spend two hours posing while the photographer takes many photos of your nude body, but especially your breasts, pussy, and asshole. You can see the rock-hard outline of his cock the whole time and you are paid <<modelpayfin>> <b>₽</b> for your work.'
+	
+	if pornstudio = 0:pornstudio = 2 & 'At the end of the shoot a staff member comes up to you. "By the way, you should take this," he says, handing you a business card. You read it and see that it''s for a porn production company in St. Petersburg. "You''re basically already shooting softcore nudes, so we thought we''d offer you the chance to go hardcore."'
+
+	if pcs_mdlng >= 40 and commercial = 0:
+		act 'Leave':gt'foto_events','commercial'
+	else
+		act 'Leave':gt 'foto', 'end'
+	end
+
+end
+
+!!	act 'Variety shoot':
+!!		if pcs_inhib < 60:
+!!			msg'You think about asking to do this shoot but then blush and realize you aren''t confident enough to have pictures of yourself like this circling around the internet. Maybe you could practice it later, but you''re not ready to do it for real.'
+!!			gt 'foto', 'nude_shoot'
+!!		else
+!!			cla
+!!			act 'Maybe not today':gt 'foto','studio'
+!!
+!!			act 'Agree (2:00)':
+!!				*clr & cla
+!!				minut += 120
+!!				modelpayfin = 825 + (modelpay * 2) + (15*rand(0,7))
+!!				mdlng_exp += 10
+!!				city_modelling += rand(10,20)
+!!				pav_modelling += rand(0,city_modelling)/10
+!!				inhib_exp += 3
+!!				modelfoto_glamour += 1
+!!				modelfoto_nip += 1
+!!				modelfoto_fashion += 1
+!!				modelfoto_lingerie += 1
+!!				modelfoto_topless += 1
+!!				modelfoto_pussy += 1
+!!				gs 'stat'
+!!				'<center><video autoplay loop src="images/locations/city/citycenter/photo/vmodel.mp4"></video></center>'
+!!				'You spend two hours posing for the photographer, changing in and out of various underwear, sexy clothings, and lingeries until you end the shoot fully striped down and dancing naked.'
+!!				*nl
+!!				'After having taken all his pictures, the photographer thanks you for your time and concludes the shoot, counting out your <<modelpayfin>> <b>₽</b> to hand to you.'
+!!				if pcs_mdlng >= 40 and commercial = 0:
+!!					act 'Leave':gt'foto_events','commercial'
+!!				else
+!!					act 'Leave':gt 'foto', 'end'
+!!				end
+!!			end
+!!		end
+!!	end
+!!end
+
+
+--- foto_shoot ---------------------------------
+

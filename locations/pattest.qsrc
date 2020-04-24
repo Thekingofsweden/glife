@@ -1,0 +1,90 @@
+# pattest
+!! It is called like "gs 'pattest','Kolka'", or "gs 'pattest',$boy"
+!! It needs some automatic call, usable when a named guy has cum in or on you, and only his cum is in/on the area (do not call this with "rapist", "unknown" or "gopnik")
+!! There needs to be an option to call it selectively when certain circumstances are met ($boy gives sample voluntarily).
+
+if ARGS[1] ! 1 and pattest > 0:
+	j = 0
+	p ''
+	clr
+	if kid > 0 and arrpos('surefather','0') ! kid:
+		pl '<br>Select the child you want to compare with <<$ARGS[0]>>:<br>'
+		$papa = $ARGS[0]
+		:kiddieloop
+			kidid[j] = j
+			value = kidid[j]
+			if surefather[j] = 0:pl '    <a href="exec:func(''pattest'', value, 1) & pattest -= 1 & gs ''stat''"><<$kidname[j]>></a>'
+		if j < kid-1:j += 1 & jump 'kiddieloop'
+	elseif kid = 0:
+		msg 'You do not have children yet!'
+		gs 'stat'
+	else
+		msg 'You are sure about the father of every one of your children!'
+		gs 'stat'
+	end
+	killvar 'j'
+	killvar 'kidid'
+elseif ARGS[1] ! 1:
+	msg 'You do not have any paternity test to use!'
+	gs 'stat'
+end
+
+if ARGS[1] = 1:
+	testresDay[ARGS[0]] = 2147483647
+	if $ChildFath[ARGS[0]] = $papa:testresRes[ARGS[0]] = 1 else testresRes[ARGS[0]] = 0
+	$testresPotfath[ARGS[0]] = $papa
+	testresKid[ARGS[0]] = ARGS[0]
+	purse_pattest[ARGS[0]] = 1
+	used_pattest += 1
+	killvar 'papa'
+end
+
+!! Just shows the kid and the tested father
+$test_purse = {
+	j = 0
+	$msg = 'Tests in your purse:'
+	:pursekid
+		if purse_pattest[j] = 1:$msg += '<br><<$testresPotfath[j]>>''s test for fatherhood of <<$kidname[j]>>.'
+	if j < kid-1:j += 1 & jump 'pursekid'
+	msg $msg
+	killvar 'msg'
+}
+
+!! used: dynamic $send_test, <kidnumber> 
+$send_test = {
+	j = 0
+	:kloop
+		kidid[j] = j
+		if patpack[j] = 1:'    <a href="exec: testresDay[kidid[j]] = daystart+rand(5,7) & patpack[kidid[j]] = 0 & used_pattest -= 1 & money -= 20000">$kidname[j]</a>'
+	if j < kid-1:j += 1 & jump 'kloop'
+	testresDay[ARGS[0]] = daystart+rand(5,7)
+	purse_pattest[ARGS[0]] = 0
+	used_pattest -= 1
+}
+
+$sms_testresult = {
+	cyc = 0
+	:testloop
+		if testresKid[cyc] ! 1:cyc += 1 & jump 'testloop'
+		if daystart >= testresDay[cyc]:
+			c2 = arrsize('SMS_msg')
+			$SMS_msg[c2] = 'Result of testing: <br>'
+			if testresRes[cyc] = 1:$SMS_msg[c2] += 'matching DNA' else $SMS_msg[c2] += 'no DNA match'
+			$SMS_msg[c2] += '<br>between <<$testresPotfath[cyc]>> and <<$kidname[testresKid[cyc]]>>.'
+			
+			$SMS_effect[c2] = {
+				if testresRes[cyc] = 1:
+					surefather[testresKid[cyc]] = 1
+					$ChildThFath[testresKid[cyc]] = $ChildFath[testresKid[cyc]]
+				else
+					if $ChildThFath[testresKid[cyc]] = $testresPotfath[testresKid[cyc]]:$ChildThFath[testresKid[cyc]] = 'unknown'
+				end
+			}
+			testresKid[cyc] = 0
+		end
+	if cyc < kid-1: cyc += 1 & jump 'testloop'
+	killvar 'cyc'
+	killvar 'c2'
+}
+--- pattest ---------------------------------
+

@@ -1,0 +1,838 @@
+# spell
+! This Location contains the meat of what each spell does to the PC, NPCs, and the environment. Mana costs are handled elsewhere.
+! This location should not be called directly.  Should only be called through the "castSpell" location.
+!	$ARGS[0] = the name of the spell being cast
+!	$ARGS[1] = Spell Success value
+!		2  = Critical Success	-> You can make something extra specail happen
+!		1  = Success			-> Normal spell effects
+!		0  = Failure			-> Spell doesn''t work, probably just fizzles out
+!		-1 = Critical Failure	-> Spell backfires.  Something bad (not terrible) should happen
+!	$ARGS[n >= 2] = Any extra parameters needed by the spell
+!
+!	For Combat Spells:
+!	$ARGS[2] = Target Type ('opp','pcs')
+!	 ARGS[3] = Target party member number
+!	 ARGS[4] = Caster party member number
+
+SuccessValue = $ARGS[1]
+$SplTxtColGood = 'green'
+$SplTxtColBad = 'red'
+
+! ARGS for Combat Spells if Applicable
+$TargetType = $ARGS[2]
+if $spellTarget[$ARGS[2]] = 'self':
+	! Self target spell, Caster and target are the same
+	$CasterType = $TargetType
+	TargetNumber = ARGS[3]
+	CasterNumber = ARGS[3]
+elseif $spellTarget[$ARGS[2]] = 'team':
+	! Team target spell targets person on the same team
+	$CasterType = $TargetType
+	TargetNumber = ARGS[3]
+	CasterNumber = ARGS[4]
+else
+	! Others are assumed to be enemy targets
+	if $TargetType = 'pcs':
+		$CasterType = 'opp'
+		$SplTxtColGood = 'red'
+		$SplTxtColBad = 'green'
+	elseif $TargetType = 'opp':
+		$CasterType = 'pcs'
+	else
+		$CasterType = 'pcs'
+		$TargetType = 'pcs'
+	end
+	TargetNumber = ARGS[3]
+	CasterNumber = ARGS[4]
+end
+
+!! Helper functions.
+
+!! UpdateAttrib
+!   Apply change to Combatant array
+! $ARGS[0] = the base array (e.g.: fog, clone, shield, init)
+! $ARGS[1] = the Target type (e.g.: pcs or opp)
+! ARGS[2]  = Target Number, array number of target
+! $ARGS[3] = operation (e.g.: +, -, =)
+! ARGS[4]  = Amount to change
+$spellFunc['UpdateAttrib'] = {
+	$SpellFuncVar['BaseArray'] = $ARGS[0]
+	$SpellFuncVar['TargetType']= $ARGS[1]
+	SpellFuncVar['TargetNum']  =  ARGS[2]
+	$SpellFuncVar['Operation'] = $ARGS[3]
+	SpellFuncVar['Amount']     =  ARGS[4]
+	if $SpellFuncVar['Operation'] = '=':
+		!       "opp_fog[0] = 0"
+		dynamic "<<$SpellFuncVar['TargetType']>>_<<$SpellFuncVar['BaseArray']>>[<<SpellFuncVar['TargetNum']>>] = <<SpellFuncVar['Amount']>>"
+	elseif $SpellFuncVar['Operation'] = '+' or $SpellFuncVar['Operation'] = '-':
+		!       "opp_fog[0] += 10"
+		dynamic "<<$SpellFuncVar['TargetType']>>_<<$SpellFuncVar['BaseArray']>>[<<SpellFuncVar['TargetNum']>>] <<$SpellFuncVar['Operation']>>= <<SpellFuncVar['Amount']>>"
+	else
+		'Invalid Operator, must be "+", "-", or "=".  '
+	end
+
+	killvar '$SpellFuncVar'
+	killvar 'SpellFuncVar'
+}
+!!GetCombatantName
+!	Get the Name value for this combatant
+! $ARGS[0] = the Target type (e.g.: pcs or opp)
+! ARGS[1]  = Target Number, array number of target
+$spellFunc['GetCombatantName'] = {
+	$SpellFuncVar['TargetType']= $ARGS[0]
+	SpellFuncVar['TargetNum']  =  ARGS[1]
+
+	$result = dyneval("$result = $<<$SpellFuncVar['TargetType']>>_name[<<SpellFuncVar['TargetNum']>>]")
+
+	killvar '$SpellFuncVar'
+	killvar 'SpellFuncVar'
+}
+
+!!ApplyDamageToAll
+!	Apply some damage to all participants fo a given type
+! $ARGS[0] = the Target type (e.g.: pcs or opp)
+! ARGS[1]  = Amount of damage
+$spellFunc['ApplyDamageToAll'] = {
+	$SpellFuncVar['TargetType']= $ARGS[0]
+	SpellFuncVar['Damage']  =  ARGS[1]
+
+	dynamic "
+		i=0
+		:DamageAllLoop1
+		if i < arrsize('<<$SpellFuncVar['TargetType']>>_health'):
+			gs 'fight', 'applyDamage', '<<$SpellFuncVar['TargetType']>>', i, <<SpellFuncVar['Damage']>>
+			i+=1
+			jump 'DamageAllLoop1'
+		end
+		killvar 'i'
+		"
+
+	killvar '$SpellFuncVar'
+	killvar 'SpellFuncVar'
+}
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!  SPELLS
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+if $ARGS[0] = 'teleport':
+	! Do the stuff of a Teleport
+	!	ARGS[1] = Success/Failure level
+	!	ARGS[2] = the Target Location
+
+	$NewLocation = $ARGS[2]
+
+	:RandLocLoop
+	$randomLoc = $tpLocations[rand(0,arrsize('$tpLocations') - 1)]
+	if $randomLoc = $NewLocation or $randomLoc = $EntryPoint:
+		jump 'RandLocLoop'
+	end
+
+	if SuccessValue > 0:
+		*nl
+		"The blur you see just outside the ring seems to shift."
+		wait 1000
+		if $treeCircArg[$NewLocation] = "":
+			gt $treeCircLoc[$NewLocation]
+		else
+			gt $treeCircLoc[$NewLocation], $treeCircArg[$NewLocation]
+		end
+	elseif SuccessValue < 0:
+		*nl
+		"The blur you see just outside the ring seems to shift.  Something did not go right!"
+		wait 1000
+		if $treeCircArg[$randomLoc] = "":
+			gt $treeCircLoc[$randomLoc]
+		else
+			gt $treeCircLoc[$randomLoc], $treeCircArg[$randomLoc]
+		end
+	else
+		'You feel drained, but the energy fizzles out and nothing happens'
+	end
+
+	killvar '$randomLoc'
+	killvar '$NewLocation'
+
+	result = ""
+
+end
+
+if $ARGS[0] = 'regenerate':
+	if SuccessValue > 0:
+		! How much health is gained per minute
+		regenVal = 5 * SuccessValue
+		! Immediate health gain
+		pcs_health += regenVal
+		! If Regenerate is already running, we only extend.
+		regenArrIdx = arrpos('$spellTimeName','regenerate')
+		if regenArrIdx > -1:
+			! if it''s found, then update only
+			spellComplete[regenArrIdx] = totminut + 120
+			$spellCompExec[regenArrIdx] = 'pcs_health += (5 * <<regenVal>>)'
+			$spellTickExec[regenArrIdx] = 'pcs_health += <<regenVal>>'
+		else
+			! Add Timer:
+			!	spellName = 'regenerate'
+			!	duration  = 120
+			!	CompCode = 'pcs_health += (5 * <<regenVal>>)'
+			!	TickCode = 'pcs_health += <<regenVal>>'
+			gs 'spellTimer', 'add', 'regenerate', 120, 'pcs_health += (5 * <<regenVal>>)', 'pcs_health += <<regenVal>>'
+		end
+
+		'<b><font color = <<$SplTxtColGood>>>Your body surges with life. You feel better already.</font></b>'
+		killvar 'regenVal'
+		killvar 'regenArrIdx'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'painblock':
+	if SuccessValue > 0:
+		pain['killer'] = 1
+		'<b><font color = <<$SplTxtColGood>>>Your pain recedes into a dull throb.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'curedisease':
+	if SuccessValue > 0:
+		! Cure Diseses
+		dynamic $cheatmenu['std_cure']
+		! Cause pain where diseases burned out
+		pain['head'] += 10
+		pain['nose'] += 10
+		pain['mouth'] += 10
+		pain['lips'] += 10
+		pain['throat'] += 10
+		pain['asshole'] += 10
+		pain['chest'] += 10
+		pain['tummy'] += 10
+		pain['urethra'] += 10
+		pain['vaginal'] += 10
+		! You do not feel good
+		pcs_mood -= 30
+		'<b><font color = <<$SplTxtColGood>>>You burst into a high fever.  You feel terrible, but you know you are now healthy.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'curewounds':
+	if SuccessValue > 0:
+		! Remove some pain
+		gs 'medical_din','healthTreatment'
+		gs 'medical_din','healthTreatment'
+		'<b><font color = <<$SplTxtColGood>>>You feel yourself coursing with life.  You feel better already.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'curewounds2':
+	if SuccessValue > 0:
+		! Remove all pain
+		killvar 'pain'
+		pcs_health = pcs_vital * 10 + pcs_stren * 5 + 1000
+		'<b><font color = <<$SplTxtColGood>>>You feel yourself coursing with life.  All pain is gone.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'berserk':
+	if SuccessValue > 0:
+		spellArrIdx = arrpos('$spellTimeName','berserk')
+		pain['killer'] = 1
+		if spellArrIdx > -1:
+			! if it''s found, then update only
+			spellComplete[spellArrIdx] = totminut + 120
+		else
+			! Save current Health percentage, since changing these stats will change healthmax
+			healthPercent = pcs_health * 100 / healthmax
+			staminPercent = pcs_stam * 100 / stammax
+			! Boost Stats
+			stren_lvl += 200
+			stren_lvlst += 200
+			stren_muta += 4
+			agil_lvl += 200
+			agil_lvlst += 200
+			agil_muta += 4
+			vital_lvl += 200
+			vital_lvlst += 200
+			vital_muta += 4
+			!gs 'stat_sklattrib'
+			! Run stats to recalculate max health
+			gs 'stat'
+			! Update health to be appropiate percentage of new healthmax
+			pcs_health = (healthPercent * healthmax / 100) + 1
+			pcs_stam = (staminPercent * stammax) + 1
+			! Add Timer to remove this effect after tiem period
+			$berserkCode={
+				! Return Stats to normal
+				stren_lvl -= 200
+				stren_lvlst -= 200
+				stren_muta -= 4
+				agil_lvl -= 200
+				agil_lvlst -= 200
+				agil_muta -= 4
+				vital_lvl -= 200
+				vital_lvlst -= 200
+				vital_muta -= 4
+			}
+			gs 'spellTimer', 'add', 'berserk', 120, $berserkCode, ''
+		end
+		'<b><font color = <<$SplTxtColGood>>>You feel a huge adrenalin surge. You begin looking for someone to battle.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+	killvar 'spellArrIdx'
+	killvar 'berserkCode'
+	killvar 'healthPercent'
+	killvar 'staminPercent'
+end
+
+if $ARGS[0] = 'shower':
+	if SuccessValue > 0:
+		! Take a Shower
+		gs 'cum_cleanup'
+		lactation['lactmess'] = 0
+		pcs_sweat = 10
+		! Brush Teeth
+		pcs_breath = 1
+		'<b><font color = <<$SplTxtColGood>>>You feel clean and refreshed.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'glamour':
+	if SuccessValue > 0:
+		! Add large bonus to appearance.
+		pcs_apprncbase += 150
+		! Add Timer to remove Appearance bonus after 2 hours
+		!	spellName = 'glamour'
+		!	duration  = 120
+		!	CompCode = 'pcs_apprncbase -= 150' Remove bonus
+		!	TickCode = ''  Do nothing
+		gs 'spellTimer', 'add', 'glamour', 120, 'pcs_apprncbase -= 150', ''
+		'<b><font color = <<$SplTxtColGood>>>You feel gorgeous.  People will love you.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'alterself':
+	if SuccessValue > 0:
+		! Stop Reputation accumulation.
+		!TODO
+		'<b><font color = <<$SplTxtColGood>>>Your feature change.  Your own mother wouldn''t recognize you.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'makeup':
+	if SuccessValue > 0:
+		! Argument should be 3 digit string representing Makeup to apply
+		$MakeupArg = $ARGS[2]
+		if $MakeupArg = '': $MakeupArg = '210'
+		! Arg[0] = Makeup Amount (0-3)
+		MakeupArg[0] = val(mid($MakeupArg,1,1))
+		! Arg[1] = Lip Balm application (0-1)
+		MakeupArg[1] = val(mid($MakeupArg,2,1))
+		! Arg[2] = False lash Application (0-2)
+		MakeupArg[2] = val(mid($MakeupArg,3,1))
+
+		! Brush hair
+		pcs_hairbsh = 1
+		! Apply Makeup
+		pcs_makeup = MakeupArg[0]
+		! Apply Lipbalm
+		pcs_lipbalm += 8*MakeupArg[1]
+		! Apply False Lashes
+		if MakeupArg[2] = 1 and pcs_lashes < 3:
+			pcs_lashes = 3
+		elseif MakeupArg[2] = 2 and pcs_lashes < 4:
+			pcs_lashes = 4
+		end
+
+		killvar 'MakeupArg'
+		killvar '$MakeupArg'
+		'<b><font color = <<$SplTxtColGood>>>makeup is applied to your face.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'cosmetica':
+	if SuccessValue > 0:
+		! Take a Shower
+		gs 'cum_cleanup'
+		lactation['lactmess'] = 0
+		pcs_sweat = 10
+		! Brush Teeth
+		pcs_breath = 1
+		! Remove graffiti from self
+		body_write = 0
+		face_write = 0
+		! Enema
+		klismaday = daystart
+		klismaday1 = 1
+		! Brush hair
+		pcs_hairbsh = 1
+		! Apply Makeup
+		pcs_makeup = 3
+		!if shave_menu = 0:nothing
+		!if shave_menu = 1:legs and pussy
+		!if shave_menu = 2:pussy only
+		!if shave_menu = 3:legs only
+		if shave_menu = 1 or shave_menu = 3:
+			! Shave Legs
+			pcs_leghair = 0
+		end
+		if shave_menu = 1 or shave_menu = 2:
+			! Shave Pubes
+			if pubestyle = 1:
+				pcs_pubes = 1
+			elseif (pubestyle >= 2 and pubestyle <= 9) or pubestyle >= 12:
+				pcs_pubes = 16
+			elseif pubestyle = 10 and pcs_pubes > 29:
+				pcs_pubes = 26
+			elseif pubestyle = 11 and pcs_pubes > 10:
+				pcs_pubes = 0
+			end
+		end
+
+		'<b><font color = <<$SplTxtColGood>>>You feel beautiful.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+
+!!!!!!!!!!!!!!!!!
+!! Combat Spells
+!!!!!!!!!!!!!!!!!
+
+if $ARGS[0] = 'fog':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '+', 10 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>A Fog materializes around, obscuring <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> from enemies.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'clone':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '+', SuccessValue
+		'<b><font color = <<$SplTxtColGood>>><<SuccessValue>> clone<<iif(SuccessValue>1,"s","")>> springs from <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> confusing enemies.</font></b>'
+	elseif SuccessValue < 0 and dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '-', 1
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! A <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> clone disappears.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'stun':
+	if SuccessValue > 0:
+		stunner = 1
+		dynamic $spellFunc['UpdateAttrib'], 'stun', $TargetType, TargetNumber, '+', rand(2,5)+ SuccessValue
+		'<b><font color = <<$SplTxtColGood>>><<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> is stunned.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'weapon':
+	!{if SuccessValue > 0:
+		magweapbonus = weapbonus * 4 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>Your Weapon now feels more powerful.</font></b>'
+	elseif SuccessValue < 0:
+		magweapbonus = weapbonus * -1
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Your weapon seems weaker.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+	!xgt'atak','player'}
+	"weapon"
+end
+
+if $ARGS[0] = 'wind':
+	if SuccessValue = 2:
+		dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '=', 0
+		'<b><font color = <<$SplTxtColGood>>>A wind blows through the area eliminating the fog around <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> from the battlefield.</font></b>'
+	elseif SuccessValue = 1:
+		dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '=', 0
+		dynamic $spellFunc['UpdateAttrib'], 'fog', $CasterType, CasterNumber, '=', 0
+		'<b><font color = <<$SplTxtColGood>>>A wind blows through the area eliminating all fog on the battlefield.</font></b>'
+	elseif SuccessValue = -1:
+		dynamic $spellFunc['UpdateAttrib'], 'fog', $CasterType, CasterNumber, '=', 0
+		'<b><font color = <<$SplTxtColBad>>>A wind blows through the area eliminating the fog around <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> from the battlefield.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'multiclone':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '+', SuccessValue * 3
+		'<b><font color = <<$SplTxtColGood>>><<SuccessValue * 3>> clone<<iif(SuccessValue>1,"s","")>> of <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> springs forth confusing the enemy.</font></b>'
+	elseif SuccessValue < 0 and klon > 0:
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') < 3:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+		else
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '-', 3
+		end
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Some clones of <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> disappear.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'energo':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 100
+		'<b><font color = <<$SplTxtColGood>>>An energy shield materializes around <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>>, granting protection from enemies.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'haste':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'init', $TargetType, TargetNumber, '+', SuccessValue * 120
+		'<b><font color = <<$SplTxtColGood>>><<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> feels mind and body race though a sluggish world.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'heal':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'health', $TargetType, TargetNumber, '+', SuccessValue * 400
+		'<b><font color = <<$SplTxtColGood>>><<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>> surges with life, feeling much stronger.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'hand':
+	if SuccessValue > 0:
+		TargetStren = dyneval('result=<<$TargetType>>_stren[<<TargetNumber>>]')
+		TargetStrenDelta = TargetStren*20*SuccessValue/100
+		TargetStrenBase  = TargetStren*10
+		dynamic $spellFunc['UpdateAttrib'], 'stren', $TargetType, TargetNumber, '=', RAND(TargetStrenBase - TargetStrenDelta,TargetStrenBase + TargetStrenDelta)
+		'<b><font color = <<$SplTxtColGood>>>Power flows from the hands of <<dyneval($spellFunc["GetCombatantName"], $TargetType, TargetNumber)>>.</font></b>'
+		killvar 'TargetStren'
+		killvar 'TargetStrenDelta'
+		killvar 'TargetStrenBase'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'scaldingtouch':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>Flames spring from your hands.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'burninghands':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 250 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>A torrent of flames jets from your hands.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'firebarrier':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 200
+		'<b><font color = <<$SplTxtColGood>>>A flaming barrier has sprung up between you and your opponents.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'firestorm':
+	if SuccessValue > 0:
+		dynamic $spellFunc['ApplyDamageToAll'], $TargetType, (200 * SuccessValue)
+		'<b><font color = <<$SplTxtColGood>>>Uncountable glowing embers steak down upon the foes of <<dyneval($spellFunc["GetCombatantName"], $CasterType, CasterNumber)>>.</font></b>'
+	elseif SuccessValue < 0:
+		dynamic $spellFunc['ApplyDamageToAll'], $TargetType, 200
+		dynamic $spellFunc['ApplyDamageToAll'], $CasterType, 100
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Uncountable glowing embers steak down upon the battlefield burning everyone.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'flameshield':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 250
+		'<b><font color = <<$SplTxtColGood>>>A Shield made of Flames interposes itself between <<dyneval($spellFunc["GetCombatantName"], $CasterType, CasterNumber)>> and the enemy.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'shock':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>You build a static electric charge in your hand and zap your opponent.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 50
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! You manage to zap yourself with a static charge.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'lightning':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 200 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>You shoot a lightning bolt from your hand zapping your opponent.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 100
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! You manage to zap yourself with lightning.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'electricbarrier':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 250
+		'<b><font color = <<$SplTxtColGood>>>A wall of dancing lightning springs up around yourself.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = '1000birds':
+	if SuccessValue > 0:
+		dynamic $spellFunc['ApplyDamageToAll'], $TargetType, (100 * SuccessValue)
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, (100 * SuccessValue)
+		'<b><font color = <<$SplTxtColGood>>>You shoot hundreds of small lightning bolts toward your enemy.</font></b>'
+	elseif SuccessValue < 0:
+		dynamic $spellFunc['ApplyDamageToAll'], $TargetType, 100
+		dynamic $spellFunc['ApplyDamageToAll'], $CasterType, 100
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Hundreds of small lightning bolts curl toward the battlefield shocking everyone.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'dancingsphere':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 500
+		'<b><font color = <<$SplTxtColGood>>>A large field of lightning dances around you blocking attacks.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'quicksand':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>You have trapped your opponent in quicksand.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 50
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! You are both trapped in quicksand.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'earthshield':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 100 + 250
+		'<b><font color = <<$SplTxtColGood>>>Tendrils of Earth rise to defend you.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'abyss':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 250 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>The Earth opens up beneath your opponents feet, slamming shut damaging him and depriving him of the ability to move.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 250
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 200
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! The Earth opens up beneath your opponents feet, slamming shut damaging him and depriving him of the ability to move.  You are also caught.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'earthguardian':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 500
+		'<b><font color = <<$SplTxtColGood>>>The Earth itself comes alive defending you from attacks.  It draws from the power of the land to regenerate itself every round. You now have <<defence>> protection units.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'sando':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, (250 * SuccessValue)
+		'<b><font color = <<$SplTxtColGood>>>Two huge plates of earth colapse together crushing the enemy and depriving him of the ability to move.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 50
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Two huge plates of earth colapse together with crushing force, but the enemy is missed and you are instead caught.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'windgust':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>You have created a gust of wind.</font></b>'
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy clones are vaporized.</font></b>'
+		end
+		if dyneval('result=<<$TargetType>>_fog[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy Fog is torn to shreds by the wind.</font></b>'
+		end
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'pressure':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 200 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>You dramatically raised the air pressure.</font></b>'
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy clones are vaporized.</font></b>'
+		end
+		if dyneval('result=<<$TargetType>>_fog[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy Fog is torn to shreds by the wind.</font></b>'
+		end
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'vacuum':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', SuccessValue * 250
+		'<b><font color = <<$SplTxtColGood>>>A turbulent sphere of vacuum surrounds you blocking incoming attacks. You now have <<defence>> protection units.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'vacuumshells':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 250 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>Turbulent spheres of vacuum bombard your enemy. The air is full of whistling sounds as the spheres fly by at high speeds over the battlefield.</font></b>'
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy clones are vaporized.</font></b>'
+		end
+		if dyneval('result=<<$TargetType>>_fog[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'fog', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy Fog is torn to shreds by the wind.</font></b>'
+		end
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'devouringvacuum':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '=', 0
+		'<b><font color = <<$SplTxtColGood>>>A devouring vacuum sucks away your enemys defenses.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'leechmana':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 100
+		damTipM = 1000
+		dynamic $spellFunc['UpdateAttrib'], 'mana', $CasterType, CasterNumber, '+', 100
+		'<b><font color = <<$SplTxtColGood>>>You leech mana from your enemy.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 50
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! Ouch!</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'flood':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 200 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>A surge of water rises towards your enemy.</font></b>'
+	elseif SuccessValue < 0:
+		gs 'fight', 'applyDamage', $CasterType, CasterNumber, 100
+		'<b><font color = <<$SplTxtColBad>>>The spell backfires! A surge of water rises towards your enemy, but missed and hits you.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'blister':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', 500
+		'<b><font color = <<$SplTxtColGood>>>A protective sphere of water surrounds you.</font></b>'
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'sharkrockets':
+	if SuccessValue > 0:
+		gs 'fight', 'applyDamage', $TargetType, TargetNumber, 150 * SuccessValue
+		'<b><font color = <<$SplTxtColGood>>>Blobs of Water shaped like sharks fly towards your enemy stiking them.</font></b>'
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy clones are vaporized.</font></b>'
+		end
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+if $ARGS[0] = 'greatflood':
+	if SuccessValue > 0:
+		dynamic $spellFunc['UpdateAttrib'], 'shield', $TargetType, TargetNumber, '+', 1000
+		'<b><font color = <<$SplTxtColGood>>>You have filled the whole neighborhood with water protecting you and devouring enemy mana.</font></b>'
+		if dyneval('result=<<$TargetType>>_clone[<<TargetNumber>>]') > 0:
+			dynamic $spellFunc['UpdateAttrib'], 'clone', $TargetType, TargetNumber, '=', 0
+			'<b><font color = <<$SplTxtColGood>>>Enemy clones are vaporized.</font></b>'
+		end
+	else
+		'<b>The spell fizzles.  Nothing seems to happen.</b>'
+	end
+end
+
+
+killvar 'SuccessValue'
+killvar '$TargetType'
+killvar 'TargetNumber'
+killvar '$CasterType'
+killvar 'CasterNumber'
+--- spell ---------------------------------
+
