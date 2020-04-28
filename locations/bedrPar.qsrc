@@ -133,18 +133,45 @@ if komp = 1:'Your <a href="exec: gt ''Komp'',''start''">laptop</a> is on your de
 gad = 0
 
 if npc_QW['A33'] > 10:npc_QW['A33'] = 10
+!!Default is Anya not being here, can be overwritten in next block
+sisterHere = 0
 
-act 'Exit the room':
-	if sisterHere = 2 and daystart - ParrotQW['BuyDate'] > 55 and ParrotQW['Owned2'] = 1 and ParrotQW['SisterReleaseParrotDay'] = 0 : gt 'sister_chat', 'pargone'
-	gt'korrPar'
+if sister_indorf = 0:
+	if sisboyparty_day + 1 = daystart and sisboyparty = -1 and hour = 22:
+		*clr & cla
+		menu_off = 1
+		minut += 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/rekshome/party/sisboyqwparty_6_<<rand(1,7)>>.jpg"></center>'
+		'Drunk and disheveled, Anya bursts into the room.'
+		'You notice that her hair, and all her clothes are smeared in sticky sperm.'
+		'In this state, she falls on the bed and instantly falls asleep.'
+		sisboyparty = 1
+		act 'Move away': gt $loc
+	else
+		sisterdialog = 1
+
+		if anyaloc = 1:
+			'Your sister <a href="exec:gt ''sistersleep'', ''sister_sleep''">Anya</a> is asleep in her bed.'
+		elseif anyaloc = 4:
+			sisterdialog = 3
+			sisterHere = 1
+			'Your sister <a href="exec:gt ''sister_chat'', ''sister_chat''">Anya</a> is getting ready to go out.'
+		elseif anyaloc = 15:
+			sisterHere = 1
+			'Your sister <a href="exec:gt ''sister_chat'', ''sister_chat''">Anya</a> is sitting on her bed, reading a book.'
+		elseif anyaloc = 26:
+			if sisboypartyQW = 1: sisboypartyQW = 2
+			if sisboyparty = -1: sisboyparty = 1
+			'Your drunken sister Anya is sound asleep in her bed.'
+		end
+	end
 end
 
-if sisboyparty_day + 1 = daystart and sisboyparty = -1 and hour = 22:
-	gs'family'
-else
-	gs'family'
-
-	if rexCarCount >= 9 and sisterHere = 1 and hour < 3 and rexSmsDay ! daystart and smsForRex < 13: act 'Send Rex a SMS message': gt 'reks','sms'
+act 'Exit the room':
+	if (anyaloc = 4 or anyaloc = 15) and daystart - ParrotQW['BuyDate'] > 55 and ParrotQW['Owned2'] = 1 and ParrotQW['SisterReleaseParrotDay'] = 0 : gt 'sister_chat', 'pargone'
+	gt'korrPar'
+end
 
 	if student > 0 and kursovik < 100:
 		act 'Do coursework (1:00)':
@@ -163,22 +190,26 @@ else
 		end
 	end
 
+	if pornMagazine > 0:'You have hidden your porn magazines under the mattress of your bed.'
 	!!Masturbation, allowed after sister threesome (when sis_watch is used for a message) or sister not here.
 	sis_watch = 0
 
-	if pcs_horny >= 50 and (sisboytrio > 0 or sisterHere = 0):
-		act 'Masturbate':gt 'selfplay', 'start'
-	end
+	if sisterHere = 0 or sisboytrio > 0:
+		if pornMagazine > 0:gs 'events', 'read_porn'
+		if rexCarCount >= 9 and hour < 3 and rexSmsDay ! daystart and smsForRex < 13:
+			act 'Send Rex a SMS message': gt 'reks','sms'
+		end
+		if pcs_horny >= 50:
+			act 'Masturbate':gt 'selfplay', 'start'
+		end
 
-	if pornMagazine > 0:'You have hidden your porn magazines under the mattress of your bed.'
-	if (sisboytrio > 0 or sisterHere = 0) and pornMagazine > 0:gs 'events', 'read_porn'
+		if vcard > 0: act 'View your vintage porn cards':card_deck = 0 & gt 'card'
+		if card > 0: act 'View your new porn cards':card_deck = 1 & gt 'card'
+	end
 
 	gs 'events', 'read'
 
 	if tovarL > 0:'You currently have <<tovarL>> trinkets to sell at the station. The maximum you can carry is 30.'
-
-	if vcard > 0: act 'View your vintage porn cards':card_deck = 0 & gt 'card'
-	if card > 0: act 'View your new porn cards':card_deck = 1 & gt 'card'
 
 	dynamic $palelady
 end
