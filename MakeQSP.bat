@@ -9,7 +9,7 @@ set QSPGUI=QSP\Player-video\qspgui.exe
 set QGEN=QSP\QGen5\QGen.exe
 
 :: The file that will be generated or open
-set QSPFILE=glife.qsp
+set QSPFILE=glife-mf.qsp
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
