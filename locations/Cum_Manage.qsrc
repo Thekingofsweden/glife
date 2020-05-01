@@ -609,5 +609,368 @@ if $ARGS[0] = 'cumeater':
 	end
 end
 
+if $ARGS[0] = 'cum_stat_display':
+	if Enable_clearcum > 0: gs 'cum_cleanup', 'reset'
+
+	killvar 'cumvolume'
+	killvar 'i'
+	killvar 'knownguy'
+	killvar 'cumcount'
+	killvar 'cumowner'
+
+	if arrsize('sparrvol') > 0:
+		!!go through every location
+		:locationloop
+			!!start from the freshest load
+			idx = arrsize('sparrloc')-1
+			:spermitemloop
+				!!if the currently examined load loaction is the location of the current cycle, execute
+				if sparrloc[idx] = i:
+					!!setting the age of the current load
+					!! 0: mouth
+					!! 1: in this hour
+					!! 2: in four hours
+					!! 3: at least five hours ago
+					!! 4: in body (pussy or ass)
+					!! 5: no more than 12 hours in condom
+					!! 6: no more than 48 hours in condom
+					!! 7: more than two days old, in condom
+					if i = 12:
+						j = 0
+					elseif i = 17:
+						if sparrage[idx] <= 12:
+							j = 5
+						elseif sparrage[idx] <= 48:
+							j = 6
+						else
+							j = 7
+						end
+					elseif i = 0 or i = 3:
+						j = 4
+					else
+						if sparrage[idx] <= 1:
+							j = 1
+						elseif sparrage[idx] <= 5:
+							j = 2
+						else
+							j = 3
+						end
+					end
+
+					cumvolume['<<i>>:<<j>>'] += sparrvol[idx]
+					if sparrvol[idx] > 0:
+						if sparridt[idx] = 0:
+							!!unknown partner
+							cumcount['<<i>>:<<j>>'] += 1
+						elseif sparridt[idx] = 1:
+							!!known partner
+							!!storing the name of the cum owner (format: $cumowner[<cum location>:<age of cum>:<index of cum owner>])
+							if knownguy['<<i>>:<<j>>'] > 0:
+								gchk = 0
+								:sameguycheck
+								if $cumowner['<<i>>:<<j>>:<<gchk>>'] ! $sparrnam[idx] and gchk <= knownguy['<<i>>:<<j>>']:gchk += 1 & jump 'sameguycheck'
+								if gchk > knownguy['<<i>>:<<j>>']:
+									$cumowner['<<i>>:<<j>>:<<knownguy[''<<i>>:<<j>>'']>>'] = $sparrnam[idx]
+									knownguy['<<i>>:<<j>>'] += 1
+									cumcount['<<i>>:<<j>>'] += 1
+								end
+							else
+								$cumowner['<<i>>:<<j>>:<<knownguy[''<<i>>:<<j>>'']>>'] = $sparrnam[idx]
+								knownguy['<<i>>:<<j>>'] += 1
+								cumcount['<<i>>:<<j>>'] += 1
+							end
+						end
+					end
+				end
+			if idx > 0:idx -= 1 & jump 'spermitemloop'
+		if i < 18:i += 1 & jump 'locationloop'
+		killvar 'i'
+		killvar 'idx'
+		killvar 'j'
+	end
+
+	!!Clearing cum location array before positive entries are applied below in the icon and the text message codes
+	killvar 'cumloc'
+
+	$stat_cum_msg = ''
+	$stat_cum_text = ''
+	stat_visible_cum = 0
+	stat_cumloc_check = 0
+
+	i = 0
+	:cumlocloop
+		if i = 0:
+			$icon_txtloc = 'your pussy'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/creampie/cumpussy'+rand(1,14)+'.jpg''">pussy</a>'
+		elseif i = 1:
+			$icon_txtloc = 'your labia'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumpussy/cumpus'+rand(1,4)+'.jpg''">labia</a>'
+		elseif i = 2:
+			$txtloc = 'the front of your panties'
+			$icon_txtloc = $txtloc
+		elseif i = 3:
+			$icon_txtloc = 'your ass'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumanal/cumanal'+rand(1,11)+'.jpg''">ass</a>'
+		elseif i = 4:
+			$icon_txtloc = 'your butt'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumass/cumass'+rand(1,6)+'.jpg''">butt</a>'
+		elseif i = 5:
+			$txtloc = 'the back of your panties'
+			$icon_txtloc = $txtloc
+		elseif i = 6:
+
+			$icon_txtloc = 'your clothes near your groin'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumclothes/'+rand(1,3)+'.jpg''">clothes near your groin</a>'
+		elseif i = 7:
+			$icon_txtloc = 'your clothes'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumclothes/cumclothes'+rand(1,21)+'.jpg''">clothes</a>'
+		elseif i = 8:
+			$txtloc = 'your back'
+			$icon_txtloc = $txtloc
+		elseif i = 9:
+			$txtloc = 'your legs'
+			$icon_txtloc = $txtloc
+		elseif i = 10:
+			$txtloc = 'your arms'
+			$icon_txtloc = $txtloc
+		elseif i = 11:
+			if pcs_haircol = 0:
+				$cum_face_image = 'brown/'
+				$cum_face_image += rand(1, 31)
+			elseif pcs_haircol = 1:
+				$cum_face_image = 'black/'
+				$cum_face_image += rand(1, 23)
+			elseif pcs_haircol = 2:
+				$cum_face_image = 'red/'
+				$cum_face_image += rand(1, 19)
+			elseif pcs_haircol = 3:
+				$cum_face_image = 'blonde/'
+				$cum_face_image += rand(1, 25)
+			elseif pcs_haircol > 3:
+				$cum_face_image = 'custom/'
+				$cum_face_image += rand(1, 20)
+			end
+			$icon_txtloc = 'your face'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumface/<<$cum_face_image>>.jpg''">face</a>'
+			killvar 'cum_face_image'
+		elseif i = 13:
+			$txtloc = 'your hands'
+			$icon_txtloc = $txtloc
+		elseif i = 14:
+			$icon_txtloc = 'your stomach'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumbelly/cumbelly'+rand(1,12)+'.jpg''">stomach</a>'
+		elseif i = 15:
+			$icon_txtloc = 'your breasts'
+			$txtloc = 'your <a href="exec:view''images/pc/body/cum/cumtits/cumtits'+rand(1,19)+'.jpg''">breasts</a>'
+		elseif i = 16:
+			$icon_txtloc = 'your hair'
+			$txtloc = 'your hair</a>'
+		elseif i = 17:
+			$txtloc = 'in your vagina in a slipped condom'
+			$icon_txtloc = $txtloc
+		else
+			$icon_txtloc = 'the gusset of your panties'
+			$txtloc = 'the gusset of your panties</a>'
+		end
+
+		j = 0
+		:ageloop
+			if cumvolume['<<i>>:<<j>>'] > 0:
+				!!Cum locations set for checking npc reactions
+				cumloc[i] = 1
+				cumvol[i] = cumvolume['<<i>>:<<j>>']
+				if stat_cumloc_check ! 1 and i ! 12: stat_cumloc_check = 1
+				!!amount setting
+				if cumvolume['<<i>>:<<j>>'] > 250:
+					!! 25 ml, about four-five load, gushing
+					$txtamount = 'Enormous '
+				elseif cumvolume['<<i>>:<<j>>'] > 100:
+					!! 10 ml, about two load, flowing
+					$txtamount = 'Huge '
+				elseif cumvolume['<<i>>:<<j>>'] >= 20:
+					!! 2 ml, seeping out
+					$txtamount = 'Decent '
+				else
+					!! residue amount, no leakage
+					$txtamount = 'Small '
+				end
+
+				!! if sperm age stage is 4, it means inside the body
+				if j = 4:
+					if (vibratorIN = 1 and i = 0) or (analplugin = 1 and i = 3):
+						$txtproxy = 'being plugged in '
+					elseif i = 0 and cumvolume['<<i>>:<<j>>'] < pcs_vag*5:
+						$txtproxy = 'staying inside of '
+					elseif i = 3 and pcs_ass <= 25:
+						$txtproxy = 'staying inside of '
+					else
+						if cumvolume['<<i>>:<<j>>'] > 250:
+							$txtproxy = 'gushing out of '
+						elseif cumvolume['<<i>>:<<j>>'] > 100:
+							$txtproxy = 'flowing out of '
+						elseif cumvolume['<<i>>:<<j>>'] >= 40:
+							$txtproxy = 'seeping out of '
+						else
+							$txtproxy = 'staying inside of '
+						end
+					end
+				elseif j >= 5:
+				!! if sperm age stage is over 4, meaning in condom
+					if j = 5:
+						$txtproxy = 'buried '
+					elseif j = 6:
+						$txtproxy = 'marinating '
+					else
+						$txtproxy = 'rotting '
+					end
+					if cumcondslip_deep > (vagina / 2): $txtproxy += 'deep '
+				elseif j < 4 and j > 0:
+					!!amount setting
+					if cumvolume['<<i>>:<<j>>'] > 160:
+						!! 10 ml, about two load, flowing
+						$txtproxy = 'coating '
+					elseif cumvolume['<<i>>:<<j>>'] > 40:
+						!! 2 ml, seeping out
+						$txtproxy = 'covering '
+					else
+						!! residue amount, no leakage
+						$txtproxy = 'spattering '
+					end
+					if j = 1:
+						$txtproxy += 'wetly '
+					elseif j = 2:
+						$txtproxy += 'dryly '
+					else
+						$txtproxy += 'powderly '
+					end
+				end
+
+				$txtperson = ''
+				if cumcount['<<i>>:<<j>>'] = 0:
+	!!ToDo: No idea how to do the icon here (julzor)
+					$txtiscum = 'some whitish substance '
+				else
+					$txtiscum = 'cum'
+					if cumcount['<<i>>:<<j>>'] = knownguy['<<i>>:<<j>>']:
+					!! everyone is known (one or more)
+						if knownguy['<<i>>:<<j>>'] = 1:
+							$txtperson = $npc_usedname[$cumowner['<<i>>:<<j>>:0']] + ' '
+						else
+							kmax = 0
+							:nullocator1
+							if $cumowner['<<i>>:<<j>>:<<kmax>>'] ! '':kmax += 1 & jump 'nullocator1'
+							kmax -= 1
+							k = 0
+							:knownloop
+								$txtperson += $npc_usedname[$cumowner['<<i>>:<<j>>:<<k>>']]
+							if k < kmax-1:$txtperson += ', ' & k += 1 & jump 'knownloop'
+							k += 1
+							$txtperson += ' and ' + $npc_usedname[$cumowner['<<i>>:<<j>>:<<k>>']] + ' '
+						end
+					elseif knownguy['<<i>>:<<j>>'] = 0:
+					!! no one is known (one or more)
+						if cumcount['<<i>>:<<j>>'] = 1:
+							$txtperson += 'some guy '
+						else
+							$txtperson += 'some guys '
+						end
+					else
+					!! there are known and unknown guys in the mix
+						if knownguy['<<i>>:<<j>>'] = 1:
+							$txtperson = $npc_usedname[$cumowner['<<i>>:<<j>>:0']] + ' and some guy'
+						else
+							kmax = 0
+							:nullocator2
+							if $cumowner['<<i>>:<<j>>:<<kmax>>'] ! '':kmax += 1 & jump 'nullocator2'
+							kmax -= 1
+							k = 0
+							:mixloop
+								$txtperson += $npc_usedname[$cumowner['<<i>>:<<j>>:<<k>>']] + ', '
+							if k < kmax: k += 1 & jump 'mixloop'
+							$txtperson += 'and some guy'
+						end
+						if cumcount['<<i>>:<<j>>'] - knownguy['<<i>>:<<j>>'] > 1:
+							$txtperson += 's '
+						else
+							$txtperson += ' '
+						end
+					end
+				end
+				$icon_txtiscum = $txtiscum
+				if j <= 4 and trt_cumeater = 1 and $txtiscum = 'cum': $txtiscum = '<a href="exec:gs ''cum_manage'', ''cumeater'', <<i>>"><font color=#0064FF>' + $txtiscum + '</font></a>'
+				$txtiscum += ' from '
+				$icon_txtiscum += ' from '
+				if i = 0 and j = 4 and vibratorIN = 0 and pcs_vag*10 < cumvolume['<<i>>:<<j>>'] and cumvolume['<<i>>:<<j>>'] >= 20:
+					$stat_cum_text += '<BR><b><font color="red">' + $txtamount + 'amounts of ' + $txtiscum + $txtperson + 'is ' + $txtproxy + $txtloc + iif($pantyworntype ! 'none', ' into your panties.', ' down your legs.')+'</font></b>'
+					if $stat_cum_msg ! '': $stat_cum_msg += '<br>'
+					$stat_cum_msg += $txtamount + 'amounts of ' + $icon_txtiscum + $txtperson + 'is ' + $txtproxy + $icon_txtloc + iif($pantyworntype ! 'none', ' into your panties.', ' down your legs.')
+				elseif sparragestage >= 5:
+					if cumcondslip_aware > 0: $stat_cum_text += '<BR><b><font color="red">' + $txtamount + 'amounts of ' + $txtiscum + $txtperson + 'is ' + $txtproxy + $txtloc + '.</font></b>'
+					if $stat_cum_msg ! '': $stat_cum_msg += '<br>'
+					$stat_cum_msg += $txtamount + 'amounts of ' + $icon_txtiscum + $txtperson + 'is ' + $txtproxy + $icon_txtloc + '.'
+				elseif j ! 0:
+					$stat_cum_text += '<BR><b><font color="red">' + $txtamount + 'amounts of ' + $txtiscum + $txtperson + 'is ' + $txtproxy + $txtloc + '.</font></b>'
+					if $stat_cum_msg ! '': $stat_cum_msg += '<br>'
+					$stat_cum_msg += $txtamount + 'amounts of ' + $icon_txtiscum + $txtperson + 'is ' + $txtproxy + $icon_txtloc + '.'
+				else
+					$stat_cum_text += '<BR><b><font color="red">Your breath smells like sperm.</font></b>'
+					if $stat_cum_msg ! '': $stat_cum_msg += '<br>'
+					$stat_cum_msg += 'Your breath smells like sperm.'
+				end
+			end
+		if j < 7: j+=1 & jump 'ageloop'
+	if i < 18: i+=1 & jump 'cumlocloop'
+	killvar 'i'
+	killvar 'j'
+	killvar 'txtperson'
+	killvar 'k'
+	killvar 'kmax'
+	killvar 'txtamount'
+	killvar 'txtiscum'
+	killvar '$icon_txtiscum'
+	killvar 'txtperson'
+	killvar 'txtproxy'
+	killvar 'txtloc'
+	killvar '$icon_txtloc'
+	killvar 'cumvolume'
+	killvar 'cumcount'
+	killvar 'knownguy'
+	killvar 'cumowner'
+
+	$stat_visible_cum_temp = ''
+	$stat_visible_cum_msg = ''
+
+	if cumloc[6] = 1 or cumloc[7] = 1 or cumloc[11] = 1 or cumloc[13] = 1 or cumloc[16] = 1:
+		if cumloc[6] = 1:
+			stat_visible_cum = 1
+			if $stat_visible_cum_temp ! '': $stat_visible_cum_temp += ', '
+			$stat_visible_cum_temp += 'your clothes near your groin'
+		end
+		if cumloc[7] = 1:
+			stat_visible_cum = 1
+			if $stat_visible_cum_temp ! '': $stat_visible_cum_temp += ', '
+			$stat_visible_cum_temp += 'your clothes'
+		end
+		if cumloc[11] = 1:
+			stat_visible_cum = 1
+			if $stat_visible_cum_temp ! '': $stat_visible_cum_temp += ', '
+			$stat_visible_cum_temp += 'your face'
+		end
+		if cumloc[13] = 1:
+			stat_visible_cum = 1
+			if $stat_visible_cum_temp ! '': $stat_visible_cum_temp += ', '
+			$stat_visible_cum_temp += 'your hands'
+		end
+		if cumloc[16] = 1:
+			stat_visible_cum = 1
+			if $stat_visible_cum_temp ! '': $stat_visible_cum_temp += ', '
+			$stat_visible_cum_temp += 'your hair'
+		end
+
+		$stat_visible_cum_msg = 'People can see the cum on '+ $stat_visible_cum_temp + '.'
+	end
+
+end
+
 --- Cum_Manage ---------------------------------
 
