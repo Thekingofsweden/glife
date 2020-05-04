@@ -254,6 +254,94 @@ if pcs_sewng >= 80:
 	end
 end
 
+if ml_guitarWithMe = 1:
+	act 'Place the guitar next to your desk': 
+		ml_guitarWithMe = 0
+		ml_guitarAtHome = 1
+		gt 'bedrPar', 'start'
+	end
+elseif ml_guitarAtHome = 1:
+	act 'Pick up the guitar':
+		ml_guitarWithMe = 1
+		ml_guitarAtHome = 0
+		gt 'bedrPar', 'start'
+	end
+end
+
+if hour > 8 and hour < 20:
+
+	if ml_guitar = 1 and (ml_chordbook = 1 or ml_guitarlessoncount > 0):
+		if sisterHere = 1 and pcs_inhib < 30:
+			if pcs_inhib < 10: 
+				$diff = 'hard'
+			elseif pcs_inhib < 20: 
+				$diff = 'medium'
+			else 
+				$diff = 'easy'
+			end
+			gs 'willpower', 'skill', 'self', $diff
+			will_cost = (will_cost * 3) - (pcs_perform)
+			if will_cost <= pcs_willpwr:
+				act 'Practice guitar (0:30) (<<will_cost>> Willpower)': 
+					inhib_exp += rand(0,1)
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'music_bedroomPractice', 'guitar', 'bedrPar'
+				end
+			else
+				act 'Practice guitar (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You feel too embarrassed to pick up your guitar in front of people</font>'
+			end
+		else
+			act 'Practice guitar (0:30)': gt 'music_bedroomPractice', 'guitar', 'bedrPar'
+		end
+	end
+			
+	if ml_online['account'] = 0 and internet > 0:
+		act 'Set up an online music account (0:30)': gt 'music_onlinemusic', 'setupAccount', 'bedrPar'
+	end
+
+	if ml_online['account'] = 1 and internet > 0 and sisterHere = 0:
+		if pcs_inhib < 30:
+			if pcs_inhib < 10: 
+				$diff = 'hard'
+			elseif pcs_inhib < 20: 
+				$diff = 'medium'
+			else 
+				$diff = 'easy'
+			end
+			gs 'willpower', 'skill', 'self', $diff
+			will_cost = (will_cost * 3) - (pcs_perform)
+			
+			if ml_performed_hours <= ml_maxperform_hours:
+				if will_cost <= pcs_willpwr:
+					act 'Live stream (1:00) (<<will_cost>> Willpower)': 
+						inhib_exp += rand(1,3)	
+						gs 'willpower', 'pay', 'self'
+						gs 'stat'
+						gt 'music_onlinemusic', 'liveStream', 'bedrPar'
+					end
+				else	
+					act 'Live stream (1:00) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+			if will_cost <= pcs_willpwr:
+				act 'Record a song (1:00) (<<will_cost>> Willpower)': 
+					inhib_exp += rand(1,2)	
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'music_onlinemusic', 'recordSong', 'bedrPar'
+				end
+			else 
+				act 'Record a song (1:00) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else 
+			act 'Live stream (1:00)': gt 'music_onlinemusic', 'liveStream', 'bedrPar'			
+			act 'Record a song (1:00)': gt 'music_onlinemusic', 'recordSong', 'bedrPar'
+		end
+		
+	end
+end
+
 if sisterHere = 0 and breastpump = 1 and bp_unbox <= 0:
 	'<a href="exec: gt ''lact_bp'', ''bp_unbox_event''">Unbox</a> your breast pump'
 elseif kid >= 1 and breastpump = 1 and bp_unbox <= 0:

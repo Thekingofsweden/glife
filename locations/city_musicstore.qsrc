@@ -1,0 +1,97 @@
+# city_musicstore
+
+if $ARGS[0] = 'musicshop':
+	*clr & cla	
+	if ml_musicstorevisited = 0:
+			ml_musicstorevisited = 1
+			gt 'city_musicstore', 'firstvisit'
+	else
+		'<center><img src="images/locations/city/citycenter/mall/musicstore/music-store-600.jpg"></center>'
+		'You enter the store, welcomed by the familiar mix of random notes and bits of songs screaming from the back.'
+		'Jimmy just nods at you, then returns his attention to the guitar laying on the counter in front of him.'
+
+		act 'Shop for guitars and amps': gt 'city_musicstore_stock', 'acoustic'
+		act 'Try some guitars': 
+!!			TODO: Better scenes here			
+			if pcs_instrmusic < 30 and pcs_performing < 10:
+				'You pick up a guitar to try it, but you are too shy and after strumming a few chords you put it back on it''s stand'
+			else
+				'Some texts here depending on music skill and performing skill'			
+			end
+		end
+		act 'Leave': 
+			if ml_boughtguitar > 0 or ml_boughtamp > 0:
+				gt 'city_musicstore', 'payandtakestuff'
+			end
+			gt 'torgcentr'
+		end
+	end
+
+end
+
+if $ARGS[0] = 'firstvisit':
+	'<center><img src="images/locations/city/citycenter/mall/musicstore/music-store-600.jpg"></center>'
+	*nl
+	'You enter the store, passing the door to be submerged in a loud, cacophonic environment. 
+	The walls are filled with guitars, and in the back three teenaged guys are trying instruments in a very loud way.'
+
+!!	TODO: Replace the image, Waynes world is fun but silly
+
+	'<center><img src="images/locations/city/citycenter/mall/musicstore/waynesworld.jpg"></center>'
+	*nl
+    'A tall, dark haired man turns to you with a bored expression that turns into a perplexed smile as he takes your sight in.'
+   	'He straightens up "Hello there, I''m Jimmy" - he greets you - "Is there anything I can help you with?"'
+	*nl
+	'<center><img src="images/locations/city/citycenter/mall/musicstore/jimmy.jpg"></center>'
+	*nl
+  	'Suddenly he turns and throws a sponge at one of the boys playing in the back "No. Stairway. To. Heaven." he growls and points at the sign on the wall before turning back to you.'
+ 	'<center><img src="images/locations/city/citycenter/mall/musicstore/nostairways.jpg"></center>'
+
+	if guitar = 0:
+			act 'Look for a guitar':
+				*clr & cla
+				'<center><img src="images/locations/city/citycenter/mall/musicstore/cheap_acoustic_1.jpg"></center>'		
+				'You start to browse the guitars in the shop, not entirely sure what you are looking for and gladly accept the help of the store clerk. After answering his questions and chatting about music and what you are looking for he finally picks up an affordable acoustic guitar as a recommendation.'
+				'After some conversation with the store owner he offers you an affordable acoustic guitar to buy'
+				'Jimmy leaves you alone with the instrument, so you sit down to try it, strumming the chords that you know, trying to play something.'
+				'While the guitar is not the best sounding one it''s comfortable' + iif(money <= 5000, ' and looking at the price tags, the only one you can afford.','.')
+			
+				act 'Buy a cheap acoustic guitar (3,400 <b>P</b>)': 
+					*clr & cla
+					'<center><img src="images/locations/city/citycenter/mall/musicstore/starterkit.jpg"></center>'
+					'You finally decide to buy the guitar, taking it to the checkout. Jimmy throws in a bag to carry the gitar and a set of strings and picks. "A proper starter kit" he states and rings up the purchase.'
+					'He looks at you thoughtfully, then drops a thick, slightly worn booklet in the bag "Some stuff to learn from" he says handing your purchase to you "Congratulations, welcome to the starving musician community."'
+					ml_strings = 2
+					ml_chordbook = 1
+					ml_guitar = 1 
+					ml_guitarWithMe = 1
+					money -= 3400
+					gs 'stat'
+					act 'Leave': gt 'torgcentr'
+				end
+				act 'Leave': gt 'torgcentr'
+			end
+		end
+
+	act 'Leave': gt 'torgcentr'
+end
+
+
+if $ARGS[0] = 'payandtakestuff':
+	if ml_boughtamp + ml_guitarWithMe > 0 or ml_boughtguitar > 1:
+		minut += (ml_boughtguitar * 5) + (ml_boughtguitar * 5)
+		'Jimmy takes your details and your home address after you pay, and sets up the delivery. "It should be there tomorrow, <<$pcs_nickname>>."'
+	else	
+		minut += 20
+        ml_guitarWithMe = 1
+		'Jimmy disappears with your chosen guitar in the back of the shop only to return after about 10 minutes. "It''s all set up, <<$pcs_nickname>>, if you need to tweak anything, just bring it in, we will do it, no charge."'
+		*nl
+		'He puts the guitar in ' + iif(ml_gigbag = 1, 'a gigbag', '') + iif(ml_hardcase = 1, 'its case', '') + ' and hands it to you. "All the best, <<$pcs_nickname>>."'
+	end
+	killvar 'ml_boughtamp'
+	killvar 'ml_boughtguitar'
+	killvar 'ml_gigbag'
+	killvar 'ml_hardcase'
+	act 'Leave': gt 'torgcentr'
+end
+--- city_musicstore ---------------------------------
