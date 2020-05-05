@@ -1861,57 +1861,63 @@ end
 !!-------------Music career related variables and calculations------------------------------------------------
 
 !! How many hours a day can Sveta perform. It maxes out at 3.
-!! Using the actual skill level, not the one modified by Attributes because that's more realistic for this.
+!! Using the actual skill level, not the one modified by Attributes because that is more realistic for this.
 
-ml_max_instrument = instrmusic_lvl/30
-ml_max_vocal = vocal_lvl/30
-ml_maxperform_hours = max(ml_max_instrument, ml_max_vocal)
+ml_maxperform_minutes = instrmusic_lvl + vocal_lvl
+ml_performed_minutes = 0
 
-!! Calculating the fame increase from the uploaded songs and removing ones that don't effect fame anymore to keep the 
+
+!! Calculating the fame increase from the uploaded songs and removing ones that do not effect fame anymore to keep the 
 !! data at a sane level
 if ml_onlinesongcount > 0:
 	i = 0
 	j = 0
-    :looponlinesongs        
+    
+	:looponlinesongs        
 !!      this so every song counts only every 7 days and only for a limited number of weeks 
-        if ml_onlinesong_freshness[i] > 0:			
-			ml_tempsong_freshness[j] = ml_onlinesong_freshness[i]
+		if ml_onlinesong_freshness[i] > 0:		
+			ml_tempsong_freshness[j] = ml_onlinesong_sfreshness[i]
 			ml_tempsong_lastcalcday[j] = ml_onlinesong_lastcalcday[i]
 			ml_tempsong_hotcat[j] = ml_onlinesong_hotcat[i]
 			ml_tempsong_skilllevel[j] = ml_onlinesong_skilllevel[i]
-		
-			if ml_tempsong_lastcalcday[j] <= (daystart - 7):
+			ml_tempsong_uploaded[j] = ml_onlinesong_uploaded[i]
+			*nl
+			if ml_tempsong_lastcalcday[j] <= (daystart - 7) and ml_tempsong_uploaded = 1:
             	pav_music += rand(0, ml_tempsong_freshness[j]/50)
             	city_music += rand(0, ml_tempsong_freshness[j]/100)
             	ml_tempsong_freshness[j] -= 10
             	ml_tempsong_lastcalcday[j] = daystart
-        	end
+
+			end
 			j += 1
 		end
-        i += 1
-    if i < ml_onlinesongcount: jump 'looponlinesongs'
+		i += 1
+	if i < ml_onlinesongcount: jump 'looponlinesongs'
+
 	killvar 'ml_onlinesong_freshness'
 	killvar 'ml_onlinesong_lastcalcday'
 	killvar 'ml_onlinesong_hotcat'
 	killvar 'ml_onlinesong_skilllevel'
+	killvar 'ml_onlinesong_uploaded'
 
 	i = 0
+	
 	:looprebuildsongs
 		ml_onlinesong_freshness[i] = ml_tempsong_freshness[i]
 		ml_onlinesong_hotcat[i] = ml_tempsong_hotcat[i]
 		ml_onlinesong_lastcalcday[i] = ml_tempsong_lastcalcday[i]
 		ml_onlinesong_skilllevel[i] = ml_tempsong_skilllevel[i]
+		ml_onlinesong_uploaded[i] = ml_tempsong_uploaded[i]
+		i += 1
 	if i < j: jump 'looprebuildsongs'
 
 	killvar 'ml_tempsong_freshness'
 	killvar 'ml_tempsong_lastcalcday'
 	killvar 'ml_tempsong_hotcat'
 	killvar 'ml_tempsong_skilllevel'
-end
+	killvar 'ml_tempsong_uploaded'
 
-!! Resetting the performance time variables.
-    ml_performed_hours = 0
-end 
+end
 
 --- cikl ---------------------------------
 

@@ -23,7 +23,7 @@ if $ARGS[0] = 'liveStream':
 		perform_exp += rand(0,3)	
 		karta += superchats
 		ml_online['livestreamcount'] += 1
-		ml_performed_hours += 1
+		ml_performed_minutes += 60
 		'<center><img <<$set_imgh>> src="images/pc/music/gomixer_hero.jpg"/></center>'
 		'You set up your phone on a little tri-pod and log into your account. After settling down comfortably, you start to stream.'			
 		'Your fans tipped you <<superchats>> rubels for your performance.'
@@ -36,25 +36,144 @@ if $ARGS[0] = 'liveStream':
 end
 
 if $ARGS[0] = 'recordSong':
-	internet -= 1
-	if komp = 0 or webcamera = 0:
-	!!	TODO: Write a scene. It should describe that a song is recorded and then edited properly before uploading it to the net.
-		'<center><img <<$set_imgh>> src="images/pc/music/phonerecording.png"/></center>'
-		'You set up your phone and settle down comfortably to record a song. After several tries you finally end up with a version you are content with and upload it to your account.'
-		'As you don''t have a computer you can''t really do much with the songs quality. But then you have seen quite a few people work with only with their phones. Like Ling Ling.'
-		minut += 60
-        instrmusic_exp += rand(0,2)		
-		vokal_exp += rand(0,2)	
-		perform_exp += rand(0,3)	
-		musicprod_exp += rand(0,3)
-		ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
-		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
-		ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
-		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
-		ml_onlinesongcount += 1
+!!	TODO: Write a scene. It should describe that a song is recorded and then edited properly before uploading it to the net.
+	'<center><img <<$set_imgh>> src="images/pc/music/phonerecording.png"/></center>'
+	'You set up your phone and settle down comfortably to record a song. After several tries you finally end up with a version you are content with and upload it to your account.'
+	'As you don''t have a computer you can''t really do much with the songs quality. But then you have seen quite a few people work with only with their phones. Like Ling Ling.'
 	
+	minut += 30
+	instrmusic_exp += rand(1,4)		
+	vokal_exp += rand(1,4)	
+	perform_exp += rand(1,3)	
+	ml_performed_minutes += 15
+
+	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
+	ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
+	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
+	ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
+	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+	ml_uploadablemusic += 1
+	ml_onlinesongcount += 1		
+
+	if ml_online['account'] = 1 and internet > 0:
+		if pcs_inhib < 30:
+			if pcs_inhib < 10: 
+				$diff = 'hard'
+			elseif pcs_inhib < 20: 
+				$diff = 'medium'
+			else 
+				$diff = 'easy'
+			end
+			gs 'willpower', 'skill', 'self', $diff
+
+			will_cost = (will_cost * 2) - (pcs_perform)
+			if will_cost <= pcs_willpwr:
+				act 'Upload music (<<will_cost>> Willpower)': gt 'music_onlinemusic', 'uploadmusic'
+			else	
+				act 'Upload music (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else
+			act 'Upload music': gt 'music_onlinemusic', 'uploadmusic'
+		end
+	else 
+		act 'Leave': gt $loc, 'start'
 	end
-	act 'Leave': gt $loc, 'start'
+end
+
+if $ARGS[0] = 'recordAndEditSong':
+!!	TODO: Write a scene. It should describe that a song is recorded and then edited properly before uploading it to the net.
+	'<center><img <<$set_imgh>> src="images/pc/music/phonerecording.png"/></center>'
+	'You open plug in your home studio kit and start up the recording software. After several tries you finally end up with a version you are content with.'
+	'The next hour just flies by as you edit the video and the audio, trying to increate the quality of the recording as much as you can'
+	minut += 90
+	instrmusic_exp += rand(1,4)		
+	vokal_exp += rand(1,4)	
+	perform_exp += rand(1,3)	
+	musicprod_exp += rand(1,3)
+	ml_performed_minutes += 15
+
+	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
+	ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + pcs_musicprod
+	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
+	ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + pcs_musicprod + ((hotcat-4)*10)
+	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+	ml_uploadablemusic += 1
+	ml_onlinesongcount += 1	
+
+	if ml_online['account'] = 1 and internet > 0:
+		if pcs_inhib < 30:
+			if pcs_inhib < 10: 
+				$diff = 'hard'
+			elseif pcs_inhib < 20: 
+				$diff = 'medium'
+			else 
+				$diff = 'easy'
+			end
+			gs 'willpower', 'skill', 'self', $diff
+
+			will_cost = (will_cost * 2) - (pcs_perform)
+			if will_cost <= pcs_willpwr:
+				act 'Upload music (<<will_cost>> Willpower)': gt 'music_onlinemusic', 'uploadmusic'
+			else	
+				act 'Upload music (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+		else 
+			act 'Upload music': gt 'music_onlinemusic', 'uploadmusic'
+		end
+	else
+		if $loc = 'sitr':
+			act 'Leave': gt $loc
+		else
+			act 'Leave': gt $loc, 'start'
+		end
+	end
+
+end
+
+
+if $ARGS[0] = 'uploadmusic':
+	if will_cost > 0:
+		'You hesitate for a long moment, but finally take a deep breath and click on the "Upload" button and your newly recorded song moves over to the internet for all to see.'
+		'You bite in your lip, then close the screen before you change your mind and delete it.'
+	else
+		'You smile brightly and click on the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen. They will like it."'
+	end
+	ml_uploadablemusic -= 1 
+	ml_onlinesong_uploaded[ml_onlinesongcount-1] = 1
+
+	killvar 'will_cost'
+
+	if $loc = 'sitr':
+		act 'Leave': gt $loc
+	else
+		act 'Leave': gt $loc, 'start'
+	end
+end
+
+
+if $ARGS[0] = 'uploadallmusic':
+	if will_cost > 0:
+		'You hesitate for a long moment, but finally take a deep breath and click on the "Upload" button and all your recorded songs, one by one move over to the internet for all to see.'
+		'You bite in your lip, then close the screen before you change your mind and delete them.'
+	else
+		'You smile brightly and click on the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen, this is how art grows."'
+	end
+	i = 0
+	:uploadallmusic			
+		if ml_onlinesong_uploaded[i] = 0: 
+			ml_onlinesong_uploaded[i] = 1
+			ml_uploadablemusic -= 1 
+		end
+		i += 1
+	if i < ml_onlinesongcount:jump 'uploadallmusic'
+
+	killvar 'will_cost'
+
+	if $loc = 'sitr':
+		act 'Leave': gt $loc
+	else
+		act 'Leave': gt $loc, 'start'
+	end
 end
 
 
