@@ -1,0 +1,48 @@
+# music_buskingevents
+
+if $ARGS[0] = 'busking':
+	minut += 60	
+	instrmusic_exp += rand(1,3)
+	vokal_exp += rand(1,3)
+	perform_exp += rand(1,2)
+	
+	gs 'music_buskingevents', 'calculate_tips', $ARGS[1]
+	money += ml_tipsearned
+	gs 'stat'
+	
+	dynamic '<<$ARGS[1]>>_music += rand(0,3)'
+	
+	ml_performed_minutes += 60
+	
+	*clr & cla
+!!	TODO: More meat to the scene.	
+	'<center><img <<$set_imgh>> src="images/pc/music/guitarf'+ rand(1,2) +'.jpg"></center>'	
+	'You start to play the songs you know, pushing your open guitar case forward a little in case people drop some change there.' + iif(ml_online['account'] = 1 and ml_online['active'] = 1, ' You also set up the sign with the link to your webprofile.', '') + ' After playing for an hour you have made <<ml_tipsearned>> <b>P</b> in tips.'
+
+	act 'Finish': gt $curloc, 'start'	
+end
+
+if $ARGS[0] = 'calculate_tips':
+	
+	if $ARGS[1] = 'city':
+		ml_location_mod = 6
+	elseif $ARGS[1] = 'pav':
+		ml_location_mod = 1
+	elseif $ARGS[1] = 'oldtown'
+		ml_location_mod = 3
+	end 	
+
+	if week >= 5: ml_time_mod += 2
+	if hour >= 17: ml_time_mod += 2
+	
+	ml_time_loc_mod = (ml_location_mod + ml_time_mod) / 2
+	
+	
+	ml_tipsmax = (pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*35)) * ml_time_loc_mod
+	ml_tipsearned = max(rand(0,ml_tipsmax),0)
+
+	killvar 'ml_location_mod'
+	killvar 'ml_time_mod'	
+end
+
+--- music_buskingevents ---------------------------------
