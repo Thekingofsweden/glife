@@ -15,10 +15,14 @@ if $ARGS[0] = 'liveStream':
 		minut += 60
 		ml_maxsuperchats = 	( pav_music/2 + city_music + oldtown_music/2 + village_music/2 + global_performer + pcs_apprnc )
 		ml_superchats = rand( 0, ml_maxsuperchats)
-		ml_famebase = ( pcs_instrmusic + pcs_vokal + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
+		if ml_guitar = 1:
+			ml_famebase = ( pcs_instrmusic + pcs_vokal + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
+			instrmusic_exp += rand(0,2)					
+		else	
+			ml_famebase = ( (pcs_vokal * 2) + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
+		end
 		pav_music += rand(0, ml_famebase)
 		city_music += rand(0, ml_famebase)
-		instrmusic_exp += rand(0,2)		
 		vokal_exp += rand(0,2)	
 		perform_exp += rand(0,3)	
 		karta += superchats
@@ -42,15 +46,21 @@ if $ARGS[0] = 'recordSong':
 	'As you don''t have a computer you can''t really do much with the songs quality. But then you have seen quite a few people work with only with their phones. Like Ling Ling.'
 	
 	minut += 30
-	instrmusic_exp += rand(1,4)		
 	vokal_exp += rand(1,4)	
 	perform_exp += rand(1,3)	
 	ml_performed_minutes += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
-	ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
+	if ml_guitar = 1:
+		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
+		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
+		instrmusic_exp += rand(1,4)		
+	else
+		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
+		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
+	end
+
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
-	ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1		
@@ -82,7 +92,8 @@ end
 
 if $ARGS[0] = 'recordAndEditSong':
 !!	TODO: Write a scene. It should describe that a song is recorded and then edited properly before uploading it to the net.
-	'<center><img <<$set_imgh>> src="images/pc/activities/music/phonerecording.jpg"/></center>'
+!!	'<center><img <<$set_imgh>> src="images/pc/activities/music/editmusic.jpg"/></center>'
+	'<center><video autoplay loop src="images/pc/activities/music/editmusic.mp4"></video></center>'
 	'You open plug in your home studio kit and start up the recording software. After several tries you finally end up with a version you are content with.'
 	'The next hour just flies by as you edit the video and the audio, trying to increate the quality of the recording as much as you can'
 	minut += 90
@@ -93,9 +104,16 @@ if $ARGS[0] = 'recordAndEditSong':
 	ml_performed_minutes += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
-	ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + pcs_musicprod
+	if ml_guitar = 1:
+		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
+		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
+		instrmusic_exp += rand(1,4)		
+	else
+		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
+		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
+	end
+
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
-	ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + pcs_musicprod + ((hotcat-4)*10)
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1	
@@ -162,12 +180,11 @@ if $ARGS[0] = 'uploadallmusic':
 	i = 0
 	:uploadallmusic			
 		if ml_onlinesong_uploaded[i] = 0: 
-			ml_onlinesong_uploaded[i] = 1
-			ml_uploadablemusic -= 1 
+			ml_onlinesong_uploaded[i] = 1			
 		end
 		i += 1
 	if i < ml_onlinesongcount:jump 'uploadallmusic'
-
+	ml_uploadablemusic -= 0
 	killvar 'will_cost'
 
 	if $loc = 'sitr':
