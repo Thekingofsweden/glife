@@ -12,22 +12,22 @@ if $ARGS[0] = 'liveStream':
 	internet -= 1
 	if komp = 0 or webcamera = 0:
 !!	TODO: Much, much better scene.
-		minut += 60
+		minut += ml_streamtime
 		ml_maxsuperchats = 	( pav_music/2 + city_music + oldtown_music/2 + village_music/2 + global_performer + pcs_apprnc )
-		ml_superchats = rand( 0, ml_maxsuperchats)
+		ml_superchats = (rand( 0, ml_maxsuperchats) * ml_streamtime) / 60
 		if ml_guitar = 1:
 			ml_famebase = ( pcs_instrmusic + pcs_vokal + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
-			instrmusic_exp += rand(0,2)					
+			instrmusic_exp += rand(1,3)					
 		else	
 			ml_famebase = ( (pcs_vokal * 2) + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
 		end
 		pav_music += rand(0, ml_famebase)
 		city_music += rand(0, ml_famebase)
-		vokal_exp += rand(0,2)	
-		perform_exp += rand(0,3)	
+		vokal_exp += rand(1,3)	
+		if perform_lvl < 35: perform_exp += rand(1,3)
 		karta += superchats
 		ml_online['livestreamcount'] += 1
-		ml_performed_minutes += 60
+		ml_performed_minutes += ml_streamtime
 		'<center><img <<$set_imgh>> src="images/pc/activities/music/gomixer_hero.jpg"/></center>'
 		'You set up your phone on a little tri-pod and log into your account. After settling down comfortably, you start to stream.'			
 		'Your fans tipped you <<superchats>> rubels for your performance.'
@@ -47,21 +47,30 @@ if $ARGS[0] = 'recordSong':
 	
 	minut += 30
 	vokal_exp += rand(1,4)	
-	perform_exp += rand(1,3)	
+	if perform_lvl < 35: perform_exp += rand(1,3)
 	ml_performed_minutes += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
 	if ml_guitar = 1:
-		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
-		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
-		instrmusic_exp += rand(1,4)		
+		skilllevel = pcs_instrmusic + pcs_vokal + pcs_perform
+		freshness = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
+		instrmusic_exp += rand(1,3)		
 	else
-		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
-		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
+		skilllevel = (pcs_vokal * 2) + pcs_perform
+		freshness = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
 	end
 
+	ml_onlinesong_skilllevel[ml_onlinesongcount] = skilllevel
+	ml_onlinesong_freshness[ml_onlinesongcount] = freshness
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+
+	'Actual hotcat: <<ml_onlinesong_hotcat[ml_onlinesongcount]>>, should be <<hotcat>>'
+	'Skill level: <<ml_onlinesong_skilllevel[ml_onlinesongcount]>>, should be <<skilllevel>>'
+	'Freshness: <<ml_onlinesong_freshness[ml_onlinesongcount]>>, should be <<freshness>>'
+	'Last calculation day: <<ml_onlinesong_lastcalcday[ml_onlinesongcount]>>, should be <<daystart>>'
+	'Uploaded: <<ml_onlinesong_uploaded[ml_onlinesongcount]>>, should be <<0>>'
+
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1		
 
@@ -97,24 +106,32 @@ if $ARGS[0] = 'recordAndEditSong':
 	'You open plug in your home studio kit and start up the recording software. After several tries you finally end up with a version you are content with.'
 	'The next hour just flies by as you edit the video and the audio, trying to increate the quality of the recording as much as you can'
 	minut += 90
-	instrmusic_exp += rand(1,4)		
-	vokal_exp += rand(1,4)	
-	perform_exp += rand(1,3)	
-	musicprod_exp += rand(1,3)
+	vokal_exp += rand(1,3)	
+	if perform_lvl < 35: perform_exp += rand(1,3)	
+	if musicprod_lvl < 35: musicprod_exp += rand(1,3)
 	ml_performed_minutes += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
 	if ml_guitar = 1:
-		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
-		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
-		instrmusic_exp += rand(1,4)		
+		skilllevel = pcs_instrmusic + pcs_vokal + pcs_perform
+		freshness = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
+		instrmusic_exp += rand(1,3)		
 	else
-		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
-		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
+		skilllevel = (pcs_vokal * 2) + pcs_perform
+		freshness = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
 	end
 
+	ml_onlinesong_skilllevel[ml_onlinesongcount] = skilllevel
+	ml_onlinesong_freshness[ml_onlinesongcount] = freshness
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+
+	'Actual hotcat: <<ml_onlinesong_hotcat[ml_onlinesongcount]>>, should be <<hotcat>>'
+	'Skill level: <<ml_onlinesong_skilllevel[ml_onlinesongcount]>>, should be <<skillevel>>'
+	'Freshness: <<ml_onlinesong_freshness[ml_onlinesongcount]>>, should be <<freshness>>'
+	'Last calculation day: <<ml_onlinesong_lastcalcday[ml_onlinesongcount]>>, should be <<daystart>>'
+	'Uploaded: <<ml_onlinesong_uploaded[ml_onlinesongcount]>>, should be <<0>>'
+
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1	
 
@@ -172,19 +189,23 @@ end
 if $ARGS[0] = 'uploadallmusic':
 	'<center><img src="images/pc/activities/music/uploadmusic.jpg"/></center>'
 	if will_cost > 0:
-		'You hesitate for a long moment, but finally take a deep breath and click on the "Upload" button and all your recorded songs, one by one move over to the internet for all to see.'
+		'You go through the songs you recorded, and clear out the old ones that you really ,really don''t like anymore then after a moment of hesitation you take a deep breath and click on the "Upload" button.
+		The screen changes and one by one, your songs move over to the internet for all to see.'
 		'You bite in your lip, then close the screen before you change your mind and delete them.'
 	else
-		'You smile brightly and click on the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen, this is how art grows."'
+		'You smile brightly as you browse through your recordings, deleting some old ones, then finally click the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen, this is how art grows."'
 	end
+
+	gs 'music_onlinemusic', 'deleting'
+
 	i = 0
 	:uploadallmusic			
 		if ml_onlinesong_uploaded[i] = 0: 
-			ml_onlinesong_uploaded[i] = 1			
+			ml_onlinesong_uploaded[i] = 1	
+			ml_uploadablemusic -= 1		
 		end
 		i += 1
 	if i < ml_onlinesongcount:jump 'uploadallmusic'
-	ml_uploadablemusic -= 0
 	killvar 'will_cost'
 
 	if $loc = 'sitr':
@@ -194,5 +215,66 @@ if $ARGS[0] = 'uploadallmusic':
 	end
 end
 
+if $ARGS[0] = 'deleteoldmusic':
+	'You go through your recorded musics and delete all the old ones where your playing doesn''t really reflect what you can do these days'
+	gs 'music_onlinemusic', 'deleting'
+
+	if $loc = 'sitr':
+		act 'Leave': gt $loc
+	else
+		act 'Leave': gt $loc, 'start'
+	end
+end
+
+if $ARGS[0] = 'deleting':
+
+	ml_threshold_skilllevel = ((pcs_instrmusic + pcs_vokal + pcs_perform)*80)/100
+
+	i = 0
+	j = -1
+	
+	:deletemusic
+		if (ml_onlinesong_uploaded = 1) or (ml_onlinesong_uploaded = 0 and ml_onlinesong_skilllevel > ml_threshold_skilllevel):
+			j += 1
+			ml_tempsong_freshness[j] = ml_onlinesong_sfreshness[i]
+			ml_tempsong_lastcalcday[j] = ml_onlinesong_lastcalcday[i]
+			ml_tempsong_hotcat[j] = ml_onlinesong_hotcat[i]
+			ml_tempsong_skilllevel[j] = ml_onlinesong_skilllevel[i]
+			ml_tempsong_uploaded[j] = ml_onlinesong_uploaded[i]			
+		else
+			ml_uploadablemusic -= 1
+		end
+
+		i += 1
+	if i < ml_onlinesongcount:jump 'deletemusic'
+
+	killvar 'ml_onlinesong_freshness'
+	killvar 'ml_onlinesong_lastcalcday'
+	killvar 'ml_onlinesong_hotcat'
+	killvar 'ml_onlinesong_skilllevel'
+	killvar 'ml_onlinesong_uploaded'
+	killvar 'i'
+
+	ml_onlinesongcount = 0
+
+	if j >= 0:
+		:looprebuildsongs
+			ml_onlinesong_freshness[ml_onlinesongcount] = ml_tempsong_freshness[ml_onlinesongcount]
+			ml_onlinesong_hotcat[ml_onlinesongcount] = ml_tempsong_hotcat[ml_onlinesongcount]
+			ml_onlinesong_lastcalcday[ml_onlinesongcount] = ml_tempsong_lastcalcday[ml_onlinesongcount]
+			ml_onlinesong_skilllevel[ml_onlinesongcount] = ml_tempsong_skilllevel[ml_onlinesongcount]
+			ml_onlinesong_uploaded[ml_onlinesongcount] = ml_tempsong_uploaded[ml_onlinesongcount]
+			ml_onlinesongcount += 1
+		if ml_onlinesongcount <= j: jump 'looprebuildsongs'
+	end
+
+	killvar 'ml_tempsong_freshness'
+	killvar 'ml_tempsong_lastcalcday'
+	killvar 'ml_tempsong_hotcat'
+	killvar 'ml_tempsong_skilllevel'
+	killvar 'ml_tempsong_uploaded'
+	killvar 'ml_threshold_skilllevel'
+
+end
 
 --- music_onlinemusic ---------------------------------
