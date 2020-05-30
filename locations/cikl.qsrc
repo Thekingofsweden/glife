@@ -1863,19 +1863,20 @@ end
 !! How many hours a day can Sveta perform. It maxes out at 3.
 !! Using the actual skill level, not the one modified by Attributes because that is more realistic for this.
 
-ml_maxperform_minutes = instrmusic_lvl + vocal_lvl
-ml_performed_minutes = 0
+ml_performance['max_perform_minutes'] = instrmusic_lvl + vokal_lvl
+ml_performance['performed_minutes'] = 0
 
 
 !! Calculating the fame increase from the uploaded songs and removing ones that do not effect fame anymore to keep the 
 !! data at a sane level
 if ml_onlinesongcount > 0:
 	i = 0
-	j = 0
+	j = -1
     
 	:looponlinesongs        
 !!      this so every song counts only every 7 days and only for a limited number of weeks 
 		if ml_onlinesong_freshness[i] > 0:		
+			j += 1
 			ml_tempsong_freshness[j] = ml_onlinesong_sfreshness[i]
 			ml_tempsong_lastcalcday[j] = ml_onlinesong_lastcalcday[i]
 			ml_tempsong_hotcat[j] = ml_onlinesong_hotcat[i]
@@ -1889,7 +1890,6 @@ if ml_onlinesongcount > 0:
             	ml_tempsong_lastcalcday[j] = daystart
 
 			end
-			j += 1
 		end
 		i += 1
 	if i < ml_onlinesongcount: jump 'looponlinesongs'
@@ -1902,14 +1902,16 @@ if ml_onlinesongcount > 0:
 
 	i = 0
 	
-	:looprebuildsongs
-		ml_onlinesong_freshness[i] = ml_tempsong_freshness[i]
-		ml_onlinesong_hotcat[i] = ml_tempsong_hotcat[i]
-		ml_onlinesong_lastcalcday[i] = ml_tempsong_lastcalcday[i]
-		ml_onlinesong_skilllevel[i] = ml_tempsong_skilllevel[i]
-		ml_onlinesong_uploaded[i] = ml_tempsong_uploaded[i]
-		i += 1
-	if i < j: jump 'looprebuildsongs'
+	if j >= 0:
+		:looprebuildsongs
+			ml_onlinesong_freshness[i] = ml_tempsong_freshness[i]
+			ml_onlinesong_hotcat[i] = ml_tempsong_hotcat[i]
+			ml_onlinesong_lastcalcday[i] = ml_tempsong_lastcalcday[i]
+			ml_onlinesong_skilllevel[i] = ml_tempsong_skilllevel[i]
+			ml_onlinesong_uploaded[i] = ml_tempsong_uploaded[i]
+			i += 1
+		if i <= j: jump 'looprebuildsongs'
+	end
 
 	killvar 'ml_tempsong_freshness'
 	killvar 'ml_tempsong_lastcalcday'
@@ -1918,6 +1920,13 @@ if ml_onlinesongcount > 0:
 	killvar 'ml_tempsong_uploaded'
 
 end
+
+
+!! Repertoire quality decay if no practice is done
+if ml_performance['set_lastpracticeday'] ! (daystart-1): repertoire_quality -= 2
+
+
+
 
 --- cikl ---------------------------------
 
