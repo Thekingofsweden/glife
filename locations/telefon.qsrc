@@ -86,11 +86,11 @@ $telefon['contact'] = {
 	if dyneval('result = iif(<<$telefon["ContactCallSchedule"]>>,1,0)') = 0:
 		$telefon['ContactCallCode'] = "gs 'telefon', 'phone_call_reject'"
 	end
-	$result = '<TABLE cellspacing="0" width="80%"><TR>
-		<TD><img src="<<$telefon[''ContactIcon'']>>"></TD>
+	$result = '<TR>
+		<TD><img src="<<$telefon[''ContactIcon'']>>" width="75"></TD>
 		<TD><<$telefon[''ContactNickName'']>></TD>
 		<TD align="right"><a href="exec:$callerid = ''<<$telefon[''ContactIcon'']>>'' & <<$telefon[''ContactCallCode'']>>"><b>Call</b></a></TD>
-	</TR></TABLE><br>'
+	</TR>'
 }
 
 
@@ -142,7 +142,8 @@ end &! --- AddContact ---
 if $ARGS[0] = 'ContactList':
 	$telefon['body'] = '
 	<font size=6>Contacts</font><br>
-	<img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"><br><br>'
+	<img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"><br><br>
+	<TABLE cellspacing="0" width="80%">'
 
 	!!iterating all Contacts
 	i=0
@@ -172,6 +173,7 @@ if $ARGS[0] = 'ContactList':
 	lover_number += 1
 	if lover_number < arrsize('pcs_lovers'): jump 'loverloop2'
 
+	$telefon['body'] += '</TABLE><br>'
 	dynamic $telefon['print']
 	killvar 'i'
 	killvar 'lover_number'
@@ -294,7 +296,7 @@ if $ARGS[0] = 'IncomingCall':
 	<br>
 	<br>
 	<a href="exec:<<$telefonIncC["Code"]>>"><img src="images/system/phone/call_accept.png"></a>
-	<a href="exec:gt $loc, $metka"><img src="images/system/phone/decline.png"></a><br>
+	<a href="exec:gt $loc, $loc_arg"><img src="images/system/phone/decline.png"></a><br>
 	<b><font color="red">Your phone is ringing</font></b><br>'
 
 	dynamic $telefon['print']
@@ -649,7 +651,7 @@ if $ARGS[0] = 'phone_balance':
 		dynamic $telefon['print']
 		wait 3500
 		cla
-		gt $loc, $metka
+		gt $loc, $loc_arg
 	elseif balans >= 4:
 		balans -= 4
 	end
@@ -1520,7 +1522,8 @@ if $ARGS[0] = 'Phone_sms':
 	$telefon['body'] = '
 	<font size=6>SMS</font><br>
 	<img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"><br>'
-
+	
+	$telefon['body'] += '<b><a href="exec:gs ''telefon'', ''send_sms''">Send new SMS</a></b><br>'
 	$telefon['body'] += '<TABLE cellspacing="0" width="80%"><TR><TH>icon</TH><TH>Name</TH><TH align="right">Received</TH><TH></TH></TR>'
 
 	!!iterating all Messages
@@ -1676,6 +1679,55 @@ $telefon['SMS'] = {
 	</TR>'
 }
 
+
+if $ARGS[0] = 'send_sms':
+	$telefon['backButton'] = 'gs ''telefon'', ''Phone_sms'''
+	$telefon['body'] = '
+	<font size=6>Send SMS</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"><br>'
+
+	$telefon['body'] += '<TABLE cellspacing="0" width="80%">'
+	!!iterating all Contacts
+	i=0
+	:smscontactloop
+	if i < arrsize('$contact'):
+		if contactAnon[i] = 0:
+			$telefon['body'] += dyneval($telefon['contactsms'],$contactIcon[i],$npc_nickname[$contact[i]])
+		end
+		i += 1
+		jump 'smscontactloop'
+	end
+	$telefon['body'] += '</TABLE><br>'
+
+	dynamic $telefon['print']
+	killvar 'i'
+end
+
+! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
+$telefon['contactsms'] = {
+	! Contact Row in phone contact list
+	! $ARGS[0] = NPC icon
+	! $ARGS[1] = NPC Nickname
+	$telefon['ContactIcon'] = $ARGS[0]
+	$telefon['ContactNickName'] = $ARGS[1]
+	!If file extension is not given, .png is assumed
+	if instr($telefon['ContactIcon'],'.') = 0:
+		$telefon['ContactIcon'] += '.png'
+	end
+	!If path is not given, default phone icon path is assumed
+	if instr($telefon['ContactIcon'],'/') = 0:
+		$telefon['ContactIcon'] = 'images/system/phone/icons/' + $telefon['ContactIcon']
+	end
+	$result = '
+	<TR>
+		<TD><img src="<<$telefon[''ContactIcon'']>>" width="75"></TD>
+		<TD><<$telefon[''ContactNickName'']>></TD>
+	</TR>'
+}
+
+
+
+
 !!-----------------------------------end of sms------------------------------------------
 
 if $ARGS[0] = 'Phone_wheather':
@@ -1745,7 +1797,7 @@ end &! --- telotkaz ---
 if $ARGS[0] = 'fin':
 	killvar 'lover_number'
 	cla
-	gt $loc, $metka
+	gt $loc, $loc_arg
 end
 
 if $ARGS[0] = 'setup':
