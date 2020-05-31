@@ -2,41 +2,88 @@
 
 if $ARGS[0] = 'setupAccount':
 	ml_online['account'] = 1
+	minut += 30
+	ml_online_minute += 30
+	gs 'music_onlinemusic', 'internetcount'
+	gs 'stat'
+	
 	'You log into Youtube to set up a channel for your music. You can upload videos or live stream, but you will need to open a bank account if you want to receive any tips from viewers of your stream.'	
 !!	TODO: Ask for a screen name? 
-	act 'Leave': gt $loc, 'start'
+	if $loc = 'sitr':
+		act 'Leave': gt $loc
+	else
+		act 'Leave': gt $loc, 'start'
+	end
+
 end
 
 
-if $ARGS[0] = 'liveStream':
-	internet -= 1
+if $ARGS[0] = 'liveStream':	
 	if komp = 0 or webcamera = 0:
-!!	TODO: Much, much better scene.
-		minut += 60
-		ml_maxsuperchats = 	( pav_music/2 + city_music + oldtown_music/2 + village_music/2 + global_performer + pcs_apprnc )
-		ml_superchats = rand( 0, ml_maxsuperchats)
-		if ml_guitar = 1:
-			ml_famebase = ( pcs_instrmusic + pcs_vokal + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
-			instrmusic_exp += rand(0,2)					
+!!	TODO: Much, much better scene needed.
+		ml_streaming['times_streamed'] += 1		
+		minut += ml_streamtime
+		ml_online_minute += ml_streamtime
+		gs 'music_onlinemusic', 'internetcount'
+		gs 'stat'
+
+		ml_maxsuperchats = 	( pav_music + (city_music * 2) + oldtown_music + village_music + (global_performer * 2) + pcs_apprnc )
+		ml_superchats = (rand( 0, ml_maxsuperchats) * ml_streamtime) / 60
+		if ml_guitar['hasguitar'] = 1:
+			ml_famebase = ( pcs_instrmusic + pcs_vokal + pcs_perform + ( (hotcat-5) * 20 ) ) / 20
+			instrmusic_exp += rand(1,3)					
 		else	
-			ml_famebase = ( (pcs_vokal * 2) + pcs_perform + ( (hotcat-5) * 20 ) ) / 100
+			ml_famebase = ( (pcs_vokal * 2) + pcs_perform + ( (hotcat-5) * 20 ) ) / 20
 		end
 		pav_music += rand(0, ml_famebase)
 		city_music += rand(0, ml_famebase)
-		vokal_exp += rand(0,2)	
-		perform_exp += rand(0,3)	
-		karta += superchats
-		ml_online['livestreamcount'] += 1
-		ml_performed_minutes += 60
+		vokal_exp += rand(1,3)	
+		if perform_lvl < 35: perform_exp += rand(1,3)
+
+		ml_streaming['livestreamcount'] += 1
+		ml_streaming['lastday'] = daystart
+		ml_performance['performed_minutes'] += ml_streamtime
+		ml_performance['total_time_performed'] += ml_streamtime
+		ml_streaming['total_earnings'] += ml_superchats		
+		ml_streaming['unclaimed_earnings'] += ml_superchats
+		
 		'<center><img <<$set_imgh>> src="images/pc/activities/music/gomixer_hero.jpg"/></center>'
 		'You set up your phone on a little tri-pod and log into your account. After settling down comfortably, you start to stream.'			
-		'Your fans tipped you <<superchats>> rubels for your performance.'
-		if bankAccount = 0:
-			'You need to open a bank account before you can receive the money.'
+		'Your fans tipped you <<ml_superchats>> rubels for your performance.'
+		
+		if bankAccount = 0:			
+			*nl
+			'You have earned <b><<ml_streaming[''unclaimed_earnings'']>></b> rubels so far, but you need to open a bank account before you can receive the money.'
+
+			if $loc = 'sitr':
+				act 'Stop the stream': gt $loc
+			else
+				act 'Stop the stream': gt $loc, 'start'
+			end
+
+		else		
+			*nl
+			'You have <b><<ml_streaming[''unclaimed_earnings'']>></b> rubels on your account.'
+			act 'Stop the stream and transfer the money to your bank account':				
+				karta += ml_streaming['unclaimed_earnings']
+				ml_streaming['unclaimed_earnings'] = 0
+				if $loc = 'sitr':
+					gt $loc
+				else 
+					gt $loc, 'start'
+				end
+			end
+			act 'Stop the stream':
+				if $loc = 'sitr':
+					gt $loc
+				else 
+					gt $loc, 'start'
+				end
+			end
 		end
 
 	end
-	act 'Stop the stream': gt $loc, 'start'
+	
 end
 
 if $ARGS[0] = 'recordSong':
@@ -46,15 +93,17 @@ if $ARGS[0] = 'recordSong':
 	'As you don''t have a computer you can''t really do much with the songs quality. But then you have seen quite a few people work with only with their phones. Like Ling Ling.'
 	
 	minut += 30
+	
 	vokal_exp += rand(1,4)	
-	perform_exp += rand(1,3)	
-	ml_performed_minutes += 15
+	if perform_lvl < 35: perform_exp += rand(1,3)
+	ml_performance['performed_minutes'] += 15
+	ml_performance['total_time_performed'] += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
-	if ml_guitar = 1:
+	if ml_guitar['hasguitar'] = 1:
 		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
 		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
-		instrmusic_exp += rand(1,4)		
+		instrmusic_exp += rand(1,3)		
 	else
 		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
 		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
@@ -62,6 +111,7 @@ if $ARGS[0] = 'recordSong':
 
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1		
 
@@ -86,7 +136,11 @@ if $ARGS[0] = 'recordSong':
 			act 'Upload music': gt 'music_onlinemusic', 'uploadmusic'
 		end
 	else 
-		act 'Leave': gt $loc, 'start'
+		if $loc = 'sitr':
+			act 'Leave': gt $loc
+		else
+			act 'Leave': gt $loc, 'start'
+		end
 	end
 end
 
@@ -97,17 +151,18 @@ if $ARGS[0] = 'recordAndEditSong':
 	'You open plug in your home studio kit and start up the recording software. After several tries you finally end up with a version you are content with.'
 	'The next hour just flies by as you edit the video and the audio, trying to increate the quality of the recording as much as you can'
 	minut += 90
-	instrmusic_exp += rand(1,4)		
-	vokal_exp += rand(1,4)	
-	perform_exp += rand(1,3)	
-	musicprod_exp += rand(1,3)
-	ml_performed_minutes += 15
+
+	vokal_exp += rand(1,3)	
+	if perform_lvl < 35: perform_exp += rand(1,3)	
+	if musicprod_lvl < 35: musicprod_exp += rand(1,3)
+	ml_performance['performed_minutes'] += 15
+	ml_performance['total_time_performed'] += 15
 
 	ml_onlinesong_hotcat[ml_onlinesongcount] = hotcat
-	if ml_guitar = 1:
+	if ml_guitar['hasguitar'] = 1:
 		ml_onlinesong_skilllevel[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform
 		ml_onlinesong_freshness[ml_onlinesongcount] = pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*10)
-		instrmusic_exp += rand(1,4)		
+		instrmusic_exp += rand(1,3)		
 	else
 		ml_onlinesong_skilllevel[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform
 		ml_onlinesong_freshness[ml_onlinesongcount] = (pcs_vokal * 2) + pcs_perform + ((hotcat-4)*10)
@@ -115,6 +170,7 @@ if $ARGS[0] = 'recordAndEditSong':
 
 	ml_onlinesong_lastcalcday[ml_onlinesongcount] = daystart
 	ml_onlinesong_uploaded[ml_onlinesongcount] = 0
+
 	ml_uploadablemusic += 1
 	ml_onlinesongcount += 1	
 
@@ -150,12 +206,16 @@ end
 
 
 if $ARGS[0] = 'uploadmusic':
-	if will_cost > 0:
+	if  pcs_inhib < 30:
 		'You hesitate for a long moment, but finally take a deep breath and click on the "Upload" button and your newly recorded song moves over to the internet for all to see.'
 		'You bite in your lip, then close the screen before you change your mind and delete it.'
 	else
 		'You smile brightly and click on the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen. They will like it."'
 	end
+	ml_online_minute += 10
+	gs 'music_onlinemusic', 'internetcount'
+	gs 'stat'
+
 	ml_uploadablemusic -= 1 
 	ml_onlinesong_uploaded[ml_onlinesongcount-1] = 1
 
@@ -172,19 +232,27 @@ end
 if $ARGS[0] = 'uploadallmusic':
 	'<center><img src="images/pc/activities/music/uploadmusic.jpg"/></center>'
 	if will_cost > 0:
-		'You hesitate for a long moment, but finally take a deep breath and click on the "Upload" button and all your recorded songs, one by one move over to the internet for all to see.'
+		'You go through the songs you recorded, and clear out the old ones that you really ,really don''t like anymore then after a moment of hesitation you take a deep breath and click on the "Upload" button.
+		The screen changes and one by one, your songs move over to the internet for all to see.'
 		'You bite in your lip, then close the screen before you change your mind and delete them.'
 	else
-		'You smile brightly and click on the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen, this is how art grows."'
+		'You smile brightly as you browse through your recordings, deleting some old ones, then finally click the "Upload" button. Now the whole world can see you play. And if they don''t like it, well... "Haters gonna hate" you shrug mentally and close the screen, this is how art grows."'
 	end
+
+	gs 'music_onlinemusic', 'deleting'
+
 	i = 0
 	:uploadallmusic			
-		if ml_onlinesong_uploaded[i] = 0: 
-			ml_onlinesong_uploaded[i] = 1			
+		if ml_onlinesong_uploaded[i] = 0 and internet > 0: 
+			ml_online_minute += 10
+			gs 'music_onlinemusic', 'internetcount'
+			gs 'stat'
+
+			ml_onlinesong_uploaded[i] = 1	
+			ml_uploadablemusic -= 1		
 		end
 		i += 1
 	if i < ml_onlinesongcount:jump 'uploadallmusic'
-	ml_uploadablemusic -= 0
 	killvar 'will_cost'
 
 	if $loc = 'sitr':
@@ -194,5 +262,77 @@ if $ARGS[0] = 'uploadallmusic':
 	end
 end
 
+if $ARGS[0] = 'deleteoldmusic':
+	'You go through your recorded musics and delete all the old ones where your playing doesn''t really reflect what you can do these days'
+	gs 'music_onlinemusic', 'deleting'
 
+	if $loc = 'sitr':
+		act 'Leave': gt $loc
+	else
+		act 'Leave': gt $loc, 'start'
+	end
+end
+
+!!----------------------------------------------------------------------------------------------------------------------------
+!!-----------------------------------------   GoSub functions all go here   --------------------------------------------------
+!!----------------------------------------------------------------------------------------------------------------------------
+
+if $ARGS[0] = 'deleting':
+
+	ml_threshold_skilllevel = ((pcs_instrmusic + pcs_vokal + pcs_perform)*80)/100
+
+	i = 0
+	j = -1
+	
+	:deletemusic
+		if (ml_onlinesong_uploaded = 1) or (ml_onlinesong_uploaded = 0 and ml_onlinesong_skilllevel > ml_threshold_skilllevel):
+			j += 1
+			ml_tempsong_freshness[j] = ml_onlinesong_sfreshness[i]
+			ml_tempsong_lastcalcday[j] = ml_onlinesong_lastcalcday[i]
+			ml_tempsong_hotcat[j] = ml_onlinesong_hotcat[i]
+			ml_tempsong_skilllevel[j] = ml_onlinesong_skilllevel[i]
+			ml_tempsong_uploaded[j] = ml_onlinesong_uploaded[i]			
+		else
+			ml_uploadablemusic -= 1
+		end
+
+		i += 1
+	if i < ml_onlinesongcount:jump 'deletemusic'
+
+	killvar 'ml_onlinesong_freshness'
+	killvar 'ml_onlinesong_lastcalcday'
+	killvar 'ml_onlinesong_hotcat'
+	killvar 'ml_onlinesong_skilllevel'
+	killvar 'ml_onlinesong_uploaded'
+	killvar 'i'
+
+	ml_onlinesongcount = 0
+
+	if j >= 0:
+		:looprebuildsongs
+			ml_onlinesong_freshness[ml_onlinesongcount] = ml_tempsong_freshness[ml_onlinesongcount]
+			ml_onlinesong_hotcat[ml_onlinesongcount] = ml_tempsong_hotcat[ml_onlinesongcount]
+			ml_onlinesong_lastcalcday[ml_onlinesongcount] = ml_tempsong_lastcalcday[ml_onlinesongcount]
+			ml_onlinesong_skilllevel[ml_onlinesongcount] = ml_tempsong_skilllevel[ml_onlinesongcount]
+			ml_onlinesong_uploaded[ml_onlinesongcount] = ml_tempsong_uploaded[ml_onlinesongcount]
+			ml_onlinesongcount += 1
+		if ml_onlinesongcount <= j: jump 'looprebuildsongs'
+	end
+
+	killvar 'ml_tempsong_freshness'
+	killvar 'ml_tempsong_lastcalcday'
+	killvar 'ml_tempsong_hotcat'
+	killvar 'ml_tempsong_skilllevel'
+	killvar 'ml_tempsong_uploaded'
+	killvar 'ml_threshold_skilllevel'
+
+end
+
+if $ARGS[0] = 'internetcount':
+
+	if ml_online_minute >= 60:
+		internet -= 1
+		ml_online_minute -= 60
+	end
+end
 --- music_onlinemusic ---------------------------------

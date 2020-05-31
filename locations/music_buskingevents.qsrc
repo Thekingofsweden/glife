@@ -1,48 +1,97 @@
 # music_buskingevents
 
 if $ARGS[0] = 'busking':
-	minut += 60	
+	minut += ml_buskingtime
 	instrmusic_exp += rand(1,3)
 	vokal_exp += rand(1,3)
-	perform_exp += rand(1,2)
 	
+	ml_busking['busking_count'] += 1
+	ml_busking['busking_time'] += ml_buskingtime
+
+	if perform_lvl < 50: perform_exp += rand(1,3)
+	*clr & cla
 	gs 'music_buskingevents', 'calculate_tips', $ARGS[1]
 	money += ml_tipsearned
 	gs 'stat'
 	
 	dynamic '<<$ARGS[1]>>_music += rand(0,3)'
 	
-	ml_performed_minutes += 60
-	
-	*clr & cla
+	ml_performance['total_time_performed'] += ml_buskingtime
+	ml_performance['performed_minutes'] += ml_buskingtime
+	ml_busking['busking_count'] += 1
+	ml_busking['busking_time'] += ml_buskingtime
+	ml_busking['total_earnings'] += ml_tipsearned
+
 !!	TODO: More meat to the scene.	
 	'<center><img <<$set_imgh>> src="images/pc/activities/music/guitarf'+ rand(1,2) +'.jpg"></center>'	
 	'You start to play the songs you know, pushing your open guitar case forward a little in case people drop some change there.' + iif(ml_online['account'] = 1 and ml_online['active'] = 1, ' You also set up the sign with the link to your webprofile.', '') + ' After playing for an hour you have made <<ml_tipsearned>> <b>P</b> in tips.'
 
-	act 'Finish': gt $curloc, 'start'	
+
+!!  Random events come here. The displayed actions depend on the event
+	ml_rand_event = rand(0,100)
+	if ml_rand_event <= 10 and $ARGS[1] = 'pav' and npc_rel['A144'] > 40: 
+		gs 'music_buskingevents', 'anushka'
+	elseif ml_rand_event < 15 and $ARGS[1] = 'pav' and ((npc_rel['A20'] < 20 or npc_rel['A21'] < 20):
+!! TODO: if the gopniks don''t like the PC and/or her music is awful, there is a chance that Lena and Lera harasses her.
+!!		gs 'music_buskingevents', 'lena_and_lera', 1
+!!	elseif ml_rand_event < 15 and $ARGS[1] = 'pav' and ( (npc_rel['A20'] < 40 or npc_rel['A21'] < 40) and (pcs_instrmusic < 30 or pcs_perform < 30 or pcs_vokal < 30) ):
+!!		gs 'music_buskingevents', 'lena_and_lera', 2
+	else
+		act 'Finish': gt $curloc, 'start'	
+	end
+
 end
 
 if $ARGS[0] = 'calculate_tips':
 	
 	if $ARGS[1] = 'city':
-		ml_location_mod = 6
+		ml_location_mod = 30
 	elseif $ARGS[1] = 'pav':
-		ml_location_mod = 1
+		ml_location_mod = 0
 	elseif $ARGS[1] = 'oldtown'
-		ml_location_mod = 3
+		ml_location_mod = 15
 	end 	
 
-	if week >= 5: ml_time_mod += 2
-	if hour >= 17: ml_time_mod += 2
-	
-	ml_time_loc_mod = (ml_location_mod + ml_time_mod) / 2
-	
-	
-	ml_tipsmax = (pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*35)) * ml_time_loc_mod
-	ml_tipsearned = max(rand(0,ml_tipsmax),0)
+	if week >= 5: ml_time_mod += 10
+	if hour >= 17: ml_time_mod += 10
+		
+	ml_time_loc_mod = (ml_location_mod + ml_time_mod)	
 
+	ml_tipsmax = ((pcs_instrmusic + pcs_vokal + pcs_perform + ((hotcat-4)*35)) * ml_time_loc_mod)/5	
+
+	ml_tipsearned = (max(rand(ml_time_loc_mod,ml_tipsmax),0)*ml_buskingtime) / 60
+
+	
 	killvar 'ml_location_mod'
 	killvar 'ml_time_mod'	
+	killvar 'ml_tipsmax'
+	killvar 'ml_time_loc_mod'
+end
+
+if $ARGS[0] = 'anushka':
+
+!!TODO: A few scenarios: Friends, besties, neutral. Player is an awful, bad, ok, good musician. Anushka has seen PC play music before (either busking or they played together).	
+	npc_rel['A144'] += 2
+	*nl	
+	'As you stop playing and get ready to pack up you spot <<$npc_firstname['A144']>> standing not far from you, watching you quietly.'
+
+	if npc_rel['A144'] > 60:
+		'As she notices that you saw her she grins and starts to walk up to you "I didn''t know you turned into a wandering minstrel, <<$pcs_nickname>>."'
+	elseif pcs_instrmusic > 35 and pcs_vokal > 35:
+		'As she notices that you saw her, she nods "Not bad, <<$pcs_nickname>>. I have things to do though, see you at school." she says and walks off.'
+	else	
+		'As she notices that you saw her, she just shakes her head with a smirk and walks off.'
+	end
+	act 'Finish': gt $curloc, 'start'
+end
+
+
+if $ARGS[0] = 'lena_and_lera':
+!!TODO: Harassment scene
+	mood -= 10
+	*nl
+	'Lena and Lera harasses <<$pcs_nickname>>'
+	act 'Finish': gt $curloc, 'start'
 end
 
 --- music_buskingevents ---------------------------------
