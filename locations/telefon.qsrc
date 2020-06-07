@@ -1,36 +1,36 @@
 # telefon
-! Draw screens for mobile phone.
+!! Draw screens for mobile phone.
+!!
+!! The base storage for Contacts is controlled by the Array "$contact". This array is a list of NPC identifiers
+!! telling us which ones are in your contact list. There are several other ancillary arrays that support the functions
+!! of a contact. Each of these has matching indexes to the $contact array. These are mostly used internally, but a
+!! writer can make use of them if they need to.
+!!
+!! ContactList arrays:
+!! $contact[]     = NPC code for contact. ('A129', 'A29', 'B13', 'C14')
+!! $contactIcon[] = Icon for the contact to use. If path is left off, standard phone icon folder is used. if file extension is left off, '.png' is used
+!! $contactOCode[] = Code to execute if call is placed to this contact
+!! $contactOSche[] = If statement code to determine schedule for outbound calls
+!! $contactICode[] = Code to execute for Incoming call
+!! $contactISche[] = if statement code for schedule of incoming calls
+!! contactAnon[] = 0 if contact number is known to Sveta, 1 for Anonymous
+!! contactToday[] = Calls from this contact today
+!! contactWeek[] = Calls from this contact this week
+!! contactLastCall[] = last time this Contact called
 !
-! The base storage for Contacts is controlled by the Array "$contact". This array is a list of NPC identifiers
-! telling us which ones are in your contact list. There are several other ancillary arrays that support the functions
-! of a contact. Each of these has matching indexes to the $contact array. These are mostly used internally, but a
-! writer can make use of them if they need to.
-!
-! ContactList arrays:
-! $contact[]     = NPC code for contact. ('A129', 'A29', 'B13', 'C14')
-! $contactIcon[] = Icon for the contact to use. If path is left off, standard phone icon folder is used. if file extension is left off, '.png' is used
-! $contactOCode[] = Code to execute if call is placed to this contact
-! $contactOSche[] = If statement code to determine schedule for outbound calls
-! $contactICode[] = Code to execute for Incoming call
-! $contactISche[] = if statement code for schedule of incoming calls
-! contactAnon[] = 0 if contact number is known to Sveta, 1 for Anonymous
-! contactToday[] = Calls from this contact today
-! contactWeek[] = Calls from this contact this week
-! contactLastCall[] = last time this Contact called
-!
-! Add a contact with AddContact
-!	gs 'telefon', 'AddContact', <NPC Code>, <Icon for NPC>, <Code for Incoming Call>, <Limiter for Incoming Call>, <Code for Outgoing Call>, <Limiter for Outgoign Call>, <Anonymous=1>
-!  Example, to Add Mother:
-!	gs 'telefon', 'AddContact', 'A29', 'icon_npc1', "gs 'telefon', 'Phone_call'", "hour >= 8 and hour <= 20", "gs 'telefon', 'lover'", "hour >= 8 and hour <= 20", 0
-!
-! Remove a contact with DeleteContact
-!	gs 'telefon', 'DeleteContact', <NPC Code>
-!  Example, to delete Mom:
-!	gs 'telefon', 'DeleteContact', 'A29'
-!
+!! Add a contact with AddContact
+!!	gs 'telefon', 'AddContact', <NPC Code>, <Icon for NPC>, <Code for Incoming Call>, <Limiter for Incoming Call>, <Code for Outgoing Call>, <Limiter for Outgoign Call>, <Anonymous=1>
+!!  Example, to Add Mother:
+!!	gs 'telefon', 'AddContact', 'A29', 'icon_npc1', "gs 'telefon', 'Phone_call'", "hour >= 8 and hour <= 20", "gs 'telefon', 'lover'", "hour >= 8 and hour <= 20", 0
+!!
+!! Remove a contact with DeleteContact
+!!	gs 'telefon', 'DeleteContact', <NPC Code>
+!!  Example, to delete Mom:
+!!	gs 'telefon', 'DeleteContact', 'A29'
+!!
 
 
-! Header for Phone Screen.  Keeps consistent and in one place
+!! Header for Phone Screen.  Keeps consistent and in one place
 $telefon['header'] = {
 	if telefon['UnreadSMS'] > 0:
 		$telefon['SMSstatus'] = 'You have <<telefon[''UnreadSMS'']>> unread message(s)'
@@ -48,7 +48,7 @@ $telefon['header'] = {
 	</TABLE><br>'
 }
 
-! Footer for phone screen.  Body should be between these two
+!! Footer for phone screen.  Body should be between these two
 $telefon['footer'] = {
 	if $telefon['backButton'] = '': $telefon['backButton'] = 'gs ''telefon'', ''Phone_menu'''
 	$result = '	<a href="exec:<<$telefon[''backButton'']>>"><img src="images/system/icon/back.png"></a><br><br>
@@ -57,32 +57,32 @@ $telefon['footer'] = {
 	$telefon['backButton'] = 'gs ''telefon'', ''Phone_menu'''
 }
 
-! This is how we print the screnn on to the Additional Dscription window
+!! This is how we print the screnn on to the Additional Dscription window
 $telefon['print'] = {
 	clr
 	pl func('cleanHTML',dyneval($telefon['header']) + $telefon['body'] + dyneval($telefon['footer']))
 }
 
-! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
+!! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
 $telefon['contact'] = {
-	! Contact Row in phone contact list
-	! $ARGS[0] = NPC icon
-	! $ARGS[1] = NPC Nickname
-	! $ARGS[2] = Code to execute for making a Call
-	! $ARGS[3] = if statement for determining if NPC is avaiable
+	!! Contact Row in phone contact list
+	!! $ARGS[0] = NPC icon
+	!! $ARGS[1] = NPC Nickname
+	!! $ARGS[2] = Code to execute for making a Call
+	!! $ARGS[3] = if statement for determining if NPC is avaiable
 	$telefon['ContactIcon'] = $ARGS[0]
 	$telefon['ContactNickName'] = $ARGS[1]
 	$telefon['ContactCallCode'] = $ARGS[2]
 	$telefon['ContactCallSchedule'] = $ARGS[3]
-	!If file extension is not given, .png is assumed
+	!!If file extension is not given, .png is assumed
 	if instr($telefon['ContactIcon'],'.') = 0:
 		$telefon['ContactIcon'] += '.png'
 	end
-	!If path is not given, default phone icon path is assumed
+	!!If path is not given, default phone icon path is assumed
 	if instr($telefon['ContactIcon'],'/') = 0:
 		$telefon['ContactIcon'] = 'images/system/phone/icons/' + $telefon['ContactIcon']
 	end
-	!If Contact is not in available timeframe, we disable contact calling
+	!!If Contact is not in available timeframe, we disable contact calling
 	if dyneval('result = iif(<<$telefon["ContactCallSchedule"]>>,1,0)') = 0:
 		$telefon['ContactCallCode'] = "gs 'telefon', 'phone_call_reject'"
 	end
@@ -95,13 +95,13 @@ $telefon['contact'] = {
 
 
 if $ARGS[0] = 'AddContact':
-	! $ARGS[1] = NPC Array identifier
-	! $ARGS[2] = Icon
-	! $ARGS[3] = Code to execute for Call out
-	! $ARGS[4] = If statement code to determine schedule for outbound calls
-	! $ARGS[5] = Code to execute for Incoming call
-	! $ARGS[6] = if statement code for schedule of incoming calls
-	!  ARGS[7] = Anonymous? 0 if not, 1 if yes
+	!! $ARGS[1] = NPC Array identifier
+	!! $ARGS[2] = Icon
+	!! $ARGS[3] = Code to execute for Call out
+	!! $ARGS[4] = If statement code to determine schedule for outbound calls
+	!! $ARGS[5] = Code to execute for Incoming call
+	!! $ARGS[6] = if statement code for schedule of incoming calls
+	!!  ARGS[7] = Anonymous? 0 if not, 1 if yes
 	$telefonCon['NPC'] = $ARGS[1]
 	$telefonCon['Icon'] = $ARGS[2]
 	$telefonCon['OutCode'] = $ARGS[3]
@@ -126,7 +126,7 @@ if $ARGS[0] = 'AddContact':
 end &! --- AddContact ---
 
 if $ARGS[0] = 'DeleteContact':
-	! $ARGS[1] = NPC Array identifier
+	!! $ARGS[1] = NPC Array identifier
 	$telefonCon['NPC'] = $ARGS[1]
 	telefonCon['ContactListID'] = arrpos('$contact',$telefonCon['NPC'])
 	if telefonCon['ContactListID'] > -1:
@@ -156,7 +156,7 @@ if $ARGS[0] = 'ContactList':
 		jump 'contactloop2'
 	end
 
-	! Oddball Contacts
+	!! Oddball Contacts
 	if telalla > 0:
 		$telefon['body'] += dyneval($telefon['contact'],'icon_ira1','Alla',"$telsob = 'Alla' & gt 'telefon', 'mobilaraz'","hour >= 8 and hour <= 20")
 	end
@@ -180,9 +180,9 @@ if $ARGS[0] = 'ContactList':
 end &! --- ContactList ---
 
 
-! Reset Contact Call Stats Daily and Weekly
-!
-! ARGS[1] = New Week if 1, 0 if same week
+!! Reset Contact Call Stats Daily and Weekly
+!!
+!! ARGS[1] = New Week if 1, 0 if same week
 if $ARGS[0] = 'DailyStatRefresh':
 	i=0
 	:DailyStatRefLoop
@@ -198,22 +198,22 @@ if $ARGS[0] = 'DailyStatRefresh':
 end
 
 
-! Determine if any Incoming calls should happen
-!
-!	ARGS[1] = Previous totminut
-!	ARGS[2] = Current totminut
+!! Determine if any Incoming calls should happen
+!!
+!!	ARGS[1] = Previous totminut
+!!	ARGS[2] = Current totminut
 if $ARGS[0] = 'IncomingCheck':
 	telefIncCheck['PrevTotalMinutes'] = ARGS[1]
 	telefIncCheck['NewTotalMinutes'] = ARGS[2]
 
 	if telefIncCheck['PrevTotalMinutes'] > telefIncCheck['NewTotalMinutes'] or telefon['LastIncCallCheck'] > telefIncCheck['NewTotalMinutes'] or telefon['LastIncCallCheck'] = 0:
-		! Time Cheat has been used, so we should do some cleanup
+		!! Time Cheat has been used, so we should do some cleanup
 		telefon['LastIncCallCheck'] = telefIncCheck['NewTotalMinutes']
 	end
 
-	! Limit the number of calls per day
-	! right now allow every 60 minutes
-	if telefIncCheck['NewTotalMinutes'] - telefon['LastIncCallCheck'] > 60 and menu_off = 0:
+	!! Limit the number of calls per day
+	!! right now allow every 60 minutes
+	if telefIncCheck['NewTotalMinutes'] - telefon['LastIncCallCheck'] > 60 and menu_off = 0 and phone_off = 0:
 		telefon['LastIncCallCheck'] = telefIncCheck['NewTotalMinutes']
 		gs 'telefon','IncomingCallChooser'
 	end
@@ -222,9 +222,9 @@ if $ARGS[0] = 'IncomingCheck':
 end
 
 if $ARGS[0] = 'IncomingCallChooser':
-	! When an Incoming call happens, choose who it comes from
+	!! When an Incoming call happens, choose who it comes from
 
-	! Add Contacts
+	!! Add Contacts
 	i=0
 	:telefonIncLoop1
 	if i < arrsize('$contact'):
@@ -246,7 +246,7 @@ if $ARGS[0] = 'IncomingCallChooser':
 		jump 'telefonIncLoop1'
 	end
 
-	! Add Lovers
+	!! Add Lovers
 	i=0
 	:telefonIncLoop2
 	if i < 3 and hour > 5 and hour < 20:
@@ -280,9 +280,9 @@ if $ARGS[0] = 'IncomingCallChooser':
 end
 
 if $ARGS[0] = 'IncomingCall':
-	! $ARGS[1] = Icon for contact
-	! $ARGS[2] = Nickname of contact
-	! $ARGS[3] = Code to execute for this Call
+	!! $ARGS[1] = Icon for contact
+	!! $ARGS[2] = Nickname of contact
+	!! $ARGS[3] = Code to execute for this Call
 
 	$telefonIncC['Icon'] = $ARGS[1]
 	$telefonIncC['Name'] = $ARGS[2]
@@ -479,8 +479,8 @@ if $ARGS[0] = 'SvetaCallsNPC':
 	killvar '$DateNickName'
 end
 
-! NPC Calls Sveta for a Date
-!	ARGS[1] = $contact index number
+!! NPC Calls Sveta for a Date
+!!	ARGS[1] = $contact index number
 if $ARGS[0] = 'NPCCallsForDate':
 	cla
 	clr
@@ -1505,8 +1505,23 @@ end
 
 !!-----------------------------------start of sms------------------------------------------
 !{
-	SMS
-	telefon['SMSCount'] = number of SMS messages
+	Send SMS lists the current contacts, then clicking on a contact gives a list of messages that can be sent.
+	Receive messages lists the sms messages sent to the player, these can be deleted, they will be in bold until read.
+	
+	To add an incoming message 
+	gs 'telefon', 'add_sms', 'A1', 'Test message the text goes here', 'images\pc\selfies\bathroom\underwear\1.jpg', 'images\pc\selfies\school_bathroom\pussyflash\1.jpg'
+	A1 is the NPC code (A1 is Dmitriy Nosov "Dimka")
+	You can have up to 4 pictures attached to the message
+
+	To add an out going message that can be sent
+	gs 'telefon', 'add_sms_to_send', 'A1', 'Test message the text goes here'
+
+	To add a contact if it doesn't exist
+	if arrpos('$contact', 'A1') = -1: gs 'telefon', 'AddContact', 'A1', 'images/characters/pavlovsk/school/head/1.jpg', "", "1 = 0", "", "", 0
+
+	SMS Arrays storing received messages and messages that can be sent
+
+	Received Messages
 	telefon['UnreadSMS'] = number of unread SMS messages
 	$SMSContact[] = NPC code for contact. ('A129', 'A29', 'B13', 'C14') that sent the sms
 	$SMSMessage[] = text for the sms message
@@ -1516,6 +1531,13 @@ end
 	$SMSPicture3[] = url for third picture sent as part of the message
 	$SMSPicture4[] = url for fourth picture sent as part of the message
 	SMSMessageRead[] = 0 unread, 1 read
+
+	Send Messages 
+	$SMSSendContact[] = NPC code for contact. ('A129', 'A29', 'B13', 'C14') that sent the sms
+	$SMSSendMessage[] = text for the sms message
+	$SMSSendCode[] = Code to execute for Incoming call
+	SMSSendRepeatable[] = 0 delete option after send, 1 don't delete option
+	$SMSSendDeleteId[] = id passed by the caller 
 }
 
 if $ARGS[0] = 'Phone_sms':
@@ -1527,10 +1549,12 @@ if $ARGS[0] = 'Phone_sms':
 	$telefon['body'] += '<TABLE cellspacing="0" width="80%"><TR><TH>icon</TH><TH>Name</TH><TH align="right">Received</TH><TH></TH></TR>'
 
 	!!iterating all Messages
+	!!reset and recalculate unread messages count, in case they get out of sync
 	telefon['UnreadSMS'] = 0
 	i=0
 	:smsloop
-	if i < telefon['SMSCount']:
+	if i < arrsize('$SMSContact'):
+		!! if the person sending is in the contact list display the names and icon
 		telefon['contactid'] = arrpos('$contact',$SMSContact[i])
 		if telefon['contactid'] = -1:
 			$telefonCon['NPCName'] = ''
@@ -1679,7 +1703,7 @@ $telefon['SMS'] = {
 	</TR>'
 }
 
-
+!! List of Contacts that you can send sms messages to
 if $ARGS[0] = 'send_sms':
 	$telefon['backButton'] = 'gs ''telefon'', ''Phone_sms'''
 	$telefon['body'] = '
@@ -1692,7 +1716,7 @@ if $ARGS[0] = 'send_sms':
 	:smscontactloop
 	if i < arrsize('$contact'):
 		if contactAnon[i] = 0:
-			$telefon['body'] += dyneval($telefon['contactsms'],$contactIcon[i],$npc_nickname[$contact[i]])
+			$telefon['body'] += dyneval($telefon['contactsms'],i)
 		end
 		i += 1
 		jump 'smscontactloop'
@@ -1703,30 +1727,117 @@ if $ARGS[0] = 'send_sms':
 	killvar 'i'
 end
 
-! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
+!! This is the formatting function for a row in the Contact List. SHould be run as a DYNEVAL()
+!! $ARGS[0] = index of contact in the conntact arrays
 $telefon['contactsms'] = {
-	! Contact Row in phone contact list
-	! $ARGS[0] = NPC icon
-	! $ARGS[1] = NPC Nickname
-	$telefon['ContactIcon'] = $ARGS[0]
-	$telefon['ContactNickName'] = $ARGS[1]
-	!If file extension is not given, .png is assumed
+	!! Contact Row in phone contact list
+	$telefon['ContactIcon'] = $contactIcon[ARGS[0]]
+	$telefon['ContactNPCcode'] = $contact[ARGS[0]]
+	!!If file extension is not given, .png is assumed
 	if instr($telefon['ContactIcon'],'.') = 0:
 		$telefon['ContactIcon'] += '.png'
 	end
-	!If path is not given, default phone icon path is assumed
+	!!If path is not given, default phone icon path is assumed
 	if instr($telefon['ContactIcon'],'/') = 0:
 		$telefon['ContactIcon'] = 'images/system/phone/icons/' + $telefon['ContactIcon']
 	end
+
 	$result = '
 	<TR>
 		<TD><img src="<<$telefon[''ContactIcon'']>>" width="75"></TD>
-		<TD><<$telefon[''ContactNickName'']>></TD>
+		<TD><<$npc_nickname[$telefon[''ContactNPCcode'']]>></TD>
+		<TD><a href="exec:gs ''telefon'', ''npcSendListSms'', ''<<$telefon[''ContactNPCcode'']>>''">New Message</a></TD>
 	</TR>'
 }
 
+!! List of SMS messages available to be sent to an NPC
+!! $ARGS[1] = NPC code for the contact we want to display messages for
+if $ARGS[0] = 'npcSendListSms':
+	$telefon['backButton'] = 'gs ''telefon'', ''send_sms'''
+	$telefon['body'] = '
+	<font size=6>Send SMS</font><br>
+	<img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"><br>'
+
+	$telefon['body'] += '<TABLE cellspacing="0" width="80%">'
+	!!iterating all send sms messages
+	i=0
+	:npcSendListSmsLoop
+	if i < arrsize('$SMSSendContact'):
+		if $SMSSendContact[i] = $ARGS[1]:
+			$telefon['body'] += dyneval($telefon['smsMessageToSend'],i)
+		end
+		i += 1
+		jump 'npcSendListSmsLoop'
+	end
+	$telefon['body'] += '</TABLE><br>'
+
+	dynamic $telefon['print']
+	killvar 'i'
+end
+
+!! This is the formatting function for a row in the messages to send List. SHould be run as a DYNEVAL()
+!! ARGS[0] = index of the message
+$telefon['smsMessageToSend'] = {
+	$telefon['ContactNPCcode'] = $SMSSendContact[ARGS[0]]
+	$result = '
+	<TR>
+		<TD><<$npc_nickname[$telefon[''ContactNPCcode'']]>></TD>
+		<TD><a href="exec: gs ''telefon'', ''smsSendMessage'', ''<<ARGS[0]>>''"><<$SMSSendMessage[ARGS[0]]>></a></TD>
+	</TR>'
+}
+
+if $ARGS[0] = 'smsSendMessage':
+	dynamic '<<$SMSSendCode[ARGS[1]]>>'
+	if SMSSendRepeatable[ARGS[1]] = 0:
+		gs 'telefon', 'delete_sms_send_index', ARGS[1]
+	end
+	gs 'telefon', 'Phone_sms'
+end
 
 
+
+!{
+Add a new message that can be sent by the player
+$ARGS[1] NPC code for contact. ('A129', 'A29', 'B13', 'C14') that sent the sms
+$ARGS[2] text for the sms message
+$ARGS[3] Code to execute when the sms is sent
+ARGS[4] 0 delete option after send, 1 dont delete option
+$ARGS[5] id passed by the caller to identify the option to be deleted if it needs to be removed from the options
+}
+if $ARGS[0] = 'add_sms_to_send':
+	i = arrsize('$SMSSendContact')
+	$SMSSendContact[i] = $ARGS[1]
+	$SMSSendMessage[i] = $ARGS[2]
+	$SMSSendCode[i] = $ARGS[3]
+	SMSSendRepeatable[i] = ARGS[4]
+	$SMSSendDeleteId[i] = $ARGS[5]
+end
+
+if $ARGS[0] = 'delete_sms_send_index':
+	killvar '$SMSSendContact', ARGS[1]
+	killvar '$SMSSendMessage', ARGS[1]
+	killvar '$SMSSendCode', ARGS[1]
+	killvar 'SMSSendRepeatable', ARGS[1]
+	killvar '$SMSSendDeleteId', ARGS[1]
+end
+
+!{
+	$ARGS[1] = NPC code for contact. ('A129', 'A29', 'B13', 'C14')
+	$ARGS[2] = Delete id of the message ($SMSSendDeleteId)
+}
+if $ARGS[0] = 'delete_sms_send_id':
+	$telefon['SMStoDeleteFound'] = 'No'
+	i = 0
+	:findSmsToDeleteLoop
+	if (i < arrsize('$SMSSendContact')) and $telefon['SMStoDeleteFound'] = 'No':
+		if $SMSSendContact[i] = $ARGS[1] and $SMSSendDeleteId[i] = $ARGS[2]:
+			gs 'telefon', 'delete_sms_send_index', i
+			$telefon['SMStoDeleteFound'] = 'Yes'
+		end
+		i += 1
+		jump 'findSmsToDeleteLoop'
+	end
+end
 
 !!-----------------------------------end of sms------------------------------------------
 
@@ -1758,25 +1869,29 @@ if $ARGS[0] = 'Phone_media':
 end &! --- Phone_media ---
 
 if $ARGS[0] = 'Phone_menu':
-	$telefon['body'] = '
-	<a href="exec:gs ''telefon'', ''Phone_camera'' "><img src="<<FUNC(''$phone_theme'')>>icon_camera.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_calendar'' "><img src="<<FUNC(''$phone_theme'')>>icon_calendar.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_pictures'' "><img src="<<FUNC(''$phone_theme'')>>icon_pictures.png" height="80" width="80"></a>
-	<br>
-	<a href="exec:gs ''telefon'', ''Phone_media'' "><img src="<<FUNC(''$phone_theme'')>>icon_music.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_notebook'' "><img src="<<FUNC(''$phone_theme'')>>icon_notebook.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_wheather'' "><img src="<<FUNC(''$phone_theme'')>>icon_weather.png" height="80" width="80"></a>
-	<br>
-	<a href="exec:gs ''telefon'', ''ContactList'' "><img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_sms'' "><img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"></a>
-	<a href="exec:gs ''telefon'', ''Phone_megafon'' "><img src="<<FUNC(''$phone_theme'')>>icon_megafon.png" height="80" width="80"></a>
-	<br>'
-	if menu_off = 1:
-		$telefon['body'] += '<a href="exec:gs ''obj_din'', ''menu_disabled''"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+	if phone_off = 0:
+		$telefon['body'] = '
+		<a href="exec:gs ''telefon'', ''Phone_camera'' "><img src="<<FUNC(''$phone_theme'')>>icon_camera.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_calendar'' "><img src="<<FUNC(''$phone_theme'')>>icon_calendar.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_pictures'' "><img src="<<FUNC(''$phone_theme'')>>icon_pictures.png" height="80" width="80"></a>
+		<br>
+		<a href="exec:gs ''telefon'', ''Phone_media'' "><img src="<<FUNC(''$phone_theme'')>>icon_music.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_notebook'' "><img src="<<FUNC(''$phone_theme'')>>icon_notebook.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_wheather'' "><img src="<<FUNC(''$phone_theme'')>>icon_weather.png" height="80" width="80"></a>
+		<br>
+		<a href="exec:gs ''telefon'', ''ContactList'' "><img src="<<FUNC(''$phone_theme'')>>icon_call.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_sms'' "><img src="<<FUNC(''$phone_theme'')>>icon_sms.png" height="80" width="80"></a>
+		<a href="exec:gs ''telefon'', ''Phone_megafon'' "><img src="<<FUNC(''$phone_theme'')>>icon_megafon.png" height="80" width="80"></a>
+		<br>'
+		if menu_off = 1:
+			$telefon['body'] += '<a href="exec:gs ''obj_din'', ''menu_disabled''"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+		else
+			$telefon['body'] += '<a href="exec:killvar ''menu_page'' & gs ''Cheatmenu_din'' & dynamic $cheatmenu[''setting'']"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+		end
+		dynamic $telefon['print']
 	else
-		$telefon['body'] += '<a href="exec:killvar ''menu_page'' & gs ''Cheatmenu_din'' & dynamic $cheatmenu[''setting'']"><img src="<<FUNC(''$phone_theme'')>>icon_settings.png" height="80" width="80"></a><br>'
+		'<font color="red"><b>Your Phone is disabled for this event</b></font>'
 	end
-	dynamic $telefon['print']
 end &! --- Phone_menu ---
 
 if $ARGS[0] = 'Add_contact':
