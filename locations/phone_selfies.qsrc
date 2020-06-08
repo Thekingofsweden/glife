@@ -347,6 +347,94 @@ if $ARGS[0] = 'listretrieve':
 	end
 end
 
+
+!! Sets up a list of selfies taken by category
+!! loops through the arrays of selfie flags (1 means that se;lfie has been taken by the player)
+!! adds the image path for each taken selfie to the relevant array
+!! So to check if any nude selfies are on the phone we can do   if arrsize('$selfieTakenNud') > 0:
+!! then we can get the image paths for the elements of that array to get the pictures taken
+!!	$selfieTakenClo[]
+!!	$selfieTakenUnd[]
+!!	$selfieTakenNud[]
+!!	$selfieTakenTitflash[]
+!!	$selfieTakenAssflash[]
+!!	$selfieTakenPussyflash[]
+!!	$selfieTakenBathtot[]
+!!	$selfieTakenShowertot[]
+!!	$selfieTakenSwimtot[]
+if $ARGS[0] = 'PopulateSelfiesList':
+	killvar '$selfieTakenClo'
+	killvar '$selfieTakenUnd'
+	killvar '$selfieTakenNud'
+	killvar '$selfieTakenTitflash'
+	killvar '$selfieTakenAssflash'
+	killvar '$selfieTakenPussyflash'
+	killvar '$selfieTakenBathtot'
+	killvar '$selfieTakenShowertot'
+	killvar '$selfieTakenSwimtot'
+	temp_locationCnt = 1
+	:LocationTakenLoop
+		CloMaxSize = selfieClotot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'closelfie', '$selfieTakenClo', 'clothed', CloMaxSize
+		end
+		CloMaxSize = selfieSwimtot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'swim', '$selfieTakenSwimtot', 'bikini', CloMaxSize
+		end
+		CloMaxSize = selfieUndtot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'undselfie', '$selfieTakenUnd', 'underwear', CloMaxSize
+		end
+		CloMaxSize = selfieNudtot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'nudselfie', '$selfieTakenNud', 'nude', CloMaxSize
+		end
+		CloMaxSize = selfieBathtot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'bathselfie', '$selfieTakenBathtot', 'bath', CloMaxSize
+		end
+		CloMaxSize = selfieShowertot[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'showerselfie', '$selfieTakenShowertot', 'shower', CloMaxSize
+		end
+		CloMaxSize = selfieTitflash[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'titflash', '$selfieTakenTitflash', 'titflash', CloMaxSize
+		end
+		CloMaxSize = selfieAssflash[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'assflash', '$selfieTakenAssflash', 'assflash', CloMaxSize
+		end
+		CloMaxSize = selfiePussyflash[temp_locationCnt]
+		if CloMaxSize > 0:
+			gs 'phone_selfies', 'populateClothesType', 'pussyflash', '$selfieTakenPussyflash', 'pussyflash', CloMaxSize
+		end
+
+
+		temp_locationCnt += 1
+	if temp_locationCnt < arrsize('$selfieLoc'): jump'LocationTakenLoop'
+end
+
+
+if $ARGS[0] = 'populateClothesType':
+	$CloTypePrefix = $ARGS[1]
+	$CloArraySize = 'arrsize(''<<$ARGS[2]>>'')'
+	$CloFolder = $ARGS[3]
+	$CloVar = '<<$ARGS[2]>>[tmpIndex]'
+	CloMaxSize = ARGS[4]
+	temp_clocnt = 0
+	:tempCloTakenLoop
+		dynamic '$phone_locval = <<$selfieLoc[temp_locationCnt]>>_<<$CloTypePrefix>>[<<temp_clocnt>>]'
+		if $phone_locval = 1:
+			dyneval 'tmpIndex = <<$CloArraySize>>'
+			dyneval "<<$CloVar>> = 'images/pc/selfies/<<$selfieLoc[temp_locationCnt]>>/<<$CloFolder>>/<<$selfieFilePrefix[temp_locationCnt]>><<temp_clocnt>>.jpg'"
+		end
+		temp_clocnt += 1
+	if temp_clocnt <= CloMaxSize: jump'tempCloTakenLoop'
+end
+
+
 if $ARGS[0] = 'listretrieve2':
 	if numnpc = 1:
 		'<center><h4><font color="maroon">Dimka pictures</font></h4></center>'
