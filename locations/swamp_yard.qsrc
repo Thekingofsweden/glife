@@ -16,7 +16,7 @@ if $ARGS[0] = 'start':
 	gs 'hunter_ambient', 'schedule'
 	gs 'stat'
 
-	if lost_girl = 1
+	if lost_girl = 1:
 	    if rand(forest_lostday - daystart, 30) >= 30 and hour >= 8 and hour < 20: 
 	        gt 'gadforestlost','rescue','ranger','swamp_yard'
 	    end
@@ -64,42 +64,7 @@ if $ARGS[0] = 'start':
 		end
 	end
 	
-	act '<b>Go to the swamp</b>':
-		!add chance to swamped by illume
-		if hunters_outside = 1 and huntersknow = 0:
-			if hour >= 6 and hour < 23:
-				minut += 5
-				if rand(1,10)>9:
-					gt 'swamp', 'start'
-				else
-					gt 'swamp','stuck'
-				end
-			else
-				*clr & cla
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big173.jpg"></center>'
-				'As you start moving away from the hut Igor asks you if you''re going on a hike in the woods.'
-				'"<<$pcs_nickname>>, it''s not the best time to hike in the woods, you better stay here.'
-				act 'Stay':gt 'swamp_yard', 'start'
-				act 'Disregard his advice':
-					minut += 5
-					if rand(1,10)>8:
-						gt 'swamp', 'start'
-					else
-						gt 'swamp','stuck'
-					end
-				end
-			end
-		else
-			minut += 5
-			if (hour >= 6 and hour < 23) or rand(1,10)>7:
-				gt 'swamp', 'start'
-			else
-				gt 'swamp','stuck'
-			end
-		end
-		gt 'swamp','stuck'
-	end
+	act '<b>Go to the swamp</b>': gt 'swamp_yard', 'swamp_escape'
 	gs 'bicycle', 'swamp_yard'
 	act 'Go into the house':gt 'swamphouse', 'start'
 	if dirty_swamp_yard > 10:act 'Go out in the yard':hunterslut -= 1 & dynamic $dirty_swamp_yard
@@ -305,6 +270,50 @@ if $ARGS[0] = 'campfire':
 		elseif firewood < 10 and campfire = 0:
 			*nl
 			'There is some wood and twigs by the pit but not enough to light a new fire. You will probably need to collect some branches, chop some or ask a hunter to do so.'
+		end
+	end
+end
+
+if $ARGS[0] = 'swamp_escape':
+	!add chance to swamped by illume
+	if hunters_available = 1 and hunters_outside = 1:
+
+		if hour >= 6 and hour < 21:
+			minut += 5
+			if rand(1,10)>9:
+				gt 'swamp', 'start'
+			else
+				gt 'swamp','stuck'
+			end
+		else
+			*clr & cla
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/igorhanter.jpg"></center>'
+			'As you start moving into the swamp Igor calls after you.'
+
+			!TODO: Different line depending on opinion and slut
+			'"<<$pcs_nickname>>, where are you going? You will get stuck in there!'
+
+			act 'Turn back':gt 'swamp_yard'
+			act 'Ignore him and keep going':
+				minut += 5
+
+				!TODO: Add skill clothing and temp check here instead of praying to RNGesus
+				if rand(1,10)>9:
+                	gt 'swamp', 'start'
+                else
+                	gt 'swamp','stuck'
+                end
+			end
+		end
+	else
+		minut += 5
+
+		!TODO: Here too, also see how to avoid duplicating. Maybe create a child event node?
+		if (hour >= 6 and hour < 21) or rand(1,10)>7:
+			gt 'swamp', 'start'
+		else
+			gt 'swamp','stuck'
 		end
 	end
 end
