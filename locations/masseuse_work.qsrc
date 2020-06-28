@@ -1,0 +1,954 @@
+# masseuse_work
+
+!! masseuse['jobtype'] = 1 - just a normal masseuse
+!! masseuse['jobtype'] = 2 - will perform massages while naked or just normal
+!! masseuse['jobtype'] = 3 - will give handjobs as massage or any of the above
+!! masseuse['jobtype'] = 4 - will give blowjobs as massage or any of the above
+!! masseuse['jobtype'] = 5 - will fuck client instead of massage or any of the above
+
+if $ARGS[0] = 'shift_start':
+	masseuse['break'] = 0
+	if masseuse['multiple_shifts'] = 1:masseuse['multiple_shifts'] = 0
+	if hour < 10:
+		if hour = 8:minut += 60 - minut
+		masseuse_shift = 1
+		masseuse['<<week>>_shift_1'] = 2
+	elseif hour < 14:
+		if hour = 12: minut += 60 - minut
+		masseuse_shift = 2
+		masseuse['<<week>>_shift_2'] = 2
+	else
+		if hour = 16: minut += 60 - minut
+		masseuse_shift = 3
+		masseuse['<<week>>_shift_3'] = 2
+	end
+	if masseuse['late'] = 1:
+		masseuse['weeks_pay'] += 3
+	else
+		masseuse['weeks_pay'] += 4
+	end
+	masseuse['shifts_worked'] += 1
+	gt'masseuse_work','begin'
+end
+
+if $ARGS[0] = 'shift_end':
+	gs 'arousal','end'
+	if robe = 0:robe = 1
+	salon['work_minutes'] = 0
+	masseuse['<<week>>_shift_<<masseuse_shift>>'] = 0
+	money += massage['shift_tips']
+	massage['shift_tips'] = 0
+	salon['work_minutes'] = 0
+	gt'salon','start'
+end
+
+if $ARGS[0] = 'last_client':
+	salon['work_minutes'] = 0
+	masseuse['<<week>>_shift_<<masseuse_shift>>'] = 0
+	*nl
+	if minut < 10:
+		if (masseuse['<<week>>_shift_2'] = 1 and hour = 13) or (masseuse['<<week>>_shift_3'] = 1 and hour = 17):
+			masseuse['multiple_shifts'] = 1
+			'<b><<hour>>:0<<minut>>.</b> Looks like this shift is just about over, but you scheduled yourself for the next shift too. Better prepare for that then.'
+			act'Get ready for the next shift':gt'masseuse_work','shift_start'
+		else
+			'<b><<hour>>:0<<minut>>.</b> Looks like your shift is just about over. Time to wrap up for the day. You clean up your station and prepare to leave.'
+		end
+	else
+		if (masseuse['<<week>>_shift_2'] = 1 and hour = 13) or (masseuse['<<week>>_shift_3'] = 1 and hour = 17):
+			masseuse['multiple_shifts'] = 1
+			'<b><<hour>>:<<minut>>.</b> Looks like this shift is just about over, but you scheduled yourself for the next shift too. Better prepare for that then.'
+			act'Get ready for the next shift':gt'masseuse_work','shift_start'
+		else
+			'<b><<hour>>:<<minut>>.</b> Looks like your shift is just about over. Time to wrap up for the day. You clean up your station and prepare to leave.'
+		end
+	end
+end
+
+if $ARGS[0] = 'break_question':
+	*nl
+	if minut < 10:
+		'<b><<hour>>:0<<minut>>.</b> Looks like you have about <<240 - salon[''work_minutes'']>> minutes left in your shift. Should you take a break? Or just wait for the next client?'
+	else
+		'<b><<hour>>:<<minut>>.</b> Looks like you have about <<240 - salon[''work_minutes'']>> minutes left in your shift. Should you take a break? Or just wait for the next client?'
+	end
+end
+
+if $ARGS[0] = 'prepare_next':
+	*nl
+	if minut < 10:
+		'<b><<hour>>:0<<minut>>.</b> Looks like you have about <<240 - salon[''work_minutes'']>> minutes left in your shift. You should prepare for another client.'
+	else
+		'<b><<hour>>:<<minut>>.</b> Looks like you have about <<240 - salon[''work_minutes'']>> minutes left in your shift. You should prepare for another client.'
+	end
+end
+
+
+
+if $ARGS[0] = 'begin':
+	masseuse_time_temp = rand(5,15)
+	masseuse['client_type'] = rand(0,2)
+	masseuse['client_request'] = rand(0,10)
+	if masseuse['jobtype'] = 1:
+		gt'masseuse_work','1_pre'
+	elseif masseuse['jobtype'] = 2:
+		if masseuse['client_request'] >= 6:
+			gt'masseuse_work','1_pre'
+		else
+			gt'masseuse_work','2_pre'
+		end
+	elseif masseuse['jobtype'] = 3:
+		if masseuse['client_request'] >= 9:
+			gt'masseuse_work','1_pre'
+		elseif masseuse['client_request'] >= 7:
+			gt'masseuse_work','2_pre'
+		else
+			gt'masseuse_work','3_pre'
+		end
+	elseif masseuse['jobtype'] = 4:
+		if masseuse['client_request'] >= 10:
+			gt'masseuse_work','1_pre'
+		elseif masseuse['client_request'] >= 8:
+			gt'masseuse_work','2_pre'
+		elseif masseuse['client_request'] >= 6:
+			gt'masseuse_work','3_pre'
+		else
+			gt'masseuse_work','4_pre'
+		end
+	elseif masseuse['jobtype'] = 5:
+		gt'masseuse_work','5_pre'
+	end
+end
+
+if $ARGS[0] = 'normal_end':
+	gs'arousal','massage_give',15
+	salon['work_minutes'] += 15
+	gs'stat'
+	if salon['work_minutes'] >= 240:
+		gs'masseuse_work','last_client'
+		act'Finish your shift':gt'masseuse_work','shift_end'
+	else
+		act'Wait for your next client':gt'masseuse_work','begin'
+		if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+	end
+end
+
+if $ARGS[0] = '1_pre':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'You hear a buzz on the intercom and the receptionist''s voice sound.'
+	'"<<$pcs_firstname>>, you have a customer who has requested a body massage, maximum of 30 minutes."'
+	'As soon as she''s done speaking, the door opens and a man walks in.'
+	*nl
+	'"Hello sir, if you''d like to undress and lay on the table we can begin. You can place your clothes in the basket in the corner and there is a towel for you to place over your hips, just tell me when you''re ready."'
+	'He nods at you and you turn your back to face the corner, listening to the sound of clothes rustling, followed by the creaking of the table, and then a brief moment of silence. "I''m ready."'
+	'Nodding once, you turn and step over to the table.'
+	act'Begin the massage':gt'masseuse_work','1'
+end
+
+if $ARGS[0] = '1':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+	gs'arousal','massage_give',15
+	salon['work_minutes'] += 15
+	gs'stat'
+	'You oil up the client''s body and begin kneading it with your hands, working through his muscles and loosening them up.'
+	if rand(1,3) = 3:
+		'While you do, you can''t help but glance at the small towel covering his hips when you can see something hardening and shifting beneath it.'
+		if rand(0,1) = 0:
+			act'Ignore it':
+				cla & *nl
+				gs'arousal','massage_give',15
+				salon['work_minutes'] += 15
+				'Staying professional, you ignore his arousal and continue with the massage as if you didn''t notice. Once his time is up, he gets dressed and thanks you for the massage before leaving.'
+				*nl
+				if rand(0,2) = 2:
+					massage['client_tip'] = rand(0,200)
+					massage['shift_tips'] += massage['client_tip']
+					'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+					*nl
+				end
+				gs'masseuse_work','normal_end'
+			end
+			act'Slip your hand under the towel and jerk him off':gt'masseuse_work','1.handjob1'
+		else
+			'The client smiles at you when he sees you spot at his growing erection.'
+			'"Hey girlie, why don''t you give me a massage down there too? It''s <i>real</i> stiff. I could really use something to loosen it up."'
+			act'No':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+				if masseuse['jobtype'] < 3:
+					'"What? No way! If you wanted that you should have hired one of the other girls."'
+				else
+					'"If you wanted that then you should have paid for it," you say sternly.'
+				end
+				'"Didn''t know I wanted it till I saw your pretty face," he smirks. "You sure? I''ll give you a nice little tip afterwards."'
+				act'Still no':
+					cla & *nl
+					'"Ugh. Still no."'
+					'"Okay, how about you just give me a peek of what''s underneath that robe of yours?" he says, eyeing your thighs beneath the hem of your robe. "You don''t have to do anything else, just take off the robe. I''ll give you 200 <b>₽</b>. Just... slip off your robe..."'
+					act'Still no!':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalback.jpg"></center>'
+						if masseuse['jobtype'] = 1:
+							'"No! Why won''t you take that for an answer?! I''m not a whore! Keep this up I''ll call the manager and you''re getting kicked out. <i>No refund.</i>"'
+						else
+							'"No! I told you, if you wanted that then you should have paid for it! Keep this up I''ll call the manager and you''re getting kicked out. <i>No refund.</i>"'
+						end
+						'"Fine, fine," he grumbles and flips over so you can do his back, staying quiet for the rest of the massage. When you''re done, he gets dressed and quickly leaves.'
+						gs'masseuse_work','normal_end'
+					end
+					
+					act'I suppose...':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+						'"200 <b>₽</b>?" You chew on your lip for a moment considering. "I suppose... as long as I''m only taking off the robe... But nothing else! Okay?"'
+						'"Sure thing sweetheart," he grins back at you. "Now let''s see that body."'
+						act'Undress':gt'masseuse_work','1.naked'
+					end
+				end
+				
+				act'Well...':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+					'<i>Well...</i> you think to yourself. <i>For a little money, I guess I could just...</i>'
+					'"I suppose I could..." you say as you slip your hand underneath his towel.'
+					act'Jerk him off':gt'masseuse_work','1.handjob2'
+				end
+			end
+			
+			act'Slide your hand down':gt'masseuse_work','1.handjob3'
+			
+			act'Do I get a tip?':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+				'"That depends," you say. "Do I get a tip in return?"'
+				'His smile falters for a brief moment. "Of course! A girl deserves a little something for going the extra mile for her customers."'
+				act'Too bad':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalchest.jpg"></center>'
+					'"Well, too bad. That''s not what I''m here for. Now flip over, it''s time to do your back."'
+					'He blinks in surprise but otherwise complies.'
+					act'Continue':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/normalback.jpg"></center>'
+						'Turning him over, you massage his back while he stays quiet for the rest of the session. When you''re done, he gets dressed quickly and leaves.'
+						gs'masseuse_work','normal_end'
+					end
+				end
+				act'Jerk him off':gt'masseuse_work','1.handjob1'
+			end
+		end
+	else
+		'Once his time is up, he gets dressed and thanks you for the massage before leaving.'
+		gs'masseuse_work','normal_end'
+	end
+end
+
+if $ARGS[0] = '1.handjob1':
+	gs'arousal','hj',masseuse_time_temp,'','prostitution'
+	salon['work_minutes'] += masseuse_time_temp
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/sex/hj1.jpg"></center>'
+	'Sliding your hand down beneath the towel, you draw out his raging erection and begin oiling it up with your hand while continuing to massage the rest of his body with your other hand. Just like any other massage, you vary everything. Sometimes you grip him hard and jerk out long, drawn out strokes. Sometimes you softly pull on his cock with quick and rapid tugs. But always you keep an eye on his reactions.'
+	*nl
+	'After a short time, you see him begin to tense up and you know he''s about to cum.'
+	act'Finish him off':
+		cla & *clr
+		gs'cum_call','hands','massage client'
+		gs'stat'
+		'Making sure to draw the full length of his shaft, you squeeze the customer''s dick with a fair amount of pressure and begin milking him for all he''s got. White jets of cum spurt from his tip and land on his stomach, the rest of it coating your hands. You smile at his blissful expression, watching ever moment of his orgasm.'
+		act'Clean up':
+			cla & *clr
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			massage['shift_tips'] += 300
+			massage['sex_tips'] += 300
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The "massage" now over, you wipe off the oil and cum on his body and allow him to get dressed while you rinse your hands.'
+			*nl
+			'"That was a great massage, you''ve got talented hands," he smirks.'
+			'"Here''s a little something extra," he says, handing you 300 <b>₽</b>. "Maybe I''ll stop by again sometime for your services. Maybe you''ll even offer something a little more."'
+			if salon['work_minutes'] >= 240:
+				'With a wink, he leaves. Looking at the clock on the wall, you see your shift is just about over and so begin restting the room for the next girl.'
+				act'Finish your shift':gt'masseuse_work','shift_end'
+			else
+				'With a wink, he leaves. Slipping your well earned tip into your pocket, you begin changing the sheets to prepare for your next client.'
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '1.handjob2':
+	gs'arousal','hj',masseuse_time_temp,'','prostitution'
+	salon['work_minutes'] += masseuse_time_temp
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/sex/hj1.jpg"></center>'
+	'Grabbing hold of of the client''s stiff cock, you tentatively draw it out from underneath the towel and begin to work it with your hand. He smiles at you as you begin to put more effort into it, oiling up his shaft, pumping up and down on it in smooth motions with solid pressure.'
+	*nl
+	'You continue to jerk him for several minutes until you feel him tense up and you think he''s about to cum.'
+	act'Finish him off':
+		cla & *clr
+		gs'cum_call','hands','massage client'
+		gs'stat'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+		'Making sure to draw the full length of his shaft, you continue to pump his cock as white jets of cum spurt from the tip and land on his stomach, the rest of it coating your hands.'
+		act'Clean up':
+			cla & *clr
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			massage['shift_tips'] += 300
+			massage['sex_tips'] += 300
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The "massage" now over, you wipe off the oil and cum on his body and allow him to get dressed while you rinse your hands.'
+			*nl
+			'"That was a great massage, you''ve got talented hands," he smirks.'
+			'"Your tip, as promised," he says, handing you 300 <b>₽</b>. "Maybe I''ll stop by again sometime for your services. Maybe even get a <i>full body</i> service from you."'
+			if salon['work_minutes'] >= 240:
+				'With a wink, he leaves. Looking at the clock on the wall, you see your shift is just about over and so begin restting the room for the next girl.'
+				act'Finish your shift':gt'masseuse_work','shift_end'
+			else
+				'With a wink, he leaves. Slipping your well earned tip into your pocket, you begin changing the sheets to prepare for your next client.'
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '1.handjob3':
+	gs'arousal','hj',masseuse_time_temp,'','prostitution'
+	salon['work_minutes'] += masseuse_time_temp
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/sex/hj1.jpg"></center>'
+	'You give him a dirty grin and begin to run your hand down his stomach to reach under the towel and take hold of his cock. Taking hold of it in a firm grasp, you draw it out and start working it. Nice long strokes followed by short pumps at the base before teasing the tip with just your index finger and thumb. He moans under your touch and you maintain eye contact with him the entire time until you''re sure he''s just about to burst.'
+	act'Finish him off':
+		cla & *clr
+		gs'cum_call','hands','massage client'
+		gs'stat'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+		'Still staring into his eyes, watch him orgasm, feeling his cock pulse under your fingers and something viscous liquid that definitely isn''t oil begin to slide down your hand. You keep jerking him off, making sure you got him for all he''s worth until you''re sure nothing is left.'
+		act'Reach for a towel':
+			cla & *clr
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			gs'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The "massage" now over, you take a towel and wipe off the oil and cum on his body and allow him to get dressed while you rinse your hands.'
+			*nl
+			'"Oh yeah, I feel nice and loose now," he smirks.'
+			if rand(0,1) = 1:
+				'"My pleasure," you murmur. "A good <b>job</b> done is it''s own reward."'
+				'You smile innocently at your added emphasis.'
+				'"Damn..." he breathes. "I gotta come back for you..."'
+				if salon['work_minutes'] >= 240:
+					'With that, he leaves. Looking at the clock on the wall, you see your shift is just about over and so begin restting the room for the next girl.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				else
+					'With that, he leaves and you begin changing the sheets to prepare for your next client.'
+					act'Wait for your next client':gt'masseuse_work','begin'
+					if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+				end
+			else
+				massage['shift_tips'] += 300
+				massage['sex_tips'] += 300
+				'"Here''s a little something extra," he says, handing you 300 <b>₽</b>. "For doing such a good job."'
+				'"My pleasure," you murmur. "A good <b>job</b> done is it''s own reward."'
+				'You smile innocently at your added emphasis.'
+				'"Damn..." he breathes. "I gotta come back for you..."'
+				if salon['work_minutes'] >= 240:
+					'With that, he leaves. Looking at the clock on the wall, you see your shift is just about over and so begin restting the room for the next girl.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				else
+					'With that, he leaves. Slipping your well earned tip into your pocket, you begin changing the sheets to prepare for your next client.'
+					act'Wait for your next client':gt'masseuse_work','begin'
+					if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+				end
+			end
+		end
+		act'Lick your hand off':
+			cumspclnt = 9
+			gs 'cum_cleanup'
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Still watching the client, you raise your hand to your lips and shove your fingers inside your mouth. You taste the bitter flavor of semen mixed with the massage oils and suck every drop of the former off each of your digits and gulp it all down. Smiling at him, you take a towel and begin to wipe him down, cleaning his body of his own cum and the rest of the oil before allowing him to get dressed.'
+			if salon['work_minutes'] >= 235:
+				gs'masseuse_work','last_client'
+				if masseuse['multiple_shifts'] ! 1:act'Finish your shift':gt'masseuse_work','shift_end'
+			else
+				if masseuse['break'] = 0:
+					gs'masseuse_work','break_question'
+					
+				else
+					gs'masseuse_work','prepare_next'
+				end
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '1.naked':
+	robe = 0
+	gs'arousal','massage_give','', masseuse_time_temp
+	salon['work_minutes'] += masseuse_time_temp
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/naked.jpg"></center>'
+	if pcs_inhib < 30:
+		'You slowly untie the belt of your robe and pull it open revealing your breasts and pussy. Seeing the client leer at your body causes you to blush furiously, but you ignore it as best you can and slip the robe from your shoulders to place it on a nearby table to continue the massage.'
+	else
+		'You untie the belt of your robe and pull it open revealing your breasts and pussy. Ignoring the client''s leer, you place the robe on a nearby table and contiue with the massage.'
+	end
+	'The massage continues with you kneading his body completely naked, though he keeps the towel over his raging erection at your request. Soon enough, the session is over and he gets dressed, leaving 200 <b>₽</b> on the table as promised.'
+	'"Thanks for the eye candy," he says with a wink before leaving.'
+	massage['shift_tips'] += 200
+	massage['sex_tips'] += 200
+	if salon['work_minutes'] >= 235:
+		gs'masseuse_work','last_client'
+		act'Finish your shift':gt'masseuse_work','shift_end'
+	else
+		if masseuse['break'] = 0:
+			gs'masseuse_work','break_question'
+			
+		else
+			gs'masseuse_work','prepare_next'
+		end
+		act'Wait for your next client':gt'masseuse_work','begin'
+		if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+	end
+end
+
+if $ARGS[0] = '2_pre':
+	robe = 0
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'You hear a buzz on the intercom and the receptionist''s voice sound.'
+	'"<<$pcs_firstname>>, you have a customer who has requested a massage with a view, maximum of 30 minutes."'
+	'As soon as she''s done speaking, the door opens and a man walks in.'
+	act'Continue':
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/undress.mp4"></video></center>'
+		if pcs_inhib > 40:
+			'"Hello sir, if you''d like to undress and lay on the table we can begin," you say, untying the belt around your robe and pulling it open to reveal your naked body underneath. Shrugging out of the robe completely, you continue. "You can place your clothes in the basket in the corner." He finishes undressing eagerly and lays down on the table. As you step over to him, his gaze roams your body and in return you can see he''s rock hard.'
+		else
+			'"Hello sir, if you''d like to undress and lay on the table we can begin," you say, untying the belt around your robe and pulling it open to reveal your naked body underneath. Your face blazes with heat and embarrassment, but you stay as professional as possible, shrugging out of the robe completely and continuing. "You can place your clothes in the basket in the corner." He finishes undressing eagerly and lays down on the table. As you step over to him, his gaze roams your body and in return you can see he''s rock hard causing your blush to somehow intensify.'
+		end
+		act'Begin the massage':gt'masseuse_work','2'
+	end
+end
+
+if $ARGS[0] = '2':
+	gs'arousal','massage_give',30
+	salon['work_minutes'] += 30
+	inhib_exp += rand(1,5)
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/nude_massage/<<rand(1,5)>>.jpg"></center>'
+	if pcs_inhib > 40:
+		'You oil up the client and begin kneading it with your hands, working through his muscles and loosening them up. He stares appreciatively at your body throughout the whole process. Occassionally, you lean down to get the right angles to work his body and your breasts brush up against him, though you''re fairly certain he doesn''t mind.'
+	else
+		'You oil up the client and begin kneading it with your hands, working through his muscles and loosening them up. He stares appreciatively at your body throughout the whole process. Occassionally, you lean down to get the right angles to work his body and your breasts brush up against him. And though you''re fairly certain he doesn''t mind, it drives you wild with embarrassment.'
+		*nl
+		'<i>Oh my god! What am I even doing right now?!</i>'
+	end
+	act'Continue':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+		if pcs_inhib > 40:
+			'After 30 minutes, you announce his time is up and quickly wipe him down, cleaning his body of leftover oils. You wait for him to put his clothes back on before giving a short bow, saying, "Thank you for your patronage sir," as he exits the room.'
+		else
+			'After 30 minutes, you announce his time is up and quickly wipe him down, cleaning his body of leftover oils. You wait for him to put his clothes back on before giving a short bow, with a mighty blush, and say, "Thank you for your patronage sir," as he exits the room.'
+		end
+		if rand(0,2) = 2:
+			massage['client_tip'] = rand(0,300)
+			massage['shift_tips'] += massage['client_tip']
+			*nl
+			'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+		end
+		robe = 1
+		*nl
+		'Only once he''s left do you reach for your robe and take a look at the clock.'
+		if salon['work_minutes'] >= 235:
+			gs'masseuse_work','last_client'
+			act'Finish your shift':gt'masseuse_work','shift_end'
+		else
+			if masseuse['break'] = 0:
+				gs'masseuse_work','break_question'
+				
+			else
+				gs'masseuse_work','prepare_next'
+			end
+			act'Wait for your next client':gt'masseuse_work','begin'
+			if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+		end
+	end
+end
+
+if $ARGS[0] = '3_pre':
+	robe = 0
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'You hear a buzz on the intercom and the receptionist''s voice sound.'
+	'"<<$pcs_firstname>>, you have a customer who has requested an ''old fashioned'' massage, maximum of 30 minutes."'
+	'As soon as she''s done speaking, the door opens and a man walks in.'
+	act'Continue':
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/undress.mp4"></video></center>'
+		'"Hello sir, if you''d like to undress and lay on the table we can begin. You can place your clothes in the basket in the corner." You undo the belt on your robe and pull it open to reveal your naked body underneath. "We can also begin with a body massage or just skip straight to the handjob if you would prefer that instead."'
+		if masseuse['client_type'] = 0:
+			'"Yeah, let''s do that," the client grins as he drops his pants, revealing an impressive erection."'
+			'"Whatever you like sir," you say, shrugging out of the robe completely and waiting by the table while he removes the rest of his clothing.'
+			act'Jerk him off':gt'masseuse_work','3.1'
+		else
+			'"I think I''d like to start by relaxing with the massage."'
+			'"Whatever you like sir," you say, shrugging out of the robe completely and waiting by the table while he removes the rest of his clothing.'
+			act'Begin the massage':gt'masseuse_work','3'
+		end
+	end
+end
+
+if $ARGS[0] = '3':
+	gs'arousal','massage_give',15
+	salon['work_minutes'] += 15
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/nude_massage/<<rand(1,5)>>.jpg"></center>'
+	'You oil up the client and begin kneading it with your hands, working through his muscles and loosening them up. He stares appreciatively at your body throughout the whole process. Occassionally, you lean down to get the right angles to work his body and your breasts brush up against him, though you''re fairly certain he doesn''t mind.'
+	*nl
+	'After about half the session has gone by, the client seems to be in a pleasant stupor. His breathing is deep and relaxed and almost seems to be at the edge of sleep and you decide this is the optimal time to get to the main course. Snaking your hand down his body, you gently wrap your hand around his member. The client grunts and gives a faint smile, his cock quickly standing to attention at your touch as you begin to work it.'
+	act'Get to work':gt'masseuse_work','3.1'
+end
+
+if $ARGS[0] = '3.1':
+	gs'arousal','hj',masseuse_time_temp,'','prostitution'
+	salon['work_minutes'] += masseuse_time_temp
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/sex/hj2.jpg"></center>'
+	'After giving it a quick oil, you take the client''s cock in both hands and start working it, experimenting with what he might like best. Long drawn out strokes with heavy pressure? Fast jerking motions with medium pressure? Does he like barely any pressure? Just the feeling of your hand gliding up and down his glistening member? As you experiment, you keep an eye on his reactions, checking to see what get him writhing in a good way.'
+	*nl
+	'Soon enough, you think you''ve found his ticket and within minutes of that you feel his cock begin to pulse.'
+	act'Finish him off':
+		cla & *clr
+		if masseuse['client_type'] = 0:
+			gs'cum_call','hands','massage client'
+			gs'stat'
+			'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+			'Maintaining the same motions you did before, you don''t let up for a moment until you see cum gush from his cock. Soon his spray turns into a mere dribble and it does so all over your hands.'
+			'You smile at him. "Did you enjoy your massage sir?"'
+			'"Oh most definitely," he smiles back. "You''ve got magic hands."'
+			'"That''s why they hired me sir! Magic hands."'
+			'"Well I''m ready to see the other kind of magic too. I think I''m relaxed enough to fully enjoy the massage now."'
+			'"Of course sir. Just let me clean my hands."'
+			act'Get a towel':
+				cumspclnt = 9
+				gs 'cum_cleanup'
+				gs 'stat'
+				cla & *clr
+				'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+				'Reaching to the side, you grab a towel to wipe your hands clean as well as the client''s cum that landed on his own body. With that done, you toss it into a laundry bin and get out the oil again to begin the massage in earnest.'
+				act'Begin the massage':gt'masseuse_work','3.2'
+			end
+			act'Lick them clean':
+				cumspclnt = 9
+				swallow += 1
+				gs 'cum_cleanup'
+				gs 'stat'
+				cla & *clr
+				'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+				'Still smiling at the client, you raise your hand to your lips stick your tongue out to give your hand a thorough tongue bath. You taste the bitter flavor of semen mixed with the massage oils and your tongue picks up every drop of the white liquid before a quick swallow followed by a beaming smile. Only after that, you take a towel and begin to wipe him down, cleaning his body of his own cum before reaching for the oil to begin the massage in earnest.'
+				act'Begin the massage':gt'masseuse_work','3.2'
+			end
+		else
+			gs'cum_call','hands','massage client'
+			gs'cum_call','breasts','massage client'
+			gs'stat'
+			'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/hj_cum.mp4"></video></center>'
+			'Maintaining the same motions you did before, you don''t let up for a moment until you see cum gush from his cock. Just cause you think he''d like it, you angle it towards yourself and let it spatter all over your breasts. Soon his spray turns into a mere dribble and it does so all over your hands.'
+			'You smile at him. "Did you enjoy your massage sir?"'
+			'"Oh most definitely," he smiles back. "You''ve got magic hands."'
+			'"That''s why they hired me sir! Magic hands."'
+			act'Finish up':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+				'Taking a towel, you quickly wipe him down, ensuring his body is cum free. Once that is done, you allow him to get up and get dressed while you stand to the side, his cum still spattering your hands and tits as an after service eye candy for him. Once dressed, you give him a short bow, saying, "Thank you for your patronage sir," as he exits the room.'
+				robe = 1
+				*nl
+				if rand(0,2) = 2:
+					massage['client_tip'] = rand(0,300)
+					massage['shift_tips'] += massage['client_tip']
+					massage['sex_tips'] += massage['client_tip']
+					'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+					*nl
+				end
+				'Only once he''s left do you look down at the cum on your body. You ought to clean up for your next customer. If you have one that is, you think before taking a look at the clock.'
+				*nl
+				if salon['work_minutes'] >= 230:
+					 gs'masseuse_work','last_client'
+					 act'Wipe off the cum':
+						cumspclnt = 12
+						gs 'cum_cleanup'
+						gs 'stat'
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+						'Well, no reason to walk around wearing cum regardless. You grab another towel and wipe yourself off, tossing it into the laundry bin before cleaning up your station and prepare to leave.'
+						act'Finish your shift':gt'masseuse_work','shift_end'
+					 end
+					 act'Don''t bother':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+						'Well, they can''t tell you how to accessorise on your own time. You leave the cum where it is and clean up your station, preparing to leave.'
+						act'Finish your shift':gt'masseuse_work','shift_end'
+					end
+				else
+					cumspclnt = 12
+					gs 'cum_cleanup'
+					gs'masseuse_work','prepare_next'
+					'Well, that answers that. You grab a towel and wipe yourself off before tossing it into a laundry bin.'
+					*nl
+					if masseuse['break'] = 0:
+						'Now the only question left is if you should you take a break or just wait for the next client?'
+					else
+						'Guess you should just wait for the next client now.'
+					end
+					act'Wait for your next client':gt'masseuse_work','begin'
+					if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '3.2':
+	salon['work_minutes'] += (30 - masseuse_time_temp)
+	gs'arousal','massage_give',(30 - masseuse_time_temp)
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/nude_massage/<<rand(1,5)>>.jpg"></center>'
+	'You oil up the client and begin kneading it with your hands, working through his muscles and loosening them up. He stares appreciatively at your body throughout the whole process. Occassionally, you lean down to get the right angles to work his body and your breasts brush up against him, though you''re fairly certain he doesn''t mind.'
+	act'Continue':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+		'After <<30 - masseuse_time_temp>> minutes, you announce his time is up and quickly wipe him down, cleaning his body of leftover oils. You wait for him to put his clothes back on before giving a short bow, saying, "Thank you for your patronage sir," as he exits the room.'
+		robe = 1
+		*nl
+		if rand(0,2) = 2:
+			massage['client_tip'] = rand(0,300)
+			massage['shift_tips'] += massage['client_tip']
+			massage['sex_tips'] += massage['client_tip']
+			'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+			*nl
+		end
+		if salon['work_minutes'] >= 235:
+			gs'masseuse_work','last_client'
+			act'Finish your shift':gt'masseuse_work','shift_end'
+		else
+			if masseuse['break'] = 0:
+				gs'masseuse_work','break_question'
+			else
+				gs'masseuse_work','prepare_next'
+			end
+			act'Wait for your next client':gt'masseuse_work','begin'
+			if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+		end
+	end
+end
+
+
+if $ARGS[0] = '4_pre':
+	robe = 0
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'You hear a buzz on the intercom and the receptionist''s voice sound.'
+	'"<<$pcs_firstname>>, you have a customer who has requested a ''head'' massage, maximum of 30 minutes."'
+	'As soon as she''s done speaking, the door opens and a man walks in.'
+	act'Continue':
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/undress.mp4"></video></center>'
+		'"Hello sir, if you''d like to undress and lay on the table we can begin. You can place your clothes in the basket in the corner." You undo the belt on your robe and pull it open to reveal your naked body underneath. "We can also begin with a body massage or I can start using my mouth right away if you would prefer that instead."'
+		if masseuse['client_type'] = 0:
+			'"I think I''d like to start by relaxing with the massage."'
+			'"Whatever you like sir," you say, shrugging out of the robe completely and waiting by the table while he removes the rest of his clothing.'
+			act'Begin the massage':gt'masseuse_work','4'
+		elseif masseuse['client_type'] = 1:
+			'"Yeah, let''s do that," the client grins as he drops his pants, revealing an impressive erection."'
+			'"Whatever you like sir," you say, shrugging out of the robe completely and waiting by the table while he removes the rest of his clothing.'
+			act'Blow him':gt'masseuse_work','4.1'
+		else
+			'"Yeah, let''s do that," the client grins as he drops his pants, revealing an impressive erection."'
+			'"Whatever you like sir," you say, shrugging out of the robe completely and waiting by the table while he removes the rest of his clothing.'
+			'"Great. Now get on the table."'
+			act'Get on the table':gt'masseuse_work','4.2'
+		end
+	end
+end
+
+if $ARGS[0] = '4':
+	cla & *clr
+	gs'arousal','massage_give',15
+	salon['work_minutes'] += 15
+	gs'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/nude_massage/<<rand(1,5)>>.jpg"></center>'
+	'You oil up the client and begin kneading it with your hands, working through his muscles and loosening them up. He stares appreciatively at your body throughout the whole process. Occassionally, you lean down to get the right angles to work his body and your breasts brush up against him, though you''re fairly certain he doesn''t mind.'
+	*nl
+	'After about half the session has gone by, the client seems to be in a pleasant stupor. His breathing is deep and relaxed and almost seems to be at the edge of sleep and you decide this is the optimal time to get to the main course.'
+	act'Start blowing him':gt'masseuse_work','4.1'
+end
+
+if $ARGS[0] = '4.1':
+	cla & *clr
+	gs'arousal','bj',masseuse_time_temp,'','prostitution'
+	salon['work_minutes'] += masseuse_time_temp
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj1.mp4"></video></center>'
+	'Bending down over the table, you run your lips down the client''s shaft and start sucking him off. You lick lightly at the tip, you take as much of his length as you can, you pull out every trick you have in the book to make him feel good, and it''s not long until you know he''s about to cum.'
+	act'Finish the job':
+		gs'cum_call','mouth_swallow','massage client'
+		gs'stat'
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj1.mp4"></video></center>'
+		'Even as you feel his cum spurt into your mouth, you never stop sucking, going up and down until your mouth is full and nothing else is coming out. Remembering company policy, you gather up every drop and tilt your head back to swallow, giving the client a clean smile afterwards.'
+		'"Would you like your massage now sir?"'
+		'"No, that''s plenty for me. I got what I came for," he grins. "Though I wouldn''t mind a tongue bath to make sure I''m all cleaned up before I head out."'
+		'"Certainly sir," you say, bending over and thoroughly licking every patch of his foreskin clean.'
+		act'Finish the session':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Soon after, the client hops off the table and you wait for him to put his clothes back on before giving a short bow, saying, "Thank you for your patronage sir," as he exits the room.'
+			robe = 1
+			*nl
+			if rand(0,2) = 2:
+				massage['client_tip'] = rand(0,400)
+				massage['shift_tips'] += massage['client_tip']
+				massage['sex_tips'] += massage['client_tip']
+				'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+				*nl
+			end
+			if salon['work_minutes'] >= 235:
+				gs'masseuse_work','last_client'
+				act'Finish your shift':gt'masseuse_work','shift_end'
+			else
+				if masseuse['break'] = 0:
+					gs'masseuse_work','break_question'
+				else
+					gs'masseuse_work','prepare_next'
+				end
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '4.2':
+	cla & *clr
+	gs'arousal','bj',masseuse_time_temp,'','prostitution','rough'
+	salon['work_minutes'] += masseuse_time_temp
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj2.mp4"></video></center>'
+	'You do as the client asks and lay down on the table. He pulls you off of it so your shoulders are right at the edge of the table and your head hangs off it. As your head tilts back you see the client''s cock dangling upside down in front of you before he grabs you by the head and shoves it into your mouth.'
+	'"Mmmrph~!"'
+	'He helps himself to your breasts with his other hand while he roughly throat fucks you. For your part, you do your best to relax yourself and make this as enjoyable for him as possible. It takes a few minutes, but soon enough you reach the finish line.'
+	'"Nnngh! Here it comes!"'
+	act'Swallow':
+		gs'cum_call','mouth_swallow','massage client'
+		gs'stat'
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj2.mp4"></video></center>'
+		'The client''s cum sprays directly into the back of your throat and you have to force yourself not to cough on instinct before more starts coming out. You swallow it as fast as you can just so it doesn''t choke you or come out your nose and keep swallowing until nothing else is left for you to swallow. The client gives your breasts one more fondle each before slowly withdrawing himself from your mouth like a sword from a sheath.'
+		'"Ahh, now that was really refreshing," he says, cricking his neck back and forth.'
+		'"Will that be all sir?" you ask, head still hanging off the edge of the table.'
+		'"Yeah, I think so for now. Maybe I''ll just come back later if I need another fix."'
+		'"As you wish sir."'
+		act'Finish the session':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Righting yourself, you swing your legs off the table and stand, waiting for the client to put his clothes back on. Once he''s fully dressed, you give a short bow, saying, "Thank you for your patronage sir," as he exits the room.'
+			robe = 1
+			*nl
+			if rand(0,2) = 2:
+				massage['client_tip'] = rand(0,400)
+				massage['shift_tips'] += massage['client_tip']
+				massage['sex_tips'] += massage['client_tip']
+				'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+				*nl
+			end
+			if salon['work_minutes'] >= 235:
+				gs'masseuse_work','last_client'
+				act'Finish your shift':gt'masseuse_work','shift_end'
+			else
+				if masseuse['break'] = 0:
+					gs'masseuse_work','break_question'
+				else
+					gs'masseuse_work','prepare_next'
+				end
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '5_pre':
+	cla & *clr
+	vaginal_slip = 20
+	ar_vag_lube = 1
+	robe = 0
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'You hear a buzz on the intercom and the receptionist''s voice sound.'
+	'"<<$pcs_firstname>>, you have a customer who has requested a ''full body'' massage, maximum of 30 minutes."'
+	'As soon as she''s done speaking, the door opens and a man walks in.'
+	*nl
+	if pcs_inhib < 40:
+		'"Hello sir, if you''d like to undress and we can begin as soon as you''re ready." You pull off your robe and pump huge globs of lubricant from a bottle into your hands, wiping it across your pussy lips and your entire body. You cheeks go bright pink when he shamelessly watches you finger the lube inside your pussy. "I''m sure you''re eager to dive in as quickly as possible."'
+	else
+		'"Hello sir, if you''d like to undress and we can begin as soon as you''re ready." You pull off your robe and pump huge globs of lubricant from a bottle into your hands, wiping it across your pussy lips and your entire body. Something in his pants stands at attention when he sees you finger the lube inside your pussy. "I''m sure you want to dive in as quickly as possible."'
+	end
+	act'Fuck the client':
+		gs'cum_call','precum','massage client'
+		gs'arousal','vaginal',(masseuse_time_temp+15),'','prostitution','rough'
+		salon['work_minutes'] += (masseuse_time_temp+15)
+		gs'stat'
+		gt'masseuse_work','5'
+	end
+end
+
+if $ARGS[0] = '5':
+	cla & *clr
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/fuck<<rand(1,20)>>.mp4"></video></center>'
+	'You spend the entire session being thoroughly enjoyed by your client, fucking in any and every position he could possibly want you in. The sound of flesh slapping against flesh is deafening, the only other thing being able to be heard is the groan of your voice as you are pounded relentlessly until he cums.'
+	act'Cum':gt'masseuse_work','5.1'
+	act'Next position':gt'masseuse_work','5'
+end
+
+if $ARGS[0] = '5.1':
+	cla & *clr
+	if rand(0,1) = 1:
+		gs'cum_call','','massage client'
+		gs'stat'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/creampie<<rand(1,5)>>.mp4"></video></center>'
+		if pcs_horny >= 90:
+			$orgasm_or = 'yes'
+			'Eventually, the client starts cumming. He keeps hammering you and grunts hard, and you can feel his semen spurt deeper inside you with every thrust. The sensation causes you to orgasm as well, groaning with pleasure right alongside him. At some point the client finishes ejaculating and removes his cock from your pussy, his cum flowing out after.'
+		else
+			'Eventually, the client starts cumming. He keeps hammering you and grunts hard, and you can feel his semen spurt deeper inside you with every thrust. At some point the client finishes ejaculating and removes his cock from your pussy, his cum flowing out after.'
+		end
+		act'Get up':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Standing on unsteady legs, you wait patiently while the client dresses himself, a slurry of lubricant, pussy juice, and cum trickling down your legs the whole time. Just before he turns to leave, you give a small bow, saying, "Thank you for your patronage." The door clicks shut and you release an exhausted breath, leaning back against the table and taking a moment to rest.'
+			*nl
+			if rand(0,2) = 2:
+				massage['client_tip'] = rand(0,500)
+				massage['shift_tips'] += massage['client_tip']
+				massage['sex_tips'] += massage['client_tip']
+				'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+				*nl
+			end
+			'Then you look at the clock on the wall to check how much time you have left in your shift.'
+			*nl
+			if salon['work_minutes'] >= 235:
+				 gs'masseuse_work','last_client'
+				 *nl
+				 'Now the only real question is if you''re going to clean yourself up or just the room.'
+				 act'Wipe your pussy':
+					cumspclnt = 15
+					gs 'cum_cleanup'
+					gs 'stat'
+					cla & *clr
+					'<center><video autoplay loop src="images/sex/cum/clean_pussy.mp4"></video></center>'
+					'Well, no reason to walk around dripping cum or staining your panties. Grabbing a soft towel, you carefully wipe the cum from your pussy before tossing it into the laundry bin. Afterwards, you reset the room and slip on your robe before finishing your shift.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				 end
+				 act'Don''t bother':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+					'Doesn''t really matter to you that much, you''ll just leave it where it is for now. You spend the next couple minutes reseting the room and slip on your robe before finishing your shift.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				end
+			else
+				gs'masseuse_work','prepare_next'
+				*nl
+				'Looking down at your cum dripping pussy, you think to yourself if you care enough to clean it off. Company policy says you should be completely clean for each new customer but...'
+				act'Wipe your pussy':
+					cumspclnt = 15
+					gs 'cum_cleanup'
+					gs 'stat'
+					cla & *clr
+					'<center><video autoplay loop src="images/sex/cum/clean_pussy.mp4"></video></center>'
+					'Best to just stick to the policy. Grabbing a soft towel, you carefully wipe the cum from your pussy before tossing it into the laundry bin. Afterwards, you slip on your robe and reset the room.'
+					if masseuse['break'] = 0:
+						'Now the only question left is if you should you take a break or just wait for the next client?'
+					else
+						'Guess you should just wait for the next client now.'
+					end
+					act'Wait for your next client':gt'masseuse_work','begin'
+					if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+				 end
+				 act'Don''t bother':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+					'Eh, who cares. The next guy can get sloppy seconds. He''ll probably just think it''s lube. Your breather over, you slip on your robe and reset the room.'
+					if masseuse['break'] = 0:
+						'Now the only question left is if you should you take a break or just wait for the next client?'
+					else
+						'Guess you should just wait for the next client now.'
+					end
+					act'Wait for your next client':gt'masseuse_work','begin'
+					if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+				end
+			end
+		end
+	else
+		gs'cum_call','face','massage client'
+		gs'cum_call','hair','massage client'
+		gs'cum_call','mouth','massage client'
+		gs'stat'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/facial<<rand(1,2)>>.mp4"></video></center>'
+		'After an indeterminable amount of time, you hear the client shouting at you.'
+		'"Spread ''em, spread ''em, spread ''em, spread ''em!" Obligingly, you open  your legs as wide as they can go before he jumps out from between them and rushes to your face and immediately ejaculating all over it. Just like your legs, you open your mouth as wide as possible, trying to catch any stray droplets that land in it while licking the client''s cock all over. Once it feels like he''s done cumming, you adhere once again to company policy and swallow everything before collapsing backwards on to the table.'
+		act'Get up':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Standing on unsteady legs, you wait patiently while the client dresses himselfm. Just before he turns to leave, you give a small bow, face still painted with his cum, and say, "Thank you for your patronage.". The door clicks shut and you release an exhausted breath, sagging against the table and taking a moment to rest. Looking at the clock on the wall to check how much time you have left in your shift.'
+			*nl
+			if rand(0,2) = 2:
+				massage['client_tip'] = rand(0,500)
+				massage['shift_tips'] += massage['client_tip']
+				massage['sex_tips'] += massage['client_tip']
+				'Looking back to the table, you see he left a tip of <<massage[''client_tip'']>> <b>₽</b> for you on the table.'
+				*nl
+			end
+			if salon['work_minutes'] >= 235:
+				 gs'masseuse_work','last_client'
+				 *nl
+				 'Now the only real question is if you''re going to clean yourself up or just the room.'
+				 act'Clean your face':
+					cumspclnt = 4
+					gs 'cum_cleanup'
+					gs 'stat'
+					cla & *clr
+					'<center><video autoplay loop src="images/sex/cum/clean_mouth.mp4"></video></center>'
+					'Well, no reason to walk around wearing cum regardless. Grabbing a towel, you carefully wipe your face and hair, tossing it into the laundry bin before cleaning up your station and prepare to leave.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				 end
+				 act'Don''t bother':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+					'Well, they can''t tell you how to accessorise on your own time. You leave the cum where it is and spend the next couple minutes reseting the room before finishing your shift.'
+					act'Finish your shift':gt'masseuse_work','shift_end'
+				end
+			else
+				cumspclnt = 4
+				gs 'cum_cleanup'
+				gs'masseuse_work','prepare_next'
+				*nl
+				'Looks like you still have some customers to serve. Well, you can''t serve them looking like this. You grab a towel and clean your face and hair off before tossing it into a laundry bin and resetting the room.'
+				*nl
+				if masseuse['break'] = 0:
+					'Now the only question left is if you should you take a break or just wait for the next client?'
+				else
+					'Guess you should just wait for the next client now.'
+				end
+				act'Wait for your next client':gt'masseuse_work','begin'
+				if masseuse['break'] = 0:act'Take a break':gt'masseuse_break','start'
+			end
+		end
+	end
+end
+--- masseuse_work ---------------------------------
+
