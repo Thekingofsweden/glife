@@ -1,10 +1,12 @@
 # UnitAppearance
 if $ARGS[0] = '':
 	*clr
+    'Hotcat'
 	'<table>'
 		'<tr>
 			<th>Desc</th>
 			<th>hotcat</th>
+			<th>bmi</th>
 			<th>bodykoef</th>
 			<th>HeadBonus</th>
 			<th>AttributeBonus</th>
@@ -17,13 +19,16 @@ if $ARGS[0] = '':
 		</tr>'
 		gs 'UnitAppearance', 'GenerateSvetas'
 	'</table>'
+end
 
+if $ARGS[0] = 'gashtest':
 end
 
 if $ARGS[0] = 'GenRow':
 	'<tr>'
 		'<td><<$svetadesc>></td>'
 		'<td><<unitHotcat>></td>'
+		'<td><<unitbmi_calc>></td>'
 		'<td><<unitbodykoef>></td>'
 		'<td><<unitHeadBonus>></td>'
 		'<td><<unitAttributeBonus>></td>'
@@ -36,9 +41,26 @@ if $ARGS[0] = 'GenRow':
 	'</tr>'
 end 
 
+if $ARGS[0] = 'GenRowBreak':
+	'<tr>'
+		'<td><<$ARGS[1]>></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+		'<td></td>'
+	'</tr>'
+end 
+
 if $ARGS[0] = 'calcHotcat':
 	unitbmi_calc = FUNC('body_shape', 'bmicalc', unitsalo, unitpcs_hgt)
-	unitbodykoef = FUNC('body_shape', 'setbodykoef', unitsalo, unitpcs_hgt, unitstrenbuf, unitsalocatnow, unitvofat, unitbmi_calc)
+	unitbodykoef = FUNC('body_shape', 'setbodykoef', unitbmi_calc, unitstrenbuf, unitsalocatnow, unitvofat)
 	unitHeadBonus = FUNC('body_shape', 'calcHeadBonus', unitpcs_lashes, unitpcs_eyesize, unitpcs_lip, unitpcs_teeth)
 	unitAttributeBonus = FUNC('body_shape', 'calcAttributeBonus', unitpcs_agil, unitpcs_vital)
 	unitpcs_apprncbase = FUNC('body_shape', 'basebeautycalc2', unitResetBase, unitvidage, unitpcs_skin, unitbodykoef, unitunitHeadBonus, unitunitAttributeBonus, unitpcs_apprncbase)
@@ -49,6 +71,72 @@ if $ARGS[0] = 'calcHotcat':
 	unitHotcat = FUNC('body', 'calcHotcat', unitpcs_apprncbase, unitsupnatvnesh, unitclothingbonus, unitAccessoriesBonus, unitGroomingBonus, unitGroomingPenalty)
 	unitpcs_apprnc = temppcs_apprnc & killvar 'temppcs_apprnc'
 	gs 'UnitAppearance', 'GenRow'
+end
+
+if $ARGS[0] = 'headbonus':
+	*clr
+    'HeadBonus'
+	'<table>'
+		'<tr>
+			<th>headbonus</th>
+			<th>pcs_lashes</th>
+			<th>pcs_eyesize</th>
+			<th>pcs_lip</th>
+			<th>pcs_teeth</th>
+		</tr>'
+		gs 'UnitAppearance', 'HeadBonusCalc'
+	'</table>'
+end
+
+if $ARGS[0] = 'HeadBonusCalc':
+    gs 'UnitAppearance', 'GenHeadRow', 5,3,3,-1
+    gs 'UnitAppearance', 'GenHeadRow', 4,3,4,-1
+    gs 'UnitAppearance', 'GenHeadRow', 3,2,2,0
+    gs 'UnitAppearance', 'GenHeadRow', 2,2,2,0
+    gs 'UnitAppearance', 'GenHeadRow', 1,1,1,1
+    gs 'UnitAppearance', 'GenHeadRow', 0,0,0,3
+end
+
+if $ARGS[0] = 'GenHeadRow':
+    unitHeadBonus = FUNC('body_shape', 'calcHeadBonus', ARGS[1], ARGS[2], ARGS[3], ARGS[4])
+    '<tr>'
+        '<td><<unitHeadBonus>></td>'
+        '<td><<ARGS[1]>></td>'
+        '<td><<ARGS[2]>></td>'
+        '<td><<ARGS[3]>></td>'
+        '<td><<ARGS[4]>></td>'
+    '</tr>'
+end
+
+if $ARGS[0] = 'attributebonus':
+	*clr
+    'AttributeBonus'
+	'<table>'
+		'<tr>
+			<th>attributebonus</th>
+			<th>pcs_agil</th>
+			<th>pcs_vital</th>
+		</tr>'
+		gs 'UnitAppearance', 'AttribBonusCalc'
+	'</table>'
+end
+
+if $ARGS[0] = 'AttribBonusCalc':
+    gs 'UnitAppearance', 'GenAttribRow', 100,100
+    gs 'UnitAppearance', 'GenAttribRow', 80,80
+    gs 'UnitAppearance', 'GenAttribRow', 60,60
+    gs 'UnitAppearance', 'GenAttribRow', 40,40
+    gs 'UnitAppearance', 'GenAttribRow', 20,20
+    gs 'UnitAppearance', 'GenAttribRow', 0,0
+end
+
+if $ARGS[0] = 'GenAttribRow':
+    unitAttribBonus = FUNC('body_shape', 'calcAttributeBonus', ARGS[1], ARGS[2])
+    '<tr>'
+        '<td><<unitAttribBonus>></td>'
+        '<td><<ARGS[1]>></td>'
+        '<td><<ARGS[2]>></td>'
+    '</tr>'
 end
 
 if $ARGS[0] = 'GenerateSvetas':
@@ -89,19 +177,7 @@ if $ARGS[0] = 'GenerateSvetas':
 	unitsupnatvnesh = supnatvnesh
     unitpcs_apprncbase = pcs_apprncbase
     unitResetBase = 0
-	gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked current Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    unitpcs_apprncbase = pcs_apprncbase
-    unitResetBase = 0
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'Hot Sveta'
     unitsalo = 65
@@ -139,17 +215,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Hot Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'Nerd start Sveta'
     unitsalo = 132
@@ -187,17 +253,8 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
-    $svetadesc = 'Naked Nerd start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
 
     $svetadesc = 'Dancer start Sveta'
     unitsalo = 55
@@ -235,17 +292,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Dancer start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
 
     $svetadesc = 'Popular start Sveta'
@@ -284,17 +331,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Popular start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'Gopnik start Sveta'
     unitsalo = 80
@@ -332,17 +369,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Gopnik start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'Ugly start Sveta'
     unitsalo = 220
@@ -380,17 +407,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Ugly start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'Slut start Sveta'
     unitsalo = 60
@@ -428,17 +445,7 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
     unitpcs_apprncbase = 0
     unitResetBase = 1
-    gs 'UnitAppearance', 'calcHotcat'
-
-    $svetadesc = 'Naked Slut start Sveta'
-    unitPXCloThinness = 0
-    unitPXCloTopCut = 0
-    unitPXCloBottomShortness = 0
-    unitPCloQuality = 0
-    $unitclothingworntype = 'nude'
-    $unitpantyworntype = ''
-    $unitbraworntype = ''
-    gs 'UnitAppearance', 'calcHotcat'
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
     $svetadesc = 'goth start Sveta'
     unitsalo = 45
@@ -476,19 +483,70 @@ if $ARGS[0] = 'GenerateSvetas':
     unitsupnatvnesh = 0
    unitpcs_apprncbase = 0
    unitResetBase = 1
-
-   gs 'UnitAppearance', 'calcHotcat'
-   $svetadesc = 'Naked goth start Sveta'
-   unitPXCloThinness = 0
-   unitPXCloTopCut = 0
-   unitPXCloBottomShortness = 0
-   unitPCloQuality = 0
-   $unitclothingworntype = 'nude'
-   $unitpantyworntype = ''
-   $unitbraworntype = ''
-   gs 'UnitAppearance', 'calcHotcat'
+   gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
 
 end
+
+if $ARGS[0] = 'GenerateSvetaOptions':
+
+
+    gs 'UnitAppearance', 'GenRowBreak', $svetadesc
+
+    $svetadesc = 'Current Clothes <<$ARGS[1]>>'
+    
+    gs 'UnitAppearance', 'calcHotcat'
+
+    $svetadesc = 'Low Clothes <<$ARGS[1]>>'
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = ''
+    unitbonusZ = 1
+    unitPShoQuality = 1
+    $unitpantyworntype = ''
+    $unitbraworntype = ''
+    gs 'UnitAppearance', 'calcHotcat'
+
+    $svetadesc = 'Med Clothes <<$ARGS[1]>>'
+    unitPXCloThinness = 250
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 150
+    unitPCloQuality = 4
+    $unitclothingworntype = ''
+    unitbonusZ = 3
+    unitPShoQuality = 4
+    $unitpantyworntype = 'fashionista'
+    $unitbraworntype = 'fashionista'
+    gs 'UnitAppearance', 'calcHotcat'
+
+    $svetadesc = 'High Clothes <<$ARGS[1]>>'
+    unitPXCloThinness = 400
+    unitPXCloTopCut = 500
+    unitPXCloBottomShortness = 400
+    unitPCloQuality = 7
+    $unitclothingworntype = ''
+    unitbonusZ = 5
+    unitPShoQuality = 7
+    $unitpantyworntype = 'boutique'
+    $unitbraworntype = 'boutique'
+    gs 'UnitAppearance', 'calcHotcat'
+
+    $svetadesc = 'Naked <<$ARGS[1]>>'
+    unitPXCloThinness = 0
+    unitPXCloTopCut = 0
+    unitPXCloBottomShortness = 0
+    unitPCloQuality = 0
+    $unitclothingworntype = 'nude'
+    $unitpantyworntype = ''
+    $unitbraworntype = ''
+    gs 'UnitAppearance', 'calcHotcat'
+
+    gs 'UnitAppearance', 'GenRowBreak', ''
+
+end 
+
+
 
 if $ARGS[0] = 'CurVal':
     $SvetaDesc = input("Enter a description for Sveta")
