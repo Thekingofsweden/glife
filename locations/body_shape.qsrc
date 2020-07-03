@@ -245,7 +245,7 @@ if $ARGS[0] = '':
 
 !!Setting the pcs_apprnc bonus based on fat and strength
 	bmi_calc = FUNC('body_shape', 'bmicalc', salo, pcs_hgt)
-	bodykoef = FUNC('body_shape', 'setbodykoef', salo, pcs_hgt, strenbuf, salocatnow, vofat, bmi_calc)
+	bodykoef = FUNC('body_shape', 'setbodykoef', bmi_calc, strenbuf, salocatnow, vofat)
 
 !!This is to clean up unused variables
 	killvar 'normbuffpick' & killvar 'nrmbfpckct'
@@ -255,17 +255,15 @@ end
 
 if $ARGS[0] = 'setbodykoef':
 	!!Setting the pcs_apprnc bonus based on fat and strength
-	tempbodyFat = ARGS[1] & !!salo
-	temppcs_hgt = ARGS[2] & !!pcs_hgt
-	tempstrenbuf = ARGS[3] & !!strenbuf
-	tempsalocatnow = ARGS[4] & !! salocatnow
-	tempvofat = ARGS[5] & !! vofat
-	tempbmi_calc = ARGS[6] & !! result of bmicalc
+	tempbmi_calc = ARGS[1] & !! result of bmicalc
+	tempstrenbuf = ARGS[2] & !!strenbuf
+	tempsalocatnow = ARGS[3] & !! salocatnow
+	tempvofat = ARGS[4] & !! vofat
 
 	if tempbmi_calc < 16:
 		tempbodykoef = 35
     elseif tempbmi_calc < 19:
-		botempbodykoefdykoef = 70
+		tempbodykoef = 70
     elseif tempbmi_calc < 25:
 		tempbodykoef = 90
     elseif tempbmi_calc < 30:
@@ -588,18 +586,17 @@ if $args[0] = 'basebeautycalc2':
 
 !!	Setting vidagebonus
 	vidagebonus = 100
-	if tempvidage < 20: vidagebonus = 60 + 2 * tempvidage
-	if tempvidage > 30: vidagebonus = 160 - 2 * tempvidage
+	if tempvidage < 20: vidagebonus = 60 + (2 * tempvidage)
+	if tempvidage > 30: vidagebonus = 160 - (2 * tempvidage)
 
 !!	Preforming the calculation
 	skincalc = (temppcs_skin * 2 / 5)
-	bodykoefcalc = (3 * (2 + tempbodykoef))
-	vneshtemp = vidagebonus * (skincalc + bodykoefcalc + tempAttributeBonus + tempHeadBonus) / 100
+	vneshtemp = vidagebonus * (skincalc + tempbodykoef + tempAttributeBonus + tempHeadBonus) / 100
 
 !!	pcs_skin = skin condition, corrected to a 0 to 40 range; bodykoef set in main body_shape; pcs_teeth is missing teeth or cosmetically improved teeth (-1)
 
 !!	This is the first limiter
-	if vneshtemp > 100: vneshtemp = 100
+	!!if vneshtemp > 100: vneshtemp = 100
 
 !!	This adds the supernatural pcs_apprnc bonus; currently Bimbo and Succubus
 	vneshtemp += supnatvnesh
@@ -613,7 +610,6 @@ if $args[0] = 'basebeautycalc2':
 	!!do not kill vneshtemp here it gets killed in basebeautycalc
 	killvar 'temppcs_apprncbase'
 	killvar 'skincalc'
-	killvar 'bodykoefcalc'
 	killvar 'tempvidage'
 	killvar 'temppcs_skin'
 	killvar 'tempbodykoef'
