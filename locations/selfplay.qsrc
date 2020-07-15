@@ -495,10 +495,10 @@ if $ARGS[0] = 'suction_dildo':
 		'Your <a href="exec:gs ''selfplay'',''bath_suction_dildo''">suction dildo</a> is stuck to the bath tub.'
 	end
 	*nl
-	if suction_dildo > 0 and (dyneval('result = <<$loc>>_bath_shower_dildo') ! 1 or dyneval('result = <<$loc>>_glass_shower_dildo') ! 1):
+	if suction_dildo > 0 and dyneval('result = <<$loc>>_bath_shower_dildo') ! 1 and dyneval('result = <<$loc>>_glass_shower_dildo') ! 1:
 		'You can also stick a suction dildo inside <a href="exec:gs ''selfplay'',''shower_suction_dildo_apply'' & gt $loc, $loc_arg">the shower</a>.'
 	elseif dyneval('result = <<$loc>>_bath_shower_dildo') = 1 or dyneval('result = <<$loc>>_glass_shower_dildo') = 1:
-		'Your suction dildo is <a href="exec:gs ''selfplay'',''shower_suction_dildo''">inside the shower</a>.'
+		'Your suction dildo is <a href="exec:gt ''selfplay'',''shower_suction_dildo''">inside the shower</a>.'
 	end
 	*nl
 end
@@ -520,12 +520,12 @@ end
 
 if $ARGS[0] = 'shower_suction_dildo_apply':
 	dynamic('<<$loc>>_suction_dildo += 1')
-    suction_dildo -= 1
 	if $bathtype = 'bathtub shower': 
 		dynamic('<<$loc>>_bath_shower_dildo = 1')
 	elseif $bathtype = 'glass shower' or $bathtype = 'glass shower and tub': 
 		dynamic('<<$loc>>_glass_shower_dildo = 1')
 	end
+	suction_dildo -= 1
 end
 
 if $ARGS[0] = 'shower_suction_dildo_remove':
@@ -536,7 +536,6 @@ if $ARGS[0] = 'shower_suction_dildo_remove':
 		dynamic('<<$loc>>_glass_shower_dildo = 0')
 	end
     suction_dildo += 1
-
 end
 
 if $ARGS[0] = 'bathtub_dildo_check':
@@ -561,7 +560,7 @@ if $ARGS[0] = 'bath_suction_dildo':
 	'<center><img <<$set_imgh>> src="images/shared/home/bathroom/bathtub_dildo.jpg"></center>'
 	'Your suction dildo is currently stuck onto the bathtub.'
 	act'Leave it there':gt $loc, $loc_arg
-	act'Take it off':suction_dildo = 1 & dynamic('<<$loc>>_bathtub_dildo = 0') & gt $loc, $loc_arg
+	act'Take it off':gs'selfplay','bathtub_suction_dildo_remove' & gt $loc, $loc_arg
 	act'Ride it':gt'selfplay','bath_suction_dildo_ride'	
 end
 
@@ -570,15 +569,7 @@ if $ARGS[0] = 'shower_suction_dildo':
 	'<center><img <<$set_imgh>> src="images/shared/home/bathroom/shower_dildo.jpg"></center>'
 	'Your suction dildo is currently stuck on the wall of the shower.'
 	act'Leave it there':gt $loc, $loc_arg
-	act'Take it off':
-		suction_dildo += 1 
-		if $bathtype = 'bathtub shower': 
-			dynamic('<<$loc>>_bath_shower_dildo = 0')
-		elseif $bathtype = 'glass shower' or $bathtype = 'glass shower and tub': 
-			dynamic('<<$loc>>_glass_shower_dildo = 0')
-		end
-		gt $loc, $loc_arg
-	end
+	act'Take it off':gs'selfplay','shower_suction_dildo_remove' & gt $loc, $loc_arg
 end
 
 !! for using a dildo suctioned to the BATHTUB when not bathing
