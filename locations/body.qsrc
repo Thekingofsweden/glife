@@ -2264,12 +2264,12 @@ if $ARGS[0] = '':
 	end
 
 	!! Calculate hotcat etc
-	tempclothingbonus = FUNC('body', 'calcClothesBonus', pcs_apprncbase, PXCloThinness, PXCloTopCut, PXCloBottomShortness, PCloQuality, $clothingworntype)
+	tempclothingbonus = FUNC('body', 'calcClothesBonus', PXCloThinness, PXCloTopCut, PXCloBottomShortness, PCloQuality, $clothingworntype, bmi_calc)
 	tempAccessoriesBonus = FUNC('body', 'calcAccessoriesBonus', bonusZ, PShoQuality, $pantyworntype, $braworntype)
-	tempGroomingBonus = FUNC('body', 'calcGroomingBonus', pcs_lipbalm, mopkoef, pcs_hairbsh, pcs_breath, deodorant_on)
+	tempGroomingBonus = FUNC('body', 'calcGroomingBonus', pcs_lipbalm, mopkoef, pcs_hairbsh, pcs_breath, deodorant_on, bmi_calc)
 	tempGroomingPenalty = FUNC('body', 'calcGroomingPenalty', pcs_hairlng, pcs_sweat, glassvnesh, dyevmod, legkoef)
 	Hotcat = FUNC('body', 'calcHotcat', pcs_apprncbase, supnatvnesh, tempclothingbonus, tempAccessoriesBonus, tempGroomingBonus, tempGroomingPenalty)
-	pcs_apprnc = temppcs_apprnc & killvar 'temppcs_apprnc'
+	pcs_apprnc = temppcs_apprnc & killvar 'temppcs_apprnc' & killvar 'temppcs_maxapprnc'
 
 
 	if StrongNarkota <= 0:
@@ -2389,35 +2389,103 @@ end
 
 if $ARGS[0] = 'calcClothesBonus':
 	!! Note there is a limit of 9 args
-	temppcs_apprncbase = ARGS[1] & !! pcs_apprncbase
-	tempPXCloThinness = ARGS[2] & !! PXCloThinness
-	tempPXCloTopCut = ARGS[3] & !! PXCloTopCut
-	tempPXCloBottomShortness = ARGS[4] & !! PXCloBottomShortness
-	tempPCloQuality = ARGS[5] & !! PCloQuality
-	$tempclothingworntype = $ARGS[6] & !!$clothingworntype
+	tempPXCloThinness = ARGS[1] & !! PXCloThinness
+	tempPXCloTopCut = ARGS[2] & !! PXCloTopCut
+	tempPXCloBottomShortness = ARGS[3] & !! PXCloBottomShortness
+	tempPCloQuality = ARGS[4] & !! PCloQuality
+	$tempclothingworntype = $ARGS[5] & !!$clothingworntype
+	tempbmi_calc = ARGS[6] & !! bmi_calc
 
-	tempRevealing = tempPXCloThinness + tempPXCloTopCut + tempPXCloBottomShortness
-
-	if $tempclothingworntype = 'nude':
-		!! needs a rethink as this is skewing the results
-		tempCloAdjustedBeauty =  0
-	else
-		tempCloAdjustedBeauty = temppcs_apprncbase * tempRevealing * tempPCloQuality / 10000
+	if tempbmi_calc < 16:
+		!!severely underweight
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing / 2
+		end
+	elseif tempbmi_calc >= 16 and tempbmi_calc < 19:
+		!!underweight
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing / 2
+		end
+	elseif tempbmi_calc >= 19 and tempbmi_calc < 25:
+		!!normal, healthy weight
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 405
+			tempPCloQuality = 3
+		else
+			tempRevealing = tempPXCloThinness + tempPXCloTopCut + tempPXCloBottomShortness
+			tempRevealing = tempRevealing / 2
+		end
+	elseif tempbmi_calc >= 25 and tempbmi_calc < 30:
+		!!overweight
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 405
+			tempPCloQuality = 3
+		else
+			tempRevealing = tempPXCloThinness + tempPXCloTopCut + tempPXCloBottomShortness
+			tempRevealing = tempRevealing / 2
+		end
+	elseif tempbmi_calc >= 30 and tempbmi_calc < 35:
+		!!moderately obese
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing * 3 / 4
+		end
+	elseif tempbmi_calc >= 35 and tempbmi_calc < 40:
+		!!severely obese
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing * 3 / 4
+		end
+	elseif tempbmi_calc >= 40 and tempbmi_calc < 45:
+		!!very severely obese
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing * 3 / 4
+		end
+	elseif tempbmi_calc >= 45:
+		!!morbidly obese
+		if $tempclothingworntype = 'nude':
+			tempRevealing = 0
+			tempPCloQuality = 1
+		else
+			tempRevealing = (400 - tempPXCloThinness) + (500 - tempPXCloTopCut) + (400 - tempPXCloBottomShortness)
+			tempRevealing = tempRevealing * 3 / 4
+		end
 	end
 
-	if $tempclothingworntype = 'exercise': tempCloAdjustedBeauty = tempCloAdjustedBeauty * 2 / 3
+	tempRevealing = tempRevealing / 76
+
+	tempCloAdjustedBeauty = tempRevealing * tempPCloQuality
+
+	!!if $tempclothingworntype = 'exercise': tempCloAdjustedBeauty = tempCloAdjustedBeauty * 2 / 3
 
 	result = tempCloAdjustedBeauty
 
-	killvar 'temppcs_apprncbase'
 	killvar 'tempPXCloThinness'
 	killvar 'tempPXCloTopCut'
 	killvar 'tempPXCloBottomShortness'
 	killvar 'tempPCloQuality'
-	killvar 'tempclothingworntype'
+	killvar '$tempclothingworntype'
 	killvar 'tempRevealing'
 	killvar 'tempCloAdjustedBeauty'
-	killvar 'tempclothingbonus'
+	killvar 'tempbmi_calc'
 end
 
 if $ARGS[0] = 'calcAccessoriesBonus':
@@ -2458,6 +2526,7 @@ if $ARGS[0] = 'calcGroomingBonus':
 	temppcs_hairbsh = ARGS[3] & !! pcs_hairbsh
 	temppcs_breath = ARGS[4] & !! pcs_breath
 	tempdeodorant_on = ARGS[5] & !! deodorant_on
+	tempbmi_calc = ARGS[6] & !! bmi_calc
 
 	if temppcs_lipbalm > 0:
 		lipbalmKoef = 5
@@ -2473,6 +2542,8 @@ if $ARGS[0] = 'calcGroomingBonus':
 
 	!!Small bonus for wearing deodorant, if pcs_sweat is low enough
 	if tempdeodorant_on = 1 and temppcs_sweat < 20: tempGroomingBonus += 5
+
+	tempGroomingBonus = FUNC('body_shape', 'bmiadjust', tempGroomingBonus, tempbmi_calc)
 
 	result = tempGroomingBonus
 
@@ -2544,9 +2615,15 @@ if $ARGS[0] = 'calcHotcat':
 
 	temppcs_apprnc = temppcs_apprncbase + tempCloAdjustedBeauty + tempAccessoriesBonus + tempGroomingBonus - tempGroomingPenalty
 	!!adjustment to make max achievable
-	temppcs_apprnc = temppcs_apprnc*200/170
+	!!temppcs_maxapprnc = temppcs_apprnc*200/170
+	temppcs_maxapprnc = temppcs_apprnc
 
-	if temppcs_apprnc >= 200: temppcs_apprnc = 200
+	if temppcs_maxapprnc >= 200: 
+		temppcs_apprnc = 200
+	else
+		temppcs_apprnc = temppcs_maxapprnc
+	end 
+
 	temppcs_apprnc = temppcs_apprnc + tempsupnatvnesh
 
 	if temppcs_apprnc < 0: temppcs_apprnc = 0
@@ -2564,7 +2641,8 @@ if $ARGS[0] = 'calcHotcat':
 	killvar 'temppcs_apprncbase'
 	killvar 'tempCloAdjustedBeauty'
 	killvar 'tempGroomingBonus'
-	killvar 'tempAccessoriesBonus'
+	killvar 'tempGroomingBonus'
+	killvar 'tempGroomingPenalty'
 end 
 
 
