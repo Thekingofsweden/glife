@@ -261,23 +261,31 @@ if $ARGS[0] = 'setbodykoef':
 	tempvofat = ARGS[4] & !! vofat
 
 	if tempbmi_calc < 16:
-		tempbodykoef = 35
-    elseif tempbmi_calc < 19:
-		tempbodykoef = 70
-    elseif tempbmi_calc < 25:
-		tempbodykoef = 90
-    elseif tempbmi_calc < 30:
-		tempbodykoef = 80
-    elseif tempbmi_calc < 35:
-		tempbodykoef = 50
-    elseif tempbmi_calc < 40:
+		!! severely underweight
 		tempbodykoef = 30
+    elseif tempbmi_calc < 19:
+		!! underweight
+		tempbodykoef = 65
+    elseif tempbmi_calc < 25:
+		!! healthy weight
+		tempbodykoef = 85
+    elseif tempbmi_calc < 30:
+		!! overweight
+		tempbodykoef = 75
+    elseif tempbmi_calc < 35:
+		!! moderately obese
+		tempbodykoef = 45
+    elseif tempbmi_calc < 40:
+		!! severely obese
+		tempbodykoef = 25
     elseif tempbmi_calc < 45:
-		tempbodykoef = 10
+		!! very severely obese
+		tempbodykoef = 5
     else
+		!! morbidly obese
 		tempbodykoef = 0
     end
-	
+
 	if tempstrenbuf >= 80:
 		tempbodykoef += 8
 	elseif tempstrenbuf >= 60:
@@ -296,6 +304,7 @@ if $ARGS[0] = 'setbodykoef':
 	elseif tempsalocatnow = 1 or tempsalocatnow = 6:
 		tempbodykoef -= 4
 	end
+
 	if tempvofat > 0: tempbodykoef -= tempvofat
 
 	result = tempbodykoef
@@ -315,6 +324,41 @@ if $ARGS[0] = 'bmicalc':
 	tempbmi_calc = 10000 * (30 + ARGS[1] / 2 + (ARGS[2] - 170) * 7 / 10) / (ARGS[2] * ARGS[2])
 	result = tempbmi_calc
 	killvar 'tempbmi_calc'
+end
+
+if $ARGS[0] = 'bmiadjust':
+	tempValue = ARGS[1] & !!value to be adjusted
+	tempadjbmi_calc = ARGS[2] & !!bmi_calc
+
+	if tempadjbmi_calc < 16:
+		!! severely underweight
+		tempValue = tempValue * 50 / 100
+    elseif tempadjbmi_calc < 19:
+		!! underweight
+		tempValue = tempValue * 95 / 100
+    elseif tempadjbmi_calc < 25:
+		!! healthy weight
+		!! normal bonus
+    elseif tempadjbmi_calc < 30:
+		!! overweight
+		!! normal bonus
+    elseif tempadjbmi_calc < 35:
+		!! moderately obese
+		tempValue = tempValue * 90 / 100
+    elseif tempadjbmi_calc < 40:
+		!! severely obese
+		tempValue = tempValue * 55 / 100
+    elseif tempadjbmi_calc < 45:
+		!! very severely obese
+		tempValue = tempValue * 50 / 100
+    else
+		!!morbidly obese
+		tempValue = tempValue * 40 / 100
+    end
+
+	result = tempValue
+	killvar 'tempValue'
+	killvar 'tempadjbmi_calc'
 end
 
 if $ARGS[0] = 'softreset':
@@ -472,9 +516,9 @@ end
 
 if $args[0] = 'basebeautycalc':
 	if pcs_lashes <= 0: pcs_lashes = 0
-	tempHeadBonus = FUNC('body_shape', 'calcHeadBonus', pcs_lashes, pcs_eyesize, pcs_lip, pcs_teeth)
-	tempAttributeBonus = FUNC('body_shape', 'calcAttributeBonus', pcs_agil, pcs_vital)
-	pcs_apprncbase = FUNC('body_shape', 'basebeautycalc2', ARGS[1], vidage, pcs_skin, bodykoef, tempHeadBonus, tempAttributeBonus, pcs_apprncbase)
+	pcs_HeadBonus = FUNC('body_shape', 'calcHeadBonus', pcs_lashes, pcs_eyesize, pcs_lip, pcs_teeth, bmi_calc)
+	tempAttributeBonus = FUNC('body_shape', 'calcAttributeBonus', pcs_agil, pcs_vital, bmi_calc)
+	pcs_apprncbase = FUNC('body_shape', 'basebeautycalc2', ARGS[1], vidage, pcs_skin, bodykoef, pcs_HeadBonus, tempAttributeBonus, pcs_apprncbase)
 
 	if ARGS[1] = 0:
 !!	This is the rate of change limiter
@@ -498,7 +542,6 @@ if $args[0] = 'basebeautycalc':
 		killvar 'vneshtemp'
 	end
 
-	killvar 'tempHeadBonus'
 	killvar 'tempAttributeBonus'
 end 
 
@@ -507,6 +550,8 @@ if $ARGS[0] = 'calcHeadBonus':
 	temppcs_eyesize = ARGS[2] & !! pcs_eyesize
 	temppcs_lip = ARGS[3] & !! pcs_lip
 	temppcs_teeth = ARGS[4] & !! pcs_teeth (missing teeth)
+	tempbmi_calc = ARGS[5] & !! bmi_calc
+
 !!	Setting Eyelashes bonus
 	if temppcs_lashes <= 0:
 		resnicbonus = 0
@@ -523,6 +568,7 @@ if $ARGS[0] = 'calcHeadBonus':
 	else
 		resnicbonus = 0		
 	end
+	resnicbonus = FUNC('body_shape', 'bmiadjust', resnicbonus, tempbmi_calc)
 
 !!	Setting Eye Size bonus
 	if temppcs_eyesize = 1:
@@ -534,6 +580,7 @@ if $ARGS[0] = 'calcHeadBonus':
 	else
 		glarazbonus = 0
 	end
+	glarazbonus = FUNC('body_shape', 'bmiadjust', glarazbonus, tempbmi_calc)
 
 !!	Setting the Lip size bonus
 	if temppcs_lip = 0:
@@ -547,8 +594,10 @@ if $ARGS[0] = 'calcHeadBonus':
 	else
 		lipbonus = 3
 	end
+	lipbonus = FUNC('body_shape', 'bmiadjust', lipbonus, tempbmi_calc)
 	
 	teethcalc = (5 * temppcs_teeth)
+	if teethcalc < 0: teethcalc = FUNC('body_shape', 'bmiadjust', teethcalc, tempbmi_calc)
 
 	tempHeadBonus = resnicbonus + glarazbonus + lipbonus - teethcalc
 
@@ -559,18 +608,22 @@ if $ARGS[0] = 'calcHeadBonus':
 	killvar 'temppcs_lip'
 	killvar 'temppcs_teeth'
 	killvar 'tempHeadBonus'
+	killvar 'tempbmi_calc'
 end
 
 if $ARGS[0] = 'calcAttributeBonus':
 	temppcs_agil = ARGS[1] & !! pcs_agil
 	temppcs_vital = ARGS[2] & !! pcs_vital
+	tempbmi_calc = ARGS[3] & !! bmi_calc
 
 	tempAttributeBonus = (temppcs_agil / 10) + (temppcs_vital / 10)
+	tempAttributeBonus = FUNC('body_shape', 'bmiadjust', tempAttributeBonus, tempbmi_calc)
 
 	result = tempAttributeBonus
 	killvar 'temppcs_agil'
 	killvar 'temppcs_vital'
 	killvar 'tempAttributeBonus'
+	killvar 'tempbmi_calc'
 end
 
 !!This is the calculation for the base appearance if calling for testing always set ARGS[1] to 1
