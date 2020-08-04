@@ -61,7 +61,7 @@ end
 act'Leave the secluded beach': minut += 10 & gt 'glake'
 
 if month >= 5 and month <= 9:
-	if arrsize('swimwear') > 0:
+	if func('changingroom','count_swim_item') > 0:
 		act 'Use changing room':gt 'changingroom', 'view_swim_list'
 	else
 		*nl
@@ -132,11 +132,11 @@ if temper >= 15 and month >= 5 and month <= 9:
 		pcs_mood += 5
 		gs 'stat'
 
-		if ($clothingworntype = 'swimwear' and pcs_hips<=90) or $clothingworntype = 'beach':
+		if ($clothingworntype = 'swimwear' or $clothingworntype = 'beach') and pcs_hips<=90:
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini0,'+rand(0,3)+'.jpg"></center>'
-		elseif $clothingworntype = 'swimwear' and pcs_hips >= 90 and pcs_hips<=110:
+		elseif ($clothingworntype = 'swimwear' or $clothingworntype = 'beach') and pcs_hips >= 90 and pcs_hips<=110:
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini.fat0,0.jpg"></center>'
-		elseif $clothingworntype = 'swimwear' and pcs_hips>=110:
+		elseif ($clothingworntype = 'swimwear' or $clothingworntype = 'beach') and pcs_hips>=110:
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/lake.walk.bikini.fat0,1.jpg"></center>'
 			if pcs_inhib < 50:inhib_exp += rand(1,2)
 		elseif $clothingworntype = 'nude':
@@ -150,7 +150,7 @@ if temper >= 15 and month >= 5 and month <= 9:
 		act 'Continue':gt'gLakeNude'
 	end
 	
-	if hour >= 6 and hour <= 20 and ($clothingworntype = 'swimwear' or $clothingworntype = 'nude'):
+	if hour >= 6 and hour <= 20 and ($clothingworntype = 'swimwear' or $clothingworntype = 'beach' or $clothingworntype = 'nude'):
 		act 'Go swimming (30 minutes)':
 			menu_off = 1
 			*clr & cla
@@ -185,26 +185,32 @@ if temper >= 15 and month >= 5 and month <= 9:
 	if sunWeather = 1 and hour >= 6 and hour <= 20  and ($clothingworntype = 'swimwear' or $clothingworntype = 'beach' or $clothingworntype = 'nude'):
 		act 'Go sunbathing (30 minutes)':
 			menu_off = 1
-			*clr & cla
-			minut = minut + 30
-			if pcs_sweat < 35 : gs 'sweat', 'add', 5
-			pcs_mood += 5
-			if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
-				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbath.jpg"></center>'
-				if pcs_inhib < 50:inhib_exp += rand(1,2)
+			if $clothingworntype = 'swimwear' or $clothingworntype = 'beach' or $clothingworntype = 'nude':
+				*clr & cla
+				minut = minut + 30
+				if pcs_sweat < 35 : gs 'sweat', 'add', 5
+				pcs_mood += 5
+				if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbath.jpg"></center>'
+					if pcs_inhib < 50:inhib_exp += rand(1,2)
+				else
+					'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbathnude.jpg"></center>'
+					inhib_exp += rand(1,3)
+				end
+				if krem = 0:
+					pcs_tan += 1
+					'You lie down on your towel for some sunbathing and hopefully a nicer tan, and enjoy the warm rays of the sun on your body.'
+				else
+					krem -= 1
+					pcs_tan += 3
+					'You smear your body with sunscreen and lie down on your towel for some sunbathing, hoping to work on your tan. You enjoy the warm rays of the sun on your body.'
+				end
+				act 'Continue': gt 'gLakeNude'
 			else
-				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/lake/sunbathnude.jpg"></center>'
-				inhib_exp += rand(1,3)
+				cla
+				'You have to take off your clothes before you can lay down to sunbathe.'
+				act 'Continue': gt 'gLakeNude'
 			end
-			if krem = 0:
-				pcs_tan += 1
-				'You lie down on your towel for some sunbathing and hopefully a nicer tan, and enjoy the warm rays of the sun on your body.'
-			else
-				krem -= 1
-				pcs_tan += 3
-				'You smear your body with sunscreen and lie down on your towel for some sunbathing, hoping to work on your tan. You enjoy the warm rays of the sun on your body.'
-			end
-			act 'Continue': gt 'gLakeNude'
 		end
 	end
 	
@@ -313,7 +319,7 @@ if $ARGS[0] = 'sauna':
 		end
 	end
 	
-	if arrsize('swimwear') > 0:
+	if func('changingroom','count_swim_item') > 0:
 		act 'Use changing room':gt 'changingroom', 'view_swim_list'
 	else
 		*nl
@@ -344,7 +350,7 @@ if $ARGS[0] = 'sauna':
 		end
 	end
 	
-	if $clothingworntype = 'nude' or $clothingworntype = 'swimwear' or $clothingworntype = 'beach':	
+	if $clothingworntype = 'nude' or $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
 		act 'Go to the womens section':
 			*clr & cla
 			menu_off = 1
