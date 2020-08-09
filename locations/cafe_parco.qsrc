@@ -10,7 +10,7 @@ if $args[0]= 'start':
 	'<center><img <<$set_imgh>> src="'+'images/locations/pavlovsk/park/cafe/caffe_del_parco'+iif(hour > 20 or hour < 7,'_night','')+'.jpg'+'"></center>'
 	'The newly opened cafe "Del Parco", with its striking facade, there are lots of tables and a summer terrace. Opening hours between 14.00 to 21.00.'
 
-	act 'Return to the square': gt 'gskver', 'start'
+	act 'Return to the square': gt 'pav_park', 'start'
 	if hour >= 14 and hour < 21: act 'Enter the cafe': gt 'cafe_parco', 'inner'
 end
 
@@ -18,15 +18,28 @@ if $args[0]= 'inner':
 	$menu_loc = 'cafe_parco'
 	$menu_arg = 'inner'
 	menu_off = 0
-	$metka = 'inner'
+	$loc_arg = 'inner'
 	$loc = 'cafe_parco'
 	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/park/cafe/caffe_del_parco_in.jpg"></center>'
 
-	act 'Exit the cafe': gt 'gskver', 'start'
+	act 'Exit the cafe': gt 'pav_park', 'start'
 
 	act 'Order from the menu (0:05)':gs 'food_menu'
 	if money >= 350:
 		act 'Order take-out (0:20) (350 <b>₽</b>)':money -= 350 & gt 'food', 'f_food'
+	end
+
+	if ml_venues['del_parco'] = 1 and (ml_delparcoQW = 1 or ml_delparcoQW = 2) and (daystart <= ml_delparcogigdeadline):
+		act 'Speak with Zariyah about her offer': gt 'music_delparco', 'talkwithzariyah'
+	end
+
+
+	if ml_venues['del_parco'] = 1 and ml_delparcoQW = 3 and (daystart ! ml_delparcogigdeadline):
+		act 'Accept Zariyah''s offer': gt 'music_delparco', 'acceptafterthinking'
+	end
+
+	if ml_venues['del_parco'] = 1 and ml_delparcoQW > 2 and ml_gigday['delparco'] = daystart and ml_gighour['delparco'] = hour:
+		act 'Perform at the cafe': gt 'music_delparco', 'eveningshow'
 	end
 
 	gs 'family'
@@ -64,7 +77,7 @@ if $args[0]= 'inner':
 							cla
 							'You''re pretty much broke, and you don''t want to be impudent by asking them to pay for you, so you decide to thank them for the invite but that you have a thing elsewhere that you need to attend...'
 
-							act 'Leave': gt 'park'
+							act 'Leave': gt 'city_park'
 						end
 					end
 					act 'Agree':

@@ -1,0 +1,481 @@
+# pav_complex
+
+if $ARGS[0] = 'start':
+	$menu_loc = 'pav_complex'
+	$menu_arg = 'start'
+	menu_off = 0
+	CLOSE ALL
+	$loc_arg = 'start'
+	$loc = 'pav_complex'
+	$location_type = 'public_outdoors'
+
+	if sound = 0:
+		if month >=11 and month <= 12 or month >=1 and month <=3:
+			if hour >= 8 and hour <= 23: PLAY 'sound/street2.mp3',30 & PLAY 'sound/zima.mp3',30
+			if hour >= 0 and hour <= 7: PLAY 'sound/street_night.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/street2.mp3',30 & PLAY 'sound/street_leto.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/street_night.mp3',30
+		end
+	end
+
+	*clr & cla
+	litltown = 1
+	alkoblock = 0
+	boynumBlock = 0
+	gs 'stat'
+	gs 'rolanapt', 'rolanroute'
+	'<center><h2>Five Eight Estate</h2></center>'
+	if month >= 11 or month <= 3:
+		if hour >= 8 and hour <= 21:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/complexw.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/complexwn.jpg"></center>'
+		end
+	else
+		if hour >= 8 and hour <= 21:
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/complex.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/complexn.jpg"></center>'
+		end
+	end
+
+	if StoryLine > 0 and hour < 5 and motherWorry = 0 and SchoolAtestat = 0 and age < 18 and home_owned[2] = 1: motherWorry = 1
+
+	if ((minut + 60*(hour+daystart*24) - pavcomplexevent_time) > 60) or ((daystart+1)*1440 < pavcomplexevent_time):
+		if hour >= 8 and hour <= 20 and rand (0,2) = 0: 
+			pavcomplexevent_time = minut + 60*(hour+daystart*24)
+			gt 'pav_aptcourtev', 'events1'
+		elseif (hour < 8 or hour > 20) and rand (0,3) = 0:
+			pavcomplexevent_time = minut + 60*(hour+daystart*24)
+			gt 'pav_aptcourtev', 'events2'
+		end
+	end	
+
+	if (week = 1 or week = 3 or week = 5) and hour >= 17 and hour <= 19 and Storyline > 0: 'Walking along the apartment complex you can hear a bouncing sound. Turning the corner you see <a href="exec:gt ''gschool_socialchg1'', ''tLariska''">Lariska</a> hitting a ball against the wall...'
+	
+	if car > 0 and cardrive = 20: 'Your <a href="exec:gs ''carF'', ''start''"><<$car>></a> is parked in the street.'
+	
+	if rexCar = 1 and rexCarDay = daystart and hour >= 21 and hour < 23 and rexSisTalk = 3:
+		'<br>Rex is in his car, waiting for you at the parking lot near the apartment building where your parents live.'
+		act 'Join Rex in his car':gt'reks','avto'
+	elseif rexCar = 1 and rexCarDay = daystart and hour = 21 and rexSisTalk >= 4:
+		'<br>Rex is in his car, waiting for you at the parking lot near the apartment building where your parents live.'
+		act 'Join Rex in his car':gt'reks','avto2'
+	end
+
+	if StoryLine = 1:
+		'In the old part of Pavlovsk, this is the Five Eight Estate made up of numerous Soviet era apartment blocks. Your family''s apartment is on the second floor of the nearest building'+iif(home_owned[2] = 1, '.', ', but you are no longer welcome in their home.')
+	else
+		'In the old part of Pavlovsk, this is the Five Eight Estate made up of numerous Soviet era apartment blocks.'
+	end
+	*nl
+	'Opposite you is a meager courtyard, which has changed over the years to now include a kid''s playground, basketball court and small grass area mostly used to play football on.'
+	'A few benches and tables surround it, and there''s a handful of small utility sheds tucked away in the corner for tenants to use if they''re willing to pay for the extra space.'
+	*nl
+	'Behind the apartments is a row of <a href="exec:minut += 3 & gt ''pav_complex'', ''garages''">garages</a> and storage space for tenants.'
+
+	if pavComplex_met_dealer >= 3 and hour > 20: '<br>You can see the <a href="exec:minut += 3 & gt ''pav_aptcourtev'', ''dealer''">boy</a> who sells weed in the courtyard.'
+	
+	if Enable_tablemap = 0:
+		if storyline = 1:'<a href="exec:minut += 15 & gt ''shulgahome''">The Shulgin family</a> live in the apartment above your parents.'
+		if ArtemBeInHome > 0 and artemblok = 0:'<a href="exec:minut += 15 & gt ''artemhome'', ''home''">Artem Chebotarev</a>, one of your classmates, lives in the same apartment building as your parents, on the first floor.'
+		if BeInJulMilHome = 1:
+			if (hour >= 15 and hour <= 20 and week < 6) or (hour >= 8 and hour <= 20 and week >= 6):
+				'<a href="exec:minut += 15 & gt ''JuliaMilVhod''">Julia Milova</a>, one of your classmates, lives in the same apartment building as your parents, on the third floor.'
+			else
+				'Julia Milova, one of your classmates, lives in the same apartment building as your parents, on the third floor.'
+			end
+		end
+		if NatbelQW['VisitedHome'] = 1:
+			if (hour >= 15 and hour <= 20 and week < 6) or (hour >= 8 and hour <= 20 and week >= 6):
+				'<a href="exec:minut += 15 & gt ''natbelapt'', ''home''">Natasha Belova</a>, one of your classmates, lives in the same apartment building as your parents, on the fourth floor.'
+			else
+				'Natasha Belova, one of your classmates, lives in the same apartment building as your parents, on the fourth floor.'
+			end
+		end
+		if anushkaFirstvisit ! 0: '<a href="exec:minut += 10 & gt ''anushapt'', ''home''">Anushka Konstantinov</a>, a classmate, lives in one of the other apartment blocks here.'
+	else
+		st_count=0 & $show_table=''
+		if (npc_rel['A112'] >=70) or (npc_rel['A112'] >=30 and week < 6 and hour >= 14 and hour <= 23) or (week >= 6 and hour >= 10 and hour < 14) or (week < 6 and hour >= 14 and hour <= 23) or (hour >= 0 and hour < 2):
+			gs'show_table','Apartment of Uncle <a href="exec:minut += 15 & gt ''shulgahome''" >Shulgin</a>.','3'
+		else
+			gs'show_table','Apartment of Uncle Shulgin..','3'
+		end
+		if ArtemBeInHome > 0 and artemblok = 0:gs'show_table','Apartment of <a href="exec:minut += 15 & gt ''artemhome'', ''home''">Artem Chebotarev</a>.','3'
+		if BeInJulMilHome = 1:
+			if (hour >= 15 and hour <= 20 and week < 6) or (hour >= 8 and hour <= 20 and week >= 6):
+				gs'show_table','apartment of <a href="exec:minut += 15 & gt ''JuliaMilHome''">Julia Milova</a>.','3'
+			else
+				gs'show_table','apartment of Julia Milova..','3'
+			end
+		end
+		if NatbelQW['VisitedHome'] = 1:
+			if (hour >= 15 and hour <= 20 and week < 6) or (hour >= 8 and hour <= 20 and week >= 6):
+				gs'show_table','apartment of <a href="exec:minut += 15 & gt ''natbelapt'', ''home''">Natasha Belova</a>.','3'
+			else
+				gs'show_table','apartment of Natasha Belova.','3'
+			end
+		end
+		if anushkaFirstvisit ! 0: gs'show_table','Messy home of <a href="exec:minut += 10 & gt ''anushapt'', ''home''">Anushka Konstantinov</a>.','3'
+		if st_count > 0 :'<TABLE BORDER=1><<$show_table>></TR></TABLE>'
+	end
+
+	if seenAD = 1 and pavSharedAptEnabled = 0: '<br>Some guys in one of the <a href="exec:minut += 5 & gt ''pav_shared_apt'',''doorNo30''">apartments</a> are looking for a roommate.'
+	
+	if rolanmeet = 8 and rolanblockhome ! 1: '<br>Mr. Matveev''s is living in an <a href="exec:minut += 5 & gt ''rolanapt'',''home''">apartment</a> in the Five Eight Estate.'
+	
+!!	if StoryLine = 1: '<br>Nearby, in another block of apartments, there''s an <a href="exec:minut += 3 & gt ''pavComplexOld'',''etaj_1''">old apartment building</a> that looks quite rundown and possibly abandoned.'
+	
+	if home_owned[2] = 1: act '<b>Go Home</b> (Parents'' Apartment)': minut += 4 & pavhome_enter = 1 & gt 'korrPar'
+	if pavSharedAptEnabled = 1: act '<b>Go Home</b> (Shared Apartment)': minut += 5 & gt 'pav_shared_apt', 'start'
+	act 'Walk to the residential area (0:02)':minut += 2 & gt 'pav_residential'
+	act 'Walk to the commercial area (0:05)':minut += 5 & gt 'pav_commercial'
+	act 'Walk to the Industrial region (0:05)':minut += 5 & gt 'pav_industrial'
+	if storyline = 1 and home_owned[2] = 1: 
+		act 'Go to your apartment building':minut += 1 & gt 'pod_ezd', 'etaj_1'
+	elseif storyline = 1 and (home_owned[2] = 0 or pavSharedAptEnabled = 1):
+		act 'Go to your parent''s apartment building':minut += 1 & gt 'pod_ezd', 'etaj_1'
+	end
+!!	if StoryLine = 1: act 'Go to the old apartment building':minut += 1 & gt 'pavComplexOld', 'etaj_1'
+	act 'Sit on a bench':gt 'pav_aptcourtev', 'bench'
+end
+
+if $ARGS[0] = 'garages':
+	$menu_loc = 'pav_complex'
+	$menu_arg = 'garages'
+	menu_off = 0
+	*clr & cla
+	'<center>Five Eight Estate - Garages</center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/garages.jpg"></center>'
+	'Along the back street is a row of garages for rent to the residents of the apartments. The weather in Pavlovsk can be brutal especially in the winter, so people who own a car often have a garage to put it away safely. Between the garages and the courtyard is a series of smaller storage buildings that can be rented as well as the complex maintenance building and laundry. The buildings layout leaves of a bit of a maze of walkways between them, which is a popular place for the kids to play or for teenagers to hang out.'
+	if StoryLine = 1:'Your <a href="exec:minut += 5 & gt ''gargazel''">stepfather''s garage</a> is around here somewhere.'
+	if gopnik_initiation = 1 and gopnik_initiation_day = daystart and hour = 20: act '<b>Meet Lena and Lera</b>': gt 'gopnik_initiation','initiation'
+	if ((week < 6 and hour => 18 and hour < 22) or (week >= 6 and hour >= 15 and hour < 22)) and ed_event_day ! daystart:
+		if seenEd = 0:
+			if rand(0,5) = 1:
+				*clr
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed4.jpg"></center>'
+				'As you''re walking around the garages, you notice a garage door open. You see a tattooed man working on a motorcycle. He looks really ruff and dangerous. He must be one of the bikers that live around the area, you have heard your mother warn you about them before.'
+				*nl
+				'As you pass by you can hear the man talking to someone else. You throw a quick glance towards them, and you see the man showing something off to a younger man on a motorcycle, looking further at them you realize that the younger man is Valentin... They seem really into it and before they turn their attention towards you quickly move on.'
+				seenEd = 1
+				ed_event_day = daystart
+			end
+		else
+			if anushkaFirstvisit >= 1:
+				if rand(0,4) = 0:
+					*clr & cla
+					ed_event_day = daystart
+					garageedevent = rand(1,5)
+					if garageedevent = 1:
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed1.jpg"></center>'
+						'As you walk past Eduard''s garage you notice him working on his motorcycle as usual. You carefully approach the entrance and peek in, he has his back towards you and seems completely engrossed on whatever he is doing with the motorcycle.'
+						minut += 5
+						gs 'stat'
+						act 'Be on your way':gt 'pav_complex', 'garages'
+						act 'Say hi':
+							*clr & cla
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed1.jpg"></center>'
+							'You step into the garage and walk up behind him. "Hello Mr. Konstantinov."'
+							'A bit startled he quickly turns towards you, gripping his wrench tight. He looks like he is ready to hurt someone. Frightened by his actions you instinctively take a step back ready to quickly run away.'
+							'Feeling like an eternity Eduard finally relaxes, letting the wrench hang loosely in his hand, and even breaks out in a small smile, "You should be careful when approaching someone from behind <<$pcs_nickname>>."'
+							'You nod, still a bit frightened, "I''m really sorry I didn''t mean to frighten you."'
+							'"Ah, well you didn''t frighten me, but you did startle me. You never know who it might be, maybe my past coming back to haunt me." he says smiling.'
+							'"I was just passing by and wanted to say hi, anyway I should let you get back to work." you say, as you quickly leave. You don''t even notice him nod or the slight frown when he sees you scurry away.'
+							gs 'stat'
+							act 'Back to garages': gt 'pav_complex', 'garages'
+							act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+						end
+					elseif garageedevent = 2:
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed2.jpg"></center>'
+						'As you walk past Eduard''s garage you overhear some loud voices coming from his garage. You carefully approach the entrance and notice Eduard and Valentin working on the motorcycle. You greet them and they hardly greet you back as they''re focused working on the motorcycle.'
+						'Feeling rejected you turn around and move on.'
+						minut += 5
+						gs 'stat'
+						act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+					elseif garageedevent = 3:
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed2.jpg"></center>'
+						'As you walk past Eduard''s garage you overhear some loud voices coming from his garage. You carefully approach the entrance and notice Eduard and Valentin standing around the motorcycle talking, perhaps taking a break or discussing options.'
+						minut += 5
+						gs 'stat'
+						act 'Approach them':
+							cla & *clr
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed3.jpg"></center>'
+							'You approach and greet them, they look up and greet you back. You spend some minutes small talking with them about what they''re doing and they try their best to answer in the most interesting way they can.'
+							'Despite their best efforts to explain you don''t really follow it all that well, they are way more technically then you can easily follow. So you smile and nod humoring them and maybe learning a thing or two.'
+							gs 'stat'
+							act 'Leave':minut += 1 & gt 'pav_complex', 'start'
+							act 'Talk to Valentin':
+								cla & *clr
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed7.jpg"></center>'
+								'You excuse yourself to Eduard and ask if you could borrow Valentin for a second. Eduard grins as he pushes Valentin towards you.'
+								'The two of you walk away to the entrance and talk to each other for a few minutes about what happened at school today.'
+								'After a few minutes pass by Valentin interrupts you. "Yeah maybe we can talk about it later? I really want to finish the repairs on my bike before it gets too late."'
+								'You nod. "Sure talk to you later." He gives you a friendly shoulder rub then hurries back inside. You wave to Ed and then leave the garage.'
+								minut += 5
+								npc_rel['A158'] += 1
+								gs 'stat'
+								act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+							end
+						end
+					elseif garageedevent = 4:
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed1.jpg"></center>'
+						'As you walk past Eduard''s garage you notice him working on his motorcycle as usual. You carefully approach the entrance and peek in, he has his back towards you and seems completely engrossed on whatever he is doing with the motorcycle.'
+						minut += 5
+						gs 'stat'
+						act 'Be on your way':gt 'pav_complex', 'garages'
+						act 'Say hi':
+							cla & *clr
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed6.jpg"></center>'
+							'You step into the garage and walk up behind him, he turns as you walk in. "Hello Mr. Konstantinov."'
+							'He gives you a friendly smile. "Hello <<$pcs_nickname>>, but please call me Ed."'
+							'You nod and smile at that. "Okay, hi Ed."'
+							'He chuckles slightly. "What can I do for you <<$pcs_nickname>>? Anushka isn''t here and I have no clue where she is, like most days." He adds with a bit of a frown.'
+							gs 'stat'
+							act 'Nothing':
+								cla & *clr
+								minut += 1
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed1.jpg"></center>'
+								'You shake your head slightly. "Nothing, I was just passing by and saw you. So thought I would stop and say hi, well anyways I should let you get back to work and I got things I need to do." With that you give him a slight wave then leave.'
+								gs 'stat'
+								act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+							end
+							act 'Talk':
+								cla & *clr
+								minut += 10
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed6.jpg"></center>'
+								'You shrug slightly. "I just thought you might want to talk." you tell him.'
+								'He nods and takes a seat on his tool box. "Sure I got a few minutes, what''s on your mind?"'
+								'You walk over and look at his bike and then gently lean against it, being real careful not to knock it over. "How are things at home?"'
+								'He laughs slightly at the question. "Well if you are really curious, the wife is still a shrew, the boys are... well preteen boys so nothing but trouble and Nush, well I wouldn''t know. I rarely see her, I just hope she is staying out of trouble." Then he snorts. "Or I should say, not getting into more trouble than she can handle. What about yourself? Everything ok at home, doing well in school?"'
+								'You spend some time telling him about home and school, he seems far more interested than you expected. After about half of hour of pleasant conversation you excuse yourself and tell him not to work too late, as you leave.'
+								gs 'stat'
+								act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+								act 'Keep talking':
+									cla & *clr
+									minut += 15
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed6.jpg"></center>'
+									edchat = rand(1,13)	
+									if edchat = 1:
+										'"Your daughter is lots of fun, has anyone ever mentioned that?" you gloat a little.'
+										'"So what''s my daughter up to these days?" Eduard causally asks while working on his bike.'
+										'"Oh, you know... The usual teenage stuff... Nothing serious." you smile and give him a sly wink.'
+										'"As long as I don''t get anyone angry knocking on my door..." he calmly replies.'
+									elseif edchat = 2:
+										'"I''ve been trying to get to know your daughter a little bit better but I have a hard time getting through to her, mind if you share a fond memory of her with me?" you ask.'
+										'"No at all," Eduard shines up, "There was this time, I remember some boys were picking on her..." he stops and begins to laugh, "She went home grabbed a bucket full of water to soak them. But what she didn''t think of was that the bucket would be too heavy so just as she lifted the bucket, she lost her balance and got soaked all over."'
+										'The two of you start to laugh loudly, "I still remember her barging in, soaking wet..." Eduard says as you notice tears forming from laughter.'
+									elseif edchat = 3:
+										'"Have you seen Anushka today?" you ask Eduard as he''s working on his bike.'
+										'"Can''t say I really have... Why, is she up to something?" he stops and looks sternly at you.'
+										'"N-No, not at all..." you gulp, "I was just wondering if you''ve seen her?"'
+										'"Sorry if I scared you... I just want her to be safe you know. Keep an eye out for her okay, I know she can be all over the place and gets in trouble a lot..." Eduard tells you before going back to work on his bike.'
+									elseif edchat = 4:
+										'"May I ask you a question, <<$pcs_nickname>>?" Eduard wipes his hands as he takes a break from working on the bike.'
+										'You nod, a bit afraid what he''ll ask...'
+										if grupTipe = 4:
+											'"So I''ve heard some rumors that you two were about and doing some shit round town? Do I need to have a talk with you and my lovely daughter?" he crosses his arms awaiting an answer.'
+											'You shake your head, "No, no, no, we''re staying out of trouble. We''d never do anything to upset you. I promise."'
+											'"Good, keep it that way... Sometimes you kids drive me crazy..." he shortly reply.'
+										else
+											'"How come you and my daughter are friends? Don''t take this the wrong way, but you''re totally different from each other."'
+											'You stand and ponder for a while, "I don''t actually know. We just click, it''s hard to explain, but being around your daughter is a blast."'
+											'"Hopefully you''ll be a good influence on her. And be careful, don''t let her corrupt you." he smiles and winks.'
+										end
+									elseif edchat = 5:
+										'"I don''t know how to say this..." you look a bit frighteningly at Eduard, "But your boys have been spying on me."'
+										'"Spying in what way?" Eduard asks.'
+										'"Well," you squirm a little, "They like to watch me, when I''m taking a shower at your place..." you blush.'
+										'Eduard stops and thinks for a while, "Again?! Those damn boys will be the death of me... Tell you what don''t worry I''ll have a long discussion with them about it not being okay... Seems like I''ll need to show them what happens when they overstep their boundaries..."'
+									elseif edchat = 6:
+										'"Those damn kids are sitting in front of a computer all day just staring at the screen..." Eduard rants.'
+										'"What''s the problem?" you ask.'
+										'"I''ll tell you what''s the problem... Those brats are joining a sports team. I don''t care which one but they''re not sitting on their asses anymore..." Eduard keeps on ranting.'
+									elseif edchat = 7:
+										'Eduard looks worryingly at you, "Has Anushka mentioned anything about her brothers?"'
+										'"No, not really. She usually doesn''t mention them that often..." you reply honestly.'
+										'"Oh, okay. They''ve been going at each other lately so I was just wondering if you''ve heard anything..." Eduard shrugs his shoulders.'
+									elseif edchat = 8:
+										'"I don''t want to be rude, but what does your wife act like that, you know like a bitch?" you curiously ask.'
+										'He sighs, "Look, I know she sometimes act like she has a stick up her ass but she''s got the heart at the right place... You just don''t see it that often..."'
+									elseif edchat = 9:
+										'"So I was heading over to see Anushka and I saw your wife talking with some people outside the store..."'
+										'Eduard starts laughing, "Ah yes, the good ol'' gossip gang. They were probably talking some shit, thinking they''re the center of attention... But it''s quite sad to be honest."'
+									elseif edchat = 10:
+										'"That damn, fucking... Always on my ass. One day I''ll fucking..." Eduard is muttering to himself...'
+										'"I-Is everything okay?" you quietly ask, afraid of his reaction.'
+										'He mutters on, "Is everything okay... Such a stupid question, everyone always want to know what is on Eduard''s mind. Can''t be alone for a moment..."'
+										'Noticing he''s deep inside his thoughts, you turn around and begin to leave as you hear, "Oh sorry <<$pcs_nickname>>, I''m having an off day today..."'
+									elseif edchat = 11:
+										'"How many tattoo''s do you have?" you curiously ask.'
+										'Eduard smiles and starts looking all over his body, "Did this one when I was thirteen, this one in jail..." he stops and looks at you, "More than a dozen, can''t even remember how many I''ve done."'
+										'"Cool!" you reply.'
+										if tattCount = 0:
+											'He sighs a bit. "No, it''s not cool. But they can be meaningful, if you get one. Make sure you get one for the right reasons and not just to be cool, ok?" he poorly tries his best to discourage you to get one.'
+										elseif tattCount > 0 and tatarm = 0 and tathand = 0 and tatwrist = 0 and tatunder = 0 and tatupb = 0 and tatside = 0 and tatlech = 0 and tatneck = 0 and tatlip = 0 and tatleg = 0 and tatankle = 0 and tatfce = 0 and tatchst = 0:
+											'You start to remove your clothes to show him your special tattoo, he holds up his hands partially blocking his own view. "What the hell are you doing?" He asks.'
+											'"I was just going to show you my tattoo, I got." You respond.'
+											'He snorts and a laugh and shakes his head. "That''s ok, I believe you. I swear you are almost as bad as Nush, you would think she was allergic to clothes or something, the number of times she walks around the apartment naked..." he trails off, muttering something about girls.'
+										else
+											'You proudly show off yours to him.'
+											'Taken aback a bit, "Oh you''ve already got one. It''s a great feeling, I remember getting my first one and then it became like a drug, I was hooked."'
+											'You nod your head, "I''m already thinking about doing another one."'
+											'"Just remember to do something cool and not something horrible that you''ll regret later on." he gives you advice on it.'
+										end
+									elseif edchat = 12:
+										'"So I was just harassed by the local police..." you complain to Eduard.'
+										'"Ah yes, our finest," he spits on the ground out of spite, "They''re always harassing people, looking for a bribe. I''ve always hated this cities police force, even when I was young they were out to get me."' 
+									elseif edchat = 13:
+										'"Tell me <<$pcs_nickname>>, is that place over by old factory still left?" Eduard curiously asks.'
+										'You ponder for a while, "Don''t really know which one you mean but no one really hangs over there anymore. The only ones that remain are the drug dealers..."'
+										'"That''s a shame, we used to have that as a meeting place... Lots of crazy stuff happened there, the fights, the women, the dru-..." he clears his throat, "Yeah, those were great times." his mind travels away somewhere as he gets a little smirk.'
+									end
+									act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+								end
+							end
+							act 'Want to learn about working on motorcycles':
+								cla & *clr
+								minut += 60
+								hndiwrk_exp += rand(3,5)
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed5.jpg"></center>'
+								if LearntAboutMotorcycle = 0:
+									LearntAboutMotorcycle = 1
+									'You walk up to his bike and pick up a random tool. "Actually I was wondering if maybe you can teach me a little about working on motorcycles." You say hopefully.'
+									'He arches a brow and seems slightly surprised by that, then he shrugs. "Sure if you want to learn."'
+									'You nod enthusiastically. "I do, I really do. I think all girls should learn the basics, in case we break down out on the road somewhere with no one around."'
+									*nl
+									'He smiles at that and looks... proud you think. "Couldn''t have said it better myself." With that he explains how the motorcycles works in broad basic terms, explains some of the tools and then puts you to work on some easy stuff on the bike. But you do learn stuff, before long though you are covered in grease and grim.'
+									'He chuckles and shakes his head at how you look. "Ok I think that is enough for now, why don''t you go get cleaned up. We can continue some other time." You put down the tools, smile and thank him for helping you, then leave.'
+								else
+									'You walk up to his bike and pick up a tool. "Actually I was wondering if maybe you can teach me a little more about working on motorcycles." You say hopefully.'
+									'He nods a bit. "I would be happy to show you more, grab that wrench over there." He points at a wrench laying on a table.'
+									'You nod enthusiastically. "I do, I really do. I think all girls should learn the basics, in case we break down out on the road somewhere with no one around."'
+									*nl
+									'With that he puts you to work on some easy stuff on the bike. But you do learn stuff, before long though you are covered in grease and grim.'
+									'He chuckles and shakes his head at how you look. "Ok I think that is enough for now, why don''t you go get cleaned up. We can continue some other time." You put down the tools, smile and thank him for helping you, then leave.'
+								end
+								gs 'stat'
+								act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+							end
+						end
+					elseif garageedevent = 5:
+						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed0.jpg"></center>'
+						'As you walk past Eduard''s garage you hear some noises coming from his garage. You carefully approach the entrance and notice Valentin kneeling next to his bike, looking at it.'
+						minut += 5
+						gs 'stat'
+						act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+						act 'Approach him':
+							cla & *clr
+							'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed6.jpg"></center>'
+							'You approach and stand next to his bike facing him. "What''s up Valentin?"'
+							'He throws down a towel he was using to clean up a bit with. "It''s this damn bike, I don''t know why it is cutting out."'
+							'You can tell he is really stressed and pissed off. "Is there anything I can do to help?"'
+							'He glares at you a moment. "You know how to rebuild an engine on a bike and have the money to buy all the parts?"'
+							'You shake your head. "No sorry, but maybe I can take your mind off it."'
+							'His face softens a bit and he seems curious. "How exactly?" It doesn''t take a mind reader to know like most teenage boys, all he is thinking about now is fucking you.'
+							gs 'stat'
+							gs 'willpower', 'sex', 'resist'
+							if will_cost <= pcs_willpwr:
+								act 'Talk to Valentin (<<will_cost>> Willpower)':
+									*clr & cla
+									gs 'willpower', 'pay', 'resist'
+									minut += 5
+									npc_rel['A158'] += 1
+									gs 'stat'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/ed6.jpg"></center>'
+									'You bite your lip, you know what he wants but you don''t want to. "We could you know just talk and hang out if you want."'
+									'He sighs obviously a little disappointed. "I guess a little break wouldn''t hurt, so what''s up with you?"'
+									'The two of you start talking and before long he is fairly relaxed, after about half a hour. During a lull in the conversation he says. "I should really get back to this, thanks for hanging out, see ya later." With that he goes back to working on his bike and you take the hint.'
+									gs 'stat'
+									act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+								end
+							else
+								act 'Talk to Valentin (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+							end	
+							act 'Strip down to your panties':
+								cla & *clr
+								minut += 3
+								npc_rel['A158'] += 1
+								gs 'clothing', 'strip'
+								gs 'bras', 'remove'
+								gs 'arousal', 'foreplay', 5, 'exhibitionism'
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val1.jpg"></center>'
+								'Like all the other boys he just wants you for your body, but what the fuck. It''s not like you don''t enjoy it too and you are in the mood to get your brains fucked out. So you grin at him and start undressing, you do it very slowly.'
+								if $pantyworntype ! 'none':
+									'You strip down to your underwear, teasing him the whole time. Tossing your clothes aside and loving how you have his complete attention, you can already see the bulge in his pants. You kneel down next to him.'
+								else
+									'You strip down, teasing him the whole time. Tossing your clothes aside and loving how you have his complete attention, you can already see the bulge in his pants. You kneel down next to him.'
+								end
+								gs 'arousal', 'foreplay', 5, 'exhibitionism'
+								gs 'stat'
+								act 'Unbutton his pants':
+									cla & *clr
+									gs 'stat'
+									'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val2.jpg"></center>'
+									'You pull off his shirt and push him back so he is sitting back on his heels. Then you start to unbutton his pants, while you feel one of his hands slide between your legs and begins to rub your pussy, getting it nice and wet.'
+									gs 'arousal', 'foreplay', 5, 'exhibitionism'
+									gs 'stat'
+									act 'Suck his dick':
+										cla & *clr
+										gs 'boyStat', 'A154'
+										gs 'stat'
+										'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val3.jpg"></center>'
+										'You pull his pants almost down to his knees, then you lean forward. Opening your mouth you take his <<dick>>cm <<$dick_girth>> dick into your mouth and lock your lips around his shaft. While you tongue presses even harder against the shaft of his cock, you start bobbing your head up and down sucking his dick. Before long he starts moaning, soon he places a hand on top of your head and starts forcing you to take his dick deeper into your mouth.'
+										'Then he pulls your head up and his dick out of your mouth. He turns you around, pushing your legs slightly apart. You feel the head of his cock rubbing against your slits, making you even wetter.'
+										gs 'arousal', 'bj', 10, 'unknown'
+										gs 'stat'
+										act 'Let him fuck you':
+											cla & *clr
+											gs 'panties', 'remove'
+											gs 'boyStat', 'A154'
+											gs 'stat'
+											'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val4.jpg"></center>'
+											'Once he is sure you are good and wet, he slides his <<dick>>cm <<$dick_girth>> cock into your warm pussy. Which elicits a moan from both of you, he goes slow and not to deep at first. As he feels you getting wetter and moaning louder as he starts fucking you a little harder and slowly works himself balls deep into your twat.'
+											gs 'arousal', 'vaginal', 10, 'unknown'
+											act 'More':
+												cla & *clr
+												gs 'boyStat', 'A154'
+												gs 'stat'
+												'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val5.jpg"></center>'
+												'Once you are really into it, like a typical guy, he pulls out of you soaking wet cunt and you feel the head of his cock pressing against your asshole. Once he is sure he has it lined up, he pushes forward and the head of his dick pops into your ass, causing you gasp slightly in pain.'
+												*nl
+												'Then he slowly start pushing his <<dick>>cm <<$dick_girth>> dick into your ass, stopping when you start to pull away. He slowly begins fucking your ass. As your moans turn back to pleasure, he starts pushing a little deeper and going a little faster.'
+												gs 'arousal', 'anal', 10, 'unknown'
+												gs 'stat'
+												act 'Finish':
+													cla & *clr
+													gs 'stat'
+													'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/apartment/garage/val6.jpg"></center>'
+													'He starts grunting as he fucks your ass and suddenly pulls out of you. He stands up and pulls you up to your knees, turning to face him. As you do, he is already jerking off and within moments warm cum starts spurting out of his dick and covering your tits in sperm. After a couple of more spurts of cum, the spray stops and he moans a sigh of relief.'
+													*nl
+													'He grins down at your cum covered tits grinning at his handy work. Then he cleans himself up and gets dressed as you do the same. Once you are both fully dressed again, he turns to you. "Thanks <<$pcs_nickname>> I needed that, but I should get back to work on my bike. Talk to you tomorrow at school kay." Then he starts working on his bike again. You take one last look around to make sure you didn''t forget anything and leave.'
+													gs 'arousal', 'foreplay', 5, 'unknown'
+													gs 'cum_call', 'breasts', $boy, 1
+													gs 'arousal', 'end'
+													gs 'underwear', 'wear'
+													gs 'clothing', 'wear_last_worn'
+													gs 'stat'
+													act 'Go to the courtyard':minut += 1 & gt 'pav_complex', 'start'
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+					killvar 'garageedevent'
+				end
+			end
+		end
+	end
+	if $CURACTS = '':
+		gs 'stat'
+		act 'Go to the courtyard':minut += 2 & gt 'pav_complex', 'start'
+		if StoryLine = 1: act 'Go to your stepfather''s garage': minut += 5 & gt 'gargazel'
+	end
+end
+
+--- pavComplex ---------------------------------

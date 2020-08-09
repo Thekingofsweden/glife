@@ -5,9 +5,9 @@ menu_off = 1
 if $ARGS[0] = 'view_swim_list':
 
 	if $loc = 'fit' or $loc = 'bass' or temper >= 15:
-		if $clothingworntype ! 'swimwear':
+		if $clothingworntype ! 'swimwear' and $clothingworntype ! 'beach':
 			if $clothingworntype = 'nude':
-				if $lastwornclothingtype ! 'swimwear':
+				if $lastwornclothingtype ! 'swimwear' and $lastwornclothingtype ! 'beach':
 					$normalclothingworntype = $lastwornclothingtype
 					normalclothingwornno = lastwornclothingnumber
 				end
@@ -24,20 +24,31 @@ if $ARGS[0] = 'view_swim_list':
 			i += 1
 		if i <= ARRSIZE('swimwear'):jump 'loopswimwear'
 
-		if h = 0 and $clothingworntype ! 'swimwear': '<center>You do not own any swimwear.</center>'
-		if h = 0 and $clothingworntype = 'swimwear': '<center>You are wearing your swimwear.</center>'
+		*nl
+		*nl
+
+		i = 1
+		h = 0
+		:loopbeach
+			if beach[i] = 1 and beachS[i] = 0 and ($clothingworntype ! 'beach' or clothingwornnumber ! i):h += 1 & *p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''beach'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
+			i += 1
+		if i <= ARRSIZE('beach'):jump 'loopbeach'
+
+		if h = 0 and $clothingworntype ! 'swimwear': '<center>You do not own any regular swimwear.</center>'
+		if h = 0 and $clothingworntype ! 'beach': '<center>You do not own any slutty swimwear.</center>'
+		if h = 0 and $clothingworntype = 'swimwear' or $clothingworntype = 'beach': '<center>You are wearing swimwear.</center>'
 
 	elseif temper < 15:
 		'<center>It''s below 15C - far too cold to get changed into swimwear. You should wait until the weather warms up.</center>'
 	end
 
-	act 'Leave':gt $loc, $metka
+	act 'Leave':gt $loc, $loc_arg
 	
-	if $clothingworntype = 'swimwear':
+	if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
 		act 'Put your regular clothes back on':
 			gs 'underwear', 'wear'
 			gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
-			gt $loc, $metka
+			gt $loc, $loc_arg
 		end
 	end
 end
@@ -50,7 +61,11 @@ if $ARGS[0] = 'view_swim_item':
 	cla
 	'<center><img <<$set_imgh>> src="<<FUNC(''$clothing_image'',  $ARGS[1], ARGS[2])>>"></center>'
 	'<<$ARGS[1]>> no.<<ARGS[2]>>'
-	FUNC('$attributes_swimwear', $ARGS[1], ARGS[2])
+	if $ARGS[1] = 'swimwear':
+		FUNC('$attributes_swimwear', $ARGS[1], ARGS[2])
+	else
+		FUNC('$attributes_beach', $ARGS[1], ARGS[2])
+	end
 	FUNC('$clothing_name', $ARGS[1], ARGS[2])
 
 	$RESULT = '(strength '
@@ -74,10 +89,36 @@ if $ARGS[0] = 'view_swim_item':
 		act 'Wear':
 			gs 'underwear', 'remove'
 			gs 'clothing', 'wear', $ARGS[1], ARGS[2]
-			gt $loc, $metka
+			gt $loc, $loc_arg
 		end
 	end
 end
 
+
+!! following function counts all available swim and beach wear including the one which could be dressed already.
+!! you can add 'swim' or 'beach' if you want to count just one of them
+!! use func('changingroom','count_swim_item') or func('changingroom','count_swim_item','swim') or func('changingroom','count_swim_item','beach')
+
+if $ARGS[0] = 'count_swim_item':
+	h = 0
+	if $ARGS[1] = 'swim' or $ARGS[1] = '':
+		i = 1
+		:loopcountswimwear
+			if swimwear[i] = 1 and swimwearS[i] = 0 :h += 1
+			i += 1
+		if i <= ARRSIZE('swimwear'):jump 'loopcountswimwear'
+	end
+
+	if $ARGS[1] = 'beach' or $ARGS[1] = '':
+		i = 1
+		:loopcountbeach
+			if beach[i] = 1 and beachS[i] = 0 :h += 1
+			i += 1
+		if i <= ARRSIZE('beach'):jump 'loopcountbeach'
+	end
+	result = h
+	killvar 'i'
+	killvar 'h'
+end
 --- changingroom ---------------------------------
 

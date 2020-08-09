@@ -1,0 +1,997 @@
+# tatiana_lab
+if $ARGS[0] = 'start':
+	cla & *clr
+	$menu_loc = 'tatiana_lab'
+	$menu_arg = 'start'
+	menu_off = 0
+	CLOSE ALL
+	minut += 5
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Tatianas'' Laboratory</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/lab/lab.jpg"></center>'
+    
+	if succubusflag = 1 and sucbypass = 0:
+		if sucpcinfo < 2:
+			xgt 'tatiana_lab', 'suctraining'
+		elseif sucpcinfo >= 6 and sucskill < 3 and sctrainprep = 1:
+			xgt 'tatiana_lab', 'suctraining'
+		end
+	elseif succubusflag = 1 and sucbypass = 1:
+		sucbypass = 0
+	end
+
+	act 'Leave':
+		cla
+		minut += 5
+		gt 'city_center'
+	end
+
+!!	if tatina_missionday < daystart:
+!!		gt 'tatiana_lab', 'missions'
+!!	end
+
+	act 'Train with Gustav':
+		cla
+		gt 'tatiana_lab', 'Gustav'
+	end
+
+	act 'Talk with Tatiana':
+		cla
+		gt 'tatiana_lab', 'Tatiana'
+	end
+
+	if judosparday ! daystart:
+		act 'Sparring (Gustav, mutant power 600)':
+			cla
+			judosparday = daystart
+			gs 'boyStat', 'A175'
+
+			gs 'fight','initFight'
+
+			gs 'fight_npcdata', 'gustav'
+
+			gt 'fight', 'start'
+		end
+	end
+
+	if tatianasparday ! daystart:
+		act 'Sparring (Tatiana, magician6)':
+			cla
+			tatianasparday = daystart
+			gs 'boyStat', 'A176'
+
+			gs 'fight','initFight'
+
+			gs 'fight_npcdata', 'tatiana'
+
+			gt 'fight', 'start'
+		end
+	end
+
+	
+	!!!Has to be adjusted to match TatianaMissionQW value for latest mission (see 'tatiana_missions')
+	TatianaMissionTotal = 2
+	
+	if tobiQW > 0 and TatianaMissionDay + 30 < daystart and TatianaMissionQW < TatianaMissionTotal:
+		'You have a feeling Tatiana might want to talk to you about something...'
+		act 'Ask Tatiana what she wants':gt 'tatiana_lab','missions'
+	end
+end
+
+if $ARGS[0] = 'Gustav':
+	cla
+	clr
+	*clr
+	minut += 5
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Gustav</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/city/jugo/jugopre.jpg"></center>'
+	'Gustav is sitting on floor and staring off into space.'
+
+	act 'Leave':gt 'tatiana_lab', 'start'
+
+	if gustavday ! daystart:
+		act 'Develop strength (1:00)':
+			cla
+			timemult = 4
+			loopcount = 1
+			:timeloop1
+			gs 'exercise', 'tier2', 0, 'stren_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop1'
+			loopcount = 0
+			timemult = 0
+			gustavday = daystart
+			'You do exercises under the guidance of Gustav.'
+
+			act 'Leave':gt 'tatiana_lab', 'Gustav'
+		end
+
+		act 'Develop agility (1:00)':
+			cla
+			timemult = 5
+			loopcount = 1
+			:timeloop2
+			gs 'exercise', 'tier2', 0, 'agil_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop2'
+			loopcount = 0
+			timemult = 0
+			gustavday = daystart
+			'You do exercises under the guidance of Gustav.'
+
+			act 'Leave':gt 'tatiana_lab', 'Gustav'
+		end
+
+		act 'Develop reactions (1:00)':
+			cla
+			timemult = 5
+			loopcount = 1
+			:timeloop3
+			gs 'exercise', 'tier2', 0, 'react_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop3'
+			loopcount = 0
+			timemult = 0
+			gustavday = daystart
+			'You do exercises under the guidance of Gustav.'
+
+			act 'Leave':gt 'tatiana_lab', 'Gustav'
+		end
+
+		act 'Develop endurance (1:00)':
+			cla
+			timemult = 5
+			loopcount = 1
+			:timeloop4
+			gs 'exercise', 'tier2', 0, 'vital_exp'
+			if loopcount < timemult: loopcount += 1 & jump 'timeloop4'
+			loopcount = 0
+			timemult = 0
+			gustavday = daystart
+			'You do exercises under the guidance of Gustav.'
+
+			act 'Leave':gt 'tatiana_lab', 'Gustav'
+		end
+	end
+end
+
+if $ARGS[0] = 'BodyModActuate':
+	! Does the actual modification
+	!	 ARGS[1] = Mana cost
+	!	 ARGS[2] = Time for change
+	!	$ARGS[3] = property to set
+	!	 ARGS[4] = value to set
+	!	$ARGS[5] = Description of new val
+	!	$ARGS[6] = Body part name
+	!	$ARGS[7] = Body part for pain
+	!	$ARGS[8] = extra code to run before
+	bodyModMana  =  ARGS[1]
+	bodyModTime  =  ARGS[2]
+	$bodyModStat = $ARGS[3]
+	bodyModVal   =  ARGS[4]
+	$bodyModDesc = $ARGS[5]
+	$bodyModType = $ARGS[6]
+	$bodyModPain = $ARGS[7]
+	$bodyModExtra= $ARGS[8]
+
+	if pcs_mana >= bodyModMana:
+		dynamic $bodyModExtra
+		dynamic "<<$bodyModStat>> = <<bodyModVal>>"
+		pcs_mana -= bodyModMana
+		gs 'arousal', 'flash', 30
+		minut+=bodyModTime-30
+		pain[$bodyModPain] = 100
+		gs 'stat'
+		gt 'tatiana_lab', 'BodyModded', $bodyModType, $bodyModDesc
+	else
+		*pl 'Tatiana says,"You don''t have enough mana to pull this off.  Rest and we can try again later."'
+	end
+
+	killvar 'bodyModMana'
+	killvar 'bodyModTime'
+	killvar '$bodyModStat'
+	killvar 'bodyModVal'
+	killvar '$bodyModDesc'
+	killvar '$bodyModType'
+	killvar '$bodyModPain'
+	killvar '$bodyModExtra'
+end
+
+
+if $ARGS[0] = 'ListBuilder':
+	! Builds a list of Attributes to be able to change
+	!  $ARGS[1] = Name of the attribute
+	!  $ARGS[2] = Mana cost of the change
+	!  $ARGS[3] = Time the change will take
+	!  $ARGS[4] = Array name of change value display string
+	!  $ARGS[5] = Array name of value to change attribute to, 'i' means, just use array position
+	!  $ARGS[6] = variable name of attribute to change
+	!  $ARGS[7] = pain location
+	!  $ARGS[8] = extra code to run before
+	$bodyModType = $ARGS[1]
+	bodyModMana  =  ARGS[2]
+	bodyModTime  =  ARGS[3]
+	$bodyModDesc = $ARGS[4]
+	$bodyModIndx = $ARGS[5]
+	$bodyModStat = $ARGS[6]
+	$bodyModPain = $ARGS[7]
+	$bodyModExtra= $ARGS[8]
+
+	$hairColors[0]='black'
+	$hairColors[1]='brown'
+	$hairColors[2]='red'
+	$hairColors[3]='blonde'
+
+	hairTypes[0]=5 & $hairTypes[0]='extremely short'
+	hairTypes[1]=31 & $hairTypes[1]='pixie-cut'
+	hairTypes[2]=81 & $hairTypes[2]='medium'
+	hairTypes[3]=161 & $hairTypes[3]='shoulder-length'
+	hairTypes[4]=261 & $hairTypes[4]='long'
+	hairTypes[5]=401 & $hairTypes[5]='very long'
+	hairTypes[6]=601 & $hairTypes[6]='extremely long'
+
+	$lipSize[0]='thin'
+	$lipSize[1]='normal'
+	$lipSize[2]='plump'
+	$lipSize[3]='pouty'
+	$lipSize[4]='pillowy'
+
+	$eyeColors[0]='brown'
+	$eyeColors[1]='grey'
+	$eyeColors[2]='green'
+	$eyeColors[3]='blue'
+
+	$eyeLashes[0]='short'
+	$eyeLashes[1]='average'
+	$eyeLashes[2]='long'
+	$eyeLashes[3]='lavish'
+	$eyeLashes[4]='show-stealing'
+	$eyeLashes[5]='long, jewel-dusted'
+
+	breastSize[0]=5 & $breastSize[0]='AA'
+	breastSize[1]=10 & $breastSize[1]='A'
+	breastSize[2]=15 & $breastSize[2]='B'
+	breastSize[3]=20 & $breastSize[3]='C'
+	breastSize[4]=25 & $breastSize[4]='D'
+	breastSize[5]=30 & $breastSize[5]='E'
+	breastSize[6]=35 & $breastSize[6]='F'
+	breastSize[7]=40 & $breastSize[7]='G'
+	breastSize[8]=45 & $breastSize[8]='H'
+	breastSize[9]=50 & $breastSize[9]='I'
+	breastSize[10]=55 & $breastSize[10]='J'
+	breastSize[11]=60 & $breastSize[11]='K'
+
+
+	$ListStr = "<B><<$bodyModType>></B>"
+	i = 0
+	:BodyModLoop
+	if i < arrsize('<<$bodyModDesc>>'):
+		if $bodyModIndx = 'i':
+			bodymodValue = i
+		else
+			bodymodValue = dyneval("result = <<$bodyModIndx>>[<<i>>]")
+		end
+		$bodyModDescX = dyneval('$result = <<$bodyModDesc>>[<<i>>]')
+		$ListStr = $ListStr + "<br><a href=""EXEC:gs 'tatiana_lab','BodyModActuate',<<bodyModMana>>,<<bodyModTime>>,'<<$bodyModStat>>',<<bodymodValue>>,'<<$bodyModDescX>>','<<$bodyModType>>','<<$bodyModPain>>','<<$bodyModExtra>>'""><<$bodyModDescX>></a>"
+		i += 1
+		jump 'BodyModLoop'
+	end
+
+	killvar 'i'
+	killvar '$bodyModDescX'
+	killvar 'bodymodValue'
+	killvar '$bodyModType'
+	killvar 'bodyModMana'
+	killvar 'bodyModTime'
+	killvar '$bodyModDesc'
+	killvar '$bodyModIndx'
+	killvar '$bodyModStat'
+	killvar '$bodyModPain'
+	killvar '$bodyModExtra'
+	$result = $ListStr
+	killvar '$ListStr'
+end
+
+if $ARGS[0] = 'BodyModded':
+	! Landing page for having Body Mod done.
+  	!  $ARGS[1] = Name of the attribute
+  	!  $ARGS[2] = new value of attribute
+	$bodyModType = $ARGS[1]
+	$bodyModVal =  $ARGS[2]
+
+	cls & cla
+	act 'Thank you':gt 'tatiana_lab', 'Tatiana'
+
+	"You feel a bit drained and tingly all over.  You look in the mirror."
+	"Your <<$bodyModType>> is now <<$bodyModVal>>."
+	"""Thanks Tatiana!"""
+
+end
+
+
+if $ARGS[0] = 'Tatiana':
+	cls
+	$loc = 'tatiana_lab'
+	$loc_arg = 'Tatiana'
+	minut += 5
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Tatiana</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+	'Tatiana is always studying something.'
+
+	if succubusflag = 1:
+		if tatisucsex > 0 and sucinfoday ! 0 and sucinfoday <= daystart:
+			'"Hey <<$pcs_nickname>>!'
+			'"I''ve gotten some more information about Succubae!"'
+			if sucpcinfo = 4 and succublvl >= 2:
+				'"I heard from one of my mage contacts, in Sydney, Australia of all places, and he passed on some more details."'
+				sucpcinfo = 5
+				sucinfoday = daystart + 10 + rand(0,7)
+				act 'Ask her to tell you': gt 'succubus', 'tatianaask', 1
+				exit
+			elseif sucpcinfo = 5:
+				'"I heard from an old friend of mine who is now living in Morocco and she also has a Succubus for a lover. She said that after they had been together for some time, they discovered that with her help, her Succubus lover learned something new."'
+				sucpcinfo = 6
+				sucinfoday = daystart + 17 + rand(0,7)
+				act 'Ask her to tell you': gt 'succubus', 'tatianaask', 2
+				exit
+			elseif sucpcinfo = 6:
+				'"I heard from one of my contacts. He''s living in Las Vegas in America, which, apparently, is the Succubus capital of North America, and he passed along two pieces of information."'
+				sucpcinfo = 7
+!!				The +9000000 is so I can easily reset it when the next Skill upadtes are ready.
+				sucinfoday = daystart + 9000000
+				act 'Ask her to tell you': gt 'succubus', 'tatianaask', 3
+				exit
+			end
+		end
+
+		if tatisucsex ! 0 and tatisucsexask ! daystart: act 'Ask if she want''s to have sex': tatianasucsexask = daystart & gt 'tatiana_lab', 'Tatianasucsexask'
+
+		if sucpcinfo >= 4: act 'Ask her about Succubae': gt 'tatiana_lab', 'Tatianasuctalk'
+	end
+
+	act 'Leave':gt 'tatiana_lab', 'start'
+
+	act 'Ask for help with your appearance':
+		cla
+		'"Tatiana, I''m having problems with my body image, I''m not happy and was hoping that you might be able to help me."'
+		*nl
+		'"It''s possible but I will have to draw on your magical energy, it will cost some of your mana to perform a spell."'
+		'"Also, this will be painful.  The magic will force your flesh into new shapes."'
+
+		$HairColorTab =  func('tatiana_lab', 'ListBuilder', 'Hair Color', 500, 60, '$hairColors','i',         'pcs_haircol','hair',	'')
+		$HairLengthTab = func('tatiana_lab', 'ListBuilder', 'Hair Length',200, 120,'$hairTypes', 'hairTypes', 'pcs_hairlng','hair',	'')
+		$EyeColorTab =   func('tatiana_lab', 'ListBuilder', 'Eye Color',  300, 120,'$eyeColors', 'i',         'pcs_eyecol',	'eye',	'')
+		$EyeLashTab =    func('tatiana_lab', 'ListBuilder', 'Eye Lashes', 100, 30, '$eyeLashes', 'i',         'pcs_lashes',	'eye',	'')
+		$LipTab =        func('tatiana_lab', 'ListBuilder', 'Lip Size',   300, 120,'$lipSize',   'i',         'pcs_lip',	'lip',	'')
+		$BreastTab =     func('tatiana_lab', 'ListBuilder', 'Breast Size',1000,240,'$breastSize','breastSize','nbsize',		'breasts','magicf2b=0')
+
+		$SkinTab = "<a href=""EXEC:gs 'tatiana_lab','BodyModActuate',1000,240,'pcs_skin',100,'clear','Skin','chest',''"">Clear Skin</a>"
+		$VirginTab = "<a href=""EXEC:gs 'tatiana_lab','BodyModActuate',1000,120,'pcs_vag',0,'renewed','Virginity','vaginal',''"">Renew Virginity</a>"
+		$SiliconeTab = "<a href=""EXEC:gs 'tatiana_lab','BodyModActuate',1000,240,'fillimplant',0,'natural again','Boobs','breasts','brSurTemp = 0 & stringimplant = 0'"">Remove Silicone</a>"
+
+		$SpellListStr = "<CENTER>
+	<TABLE CELLPADDING = '5'>
+		<TR>
+			<TD><<$SkinTab>></TD>
+			<TD><<$VirginTab>></TD>
+			<TD><<$SiliconeTab>></TD>
+		</TR>
+		<TR>
+			<TD VALIGN='top'><<$HairColorTab>></TD>
+			<TD VALIGN='top'><<$EyeColorTab>></TD>
+			<TD VALIGN='top'><<$BreastTab>></TD>
+		</TR>
+		<TR>
+			<TD VALIGN='top'><<$HairLengthTab>></TD>
+			<TD VALIGN='top'><<$EyeLashTab>></TD>
+			<TD VALIGN='top'><<$LipTab>></TD>
+		</TR>
+	</TABLE>
+</CENTER>"
+
+		*pl func('cleanHTML',$SpellListStr)
+
+		killvar '$HairColorTab'
+		killvar '$HairLengthTab'
+		killvar '$EyeColorTab'
+		killvar '$EyeLashTab'
+		killvar '$LipTab'
+		killvar '$BreastTab'
+		killvar '$SkinTab'
+		killvar '$VirginTab'
+		killvar '$SiliconeTab'
+		killvar '$SpellListStr'
+
+		act 'No, no, I''ve changed my mind. Thank you':gt 'tatiana_lab', 'Tatiana'
+
+
+		act 'Restore you body to it''s original shape':
+			cla
+			'"Tatiana, I''m having problems with my body image, I''m not happy and was hoping that you might be able to help me."'
+			'"It''s possible but I will have to draw on your magical energy, it will cost 40 mana to perform a reset spell.'
+			'This will reduce excess fat, growth of body parts and reduce high levels of silicone, moving you closer to your original body shape.'
+			'Do you wish to try this spell?'
+
+			act 'No, no, I''ve changed my mind. Thank you':gt 'tatiana_lab', 'Tatiana'
+
+			if pcs_mana >= 40:
+				act 'That sounds great, let''s do it!':
+					*clr
+					cla
+					minut += 30
+					dounspell = 1
+					gs 'body_shape', 'hardreset'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/characters/city/tatiana/magiclook.jpg"></center>'
+					'Tatiana lowers her glasses and stares deeply into your eyes. It feels like time just stops being a thing and you are floating.'
+					'It seems very soon afterwards when you snap back to reality but the big clock on the lab wall tells you its been 30 minutes.'
+					'Your body has changed much as Tatiana said it would and she is already busy checking nothing went wrong.'
+					act 'Continue': gt 'tatiana_lab', 'Tatiana'
+				end
+			end
+		end
+	end
+
+	if BurgerQW['IvanQW']  = 2 and poverKAR = 0 and softKAR = 0:
+		act 'Ask Tatiana for help with Ivan':
+			cla
+			gs 'stat'
+			'You explained the situation and asked her to Tatiana assistance. Tatiana said thoughtfully. "I do not think there is any physical evidence of the guilt of Ivan. Necessary is achieved recognition. I think it would be possible to capture and interrogate. Or drink his cunning truth serum and interrogate. Anyway it is necessary to remove it all on video."'
+
+			act 'Military solution':
+				cls
+				poverKAR = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+				'You have decided to achieve recognition Ivan force. Tatiana told you. You go to the apartment of Ivan. There vstretishsya with Gustav. It will help resolve the issue. Just see if he will go to the second level of the press, he was distraught. At the second level of the press he turns into a monster.'
+
+				act 'Leave':gt 'tatiana_lab', 'Tatiana'
+			end
+
+			act 'Tricky decision':
+				cls
+				softKAR = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+				'You have decided to achieve recognition Ivan cunning. Tatiana told you. You go to the apartment of Ivan. There we meet with you and obtyapaem owners.'
+
+				act 'Leave':gt 'tatiana_lab', 'Tatiana'
+			end
+		end
+	elseif poverKAR = 2:
+		act 'Approach to Tatiana about attacks apartments Ivan':
+			cla
+			poverKAR = 3
+			'You came to Tatiana and she sighed. "Yes, failed. Gustav caught a bullet in his head and his strength went up to the next level, it has cured, made almost invulnerable, but finally deprived of his mind. Gustav not only gained recognition for Ivan, and not just kill him, he blew part of the entrance his attack. But there are pluses. Cops think it was a gas explosion. But now you have to either pay the debt or goes to jail. "'
+
+			act 'Leave':gt 'tatiana_lab', 'Tatiana'
+		end
+	end
+
+	if Tatianaday ! daystart:
+		act 'Develop your intelligence (1:00)':
+			cla
+			intel_exp += rand(3, 6)
+			minut += 60
+			Tatianaday = daystart
+			'You study with Tatiana developing your intellect.'
+
+			act 'Leave':gt 'tatiana_lab', 'Tatiana'
+		end
+
+		act 'Develop your inner spirit (1:00)':
+			cla
+			sprt_exp += rand(3, 6)
+			minut += 60
+			Tatianaday = daystart
+			'You meditate with Tatiana improving your spirituality.'
+
+			act 'Leave':gt 'tatiana_lab', 'Tatiana'
+		end
+	end
+
+	! Show Actions for Learning Spells
+	gs 'spellList', 'teacherActions', '$basicSpells', 'tatiana_lab', 'Tatiana'
+	gs 'spellList', 'teacherActions', '$healSpells', 'tatiana_lab', 'Tatiana'
+	!gs 'spellList', 'teacherActions', '$beautySpells', 'tatiana_lab', 'Tatiana'
+
+	if pcs_magik >= 5 and spellavtoklon = 0:
+		act 'Learn technique preparation (1:00)':
+			cla
+			minut += 60
+			spellavtoklon = 1
+			'You learned the technique preparation. This technique allows you to enter into battle with the already created three clones.'
+
+			act 'Leave':gt 'tatiana_lab', 'Tatiana'
+		end
+	end
+
+	if pcs_magik >= 6 and spellbefshild = 0:
+		act 'Learn technique pre-shield (1:00)':
+			cla
+			minut += 60
+			spellbefshild = 1
+			'You learned the technique of pre-shield. This technique allows you to enter into battle with a magical shield protecting you against physical impacts.'
+
+			act 'Leave':gt 'tatiana_lab', 'Tatiana'
+		end
+	end
+!!	Succubus specific skill training.
+	if succubusflag = 1:
+		if sucpcinfo >= 4 and sucskill < 1:
+			act 'Learn to monitor your Succubus Energies (may take some time)':
+				cla
+				minut += 30
+				sucskill = 1
+				gs 'stat'
+				'You spend 30 minutes meditating, with Tatiana in a light link with you as she shows you how to tell what your Succubus energy levels are.'
+				'You open your eyes and look at Tatiana sitting across from you.'
+				'She is flushed, breathing hard, and her nipples are showing clearly through her blouse.'
+				if 1 + (succublvl * 2) + tatisucsex < 20 and rand(0,100) < 90:
+					'After a moment, she gives herself a shake and pulls herself together, before saying, "There you go!"'
+					'She then stands up and goes back to her studying.'
+					act 'Finish': gt 'tatiana_lab', 'Tatiana'
+				else
+					xgt 'tatiana_lab', 'suctrainsex'
+				end
+			end
+		elseif sucpcinfo >= 5 and sucskill < 2:
+			act 'Learn to increase your energy storage (may take some time)':
+				cla
+				minut += 5
+				'You settle into a meditative state and link with Tatiana.'
+				if succhungry > -2:
+					gs 'stat'
+					'After a few minutes, you feel Tatiana break the link and say, "<<$pcs_nickname>>, you need to build up <i>two</i> days of reserve before we do this training."'
+					'She then stands up and goes back to her studying.'
+					act 'Finish': gt 'tatiana_lab', 'Tatiana'
+					exit
+				end
+				minut += 55
+				gs 'stat'
+				sucskill = 2
+				'Tatiana shows you how to build a storage reservoir that draws the excess energy in before your body uses it.'
+				'Once you''re finished, Tatiana is again showing clear signs of arousal and she says, "You know, touching your power is a really, <i>really</i>, intense experience!"'
+				'She then closes her eyes and visibly tries to get ahold of herself.'
+				if tatisucsex >= 20 or rand(1,100) < 95:
+					'After several moments, she pulls herself together, opens her eyes, smiles at you, and says, "There, I knew I could do it!"'
+					'She then stands up and goes back to her studying.'
+					act 'Finish': gt 'tatiana_lab', 'Tatiana'
+				else
+					'Then her eyes snap open and you feel arousal suddenly flooding the link!'
+					xgt 'tatiana_lab', 'suctrainsex'
+				end
+			end
+		elseif sucpcinfo >= 6 and sucskill < 3:
+			if money >= 5000 and sctrainprep = 0:
+				act 'Ask her about the preparations and training':
+					cla
+					gs 'stat'
+					minut += 60
+					'You ask her what''s involved in the training and preparations.'
+					'She spends some time explaining the technical details of what you need to do during the "rital", then says,'
+					'"The preparations will take 7 days, the money is to modify one of my devices to pull in free sexual energy from the adult businesses around here and to make several potions we''ll need, one of which is going to temporarily make me into a sexual energy "battery" and the others are so we can do the ritual without hurting ourselves.'
+					'"Once I start, you''ll have 2 days to tell me to abort, after that I will have started building up the charge. We would not be able stop ourselves and premature sex could kill us, so I''ll be putting up a barrier to keep you out until 7 days have pasted and I''ll set it not to let you through unless you have 3 days of reserves and 100 units of stored energy.'
+					'"Once I''ve built up to a full charge, I''ll only be able to hold it for a day, after that I''ll have to release it. The "battery" potion itself as well as the materials for it will not keep, so aborting after I start or fail to show up on time and 2000 <b>₽</b> will have been wasted.'
+					'"So, do you want me to start the preparations?"'
+					act 'Yes':
+						cla
+						money -= 5000
+						sctrainprep = 1
+						tatisucsexday = daystart + 7
+						'"Ok, I''ll get started! Be here next <<$week[week]>> with 3 days of reserves and 100 units of stored energy."'
+						if tatisucsex > 0:
+							'She then pulls you in for a quick kiss before adding, "Now get out of here, I can''t have you distracting me!"'
+						else
+							'She then surprises you with a peck on the cheek before adding, "Now get out of here, I can''t have you distracting me!"'
+						end
+						act 'Leave':
+							minut += 5
+							gt 'city_center'
+						end
+					end
+					act 'Not Yet': gt 'tatiana_lab', 'Tatiana'
+				end
+			elseif money >= 2000 and sctrainprep = -1:
+				act 'Ask her to redo the preparations':
+					cla
+					'Are you sure? The same things from before apply; 2 days to abort, the barrier, 3 days of reserves and 100 units of stored energy, 8 to 10 hours once I''m fully charged... Another 2000 <b>₽</b> wasted. Are you <i>really</i> sure?'
+					act 'Yes':
+						cla
+						money -= 2000
+						sctrainprep = 1
+						tatisucsexday = daystart + 7
+						'"Ok, I''ll get started! Be here next <<$week[week]>> with 3 days of reserves and 100 units of stored energy."'
+						'"Now get out of here, I can''t have you distracting me!"'
+						act 'Leave':
+							minut += 5
+							gt 'city_center'
+						end
+					end
+					act 'Not Yet': gt 'tatiana_lab', 'Tatiana'
+				end
+			end
+		elseif sucpcinfo >= 7 and sucskill < 4 and maddildo = 1 and sucexcess >= 100:
+			act 'Ask Tatiana about the accommodation training':
+			cla
+			'Tatiana asks, "Are you ready to do the accommodation training?"'
+				act 'Yes, I''m ready. (can take a lot of time)':
+					cls
+					cla
+					minut += 120
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/shared/sex/mast/dildo.jpg"></center>'
+					'She walks you through everything you need to do while leading you to the couch.'
+					'Once there, as you as stripping, so is she! At your look, she says, "What? I don''t want to tear my clothes if one of us slips."'
+					'You settle onto the couch then work the massive dildo into your snach. After working the dildo for a bit, with Tatiana in a light link guiding you, you switch to your ass. You work there for a while before switching back. You continue this way for nearly two hours, concentrating so hard you only have two orgasms, before you feel your body responding as it should. A quick test and you’re done.'
+					sucskill = 4
+					sucexcess -= 100
+					act 'Continue':
+						pcs_horny = 0
+						'As you''re finishing, you notice Tatiana has her eyes closed and is visibly trying to get ahold of herself.'
+						if tatisucsexday < daystart or rand(1,100) > 95:
+							'Then her eyes snap open and you feel arousal suddenly flooding the link!'
+							xgt 'tatiana_lab', 'suctrainsex'
+						else
+							cla
+							'After several moments, she pulls herself together, opens her eyes, smiles at you, and says, "There, I knew I could do it!"'
+							'She then stands up and goes back to her studying.'
+							act 'Finish': gt 'tatiana_lab', 'Tatiana'
+						end
+					end
+				end
+				act 'Not Yet': gt 'tatiana_lab', 'Tatiana'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'Tatianasuctalk':
+	cla
+	clr
+	*clr
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Tatiana</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+	if sucpcinfo < 2:
+		minut += 15
+		'As you both settle onto the couch, Tatiana turns to you and says, "Ok, tell me what happened."'
+		'You spend the next 15 minutes telling her about the Fairy, the odd dream, the energy you let loose the other night,'
+		if succubusQW = 4:
+			'and the felling you get when you''ve had sex.'
+		elseif succubusQW > 4:
+			'the felling you get when you''ve had sex, and the reaction you had to almost being raped.'
+		end
+		''
+		'She thinks about it for a moment and then says, "Well, I have a couple of ideas, but no sense guessing when I can just magically examine you."'
+		'She hops up and says, "Get undressed and lie down on the couch."'
+		sucpcinfo = 2
+		act 'Undress and lie down': gt 'succubus', 'tatianaask'
+		exit
+	end
+
+	if tatisucsex = 0 and tatisucsexask ! daystart: act 'Ask Tatiana if she wants to try Succubus Sex': tatisucsexask = daystart & gt 'tatiana_lab', 'Tatianasucsexask'
+
+	act 'Ask her to repeat what she knows about Succubae': gt 'succubus', 'tatianaask'
+
+	act 'Ask her if she has learned anything new about Succubae':
+		cla
+!!		Nothing after info level 6 here, because Tatiana will tell the PC automatically
+		if sucinfoday ! 0 and sucinfoday <= daystart:
+			if sucpcinfo = 4 and succublvl >= 2:
+				'"Actually, I have gotten some more information about Succubae."'
+				'"I heard from one of my mage contacts, in Sydney, Australia of all places, and he passed on some more details."'
+				sucpcinfo = 5
+				sucinfoday = daystart + 10 + rand(0,7)
+				act 'Ask her to tell you': gt 'succubus', 'tatianaask', 1
+			elseif sucpcinfo = 5:
+				'"Actually, I have gotten some more information about Succubae."'
+				'"I heard from an old friend of mine who is now living in Morocco and she actually has a Succubus for a lover. She said that after they had been together for some time, they discovered that with her help, her Succubus lover learned something new."'
+				sucpcinfo = 6
+				sucinfoday = daystart + 10 + rand(0,7)
+				act 'Ask her to tell you': gt 'succubus', 'tatianaask', 2
+			else
+				'No, I havn''t.'
+				act 'Continue': gt 'tatiana_lab', 'Tatianasuctalk'
+			end
+		else
+			'No, I havn''t.'
+			act 'Continue': gt 'tatiana_lab', 'Tatianasuctalk'
+		end
+	end
+
+	act 'Change topics': gt 'tatiana_lab', 'Tatiana'
+
+end
+
+if $ARGS[0] = 'Tatianasucsexask':
+	cla
+	clr
+	*clr
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Tatiana</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+	if tatisucsex = 0:
+		if TatianaSex = 1:
+			'You give Tatiana what you hope is a "come hither" smile and ask,'
+			'"So, you want to give Succubus sex a try?"'
+		else
+			'You give Tatiana a shy smile and ask,'
+			'"Do you want to try Succubus sex?"'
+		end
+	else
+		'You give Tatiana a bright smile and ask,'
+		'Hey Tatiana, you up for some Succubus Sex?'
+	end
+	act 'She answers:':
+		cla
+		if tatisucsex = 0:
+			'She gives you a wide eyed look before saying,'
+			if succublvl + TatianaSex < rand(0,6):
+				'"I''m sorry, <<$pcs_firstname>>, I just don''t have the time now."'
+				act 'Move on to something else': gt 'tatiana_lab', 'Tatiana'
+			else
+				'"I would love to!", with a wide smile.'
+				'She leads you over to the couch and you both strip.'
+				act 'Proceed': gt 'succubus', 'tatianasex'
+			end
+		else
+			if tatisucsexday <= daystart:
+				if 1 + (succublvl * 2) + tatisucsex < rand(1,20):
+					'"I''m sorry, <<$pcs_nickname>>, I just don''t have the time now."'
+					act 'Move on to something else': gt 'tatiana_lab', 'Tatiana'
+				else
+					'She gives you a "come hither" smile and says, "I would love to, <<$pcs_nickname>>!"'
+					'You both head toward the couch, stripping as you go.'
+					'Once there, you both sit down facing each other and she looks at you in anticipation.'
+					act 'Proceed': gt 'succubus', 'tatianasex'
+				end
+			else
+				if tatisucsexday - daystart > 1:
+					$scsextmp = 'days'
+				else
+					$scsextmp = 'day'
+				end
+				'She looks at you with a sad smile and says,'
+				'"I''m sorry, <<$pcs_nickname>>, I need at least <<tatisucsexday - daystart>> more <<$scsextmp>>."'
+				killvar '$scsextmp'
+				act 'Move on to something else': gt 'tatiana_lab', 'Tatiana'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'Tatianasexreject':
+	cla
+	clr
+	*clr
+	gs 'stat'
+	'<center><b><font color="maroon">Tatiana</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+	if scpopt = 2:
+		'I''m sorry, Tatiana, I just don''t have the time right now.'
+		scpopt = 0
+		killvar '$sclocrt' & killvar '$scargrt'
+	end
+	act 'Finish': gt 'tatiana_lab', 'Tatiana'
+end
+
+if $ARGS[0] = 'suctrainsex':
+	'She suddenly lunges at you and starts kissing you! You''re so surprised it takes you a bit to respond and, before you can do anything, she is nibbling your ear and whispering, "Let it go..."'
+
+	gs 'arousal', 'kiss', 5, 'lesbian', 'sub'
+	gs 'stat'
+	
+	if pcs_horny >= 100:
+		'You''re so shocked at this; you suddenly feel a powerful orgasm rush through you, causing you to cry out even as it rushes down the link to Tatiana, giving her a powerful orgasm as well!'
+		'Then, you feel your control slip...'
+		$orgasm_or = 'yes'
+		gs 'stat'
+		
+		act 'Continue': gt 'succubus', 'tatianasex'
+	else
+		scfwon = 2
+		scpopt = 1
+		$sclocrt = 'tatiana_lab'
+		$scargrt = 'Tatianasexreject'
+		'You only have moments to decide, do you give in and let <<$sucself1>> go or do you reign it in?'
+		act 'Continue': gt 'succubus', 'tatianasex'
+	end
+end
+
+if $ARGS[0] = 'suctraining':
+	if sucpcinfo < 2:
+		cla
+		clr
+		*clr
+		'<center><b><font color="maroon">Tatiana</font></b></center>'
+		'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+		'The moment you walked into her lab, Tatiana''s head jerked up and she hurried over to you.'
+		'She stares at you for several seconds, then demands, "What the hell happened to you!?!?"'
+		'You start to answer her when she holds up her hand and says, "Wait, come sit on the couch and tell me."'
+		'She turns away from you and walks toward the couch.'
+
+		act 'Follow her': gt 'tatiana_lab', 'Tatianasuctalk'
+		exit
+	elseif sucpcinfo >= 6 and sucskill < 3 and sctrainprep = 1:
+		if tatisucsexday > daystart and tatisucsexday - 5 >= daystart:
+			cla
+			clr
+			*clr
+			'<center><b><font color="maroon">Tatiana</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+			'You attempt to enter Tatiana''s lab but an invisible barrier stops you, but Tatiana apparently heard you as she rushes over and says, "What''s wrong? Do we need to cancel?"'
+			act 'Yes, I need to cancel':
+				cla
+				'"Are you sure?"'
+				act 'Yes, I''m sure':
+					cla
+					if tatisucsexday = daystart + 7:
+						sctrainprep = 0
+						money += 5000
+						'"Ok, good thing I hadn''t bought anything yet." and she hands you back the 5000 <b>₽</b> before going back to her studying.'
+					else
+						minut += 3
+						sctrainprep = -1
+						'"Ok, I''ll dump the "battery" potion."'
+						'With that, she walks over to her workbench and dumps the contents of several beakers into a barrel that flairs with magic as she does so.'
+					end
+					act 'Continue': gt 'tatiana_lab', 'start'
+				end
+				act 'No, never mind continue your preparations':
+					cla
+					'She gives a small shake of her head and says, "Then get out of here, I can''t have you distracting me!"'
+					act 'Leave': gt 'city_center'
+				end
+			end
+			act 'No...':
+				cla
+				'You say, "No, I just wanted to see you."'
+				'She answers, "That''s sweet, but I can''t have you distracting me, come back all charged up in <<tatisucsexday - daystart>> days!"'
+				act 'Leave':
+					minut += 3
+					gt 'city_center'
+				end
+			end
+			exit
+		elseif tatisucsexday > daystart and tatisucsexday - 5 < daystart:
+			if tatisucsexday - daystart > 1:
+				$scsextmp = 'days'
+			else
+				$scsextmp = 'day'
+			end
+			'You attempt to enter Tatiana''s lab but an invisible barrier stops you, but Tatiana apparently heard you as she shouts from across the lab, "I''ve already taken the first potion so I can''t come anywhere near you, come back all charged up in <<tatisucsexday - daystart>> <<$scsextmp>>!"'
+			killvar '$scsextmp'
+			act 'Leave':
+				minut += 3
+				gt 'city_center'
+			end
+			exit
+		elseif tatisucsexday = daystart or tatisucsexday = daystart - 1:
+			cla
+			clr
+			*clr
+			gs 'stat'
+			'<center><b><font color="maroon">Tatiana</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+			'The instant you walk into the lab, Tatiana''s head snaps up and she stares hard at you as you approach the barrier.'
+			if sucexcess >= 100 and succhungry < -2:
+				minut += 10
+				'As you step through the barrier, Tatiana seems to teleport to you and start kissing you.'
+				'She then starts pulling you toward her workbench while saying between kisses, "Thank (kiss) goodness (kiss) you''re (kiss) here (kiss) and ready (kiss)! You wouldn''t (kiss) believe (kiss) how (kiss) <i><b>horny</b></i> (kiss) carrying (kiss) all this (kiss) sexual (kiss) energy (kiss) has made me!"'
+!!				Maybe add arousal call here
+				'She suddenly turns away from you and you realize that you have reached her workbench. She grabs two smallish vails off the top, pops the tops off both, hands you one saying, "Drink this," before downing the other.'
+				'It tastes like strawberry syrup.'
+				'This time you''re ready when Tatiana lunges at you and you resume kissing as you lead her toward the couch while she is striping the clothes off both of you and you feel a large amount of your stored energy being released into your body.'
+				'Once there, you both sit down facing each other, she looks at you with burning lust, and says, "Do it!"'
+				act 'Proceed': gt 'succubus', 'tatianasex'
+				exit
+			elseif sucexcess < 100 and succhungry > -2 and tatisucsexday = daystart:
+				'She then says, "Damn! You don''t have enough reserve <i>or</i> stored energy! Run over to the Park and find some robbers or something, then get back here tomorrow!"'
+			elseif succhungry > -2 and tatisucsexday = daystart:
+				'She then says, Damn! You don''t have enough reserve energy! Run over to the Park and find some robbers or something, then get back here tomorrow!'
+			elseif succhungry > -2 and tatisucsexday = daystart - 1:
+				'She then says, "Damn! You don''t have enough reserve energy and there isn''t enough time for you to build it up." She then sighs and says, "Go ahead and take off, I need to bleed this energy off safely."'
+				sctrainprep = -1
+			else
+				'She then says, "Damn! You don''t have enough stored energy! Run over to the Park and find some robbers or something, then get back here!"'
+			end
+			act 'Leave': minut += 5 & gt 'city_center'
+			exit
+		else
+			'The barrier is down when you get to the lab and Tatiana calls from across the room, "You''re too late, I had to release the energy and we''ll need to start over."'
+			sctrainprep = -1
+			act 'Continue': gt 'tatiana_lab', 'start'
+			exit
+		end
+	end
+!!	This is oops handling
+	sucbypass = 1
+	minut -= 5
+	gt 'tatiana_lab', 'start'
+end
+
+if $ARGS[0] = 'missions':
+	cls
+	temp = rand (1,3)
+	gs 'stat'
+	'<center><b><font color="maroon">Tatiana</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/pre/shared/karinpre.jpg"></center>'
+	if TatianaMissionQW = 0:
+		TatianaMissionQW = 1
+		TatianaMissionDay = daystart
+		minut += 15
+		*clr & cla
+		'Tatiana looks up from the pile of files she always seems to be sifting when she notices you. "<<$pcs_firstname>>, finally! I''ve been waiting for you. We need to talk."'
+		'"What about?"'
+		'"Well, you''ve had some time to acclimate yourself to your new situation and to process everything Reinhold and I told you, so," she smiles, "it''s time we started your actual training."'
+		'You feel a rush of excitement going through you, and images of shooting fireballs from your hands and parting the sea come before your inner eye. "Great!" You exclaim. "I''m so ready for that."'
+		'Tatiana probably guessed what you were thinking, because she chuckles and placates: "That doesn''t mean we''re gonna teach you super-powerful spells. At least not yet." She gives the words a moment to take effect; your enthusiasm for her plans, figuratively throbbing and erect a second ago, shrivels and goes limp by the time she continues. "This part of your training is the most important: You will actually put your skills, senses and knowledge into practice."'
+		'The last bit rouses your interest once more. "Into practice? You mean like doing missions for the council?"'
+		'"Well, the council''s kinda responsible for the big leagues, which is way more than you could handle yet. But long-term, yes." Her tone takes on a mocking quality. "Once Reinhold thinks you''re ready, I''m sure he''ll swoop in, take credit for all the progress you have made thanks to me and swamp you with dangerous adventures. That''d be just like the old bastard." Tatiana sees the uncertainty with which you look at her, grins and shakes her head, confirming that it was all in good humor.'
+		act 'What kind of missions?':
+			*clr & cla
+			'"So," you struggle to imagine what to expect, "what would these missions be like?"'
+			'"Nothing dangerous," Tatiana reassures you, "at least not while you are still learning the basics." She walks over to a pile of folders and holds one up. "It''d be more along the lines of finding out why somebody''s dog has two tails or," she holds up another folder, "investigating strange sounds people hear coming from their cellar."'
+			'You blankly stare at her for a few seconds, expecting Tatiana to chuckle and reveal her explanation as a joke once more, but she doesn''t. "That... sounds like-"'
+			'"Bullshit?" She offers helpfully.'
+			'"Conspiracy crap, ghost stories and all that," is what you choose to say instead.'
+			'Tatiana nods understandingly. "Yeah, it does. But remember, normal people don''t see magic for what it is."'
+			'"Right," you remember, "little green men and poltergeists."' 
+			'Tatiana smiles as you quote her and nods. "And some of those things really turn out to have magical causes: The dog with two tails had been experimented on by one of us, so it was practically bursting with magic. As for the voices..." her smile turns lewd, "those were just some tenants having some extramarital fun away from prying eyes, regularly and loudly."'
+			act 'Why are we doing this?':
+				*clr & cla
+				'You feel your face heating up slightly at the thought. Something about this is bothering you, though: "But... why would we even look into this? I mean, it sounds interesting enough, but is there a reason behind it?"'
+				'Tatiana shrugs. "Well, you <i>could</i> go and get some ancient tomes, lock yourself into an ivory tower and spend half a century or something reading about magic, like most of the old farts on the council do. <b>OR</b>," she spreads her arms to point towards her many files and books on one hand and the exit on the other, "you could just cover the basics and then go out and experience magic first-hand, like I do."'
+				'You stare at the heaps and piles of paper incredulously - they are a multiple of everything you''ve read in your entire life! "Those are the basics?!"'
+				'"Yep," she laughs, "if you wanna really understand how magic works and why it does this at one time and that at another, you gotta get some reading done. Trust me, if there was any way around it, I would have found it. But magic makes the reading easier and quicker, and it''s sooo worth it. The things you can do once you grasp what energies the universe holds are incredible. And I''ve only just scratched the surface."'
+				'"What do you mean by ''energies of the universe''? I thought you said that magic only exists in living things, like plants and animals."'
+				'"Did I?" She looks thoughtful but shrugs again. "Well, it''s a little complicated, but to put it simply: When scientists speak of ''dark matter'' and ''dark energy'', then, in reality, they are trying to explain the magic in this plane of existence and all the others, like demons and the magic that exists in their ''dimension'' or whatever you''d wanna call it. But," she waves her hand as if to shoo away a pesky fly, "you don''t have to concern yourself with that right now. When the time comes, Reinhold can explain it to you in more detail - hell, considering that he''s your mentor, I''ve done an awful lot of explaining already... Now, let''s go!"'
+				'With that, Tatiana turns towards the exit once more and beckons you to follow.'
+				'"Go where?" You ask.'
+				'"To the magic!" She answers cryptically.'
+				act 'Go to the magic (?)':gt 'tatiana_missions','intro'
+			end
+		end
+	elseif temp = 1:
+		!Text could use improvement, maybe mission specific text?
+		*clr & cla
+		'"Hey <<$pcs_firstname>>, are you up for a magical adventure?" Tatiana asks with a grin.'
+		act 'Always': gt 'tatiana_missions','start'
+		act 'Not right now':gt 'tatiana_lab','start'
+	elseif temp = 2:
+		*clr & cla
+		'"Hello <<$pcs_nickname>>, glad you''re here." Tatiana smiles at you. "What do you say? Feel ready for a mission?"'
+		act 'Sure, let''s do this': gt 'tatiana_missions','start'
+		act 'Not right now':gt 'tatiana_lab','start'
+	elseif temp = 3:
+		*clr & cla
+		'"Hello <<$pcs_nickname>>." Tatiana looks at you expectantly. "Would you like to do an investigation?"'
+		act 'Gladly': gt 'tatiana_missions','start'
+		act 'Not right now':gt 'tatiana_lab','start'
+	end
+	
+! if TatianaMissionQW = 5: gt 'tatiana_missions', 'special'
+!	act 'Mission 1': gt 'tatiana_missions', '1'
+!! etc. Maybe give them names so you know what you''re doing. Selecting them goes to in depth description and refuse/accept
+
+
+!!!Lore for possible consequences of exposing (many) normal people to powerful magic:
+!
+!		'Tatiana lays both folders back where they belong and her expression turns serious. "Remember how I told you that magic has a natural tendency to stay hidden? Well, there''s a limit to that tendency, a threshold beyond which either the magic cannot stay hidden anymore or at which the normal person cannot explain what they''re seeing with some non-magical phenomenon, we''re not sure which - in other words, humans have a breaking point, and when they are pushed beyond that, most of them realize how the world really is... and lose their minds."'
+!		'"Could that have happened to me?" You shiver at the thought.'
+!		'"Honestly, I have no idea," Tatiana admits, "but the power you have absorbed since then is huge, even if you can''t really use it to its full potential, and that may have very well driven most regular mages insane, so we''re moving in unknown territory here."'
+!		'You nod solemnly, suddenly very appreciative of the mental health and stability you always took for granted. "So, you investigate anything that might have magical causes to prevent people from going crazy?"'
+!		'"It''s even bigger than that, <<$pcs_firstname>>. We know that this threshold exists. Every mage witnesses it sooner or later." She stops, momentarily lost in thought, but quickly recovers. "We have a theory that, if too many people are exposed to too much magic at once, it might break the illusion for everybody; you know, like a nuclear bomb goes off when you reach a critical mass."'
+!		'"Which would then drive everybody insane," you conclude.'
+!		'"Maybe not everybody," she corrects, "but many of them. And those that wouldn''t go insane, well, who knows what they''d do? Go on witch hunts? Try to kill all succubi and fae? Attempt to harness the magic of the universe? It would destroy the world as we know it, that''s for sure."'
+!		'You agree with her - with how much had been flung at you when all this began, you were pretty close to hysteria too, if you''re completely honest with yourself.'
+end
+
+
+--- tatiana_lab ---------------------------------
+

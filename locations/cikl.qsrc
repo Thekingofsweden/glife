@@ -1,5 +1,20 @@
 # cikl
 
+!!------------------------------------------------------------------------------------------------------------
+!!	Masseuse Job (MUST COME BEFORE DAY CHANGES)
+!!------------------------------------------------------------------------------------------------------------
+if masseuse['jobtype'] < 1:
+	masseuse['<<week>>_shift_1'] = 0
+	masseuse['<<week>>_shift_2'] = 0
+	masseuse['<<week>>_shift_3'] = 0
+end
+
+if masseuse['<<week>>_shift_1'] ! 0 or masseuse['<<week>>_shift_2'] ! 0 or masseuse['<<week>>_shift_3'] ! 0:
+	masseuse['missed_shift2'] = 1
+end
+
+
+
 !!----------------------------------------------------------------------------
 !! Time calculations
 
@@ -105,13 +120,7 @@ if husbandMark = 1 and husband <= 10:
 	'<b><font color="red">Your husband has filed for a divorce.</font></b>'
 end
 
-if katjaPreg = 0 and month >= 2:
-	if school_year = 2001 and year > 2016:
-		katjaPreg = 1
-	elseif school_year = 2000 and year > 2017:
-		katjaPreg = 1
-	end
-end
+if katjaPreg = 0 and month >= 2 and year > 2017: katjaPreg = 1
 
 !! after having surgery you will be in recuperation for a few days
 
@@ -598,7 +607,12 @@ if ArrSize('$MenCal') = 60: killvar '$MenCal',0
 
 if lashair ! 1:
 	pcs_leghair += 1
-	pcs_pubes += rand(0,1)
+	!!Pubic hair growth at 1/2 per night
+	if pcs_pubes['growth'] > 1:
+		pcs_pubes['growth'] = 0
+		pcs_pubes += 1
+	end
+	pcs_pubes['growth'] += 1
 end
 
 if age < 18 and rand (0,2) = 0 and pcs_leghair > 0: pcs_leghair -= 1
@@ -957,8 +971,8 @@ dmishaevent = 0
 
 if Gspravka <= 0 and GspravkaT = 1:GspravkaT = 0 & Gspravka = 0
 if GspravkaT = 1:Gspravka -= 1
-if IvanPodstavaQW = 2 and PodpiskaNeviezd = 30:IvanPodstavaQW = 3
-if IvanPodstavaQW = 2 and PodpiskaNeviezd > 0 and PodpiskaNeviezd < 30:PodpiskaNeviezd += 1
+if BurgerQW['IvanQW']  = 2 and BurgerQW['IvanQWPoliceDayCount'] = 30:BurgerQW['IvanQW']  = 3
+if BurgerQW['IvanQW']  = 2 and BurgerQW['IvanQWPoliceDayCount'] > 0 and BurgerQW['IvanQWPoliceDayCount'] < 30:BurgerQW['IvanQWPoliceDayCount'] += 1
 
 !!remove degradation for inhibition
 inhib_flr = inhib_lvl
@@ -1101,9 +1115,9 @@ if day = 25:
 		mey_tamara['help_count'] = 0
 	end
 
-	if PersSecWork = 1 and PersSecWorkTimes > 0 and paydaybistrosec = 0:
-		Pay = PersSecWorkTimes * 1250
-		PersSecWorkTimes = 0
+	if BurgerQW['Secretary'] = 1 and BurgerQW['SecretaryTimesWorked'] > 0 and paydaybistrosec = 0:
+		Pay = BurgerQW['SecretaryTimesWorked'] * 1250
+		BurgerQW['SecretaryTimesWorked'] = 0
 		karta += Pay
 		paydaybistrosec = 1
 		'<b><font color="green">Your salary of <<pay>> <b>₽</b> has been paid into your bank account for your job as a secretary.</font></b>'
@@ -1354,7 +1368,7 @@ if storyline = 1:
 				end
 			end
 		elseif month = 5:
-			if (school_year = 2000 and year = 2017) or (school_year = 2001 and year = 2018):
+			if year = 2017:
 				if day = 25:
 					kanikuli = 6
 					SchoolAtestat = -1
@@ -1447,10 +1461,10 @@ if storyline = 1:
 				if old_grupvalue[4] + 8 < grupvalue[4]: grupvalue[4] = old_grupvalue[4] + 8
 			end
 			!!Limit to max school group values
-			if grupvalue[1] > 100: grupvalue[1] = 100
-			if grupvalue[2] > 100: grupvalue[2] = 100
-			if grupvalue[3] > 100: grupvalue[3] = 100
-			if grupvalue[4] > 100: grupvalue[4] = 100
+			if grupvalue[1] > 1000: grupvalue[1] = 1000
+			if grupvalue[2] > 1000: grupvalue[2] = 1000
+			if grupvalue[3] > 1000: grupvalue[3] = 1000
+			if grupvalue[4] > 1000: grupvalue[4] = 1000
 			!!Decay for the school groups
 			if grupvalue[1] > 0:
 				grupvalue[1] -= rand(0,1)
@@ -1832,6 +1846,96 @@ killvar 'childtmp'
 killvar 'norandomdads'
 
 !!------------------------------------------------------------------------------------------------------------
+
+!!-------------Family schedule variables----------------------------------------------------------------------
+!! 23 = kitchen
+!! 24 = Living room
+!! 25 = bathroom
+!! 26 = Svetas room
+if week = 6:
+	momclean1 = rand(23,26)
+else
+	momclean1 = rand(23,24)
+end
+if rand(0,1) = 0:
+	momclean2 = 23
+else
+	momclean2 = 25
+end
+
+
+
+!!------------------------------------------------------------------------------------------------------------
+
+!!-------------Music career related variables and calculations------------------------------------------------
+
+!! How many hours a day can Sveta perform. It maxes out at 3.
+!! Using the actual skill level, not the one modified by Attributes because that is more realistic for this.
+
+ml_performance['max_perform_minutes'] = pcs_instrmusic + pcs_vokal
+ml_performance['performed_minutes'] = 0
+
+
+!! Calculating the fame increase from the uploaded songs and removing ones that do not effect fame anymore to keep the 
+!! data at a sane level
+if ml_onlinesongcount > 0:
+	i = 0
+	j = -1
+    
+	:looponlinesongs        
+!!      this so every song counts only every 7 days and only for a limited number of weeks 
+		if ml_onlinesong_freshness[i] > 0:		
+			j += 1
+			ml_tempsong_freshness[j] = ml_onlinesong_sfreshness[i]
+			ml_tempsong_lastcalcday[j] = ml_onlinesong_lastcalcday[i]
+			ml_tempsong_hotcat[j] = ml_onlinesong_hotcat[i]
+			ml_tempsong_skilllevel[j] = ml_onlinesong_skilllevel[i]
+			ml_tempsong_uploaded[j] = ml_onlinesong_uploaded[i]
+			*nl
+			if ml_tempsong_lastcalcday[j] <= (daystart - 7) and ml_tempsong_uploaded = 1:
+            	pav_music += rand(0, ml_tempsong_freshness[j]/50)
+            	city_music += rand(0, ml_tempsong_freshness[j]/100)
+            	ml_tempsong_freshness[j] -= 10
+            	ml_tempsong_lastcalcday[j] = daystart
+
+			end
+		end
+		i += 1
+	if i < ml_onlinesongcount: jump 'looponlinesongs'
+
+	killvar 'ml_onlinesong_freshness'
+	killvar 'ml_onlinesong_lastcalcday'
+	killvar 'ml_onlinesong_hotcat'
+	killvar 'ml_onlinesong_skilllevel'
+	killvar 'ml_onlinesong_uploaded'
+
+	i = 0
+	
+	if j >= 0:
+		:looprebuildsongs
+			ml_onlinesong_freshness[i] = ml_tempsong_freshness[i]
+			ml_onlinesong_hotcat[i] = ml_tempsong_hotcat[i]
+			ml_onlinesong_lastcalcday[i] = ml_tempsong_lastcalcday[i]
+			ml_onlinesong_skilllevel[i] = ml_tempsong_skilllevel[i]
+			ml_onlinesong_uploaded[i] = ml_tempsong_uploaded[i]
+			i += 1
+		if i <= j: jump 'looprebuildsongs'
+	end
+
+	killvar 'ml_tempsong_freshness'
+	killvar 'ml_tempsong_lastcalcday'
+	killvar 'ml_tempsong_hotcat'
+	killvar 'ml_tempsong_skilllevel'
+	killvar 'ml_tempsong_uploaded'
+
+end
+
+
+!! Repertoire quality decay if no practice is done
+if ml_performance['set_lastpracticeday'] ! (daystart-1): repertoire_quality -= 2
+
+
+
 
 --- cikl ---------------------------------
 

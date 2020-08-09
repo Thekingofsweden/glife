@@ -4,11 +4,12 @@
 if $ARGS[0] = 'main':
 	CLOSE ALL
 	$loc = 'gschool_grounds'
-	$metka = 'main'
+	$loc_arg = 'main'
 	$location_type = 'public_outdoors'
 	$menu_loc = 'gschool_grounds'
 	$menu_arg = 'main'
 	menu_off = 0
+	killvar '$locclass'
 	*clr & cla
 	gs 'stat'
 	'<center><b><font color="maroon">Outside School</font></b></center>'
@@ -33,6 +34,21 @@ if $ARGS[0] = 'main':
 	
 	if InvitationToDimkaNYparty = 1 and day = 31 and day = nyp_day: act 'Follow Dimka to the New Year''s party at his home': killvar 'InvitationToDimkaNYparty' & minut += 30 & gt 'sny', '3'
 
+	if hour = 14 and week < 6 and kanikuli = 0:
+		gs 'gschool_socialchg', 'group_student_rel_change'
+		if NikoDate_Day ! daystart:
+			if week = 1 and NikoIntro = 0:
+				gt 'NikoEv', 'Intro'			
+			elseif NikoVolkovQW = 5 and NikoEv = 6 and NikoDate = 0:
+				gt 'NikoDates', 'After School'
+			elseif NikoVolkovQW = 5 and NikoEv = 8 and NikoDate = 0:
+				gt 'NikoDates', 'After School 2'
+			elseif NikoVolkovQW = 10 and NikoEv = 22:
+				gt 'NikoEv2', 'Recovery'
+			end
+		end
+	end	
+	
 	if week < 6 and hour = 14 and kanikuli = 0 and afterschool_day ! daystart:
 		afterschool_day = daystart
 		if rand(0,3) = 0:
@@ -45,13 +61,13 @@ if $ARGS[0] = 'main':
 	
 	!! Cheerleading tryouts if Sveta decided to attend
 	if hour = 14 and cheerleadingQW['quest_stage'] = 1:
-		gt 'gschool_cheerleading', 'tryouts'
+		if pregtime < 90: gt 'gschool_cheerleading', 'tryouts'
 	!! Sveta attends training after school every Tuesday and Thursday.
 	elseif hour = 14 and cheerleadingQW['day'] ! daystart and (week = 2 or week = 4) and kanikuli = 0 and cheerleadingQW['quest_stage'] > 1:
-		gt 'gschool_cheerleading', 'afterschool_practice'
+		if npc_pregtalk['A23'] = 0: gt 'gschool_cheerleading', 'afterschool_practice'
 	!! A football game is played once every 2nd Friday and the cheerleaders perform out on the field. 
 	elseif hour = 14 and cheerleadingQW['day'] ! daystart and week = 5 and (daystart - (daystart mod 7)) mod 2 = 1 and kanikuli = 0 and (cheerleadingQW['quest_stage'] >= 3 or cheerleadingQW['backup_game'] = 1):
-		gt 'gschool_cheerleading', 'afterschool_game'
+		if npc_pregtalk['A23'] = 0: gt 'gschool_cheerleading', 'afterschool_game'
 	end
 	
 	if hour <= 8 and kanikuli = 6:
@@ -83,7 +99,7 @@ if $ARGS[0] = 'main':
 				'You go up to the podium. The Principal shakes your hand and gives you your diploma and you return to your place.'
 			end
 
-			act 'Return to town': minut += 2 & gt 'pavResidential'
+			act 'Return to town': minut += 2 & gt 'pav_residential'
 
 			act 'Go to the prom party':
 				*clr & cla
@@ -99,7 +115,7 @@ if $ARGS[0] = 'main':
 				act 'Go home': gt 'korrPar'
 			end
 		end
-	exit
+		exit
 	end
 
 	if SchoolAtestat = -1 and week < 6 and hour >= 6 and hour < 14:
@@ -116,7 +132,7 @@ if $ARGS[0] = 'main':
 				'The Principal hands you your diploma. "Good luck in your future!" she says as she shakes your hand.'
 			end
 
-			act 'Return to town': minut += 2 & gt 'pavResidential'
+			act 'Return to town': minut += 2 & gt 'pav_residential'
 		end
 	end
 
@@ -125,17 +141,18 @@ if $ARGS[0] = 'main':
 !!	act 'Go to the Principals Office': gt
 
 	if week < 6 and hour >= 6 and StoryLine > 0 and SchoolAtestat = 0 and kanikuli = 0 and schoolBlock = 0:
-		if $clothingworntype = 'school' or Enable_sforma = 1:
+		if CloStyle2 = 4 or Enable_sforma = 1:
+			gs 'gschool_socialchg', 'group_student_rel_change_2'
 			if hour = 6:
 				if minut < 30:
 					'It''s too early for school now.'
 				else
-					if NikoEv = 10: gt 'NikoDates', 'Walk Of Shame'
+					if NikoEv = 10: gt 'NikoWhore', 'Walk Of Shame'
 					act 'Wait for class': gt 'gschool_grounds', 'bulding'
 				end
 			elseif hour = 7:
 				if NikoEv = 10:
-					gt 'NikoDates', 'Walk Of Shame'
+					gt 'NikoWhore', 'Walk Of Shame'
 				elseif minut <= 45:
 					act '<b>Go to class</b>': gt 'gschool_grounds', 'bulding'
 				else
@@ -155,7 +172,7 @@ if $ARGS[0] = 'main':
 					end
 				end
 			elseif hour = 8:
-				if NikoEv = 10: gt 'NikoDates', 'Walk Of Shame'
+				if NikoEv = 10: gt 'NikoWhore', 'Walk Of Shame'
 				'You missed your whole first class, hopefully no one noticed.'
 				act '<b>Rush to class</b>':	demerit += 10 & gt 'gschool_grounds', 'bulding'
 			elseif hour < 14:
@@ -166,11 +183,11 @@ if $ARGS[0] = 'main':
 		end
 	end
 
-	act 'Return to town': minut += 2 & gt 'pavResidential'
+	act 'Return to town': minut += 2 & gt 'pav_residential'
 
 	act 'Go to the sports field': minut += 1 & gt 'gschool_grounds', 'sports'
 
-	if joint > 0 and jointhigh = 0: act 'Smoke a joint behind the school building': gs 'drugs', 'joint' & gt $loc, $metka
+	if joint > 0 and jointhigh = 0: act 'Smoke a joint behind the school building': gs 'drugs', 'joint' & gt $loc, $loc_arg
 
 	if week = 6 and hour = 8 and StoryLine > 0 and SchoolAtestat = 0 and detention_set = 1 and schoolBlock = 0: act 'Go to detention': gt 'gschool_detention', 'start'
 
@@ -212,25 +229,11 @@ if $ARGS[0] = 'main':
 		gt 'dimaRevenge', dimaRevenge
 	end
 
-	if hour >= 14 and pav_slut >= 125 and SchoolGossip > 0 and afterschoolday ! daystart: gt 'gschool_sex', 'suck'
+	if hour >= 14 and pav_slut >= 250 and SchoolGossip > 0 and afterschoolday ! daystart: gt 'gschool_sex', 'suck'
 
 	if week = 1 and kanikuli = 0 and arthakQW = 10 and apmeetday ! daystart and hour >= 14: gt 'artgar'
 
 	if hour = 14 and week < 6 and kanikuli = 0:
-
-		if NikoDate_Day ! daystart:
-			if NikoVolkovQW = 5 and NikoEv = 6 and NikoDate = 0:
-				gt 'NikoDates', 'After School'
-			elseif NikoVolkovQW = 5 and NikoEv = 8 and NikoDate = 0:
-				gt 'NikoDates', 'After School 2'
-			elseif (NikoVolkovQW = 5 and NikoDate = 1) or NikoEv = 11:
-				'You can see <a href="exec: gt ''NikoEv'', ''Niko Dates''">Nikolai Volkov</a> smoking outside of the school.'
-			elseif NikoVolkovQW = 10 and NikoEv >= 17 and NikoEv <= 20:
-				'<a href="exec: gt ''NikoEv2'', ''Events''">Nikolai Volkov</a> is smoking outside of the school.'
-			elseif NikoVolkovQW = 10 and NikoEv = 22:
-				gt 'NikoEv2', 'Recovery'
-			end
-		end
 
 		if ivan_afterschool = 1: act 'Meet Ivan after school': gt 'gschool_sex', 'afterschool'
 
@@ -244,7 +247,7 @@ if $ARGS[0] = 'main':
 			if artemLernQW >= 1 and artemVitokQW ! 2 and artemblok = 0 and artlie ! 2 and artembrokenheart ! 1: '<a href="exec:minut += 15 & gt ''artemEv'', ''start''">Artem Chebotarev</a> is waiting for you near the school entrance.'
 			if npc_QW['A231'] = 1 or npc_QW['A231'] = 3 or npc_QW['A231'] >= 5: '<a href="exec:minut += 1 & gt ''AleksandraGo'', ''Start''"><<$npc_firstname[''A231'']>> <<$npc_lastname[''A231'']>></a> is waiting for you at the end of the school courtyard, listening to music.'
 
-			if katjaMeynoldday ! daystart and meynoldQW >= 2: '<a href="exec:minut += 15 & gt ''katjaEv''">Katja Meynold</a> is walking across the school courtyard, getting ready to go home.'
+			if katjaMeynoldday ! daystart and meynoldQW >= 1: '<a href="exec:minut += 15 & gt ''katjaEv''">Katja Meynold</a> is walking across the school courtyard, getting ready to go home.'
 			if DimaBeHomeOnce = 1 and DimaRudeBlock = 0:
 				'<a href="exec:minut += 15 & gt ''dimaEv'', ''after_school''">Dimka Nosov</a> is deep in thought, as he leans against a lamp post.'
 			elseif DimaRudeQW > 0 and dimarudeday ! daystart and DimaRudeBlock = 0:
@@ -258,6 +261,11 @@ if $ARGS[0] = 'main':
 				'You can see <a href="exec: gt ''FedorEv2'', ''Fedor Breakup''">Fedor</a> standing by himself with a troubled look on his face.'
 			elseif fedorKozlovQW >= 10:
 				'You can see <a href="exec: gt ''FedorEv'', ''Start''">Fedor</a> with his backpack around his arm, standing by himself.'
+			end
+			if NikoVolkovQW = 5 and NikoDate = 1 and NikoDate_Day ! daystart or NikoEv = 11:
+				'You can see <a href="exec:gt ''NikoEv'', ''Niko Dates''">Nikolai Volkov</a> smoking outside of the school.'
+			elseif NikoVolkovQW = 10 and NikoEv >= 17 and NikoEv <= 20 and NikoDate_Day ! daystart:
+				'<a href="exec:gt ''NikoEv2'', ''Events''">Nikolai Volkov</a> is smoking outside of the school.'	
 			end
 		else
 			!display friends in table if switch is on.
@@ -276,19 +284,26 @@ if $ARGS[0] = 'main':
 			end
 			if IgorLoverQW > 0 and igorkruglovday ! daystart and IdorBlock = 0: gs 'show_table', '<a href="exec:minut += 15 & gt ''igorhome'', ''entrance''">Igor Kruglov</a>', '5'
 			if fedorKozlovQW >= 10 and kotovVSkozlov = 1:
-				gs 'show_table', '<a href="exec: gt ''FedorEv'', ''Strela Chat''">', '5'
+				gs 'show_table', '<a href="exec: gt ''FedorEv'', ''Strela Chat''">Fedor</a>', '5'
 			elseif fedorKozlovQW >= 10 and fedorkozqw = 2 and FedorLuv < -4:
-				gs 'show_table', '<a href="exec: gt ''FedorEv2'', ''Fedor Breakup''">', '5'
+				gs 'show_table', '<a href="exec: gt ''FedorEv2'', ''Fedor Breakup''">Fedor</a>', '5'
 			elseif fedorKozlovQW >= 10:
 				gs 'show_table', '<a href="exec: gt ''FedorEv'', ''Start''">Fedor</a>', '5'
 			end
+			if NikoVolkovQW = 5 and NikoDate = 1 and NikoDate_Day ! daystart or NikoEv = 11 and NikoDate_Day ! daystart:
+				gs 'show_table', '<a href="exec: gt ''NikoEv'', ''Niko Dates''">Nikolai</a>', '5'
+			elseif NikoVolkovQW = 10 and NikoEv >= 17 and NikoEv <= 20 and NikoDate_Day ! daystart:
+				gs 'show_table', '<a href="exec: gt ''NikoEv2'', ''Events''">Nikolai</a>', '5'
+			end
 			if npc_QW['A231'] = 1 or npc_QW['A231'] = 3 or npc_QW['A231'] >= 5: gs 'show_table', '<a href="exec:minut += 1 & gt ''AleksandraGo'', ''Start''"><<$npc_firstname[''A231'']>> <<$npc_lastname[''A231'']>></a>', '5'
-			if st_count > 0 :
+			if st_count > 0:
 				'Near school yard, you see: '
 				'<TABLE BORDER=1><<$show_table>></TR></TABLE>'
 			end
 		end
-		if albinaCarday ! daystart and AlbFrend >= 1 and albrideday ! daystart: '<a href="exec:minut += 15 & gt ''albinaRide''">Albina Barlovskaya</a> is waiting behind the wheel of a large black SUV, parked near the school.'
+		if AlbinaQW['albride'] = 0 and AlbinaQW['RideDaystart'] <= daystart and AlbinaQW['AlbFatherQW']  >= 1 and AlbinaQW['ParkRally'] > 0: 
+			'<a href="exec:minut += 15 & gt ''albinaRide''">Albina Barlovskaya</a> is waiting behind the wheel of a large black SUV, parked near the school.'
+		end
 
 		! meynold`s events
 		if hour = 14 and vicky_afterschool ! daystart: gs 'mey_vika_events', 'near_school'
@@ -313,13 +328,14 @@ if $ARGS[0] = 'sports':
 
 	$loc = 'gschool_grounds'
 	$location_type = 'public_outdoors'
-	$metka = 'sports'
+	$loc_arg = 'sports'
 	$menu_loc = 'gschool_grounds'
 	$menu_arg = 'sports'
 	menu_off = 0
+	killvar '$locclass'
 	*clr & cla
 	gs 'stat'
-	if month > 2 and month < 9:
+	if month > 3 and month < 11:
 		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/field.jpg"></center>'
 	else
 		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/grounds/fieldwinter.jpg"></center>'
@@ -393,7 +409,7 @@ end
 !!School building
 if $ARGS[0] = 'bulding':
 	$loc = 'gschool_grounds'
-	$metka = 'bulding'
+	$loc_arg = 'bulding'
 	$location_type = 'public_indoors'
 	$menu_loc = 'gschool_grounds'
 	$menu_arg = 'bulding'
@@ -417,7 +433,7 @@ if $ARGS[0] = 'bulding':
 			end
 		end
 	end
-	act 'Return to town': minut += 2 & gt 'pavResidential'
+	act 'Return to town': minut += 2 & gt 'pav_residential'
 	if dimaRevenge = 1:
 		menu_off = 1
 		'You''re in a good mood today as you enter the school. That changes when Dimka stops you in the hall on the way to class.
@@ -677,11 +693,12 @@ if $ARGS[0] = 'SchoolRun2_result':
 end
 
 if $ARGS[0] = 'change_room':
-	$metka = 'change_room'
+	$loc_arg = 'change_room'
 	$loc = 'gschool_grounds'
 	$location_type = 'bathroom'
+	$locclass = 'lockeroom'
 	$locM = 'gschool_grounds'
-	$metkaM = 'change_room'
+	$locM_arg = 'change_room'
 	$menu_loc = 'gschool_grounds'
 	$menu_arg = 'change_room'
 	menu_off = 0

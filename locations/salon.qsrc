@@ -3,9 +3,6 @@ $location_type = 'public_indoors'
 
 if $ARGS[0] = 'start':
 	$sexloc = $CURLOC
-	if week = 1 and hour >= 9 and hour <= 10 and worksalon = 1:gt 'salon', 'beginwork'
-	if week = 3 and hour >= 9 and hour <= 10 and worksalon = 1:gt 'salon', 'beginwork'
-	if week = 5 and hour >= 9 and hour <= 10 and worksalon = 1:gt 'salon', 'beginwork'
 	cla & *clr
 	$menu_loc = 'salon'
 	$menu_arg = 'start'
@@ -15,55 +12,918 @@ if $ARGS[0] = 'start':
 	gs 'themes', 'indoors'
 	'<center><b><font color="maroon">Beauty Bar</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
-	'Approach the <a href="exec:gt ''salon'', ''1''">beauty technician.</a>'
-	'See the <a href="exec:gt ''salon'', ''resnici''">eyelash specialist.</a>'
-	if money >= 1000:
-		'<a href="exec:gt ''salon'', ''solyariy''">Solarium - 1,000 <b>₽</b></a>'
-	else
-		'Solarium - 1,000 <b>₽</b>'
+	
+	if masseuse['jobtype'] ! 0:
+		masseuse['warning'] = 3 - masseuse['missed shifts']
+		if masseuse['warning'] = 0:gt'salon','fired'
 	end
-	if money >= 2500:		
-		'<a href="exec:gt ''salon'', ''ozdormas''">Wellness massage (accelerates fat loss and rejuvenates the body), 2,500 <b>₽</b></a>'
-	else
-		'Lengthening eyelashes - 5,000 <b>₽</b>'
-		'Wellness massage (accelerates fat loss and rejuvenates the body), 2,500 <b>₽</b>'
+	
+	if (masseuse['<<week>>_shift_1'] = 1 and hour = 3) or (masseuse['<<week>>_shift_2'] = 1 and hour = 13) or (masseuse['<<week>>_shift_3'] = 1 and hour = 17):
+		'"Hey!" Xian yells at you from the front desk. "You''re late! You''re being docked an hour''s pay for that! Now get changed and get in there!"'
+	elseif (masseuse['<<week>>_shift_1'] = 1 and hour > 10) or (masseuse['<<week>>_shift_2'] = 1 and hour > 14) or (masseuse['<<week>>_shift_3'] = 1 and hour > 18) or masseuse['missed_shift2'] > 0:
+		'"Hey! You missed your shift! What the hell is wrong with you?"'
+		if masseuse['<<week>>_shift_1'] = 1 and hour > 10:
+			masseuse['<<week>>_shift_1'] = 2
+		elseif masseuse['<<week>>_shift_2'] = 1 and hour > 14:
+			masseuse['<<week>>_shift_2'] = 2
+		elseif masseuse['<<week>>_shift_3'] = 1 and hour > 18:
+			masseuse['<<week>>_shift_3'] = 2
+		end
+		masseuse['missed_shift2'] = 0
+		masseuse['missed_shift'] += 1
 	end
-	if pcs_pubes <= 20:
-		'Dye your pubic hair - 500 <b>₽</b> (Your pubic hair is too short to dye)'
-	else
-		if money >= 500:'<a href="exec:gt ''salon'', ''pubes''">Dye your pubic hair - 500 <b>₽</b></a>'
-		if money < 500:'Dye your pubic hair - 500 <b>₽</b>'
+	act 'Leave':
+		if masseuse['uniform'] = 1:
+			msg'You should to change back into your clothes before you leave.'
+		else
+			gt 'torgcentr'
+		end
 	end
-	if money >= 2000 and lashair = 0:'<a href="exec:gt ''salon'', ''epilyaciya''">Full body depilation - 2,000 <b>₽</b></a>'
-	if money < 2000 or lashair = 1:'Full body depilation - 2,000 <b>₽</b>'
-	if money >= 5000:'<a href="exec:gt ''salon'', ''uhodkosha''">Skin Care - 5,000 <b>₽</b></a>'
-	if money < 5000:'Skin Care - 5,000 <b>₽</b>'
-	if money >= 25000:'<a href="exec:gt ''salon'', ''omoloshenie''">Full body skin rejuvenation - 25,000 <b>₽</b></a>'
-	if money < 25000:'Rejuvenation - 25,000 <b>₽</b>'
-	if hour < 8 or hour > 20:
+	act'Approach the receptionist':gt 'salon','receptionist'
+	if hour < 8 or hour > 20 and masseuse['jobtype'] = 0:
 		cls
-		'As the salon closes you are politely asked to leave but please come again soon.'
+		'The salon is closing you are politely asked to leave and come again.'
 		act 'Leave':minut += 3 & gt 'torgcentr'
-		exit
 	end
-	act 'Leave':minut += 3 & gt 'torgcentr'
+	if masseuse['jobtype'] > 0:
+		act'Locker room':gt'salon','lockers'
+		act'Go to a massage room':
+			if (masseuse['<<week>>_shift_1'] = 1 and hour < 10) or (masseuse['<<week>>_shift_2'] = 1 and ((hour = 12 and minut >= 30) or hour =3)) or (masseuse['<<week>>_shift_3'] = 1 and ((hour = 16 and minut >= 30) or hour = 17)):
+				gt'salon','massage_room'
+			else
+				gt'salon','lei_work'
+			end
+		end
+	end
 end
 
-if $ARGS[0] = 'solyariy':
+if $ARGS[0] = 'receptionist':
 	cla & *clr
-	minut += 60
-	pcs_tan += 10
-	inhib_exp += rand(1,5)
-	money -= 1000
-	if salonrand > 6 and npc_QW['A192'] > 2:gt 'etoexhib', 'pos1'
-	if salonrand = 0 and masha = 0:gt 'salon', '0'
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/solarium.jpg"></center>'
-	'You take off your clothes and get in the tanning booth.'
-	act 'Leave':gt 'salon', 'start'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	
+	if masseuse['jobtype'] = 0:
+		'You walk over to the reception desk to speak to the pretty young asian woman who sits behind it.'
+		'"Hello! What can I help you with today?" Her Russian has a heavy accent to it.'
+	else
+		'You walk over to the reception desk to speak to Xian.'
+	end
+	
+	if masseuse['jobtype'] = -2:
+		'"Hello <<$pcs_firstname>>, always nice to see you. What can I help you with?"'
+	elseif masseuse['jobtype'] = -1:
+		'"Hello, what can I help you with?"'
+	elseif week = 5 and masseuse['weeks_pay'] > 0:
+		'"Hello <<$pcs_firstname>>! Are you here to pick up your paycheck?"'
+	elseif masseuse['jobtype'] > 0:
+		'"Hello <<$pcs_firstname>>! Are you here to work a shift today? Or are you here for some discount services?"'
+	end
+	act 'Move away':gt 'salon', 'start'
+	
+	act'I''d like to take a look at your services':gt'salon','services'
+	
+	if masseuse['jobtype'] = 0:
+		act'Do you have any job openings?':gt'salon','job_interview1'
+	elseif masseuse['jobtype'] = -2:
+		act'Can I start working here again?':gt'salon','rehire1'
+	else
+		act'Can I set my schedule for the week?':gt'masseuse_schedule','start'
+		act'I want to change jobs':gt'salon','job_change'
+		act'I''d like to quit':gt'salon','resignation'
+		if masseuse['weeks_pay'] > 0 and week = 5:
+			act'I''m here for my paycheck':gt'salon','payday'
+		end
+	end
 end
 
-if $ARGS[0] = 'resnici':
+if $ARGS[0] = 'services':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"What are you interested in today?"'
+	act'Move away':gt'salon','start'
+	if masseuse['jobtype'] > 0:
+		if money >= 500:
+			act'Tanning booth 500 <b>₽</b>':gt'salon','tanning_booth'
+		else
+			act'Tanning booth (<font color="red">500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+	elseif money >= 1000:
+		act'Tanning booth 1000 <b>₽</b>':gt'salon','tanning_booth'
+	else
+		act'Tanning booth (<font color="red">1,000 <b>₽</b> </font>)':
+			msg'You don''t have enough money for this!'
+		end
+	end
+	
+	act'Massage services':gt'salon','massage'
+	
+	act'See the eyelash specialist':gt'salon','eyelashes'
+	
+	if masseuse['jobtype'] > 0:
+		if money >= 2500:
+			act'Skin care 2,500 <b>₽</b>':gt'salon','skin_care'
+		else
+			act'Skin care (<font color="red">2,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+	elseif money >= 5000:
+		act'Skin care 5,000 <b>₽</b>':gt'salon','skin_care'
+	else
+		act'Skin care (<font color="red">5,000 <b>₽</b> </font>)':
+			msg'You don''t have enough money for this!'
+		end
+	end
+	
+	if masseuse['jobtype'] > 0:
+		if money >= 12500:
+			act'Full body rejuvination 12,500 <b>₽</b>':gt'salon','rejuvination'
+		else
+			act'Full body rejuvination <font color="red">12,500 <b>₽</b> </font>':
+				msg'You don''t have enough money for this!'
+			end
+		end
+	elseif money >= 25000:
+		act'Full body rejuvination 25,000 <b>₽</b>':gt'salon','rejuvination'
+	else
+		act'Full body rejuvination <font color="red">25,000 <b>₽</b> </font>':
+			msg'You don''t have enough money for this!'
+		end
+	end
+	
+	if masseuse['jobtype'] > 0:
+		if money >= 1000 and lashair = 0:
+			act'Body hair removal 1,000 <b>₽</b>':gt'salon','hair_removal'
+		else
+			act'Body hair removal <font color="red">1,000 <b>₽</b> </font>':
+				msg'You don''t have enough money for this!'
+			end
+		end
+	elseif money >= 2000 and lashair = 0:
+		act'Body hair removal 2,000 <b>₽</b>':gt'salon','hair_removal'
+	else
+		act'Body hair removal <font color="red">2,000 <b>₽</b> </font>':
+			msg'You don''t have enough money for this!'
+		end
+	end
+end
+
+
+!!-------------------------------------------------------------------------------------------------------------------------------
+!!	Job Interview Stuff
+!!-------------------------------------------------------------------------------------------------------------------------------
+
+if $ARGS[0] = 'job_interview1':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"I actually wanted to know if you had any job openings available."'
+	'"Were you looking to work here as a masseuse or a whore?"'
+	act'Excuse me?!':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Excuse me?!"'
+		'"Ahh. You must be asking about being a masseuse then."'
+		'"Wait wait! Don''t just gloss over that! Explain! Prostitution is illegal!"'
+		'"And we have special protection from the police," she goes on. "We give them free service, they turn a blind eye."'
+		'She blinks at you for a moment. "Why? Are you interested in it now that you know?"'
+		act'Absolutely not!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Absolutely not!" you huff.'
+			'"Ahh. Well in that case, if you want to be a regular masseuse here that''s fine, you''ll never be asked to do anything you''d be uncomfortable with. Are you certified as a massage therapist?"'
+			if masseuse['certification'] < 10:
+				act'I''m not':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+					'"No, I''m not," you say, shaking your head.'
+					'"Oh. Well, we really don''t have anything else we need help with." The woman gives you a sympathetic smile. "Sorry. We require one of those to be hired here as a masseuse or a whore. But if you really are interested in working here, they offer a 10 session course at the community center in the industrial area."'
+					act'Thanks':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+						'"Thanks, maybe I''ll look into it." She smiles back at you.'
+						act'Continue':gt'salon','start'
+					end
+				end
+			elseif masseuse['certification'] >= 10:
+				'"I do."'
+				'"Good. Perfect." She flicks out a piece of paper and a pen. "This is your employee contract. Just sign there at the bottom and you''ll be employed here and I''ll give you a quick orientation."'
+				act'Sign':
+					masseuse['jobtype'] = 1
+					masseuse['hourly'] = 100
+					gt'salon','masseuse_orientation'
+				end
+			end
+		end
+		
+		act'Maybe...':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Well... maybe..."'
+			'"In that case, are you certified as a massage therapist?"'
+			'"Huh? I thought I was asking about being a whore now?'
+			'"Either way you need a certificate," she explains. "The police turn their eye but we still need deniability or they''ve got nothing to stand on. So, do you have a certificate?"'
+			if masseuse['certification'] < 10:
+				act'Shake your head':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+					'"I don''t have one," you say, shaking your head.'
+					'"Oh. Well, we really don''t have anything else we need help with." The woman gives you a sympathetic smile. "Sorry. But if you really are interested in working here, they offer a 10 session course at the community center in the industrial area."'
+					act'Thanks':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+						'"Thanks, maybe I''ll look into it." She smiles back at you.'
+						act'Continue':gt'salon','start'
+					end
+				end
+			elseif masseuse['certification'] >= 10:
+				'"I do."'
+				'"Okay, great. And to be clear, you''re interested in being a whore?"'
+				act'"Yup"':gt'salon','whore_offer'
+			end
+		end
+	end
+	
+	act'Say what now?':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Uhh, say what now?"'
+		'"A whore. I am using the word correctly, yes? You would have thought after all this time working here..."'
+		'"No," you say shaking your head. "You''re using the word correctly. I just was shocked to hear you say it. Did you just offer me a job as a whore?"'
+		'"Yes?"'
+		'"But isn''t prostitution illegal?"'
+		'"And we have special protection from the police," she goes on. "We give them free service, they turn a blind eye."'
+		'She blinks at you for a moment. "Why? Are you interested in it now that you know?"'
+		act'No I was just curious':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"No, I was just curious," you say. "I''d rather be a masseuse."'
+			'"Ahh. Well in that case, if you want to be a regular masseuse here that''s fine, you''ll never be asked to do anything you''d be uncomfortable with. Are you certified as a massage therapist?"'
+			if masseuse['certification'] < 10:
+				'"I don''t have one," you say, shaking your head.'
+				'"Oh. Well, we really don''t have anything else we need help with." The woman gives you a sympathetic smile. "Sorry. But if you really are interested in working here, they offer a 10 session course at the community center in the industrial area."'
+				act'Thanks':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+					'"Thanks, maybe I''ll look into it." She smiles back at you.'
+					act'Continue':gt'salon','start'
+				end
+			elseif masseuse['certification'] >= 10:
+				'"I do."'
+				'"Great! Then you can work here."'
+				act'Ask about the details':gt'salon','job_offer'
+			end
+		end
+		
+		act'Maybe...':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Well... maybe..."'
+			'"In that case, are you certified as a massage therapist?"'
+			'"Huh? I thought I was asking about being a whore now?'
+			'"Either way you need a certificate," she explains. "The police turn their eye but we still need deniability or they''ve got nothing to stand on. So, do you have a certificate?"'
+			if masseuse['certification'] < 10:
+				act'Shake your head':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+					'"I don''t have one," you say, shaking your head.'
+					'"Oh. Well, we really don''t have anything else we need help with." The woman gives you a sympathetic smile. "Sorry. But if you really are interested in working here, they offer a 10 session course at the community center in the industrial area."'
+					act'Thanks':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+						'"Thanks, maybe I''ll look into it." She smiles back at you.'
+						act'Continue':gt'salon','start'
+					end
+				end
+			elseif masseuse['certification'] >= 10:
+				'"I do."'
+				'"Okay, great. And to be clear, you''re interested in being a whore?"'
+				act'"Yup"':gt'salon','whore_offer'
+			end
+		end
+	end
+	
+	act'I didn''t realize whore was an option':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I didn''t realize that ''whore'' was an option," you smile.'
+		'"Why of course! You didn''t really think a massage parlor was just a massage parlor did you? So I take it you''re interested then?"'
+		'"I''d say so."'
+		'"In that case, are you certified as a massage therapist?"'
+		'"Huh? I thought I was asking about being a whore? Why do I need to be certified to fuck people for money?"'
+		'"The police turn their eye but we still need deniability," she explains. "So even the whores have to be certified as massage therapists or they''ve got nothing to stand on. So, do you have a certificate?"'
+		if masseuse['certification'] < 10:
+			act'Shake your head':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+				'"I don''t have one," you say, shaking your head.'
+				'"Oh. Well, we really don''t have anything else we need help with." The woman gives you a sympathetic smile. "Sorry. But if you really are interested in working here, they offer a 10 session course at the community center in the industrial area."'
+				act'Thanks':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+					'"Thanks, maybe I''ll look into it." She smiles back at you.'
+					act'Continue':gt'salon','start'
+				end
+			end
+		elseif masseuse['certification'] >= 10:
+			'"I do."'
+			'"Okay, great. That means you can work here."'
+			act'Ask about the details':gt'salon','whore_offer'
+		end
+	end
+end
+
+if $ARGS[0] = 'job_offer':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"Well, how''s the pay and what are the hours?"'
+	'"We let the girls here pick and choose their own shifts, four hours at a time. We expect you to work 5 shifts if you''re part time or 10 shifts if you''re full time. 400 <b>₽</b> per shift, no overtime pay but you get to keep the tips."'
+	act'That''s not a lot':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"That''s not a lot of money in terms of pay..."'
+		'"You get to keep the tips," the woman shrugs. "If you want to get paid more, you have to do more, but you said you weren''t interested in being a whore. Are you changing your mind now?"'
+		act'Yeah, about this job':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Yeah, about this job. Thanks but no thanks."'
+			'"Hmm. Well if you ever change your mind, you''re welcome to come back. We can always use more masseuses and more whores. While you''re here is there anything else I can offer you?"'
+			act'Continue':gt'salon','receptionist'
+		end
+		
+		act'No, I''ll be a masseuse':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"No," you sigh. "I''ll just be a masseuse."'
+			'"Okay then," she flicks out a piece of paper and a pen. "This is your employee contract. Just sign there at the bottom and I''ll give you a quick orientation."'
+			act'Sign':
+				masseuse['jobtype'] = 1
+				masseuse['hourly'] = 100
+				gt'salon','masseuse_orientation'
+			end
+		end
+		
+		act'Well...':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Well..." You admit to yourself, the lack of pay is quite a turn off. "Can I hear more about the whore work?"'
+			'She nods.'
+			act'Continue':gt'salon','whore_offer'
+		end
+	end
+	act'Sounds fine':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Okay, that all sounds fine."'
+		'"Good," she flicks out a piece of paper and a pen. "This is your employee contract. Just sign there at the bottom and I''ll give you a quick orientation."'
+		act'Sign':
+			masseuse['jobtype'] = 1
+			masseuse['hourly'] = 100
+			gt'salon','masseuse_orientation'
+		end
+	end
+end
+
+if $ARGS[0] = 'whore_offer':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"Let me explain. If you want the highest pay as a whore you will be expected to do any of the work we have on the menu. That includes basic body massages, massages given while you are naked, handjobs, blowjobs, and of course, fucking. But each customer pays for a different service, we don''t have any all included packages. If you aren''t comfortable with going so far, you can choose to perform only lesser services, but for less pay of course. You can just do oral and handjobs if you prefer with no fucking, or just performing normal massages while naked. It''s no problem for us, we''ll just pay you less.'
+	*nl
+	'"We pay 1000 <b>₽</b> a shift for full whores, 700 <b>₽</b> for oral masseuses, 600 <b>₽</b> for happy end masseues, 500 <b>₽</b> for naked masseuses, and of course, 400 <b>₽</b> for regular masseuses. All employees also enjoy a 50% discount of any other services the salon has to offer. Oh, but we don''t pay for birth control. And company policy is that we never use condoms with customers. As far as hours go, we let the girls here pick and choose their own shifts. Four hour shifts at a time. Pay day is Friday."'
+	*nl
+	'She lays everything out for you as calmly and methodically as if she were trying to sell a body oil.'
+	'"That about covers it. Still interested?"'
+	act'On second thought, maybe no':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"On second thought, maybe no."'
+		'"Oh." The woman seems slightly taken aback. "Well what about being a regular masseuse? 400 <b>₽</b> per shift for that."'
+		act'Still no':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I don''t think so either."'
+			'"Hmm. Well if you ever change your mind, you''re welcome to come back. While you''re here is there anything else I can offer you?"'
+			act'No':gt'salon','start'
+			act'Sure, let me look':gt'salon','services'
+		end
+	end
+	
+	act'Rather just be a regular masseuse':
+		masseuse['jobtype'] = 1
+		masseuse['hourly'] = 100
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I think I''d rather just be a regular masseuse."'
+		'"That''s fine too! Always need those," she says, typing something out on her computer.'
+		act'Next':gt'salon','whore_offer2'
+	end
+	
+	act'I wouldn''t mind being a naked masseuse':
+		masseuse['jobtype'] = 2
+		masseuse['hourly'] = 125
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wouldn''t mind being a naked masseuse," you say.'
+		'"Okay..." she says, typing something out on her computer.'
+		act'Next':gt'salon','whore_offer2'
+	end
+	
+	act'I can give handjobs':
+		masseuse['jobtype'] = 3
+		masseuse['hourly'] = 150
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wouldn''t mind giving the occasional handjob," you say.'
+		'"Okay..." she says, typing something out on her computer.'
+		act'Next':gt'salon','whore_offer2'
+	end
+	
+	act'I can give blowjobs':
+		masseuse['jobtype'] = 4
+		masseuse['hourly'] = 175
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I can give blowjobs," you say.'
+		'"Okay..." she says, typing something out on her computer.'
+		act'Next':gt'salon','whore_offer2'
+	end
+	
+	act'Sure, I''ll be a full whore':
+		masseuse['jobtype'] = 5
+		masseuse['hourly'] = 250
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Sure, I''ll be your whore," you say. "Easy enough to fuck people for money."'
+		'"Okay..." she says, typing something out on her computer.'
+		act'Next':gt'salon','whore_offer2'
+	end
+end
+
+if $ARGS[0] = 'whore_offer2':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"And were you looking to be a full timer or a part timer? Full timers are expected to work 10 shifts a week, part timers work 5. Full timers also get priority on available shifts."'
+	act'Part time':
+		masseuse['shifts_required'] = 5
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Part time."'
+		'"Okay," she flicks out a piece of paper and a pen towards you. "This is an employee contract for a part time masseuse. Just sign there at the bottom and I''ll give you a quick orientation."'
+		act'Sign':gt'salon','masseuse_orientation'
+	end
+	
+	act'Full time':
+		masseuse['shifts_required'] = 10
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Full time."'
+		'"Okay," she flicks out a piece of paper and a pen towards you. "This is an employee contract for a full time masseuse. Just sign there at the bottom and I''ll give you a quick orientation."'
+		act'Sign':gt'salon','masseuse_orientation'
+	end
+end
+
+!!-------------------------------------------------------------------------------------------------------------------------------
+!!	Masseuse Job Stuff
+!!-------------------------------------------------------------------------------------------------------------------------------
+
+if $ARGS[0] = 'masseuse_orientation':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
+	'You scribble out a signature and she takes the paper back from you.'
+	'"Thank you very much! So for future reference, I''m Xian, one of the managers here. All your clients will come to me and will be able to request you based on whether you are available or not. Now if you''ll quickly follow me," she gets up from her chair and moves around the desk towards the back.'
+	act'Follow her':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/lockers.jpg"></center>'
+		'"Here is the locker room for you to put your personal things when working. We have a strict uniform policy here. All massage therapists must wear one of the salon robes. No personal clothing is allowed under the robe. That means no shirts, no dresses, no pants, or underwear of any kind is allowed beneath the robe. By the way, here''s yours." Picking a hanger up off a rack, she hands you a thin white robe that your nipples might tear through on a cold day and a hemline that ends just above the halfway point of your thigh. Not waiting for any questions, she assigns you a locker as well before quickly moving on to the next room.'
+		act'Follow':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'"These are our massage rooms. You will be assigned a random one on a given day and expected to be inside and ready within a half hour of your shift starting. When your shift is over you are expected to make it clean and ready for the next girl or for the next day if you are working a closing shift. On that wall there is a clock," she gestures, "to keep track of how long the session is going and when a client''s time is up. By the door you will also notice an intercom. Before each client comes in I will buzz you to let you know you have a customer and what kind of service he wishes to receive. To maintain our image of innocence, we use code words for our special menu. A massage is simply a body massage. A naked massage is ''a massage with a view.'' Handjob requests are referred to as an ''old fashioned'' massage and oral requests are ''head'' massages. Clients who pay to fuck you are requesting ''full body'' massages. And of course, if any client is roughhousing, you may use the intercom to signal me that security intervention is necessary."'
+			*nl
+			'She continues to speak at a rapid pace, leaving no room for you to squeeze in any sort of question.'
+			*nl
+			'"If a customer cums in your mouth you are expected to swallow. If a customer cums inside your pussy they are not liable if you become pregnant. We do not offer birth control or additional compensation for birth control if you are not already on it. Every new customer should be greeted with a clean face and body, so again if a customer cums inside you, you are expected to wipe yourself for the next customer. Any towel with bodily fluids can be thrown into the pink laundry bin, any other towel can be thrown in the blue. When the customer is preparing to leave, you are not to redress if already naked. When they exit the room, you will bow and say, ''Thank you for your patronage sir,''" she says, modelling the action and words for you. "I will continue to send in clients unless you are 5 minutes or less from the end of your shift. If your shift ends while still with a client, you must still finish the session with them. You will not be compensated for extra time. Next we''ll move to the break room."'
+			act'Follow her':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/break.jpg"></center>'
+				'"You are allowed one 15 minute break per shift taken at a time of your choosing. Feel free to rehydrate, have a snack, or smoke a cigarette if that is your habit while in this room. And that concludes orientation." She leads you back out to the front.'
+				act'Follow her!':gt'salon','questions'
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'questions':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"Pay day is Friday. You can pick it up from me any time on that day. Do you have any questions?"'
+	act'No more questions':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I''m pretty much clear on everything I think."'
+		'"Great! So would you like to set your shifts for next week then?"'
+		'"Sure."'
+		act'Look at the schedule':gt'masseuse_schedule','start'
+	end
+	if masseuse['jobtype'] < 4:
+		act'Why did you tell me all that stuff about whoring?':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Uhh, yeah. Why did you tell me all that stuff about whoring? I thought we agreed I was just going to be a masseuse."'
+			'"In case you change your mind of course," she smiles. "As long as you have the certificate, you are welcome to ascend or descend to any level of employee here. As it is such a fluid system, we only give orientations once here."'
+		end
+	end
+	act'What if I want to change jobs?':
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"What if I want to change jobs?" you ask. "To be or not be a whore anymore?"'
+		'"You just let me know and we''ll change it. You''ll start on your new position with new pay immediately after. If you do it before payday, you''ll be paid for that rate instead of your previous rate."'
+	end
+	act'Why the uniform?':
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Why is the uniform policy so uhh..." you glance at the skimpy robe. "... strict?"'
+		'"It is important to maintain a sense of uniformity here. It ensures our customers that everyone working here is a professional and that any employee is just as good as another. And we are also a beauty salon. As the essence of beauty, we must do our best to make sure our girls look beautiful. Thinly veiled beauty is only exceeded by naked beauty. But that would openly advertise us as a brothel since public nudity does not abide with public law. We dress for the customers, not ourselves."'
+		'"Ahuh..." you say. "Right. And was that policy invented by a man or a woman?"'
+		'Xian blinks at you. "A woman of course. All our policies were created by the owner, Madam Lao."'
+	end
+end
+
+
+if $ARGS[0] = 'lockers':
+	$locM = 'salon'
+	$locM_arg = 'lockers'
+	cla & *clr
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/lockers.jpg"></center>'
+	'The employee locker room where you can put your stuff while working. Empty except for you at the moment.'
+	*nl
+	'There''s a <a href="exec:gt ''mirror'', ''start''">mirror</a> hanging on the wall as well.'
+	act'Leave':gt'salon','start'
+	if masseuse['uniform'] = 1:
+		act'Put your normal clothes back on':
+			masseuse['uniform'] = 0
+			robe = 0
+			minut += rand(1,2)
+			gs 'clothing', 'wear_last_worn'
+			gs 'underwear', 'wear'
+			cla & *clr
+			'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
+			'Slipping out of your robe, you fold it neatly to put back in your locker, taking your clothes out as you do.'
+			*nl
+			'You spend a couple minutes redressing and then slam the locker shut, ready to leave.'
+			act'Continue':gt 'salon','lockers'
+		end
+	else
+		act'Get changed for work':
+			gs 'clothing', 'strip'
+			gs 'underwear', 'remove'
+			masseuse['uniform'] = 1
+			robe = 1
+			gs 'stat'
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/lockers.jpg"></center>'
+			'You strip down out of your clothes and stuff them into your locker, pulling out your robe as you do so. After slipping it on and tying the belt, you check yourself in the mirror.'
+			*nl
+			'Nipples are clearly outlined. Thighs are fully on display. Hemline likely to flash your pussy if you bend the wrong way. Ass definitely going to get flashed if you bend over.'
+			*nl
+			'Yup. That''s your uniform.'
+			act'Continue':gt 'salon','lockers'
+		end
+	end
+end
+
+if $ARGS[0] = 'massage_room':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+	'One of the massage rooms in which you serve clientele.'
+	act'Leave':gt 'salon','start'
+	
+	if (masseuse['<<week>>_shift_1'] = 1 and hour < 10) or (masseuse['<<week>>_shift_2'] = 1 and ((hour > 12 and hour < 14 and minut >= 30) or hour < 14)) or (masseuse['<<week>>_shift_3'] = 1 and ((hour > 16 and minut >= 30) or hour < 18)):
+		act'Start your shift':
+			if $clothingworntype = 'nude' and robe = 1:
+				cla
+				*nl
+				'Reaching over to the intercom, you buzz Xian.'
+				'"I''m ready to receive customers."'
+				act'Wait for your first customer':gt'masseuse_work','shift_start'
+			else
+				msg'You need to be in the proper attire to start your shift.'
+			end
+		end
+	elseif $clothingworntype = 'nude' and robe = 1:
+		msg'You aren''t scheduled to work right now'
+	end
+end
+
+if $ARGS[0] = 'lei_work':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
+	'You move towards the massage rooms and right when you put your hand on the door you remember you don''t have a shift scheduled for right now. Right about the same time you hear moans coming through the door.'
+	*nl
+	act'Move away':gt'salon','start'
+	act'Take a peek':gt'salon','lei_work2'
+end
+
+if $ARGS[0] = 'lei_work2':
+	cla & *clr
+	masseuse['lei_peek'] = 1
+	if rand(0,1) = 1:
+		gs 'arousal','voyeur', 1
+		pcs_horny += 10
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/lei/<<rand(1,3)>>.mp4"></video></center>'
+		if masseuse['meet_lei'] = 0:
+			'Unable to resist, you carefully turn the door handle and crack the door open to peek through.'
+			*nl
+			'The sight you are presented with is a tiny asian girl getting absolutely <i>pounded</i> by a customer.'
+			*nl
+			'She''s practically screaming at the client, saying various explitives that communicate just how much she is loving his cock and how good he is at fucking. Despite her shouts, the staccato slap of every thrust is heard quite clearly. Not wanting to get in trouble, you ease the door back shut and move away.'
+			act'Leave':gt'salon','start'
+		else
+			'Unable to resist, you carefully turn the door handle and crack the door open to peek through.'
+			*nl
+			'"Nnngh! Fuck! Fuck yeah! Ungh you''re so good! It''s so big! Ungh! Your cock feels so fucking good! You''re gonna drive me crazy!"'
+			*nl
+			'Lei is inside, fucking a client, screaming her explitives as usual. She''s got him totally entranced. Best you leave though before you get in trouble and you ease the door shut.'
+			act'Move away':gt'salon','start'
+		end
+	else
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/lei/4.mp4"></video></center>'
+		if masseuse['meet_lei'] = 0:
+			'Unable to resist, you carefully turn the door handle and crack the door open to peek through.'
+			*nl
+			'It looks like a small asian girl just finished getting a facial from a customer.'
+			*nl
+			'Yikes! That''s a little too dangerous, he could leave at any second. You ease the door closed and quickly back away.'
+			act'Leave':gt'salon','start'
+		else
+			'Unable to resist, you carefully turn the door handle and crack the door open to peek through.'
+			*nl
+			'You see Lei inside puckering her lips, her face slimed with semen.'
+			'"Mmmm, your cum tastes <i>sooo goooood</i>. I love it when you cum all over my face..."'
+			*nl
+			'Whoa! She just finished that guy! Better leave before you get caught. You ease the door closed and quickly back away.'
+			act'Move away':gt'salon','start'
+		end
+	end
+end
+
+if $ARGS[0] = 'job_change':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"I wanted to change the kind of work I''ve been doing."'
+	'"Yes? What did you want to change?"'
+	act'That''s all':gt'salon','start'
+	if masseuse['shifts_required'] = 5:
+		act'I wanted to start working full time':
+			*clr
+			masseuse['shifts_required'] = 10
+			'"Alright, sure thing. I''ll make a note of it. Anything else?"'
+		end
+	else
+		act'I wanted to switch to part time':
+			masseuse['shifts_required'] = 5
+			'"Alright, sure thing. I''ll make a note of it. Anything else?"'
+		end
+	end
+	
+	if masseuse['jobtype'] ! 1:
+		act'Change jobtype to a normal masseuse':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I wanted to start working as a normal masseuse."'
+			'"Okay," she clacks a few times on a laptop in front of her. "There. Your details have been updated and you are now a regular masseuse. Your pay has been reduced to 400 <b>₽</b> per shift. Anything else?"'
+			masseuse['jobtype'] = 1
+			masseuse['hourly'] = 100
+		end
+	end
+	
+	if masseuse['jobtype'] ! 2:
+		act'Change jobtype to nude masseuse':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I wanted to change to being a nude masseuse."'
+			'"Okay," she clacks a few times on a laptop in front of her. "There. Your details have been updated and you are now a nude masseuse. Your pay has been updated to 500 <b>₽</b> per shift. Anything else?"'
+			masseuse['jobtype'] = 2
+			masseuse['hourly'] = 125
+		end
+	end
+		
+	if masseuse['jobtype'] ! 3:
+		act'Change jobtype to handjob masseuse':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I wanted to change to being a handjob masseuse."'
+			'"Okay," she clacks a few times on a laptop in front of her. "There. Your details have been updated and you are now a handjob masseuse. Your pay has been updated to 600 <b>₽</b> per shift. Anything else?"'
+			masseuse['jobtype'] = 3
+			masseuse['hourly'] = 150
+		end
+	end
+	
+	if masseuse['jobtype'] ! 4:
+		act'Change jobtype to oral masseuse':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I wanted to change to being an oral masseuse."'
+			'"Okay," she clacks a few times on a laptop in front of her. "There. Your details have been updated and you are now an oral masseuse. Your pay has been updated to 700 <b>₽</b> per shift. Anything else?"'
+			masseuse['jobtype'] = 4
+			masseuse['hourly'] = 175
+		end
+	end
+	
+	if masseuse['jobtype'] ! 5:
+		act'Change jobtype to whore':
+			*clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"I wanted to start working as a whore."'
+			'"Okay," she clacks a few times on a laptop in front of her. "There. Your details have been updated and you are now a whore. Your pay has been updated to 1000 <b>₽</b> per shift. Anything else?"'
+			masseuse['jobtype'] = 5
+			masseuse['hourly'] = 250
+		end
+	end
+end
+
+if $ARGS[0] = 'resignation':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"I actually wanted to resign my position here."'
+	'"Oh," she says. "I''m sorry to hear that."'
+	if masseuse['weeks_pay'] > 0:
+		masseuse['paycheck'] = masseuse['weeks_pay'] * masseuse['hourly']
+		'Reaching down below the desk, she shuffles around in a drawer and stuffs some money into an envelope. "Well, here''s your pay for the shifts you worked earlier this week."'
+		money += masseuse['weeks_pay']
+		masseuse['weeks_pay'] = 0
+	end
+	'"If you ever want to come back, you just let us know," she smiles at you.'
+	masseuse['jobtype'] = -2
+end
+
+if $ARGS[0] = 'payday':
+	masseuse['paycheck'] = masseuse['weeks_pay'] * masseuse['hourly']
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"I''m here to pick up my pay for this week Xian."'
+	'"Okay!" She opens up a drawer and thumbs through a few different labels before reaching into one and picking up an envelope. She hands it over to you.'
+	if masseuse['shifts_worked'] < masseuse['shifts_required']:
+		'"Hey, you only worked <<masseuse[''shifts_worked'']>> this week. You were supposed to work <<masseuse[''shifts_required'']>>."'
+		'"Sorry," you say, reaching for the envelope "Won''t happen again."'
+		'"Better not," she replies, holding onto the edge of the paper and forcing you to make eye contact. "<<masseuse[''warning'']>> more times and you''re fired."'
+		'She lets go.'
+	elseif masseuse['shifts_worked'] >= masseuse['shifts_required']:
+		masseuse['shifts_worked'] = 0
+		if masseuse['shifts_worked'] > masseuse['shifts_required']:
+			'"By the way, thanks for covering those extra shifts this week <<$pcs_firstname>>! Really helpful for us."'
+			'"No problem, I needed the money," you say, taking the envelope.'
+		end
+	end
+	
+	'Looking inside, you see it''s stuffed with cash that counts out to <<masseuse[''paycheck'']>> <b>₽</b>.'
+	money += masseuse['paycheck']
+	masseuse['money_earned'] += masseuse['paycheck']
+	if masseuse['jobtype'] = 2:
+		masseuse['nude_mass_money_earned'] += masseuse['paycheck']
+	elseif masseuse['jobtype'] > 2:
+		masseuse['sex_money_earned'] += masseuse['paycheck']
+	end
+	masseuse['weeks_pay'] = 0
+	act'Leave':gt'salon','start'
+end
+
+if $ARGS[0] = 'rehire1':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"Hey Xian. Actually, I wanted to know if I could start working here again?"'
+	'"Of course <<$pcs_firstname>>, you know we always need more masseuses and whores. What job did you want to work?'
+	
+	act'Normal masseuse':
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wanted to start working as a masseuse."'
+		'"Okay," she clacks a few times on a laptop in front of her. "There. Officially rehired as a masseuse. Payment at 400 <b>₽</b> per shift."'
+		masseuse['jobtype'] = 1
+		masseuse['hourly'] = 100
+		act'Next':gt'salon','rehire2'
+	end
+
+	act'Nude masseuse':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wanted to work as a nude masseuse."'
+		'"Okay," she clacks a few times on a laptop in front of her. "There. Officially rehired as a nude masseuse. Payment at 400 <b>₽</b> per shift."'
+		masseuse['jobtype'] = 2
+		masseuse['hourly'] = 125
+		act'Next':gt'salon','rehire2'
+
+	end
+	
+	act'Handjob masseuse':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wanted to work as a handjob masseuse."'
+		'"Okay," she clacks a few times on a laptop in front of her. "There. Officially rehired as a handjob masseuse. Payment at 400 <b>₽</b> per shift."'
+		masseuse['jobtype'] = 3
+		masseuse['hourly'] = 150
+		act'Next':gt'salon','rehire2'
+	end
+
+	act'Oral masseuse':
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wanted to work as an oral masseuse."'
+		'"Okay," she clacks a few times on a laptop in front of her. "There. Officially rehired as an oral masseuse. Payment at 400 <b>₽</b> per shift."'
+		masseuse['jobtype'] = 4
+		masseuse['hourly'] = 175
+		act'Next':gt'salon','rehire2'
+	end
+
+
+	act'Whore':
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"I wanted to start working as a whore."'
+		'"Okay," she clacks a few times on a laptop in front of her. "There. Officially rehired as a whore. Payment at 400 <b>₽</b> per shift."'
+		masseuse['jobtype'] = 5
+		masseuse['hourly'] = 250
+		act'Next':gt'salon','rehire2'
+	end
+end
+
+if $ARGS[0] = 'rehire2':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"And did you want to come back as a part timer or a full timer?"'
+	act'Part time':
+		masseuse['shifts_required'] = 5
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Part time."'
+		'"Okay." She taps out a few more keys on her computer. "There we go. All set. Did you want to pick up some shifts now?"'
+		act'Maybe later':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Maybe later."'
+			'"Okay, just let me know.'
+			act'Leave':gt'salon','start'
+		end
+		
+		act'Sure':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Sure," you say.'
+			'"Here''s what we have available right now..."'
+			act'Take a look':gt'masseuse_schedule','start'
+		end
+	end
+	
+	act'Full time':
+		masseuse['shifts_required'] = 10
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+		'"Full time."'
+		'"Okay." She taps out a few more keys on her computer. "There we go. All set. Did you want to pick up some shifts now?"'
+		act'Maybe later':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Maybe later."'
+			'"Okay, just let me know.'
+			act'Leave':gt'salon','start'
+		end
+		
+		act'Sure':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+			'"Sure," you say.'
+			'"Here''s what we have available right now..."'
+			act'Take a look':gt'masseuse_schedule','start'
+		end
+	end
+end
+
+if $ARGS[0] = 'fired':
+	masseuse['jobtype'] = -1
+	masseuse['warning'] = -1
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
+	'Coming into the salon, you see Xian stand up to greet you.'
+	'"<<$pcs_firstname>>, you missed another shift this week."'
+	'"Oh yeah, I''m sorry about tha-"'
+	'She shakes her head and cuts you off. "That''s three missed shifts <<$pcs_firstname>>. You''re fired."'
+	if masseuse['weeks_pay'] > 0:
+		masseuse['paycheck'] = masseuse['weeks_pay'] * masseuse['hourly']
+		'She shoves an envelope into your hands. "This is pay for the shifts you worked earlier this week."'
+		money += masseuse['weeks_pay']
+		masseuse['weeks_pay'] = 0
+	end
+	'The sudden confrontation has you stunned.'
+	'"But-"'
+	'"Your employee discount has been revoked and you are not permitted into unauthorized areas. That is all."'
+	'And with that she sits down back behind the reception desk.'
+	act'Leave':gt'salon','start'
+end
+
+!!-------------------------------------------------------------------------------------------------------------------------------
+!!	Eyelash Technician
+!!-------------------------------------------------------------------------------------------------------------------------------
+
+if $ARGS[0] = 'eyelashes':
 	'You are met by a young, dolled-up woman who explains the various lash treatments she can perform:'
 	'"Well," she says, "I can put on temporary false lashes for you if you''re just going out for the night; you''ll look great, but they won''t last much longer than that."'
 	'She motions over to a small display of stacked boxes, "I can also, if you want a more permanent solution, treat your lashes to help stimulate their growth, but you won''t get the kind of dramatic results you get from falsies."'
@@ -120,7 +980,7 @@ if $ARGS[0] = 'resnici':
 		'Remove your eyelash extensions - 500<b> ₽</b>'
 	end
 	
-	act 'back': minut += 5 & gt 'salon','start'
+	act 'back': minut += 1 & gt 'salon','start'
 end
 
 if $ARGS[0] = 'lashTreatment':
@@ -129,7 +989,11 @@ if $ARGS[0] = 'lashTreatment':
 	if pcs_lashes < 2:pcs_lashes += 1
 	if pcs_naturallashes < 2:pcs_naturallashes += 1
 	inhib_exp += rand(1,5)
-	money -= 5000
+	if masseuse['jobtype'] > 0:
+		money -= 2500
+	else
+		money -= 5000
+	end
 	gs 'body_shape', 'basebeautycalc', 1
 	
 	gs 'stat'
@@ -146,13 +1010,21 @@ if $ARGS[0] = 'lashFalsies':
 	if lashfalsiesstyle = 1:
 		if pcs_lashes < 3:pcs_lashes = 3
 		false_lashes = 1
-		money -= 500
+		if masseuse['jobtype'] > 0:
+			money -= 250
+		else
+			money -= 500
+		end
 		'She spends a few minutes selecting and trimming a set of simple, if dramatic false lashes to get them to line up neatly with your own natural set, and with practiced ease she glues them delicately in place, only having to give them one or two gentle, settling nudges.'
 	end
 	if lashfalsiesstyle = 2:
 		if pcs_lashes < 4:pcs_lashes = 4
 		false_lashes = 1
-		money -= 1000
+		if masseuse['jobtype'] > 0:
+			money -= 500
+		else
+			money -= 1000
+		end
 		'She spends a few minutes selecting and trimming a set of ornate, dramatically-feathered false lashes to get them to line up neatly with your own natural set, and with practiced ease she glues them delicately in place, only having to give them one or two gentle, settling nudges.'
 	end
 	gs 'body_shape', 'basebeautycalc', 1
@@ -172,19 +1044,31 @@ if $ARGS[0] = 'lashExtension':
 		end
 		if lashextensionstyle = 2:
 			if pcs_lashes < 3:pcs_lashes = 3
-			money -= 2000
+			if masseuse['jobtype'] > 0:
+				money -= 1000
+			else
+				money -= 2000
+			end
 			'Over the next hour and a half, you have to lay there quietly, keeping your eyes closed while the technician works at very carefully and precisely bonding a pair of dark, longer lashes to every single one of your natural ones.'
 			minut += 90
 		end
 		if lashextensionstyle = 4:
 			if pcs_lashes < 4:pcs_lashes = 4
-			money -= 5000
+			if masseuse['jobtype'] > 0:
+				money -= 2500
+			else
+				money -= 5000
+			end
 			'Over the two hours and change, you have to lay there quietly, keeping your eyes closed while the technician works at very carefully and precisely bonding two pairs of dark, longer lashes to each and every one of your real ones.'
 			minut += 140
 		end
 		if lashextensionstyle = 6:
 			if pcs_lashes < 5:pcs_lashes = 5
-			money -= 10000
+			if masseuse['jobtype'] > 0:
+				money -= 5000
+			else
+				money -= 10000
+			end
 			'It feels like you''re there forever, listening to customers come and go in the salon''s main room while you lay there still, eyes shut. It takes the technician almost four hours to bond the countless lashes to your own, some even studded with tiny, lightweight jewels. You can feel the weight of them upon your own natural set, hidden somewhere beneath.'
 			minut += 210
 		end
@@ -201,19 +1085,31 @@ if $ARGS[0] = 'lashExtension':
 		end
 		if lashextensionstyle = 2:
 			if pcs_lashes < 3:pcs_lashes = 3
-			money -= 1000
+			if masseuse['jobtype'] > 0:
+				money -= 500
+			else
+				money -= 1000
+			end
 			'Over the next hour or so, you lay there to have your lashes tidied up; the technician re-glues any loose ones and applies new ones to the new growth you''ve had over the past few weeks.'
 			minut += 60
 		end
 		if lashextensionstyle = 4:
 			if pcs_lashes < 4:pcs_lashes = 4
-			money -= 2500
+			if masseuse['jobtype'] > 0:
+				money -= 1250
+			else
+				money -= 2500
+			end
 			'While about an hour and a half passes, the technician makes idle small talk with you while maintaining your bonded extensions, applying new ones to newly-grown lashes and re-affixing any that might''ve come loose.'
 			minut += 90
 		end
 		if lashextensionstyle = 6:
 			if pcs_lashes < 5:pcs_lashes = 5
-			money -= 5000
+			if masseuse['jobtype'] > 0:
+				money -= 2500
+			else
+				money -= 5000
+			end
 			'Even the maintenance on your extravagantly ornate lashes takes forever, the lash technician hunched uncomfortably forward while she applies countless new lashes to each of your newly-sprouted ones, and tidies up any loose ones among the fold.'
 			minut += 120
 		end
@@ -229,7 +1125,11 @@ if $ARGS[0] = 'lashExtension':
 		'Though the technician seems reluctant, she compliantly starts the slightly-painful process of trying to soak off and remove the lash extensions you have left. It stings a little, and you feel like you probably lost some of your natural ones in the bargain as well.'
 		if pcs_naturallashes > 0:pcs_naturallashes -= 1
 		pcs_lashes = pcs_naturallashes
-		money -= 500
+		if masseuse['jobtype'] > 0:
+			money -= 250
+		else
+			money -= 500
+		end
 		killvar lashextensionnew
 		killvar lashextensionduration
 		killvar lashextensionstyle
@@ -240,472 +1140,586 @@ if $ARGS[0] = 'lashExtension':
 	act 'Leave':gt 'salon', 'start'
 end
 
-if $ARGS[0] = 'pubes':
+!!-------------------------------------------------------------------------------------------------------------------------------
+!!	Salon Services
+!!-------------------------------------------------------------------------------------------------------------------------------
+
+if $ARGS[0] = 'tanning_booth':
 	cla & *clr
-	$menu_loc = 'salon'
-	$menu_arg = 'pubes'
-	menu_off = 1
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
-	'You go to the technician and tell her you want to dye you pubic hair.'
-	'She asks what colour you''d like.'
-	*nl
-
-	if pcs_pubecol[2] ! pcs_pubecol:
-		act'Return to natural colour':
-			cla
-			'"I''m looking to reverse the change of pube colour, I''d like my natural colour back."' 
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				money -= 500
-				pcs_pubecol[2] = pcs_pubecol
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
-	end	
-	if pcs_pubecol[2] ! 0:
-		act 'Black':
-			cla
-			'"Black", you say, "I want to be dark and alluring."'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 0
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Look in the mirror':gt 'hairsalon', 'mirror'
-			end
-		end
+	minut += 60
+	pcs_tan += 10
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	inhib_exp += rand(0,2)
+	if masseuse['jobtype'] > 0:
+		money -= 500
+	else
+		money -= 1000
 	end
-
-	if pcs_pubecol[2] ! 1:
-		act 'Brown':
-			cla
-			'"Brown", you say. "I think that looks nice"'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 1
-				pcs_pubecol[3] = rand(35,42)
-				money -= 500
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Look in the mirror':gt 'hairsalon', 'mirror'
-			end
-		end
-	end
-
-	if pcs_pubecol[2] ! 2:
-		act 'Ginger':
-			cla
-			'"Ginger, I think that''s a bit different and hot", you say.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 2
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Look in the mirror':gt 'hairsalon', 'mirror'
-			end
-		end
-	end
-
-	if pcs_haircol ! 3:
-		act 'Blonde':
-			cla
-			'"Blonde! Blondes have more fun. I don''t know if that works for pubes but I want to find out", you giggle.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 3
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Look in the mirror':gt 'hairsalon', 'mirror'
-			end
-		end
-	end
-	if pcs_haircol ! 4:
-		act 'Red':
-			cla
-			gs 'stat'
-			'"Red. Like really red" you tell her.'
-			'"And what would that be?" The hairdresser asks cheerfully.'
-			'"light red red, like a fire truck." you announce.'
-			'"No problem, this''ll be fun. Please have a seat.", she says and turns around one of the chairs for you.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 4
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
-	end
-	if pcs_haircol ! 5:
-		act 'Blue':
-			cla
-			gs 'stat'
-			'"This is a bit unusual but I want to try blue." you tell her.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 5
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
-	end
-	if pcs_haircol ! 6:
-		act 'Green':
-			cla
-			gs 'stat'
-			'"Green so as to help the rain forest." you tell her.'
-			'"I don''t think that''s how it works" The hairdresser says looking confused.'
-			'"Can we at least try?." you ask.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 6
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
-	end
-	if pcs_haircol ! 7:
-		act 'Pink':
-			cla
-			gs 'stat'
-			'"I want pink pubes." you tell her.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 7
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
-	end
-	if pcs_haircol ! 8:
-		act 'Purple':
-			cla
-			gs 'stat'
-			'"Do you have any purple dye?" you ask her.'
-			'"Sure thing!", she says in a cheerful way and leads you to a private room, "Why don''t you take a seat and pull down your clothes?"'
-			'"We''ll be done in no time!", she says and points your over to sit down on one of the seats.'
-
-			act 'Sit down':
-				cla
-				*clr
-				minut += 45
-				pcs_pubecol[2] = 8
-				pcs_pubecol[3] = pcs_pubes*2
-				money -= 500
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="<<FUNC(''$pube_image'')>>"></center>'
-				'45 minutes later, The dye has taken and dried in.'
-				'The beauty technician checks that everything is OK. "All done, you can get dressed."'
-				'You pull your clothes back up and pay her 500 <b>₽</b>.'
-
-				act 'Move away':gt 'hairsalon', 'start'
-			end
-		end
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/solarium.jpg"></center>'
+	'You spend an hour naked in a tanning booth bronzing your skin.'
+	act 'Leave':
+		gs 'clothing', 'wear_last_worn'
+		gs 'underwear', 'wear'
+		gt 'salon', 'start'
 	end
 end
 
-
-if $ARGS[0] = 'epilyaciya':
+if $ARGS[0] = 'hair_removal':
 	cla & *clr
 	minut += 60
 	pcs_leghair = -10
 	pcs_pubes = -10
 	inhib_exp += rand(1,5)
-	money -= 2000
-	if salonrand = 0 and masha = 0:gt 'salon', '0'
+	if masseuse['jobtype'] > 0:
+		money -= 1000
+	else
+		money -= 2000
+	end
 	gs 'stat'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/depilation.jpg"></center>'
 	'You get a full body hair removal treatment, giving you a smooth and completely hair free body.'
 	act 'Leave':gt 'salon', 'start'
 end
 
-if $ARGS[0] = 'ozdormas':
-	cla & *clr
-	minut += 60
-	vidageday += 3
-	money -= 2500
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/mass.jpg"></center>'
-	if salonrand = 0:
-		*clr & cla
-		picrand = rand(25, 28)
-		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/mass.jpg"></center>'
-		'During your massage, you moan with pleasure as the guy really knows how to get your muscles to relax, it even makes you a little turned on. You feel his had slide down to your ass and before you can even protest he slips an oiled up finger into your pussy and his thumb in your ass.'
-		act 'Indignant':gt 'salon', 'start'
-		act 'Enjoy': gt 'sex', 'minet'
-	else
-		'During your massage, you moan with pleasure as the guy really knows how to get your muscles to relax, it even makes you a little turned on.'
-	end
-	act 'Leave':gt 'salon', 'start'
-end
-
-if $ARGS[0] = 'uhodkosha':
+if $ARGS[0] = 'skin_care':
 	cla & *clr
 	minut += 60
 	inhib_exp += rand(1,5)
 	pcs_skin += 20
-	money -= 5000
+	if masseuse['jobtype'] > 0:
+		money -= 2500
+	else
+		money -= 5000
+	end
 	gs 'body_shape', 'basebeautycalc', 1
-	if salonrand = 0 and masha = 0:gt 'salon', '0'
 	gs 'stat'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/facialmask.jpg"></center>'
 	'You get a beauty mask treatment, afterwards your face feels smooth and your skin tight.'
 	act 'Leave':gt 'salon', 'start'
 end
 
-if $ARGS[0] = 'omoloshenie':
+if $ARGS[0] = 'rejuvination':
 	cla & *clr
 	minut += 60
 	inhib_exp += rand(1,5)
 	vidageday += 50
-	money -= 25000
+	if masseuse['jobtype'] > 0:
+		money -= 12500
+	else
+		money -= 25000
+	end
 	gs 'body_shape', 'basebeautycalc', 1
-	if salonrand = 0 and masha = 0:gt 'salon', '0'
 	gs 'stat'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/bodyscrub.jpg"></center>'
 	'You get a full body rejuvenation procedure, afterwards your skin feels soft and silky smooth.'
 	act 'Leave':gt 'salon', 'start'
 end
 
-if $ARGS[0] = '0':
-	cla & *clr
-	i = arrsize('$sparrnam')
-	stat['cum_count'] += 1
-	sparrloc[i] = 7
-	$sparrnam[i] = 'Z1'
-	sparrppt[i] = 0
-	sparridt[i] = 1
-	sparrvol[i] = 20
-	sparrslc[i] = 0
-	sparrcnt[i] = stat['cum_count']
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri1.jpg"></center>'
-	'During the procedure, the girl manages to stain your clothes with a clearish white liquid, which looks very similar to sperm.'
-	'You start to get very upset, not knowing if the stain will come out and not willing to wear clothes that look like someone has cum on them.'
-	'The manager quickly comes over to see what the problem is. "What is the problem?"'
-	'You show him the stain on your clothes. "You girl her spilled that stuff on my clothes look at it, it''s ruined."'
-	'He gives the girl a glare for a moment before he gives you a reassuring smile. "Oh no that will come right out with a cleaning, we will do all we can to make this right, we will even pay for the cleaning and I will assure you she will be punished."'
-	act 'Agree':money += 5000 & gt 'salon', 'start'
-	gs 'willpower', 'sex', 'force', 'medium'
-	if will_cost <= pcs_willpwr:
-		act 'Require punishment (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'force'
-			orgasm += 1
-			girl += 1
-			gs 'npcgeneratec', 0, 'salon worker', rand(35,55)
-			gs 'boyStat', $npclastgenerated
-			gs 'stat'
-			'You nod at his offer. "Fine but I want this bitch punished now!'
-			'He seems a bit taken back by your attitude. "Very well, how would you like her punished? Perhaps we can take it out of her pay, or she can do this procedure at no wages." He seems to think these are fitting punishments.'
-			'You shake your head no, no the bitch made your clothes look like they have cum on them. It''s only fitting you return the favor. "No I want you to fuck her right here as I tell you to."'
-			'"I''m sorry, but I can not do that." stammered the guy.'
-			act 'Punish the bitch':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri2.jpg"></center>'
-				'"You asked me how I''d like her to be punished, now fuck her right here as I tell you to." you say, <<$boydesc>> looks from you to her and back to you.'
-				'Clearly he likes your idea of punishment, the bulge now straining against his pants is clear evidence of that. He seems unsure what to say, so you decided to take matters into your own hands.'
-				'You reach over and unzip his pants, reaching inside you grab his now hard <<dick>>cm <<$dick_girth>> dick in your hand and pull it out. As you do you start stroking it, any further protest he might have had vanishes.'
-				gs 'arousal', 'hj', 5, 'dom'
-				gs 'stat'
-				act 'Make the bitch suck it':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri3.jpg"></center>'
-					'When he no longer protest any further, you reach over with your other hand and grab the bitch by her hair. You pull her face over to his cock and you say. "Open your mouth bitch and suck his cock."'
-					'With these words, you push her mouth at his cock, she obediently opens her mouth letting his <<dick>>cm <<$dick_girth>> cock in her mouth, she wraps her lips tightly around it.'
-					'You pull the girls head by her hair back and forth, occasionally forcing her lips against his balls, gagging her as you make her deep throat him.'
-					gs 'arousal', 'voyeur_sex', 5, 'dom'
-					gs 'stat'
-					act 'Doggystyle':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri4.jpg"></center>'
-						'After several minutes of making her gag on his <<dick>>cm <<$dick_girth>> cock, you want a change in the action. You pull her head away and command her. "Take your clothes off bitch."'
-						'She obediently strips naked with out a word, once she is naked you force her to bend over as you look to the man and command him. "Fuck her pussy." He obediently slips his dick in her pussy, both of them let out moans of pleasure.'
-						'He beings to get into it and starts pounding her balls deep. You pull down your panties and spread you legs. Taking one of her hands in yours you put it on your pussy, she diligently begins to massage your clitoris.'
-						gs 'arousal', 'voyeur_sex', 5, 'dom'
-						gs 'arousal', 'vaginal_finger', 5, 'dom'
-						gs 'stat'
-						act 'Put her on top':
-							cla & *clr
-							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri5.jpg"></center>'
-							'A few minutes later you get off the chair and look at him. "Sit in the chair." Which he does at once, then you pull the girl over and point at him.'
-							'"Crawl on top of him and straddle him, ride him." She wastes no time doing as you command, once straddling him she beings to rhythmically ride his cock. As she moans in pleasure you grab her hips and force her all the way down, so he is once again balls deep in her twat.'
-							gs 'arousal', 'voyeur_sex', 5, 'dom'
-							gs 'stat'
-							act 'Lay them on the floor':
-								cla & *clr
-								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri6.jpg"></center>'
-								'Watching this you begin to masturbate, you feel yourself getting turned on as you pussy gets wetter. Unable to be left out anymore, you grab the girl and pull her off, shoving her down on the floor. "Lay on your back."'
-								'She does as you tell her and then you look at the man. "Lay on your side next to her and start fucking her again." His grin tells you he is not only enjoying fucking her but loves that you are telling him how to fuck her.'
-								'He lays down next to her and immediately slips his <<dick>>cm <<$dick_girth>> dick back in her and starts fucking her again. You pull the rest of your clothes off and kneel down over her face. "Lick my pussy, bitch." Which she eagerly does, her tongue laps and teases your clit.'
-								'You can tell she has some experience at eating pussy as it feels great.'
-								gs 'arousal', 'masturbate', 5, 'dom'
-								gs 'arousal', 'cuni', 5, 'dom'
-								gs 'stat'
-								act 'Finish':
-									cla & *clr
-									telmasha = 1
-									!gs 'telefon', 'AddContact', 'Axxx', 'icon_masha', "$telsob = 'Masha' & gt 'telefon', 'mobilaraz'","hour >= 8 and hour <= 20","",""
-									masha += 1
-									'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/sex/pri7.jpg"></center>'
-									$orgasm_txt = 'You begin to pant and moan and finally you have an intense orgasm, coating the girls face in your pussy juices. Seeing this the guy grunts and starts pounding harder, obviously getting near to blowing his load as well.'
-									$orgasm_or = 'custom'
-									gs 'arousal', 'cuni', 5, 'dom'
-									gs 'arousal', 'end'
-									gs 'stat'
-									'Standing up you look at him. "Don''t cum in her, stand up." With a slight frown from being so close he does as you tell him. You grab the girl by the hair and pull her up till she is kneeling in front of the guy.'
-									'"Stroke his cock till he cums all over your face." The guy is grinning again as she grabs his cock and begins jerking him off for all she''s worth, while you get dressed. It doesn''t take long before he is shooting his cum all over her pretty face.'
-									'You look at the man. "That''s how you punish bitches." Glancing at her you add. "Isn''t that right bitch?" She nods in agreement, though you are not sure if it is because she really does agree or she is just doing what you say.'
-									'Either way you find it a turn on, with that you take the offered money and grab one of her cards off the counter reading it. "Masha huh? You really know how to use your tongue, I might just call you, so you can use it again." You say to her and then without another glance at the two of them or waiting for a reply you walk out, leaving Masha kneeling on the floor covered in sperm.'
-									act 'Leave':money += 5000 & gt 'salon', 'start'
-								end
-							end
-						end
-					end
-				end
+if $ARGS[0] = 'massage':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
+	'"I was looking to get a massage today."'
+	act'Never mind<b>₽</b>':gt'salon','services'
+	if masseuse['jobtype'] = 0:
+		'"What kind of massage were you interested in today?"'
+		act'What kind of massages are there?':gs'salon','massage_explain'
+		if money >= 1000:
+			act'Normal massage 1,000 <b>₽</b>':gt'salon','normal_massage'
+		else
+			act'Normal massage (<font color="red">1,000 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		if money >= 5000:
+			act'Wellness massage 5,000 <b>₽</b>':gt'salon','wellness_massage'
+		else
+			act'Wellness massage (<font color="red">5,000 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 2000:
+			act'Magic finger massage 2,000 <b>₽</b>':gt'salon','magic_massage'
+		else
+			act'Magic finger massage (<font color="red">2,000 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 1500:
+			act'Throat massage 1,500 <b>₽</b>':gt'salon','throat_massage'
+		else
+			act'Throat massage (<font color="red">1,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 2500:
+			act'Hardcore massage 2,500 <b>₽</b>':gt'salon','hardcore_massage'
+		else
+			act'Hardcore massage (<font color="red">2,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 2500:
+			act'Double hardcore massage 3,000 <b>₽</b>':gt'salon','double_hardcore_massage'
+		else
+			act'Double hardcore massage (<font color="red">3,000 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 2500:
+			act'Gentle massage 2,500 <b>₽</b>':gt'salon','gentle_massage'
+		else
+			act'Gentle massage (<font color="red">2,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
 			end
 		end
 	else
-		act 'Require punishment (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end	
-end
-
-if $ARGS[0] = '1':
-	cla & *clr
-	minut += 5
-	if worksalon = 0:
-		'You ask the manager if he has a job opening.'
-		if masash < 10:
-			'After asking the manager about a job he tells you. "You need to complete a massage course at the community center before I can hire you."'
-			act 'Move away':gt 'salon', 'start'
-		elseif masash >= 10:
-			'The manager tells you. "We need a masseuse. You''d work Monday, Wednesday and Friday, work starts at 10:00, your shift will finish at 19:00. Your wages will be 1560<b> ₽</b> per shift."'
-            '"You''ll need to file your paperwork with the personnel department."'
-			if (work = 0 and worksalon = 0) or (cheatWork = 1 and worksalon = 0):
-				act 'Take the job':
-					cla & *clr
-					worksalon = 1
-					work = 1
-					'You file your paperwork with the personnel department'
-					act 'Move away':gt 'salon', 'start'
-				end
+		'"Looking to receive instead of give today <<$pcs_firstname>>?"'
+		act'What kind of massages are there?':gs'salon','massage_explain'
+		if money >= 500:
+			act'Normal massage 500 <b>₽</b>':gt'salon','normal_massage'
+		else
+			act'Normal massage (<font color="red">500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
 			end
-			act 'Move away':gt 'salon', 'start'
 		end
-	elseif worksalon = 1:
-		act 'Resign':gt 'salon', 'discharge'
-		act 'Move away':gt 'salon', 'start'
+		if money >= 2500:
+			act'Wellness massage 2,500 <b>₽</b>':gt'salon','wellness_massage'
+		else
+			act'Wellness massage (<font color="red">2,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 1000:
+			act'Magic finger massage 1,000 <b>₽</b>':gt'salon','magic_massage'
+		else
+			act'Magic finger massage (<font color="red">1,000 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 750:
+			act'Throat massage 750 <b>₽</b>':gt'salon','throat_massage'
+		else
+			act'Throat massage (<font color="red">750 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 1250:
+			act'Hardcore massage 1,250 <b>₽</b>':gt'salon','hardcore_massage'
+		else
+			act'Hardcore massage (<font color="red">1,250 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 1500:
+			act'Double hardcore massage 1,500 <b>₽</b>':gt'salon','double_hardcore_massage'
+		else
+			act'Double hardcore massage (<font color="red">1,500 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
+		
+		if money >= 1250:
+			act'Gentle massage 1,250 <b>₽</b>':gt'salon','gentle_massage'
+		else
+			act'Gentle massage (<font color="red">1,250 <b>₽</b> </font>)':
+				msg'You don''t have enough money for this!'
+			end
+		end
 	end
 end
 
-if $ARGS[0] = 'beginwork':
+if $ARGS[0] = 'massage_explain':
+	*nl
+	'"For women we have several types of massages.'
+	'First off, we have your standard body massage, guaranteed to leave you feeling relaxed and refreshed.'
+	*nl
+	'Then we also have a special wellness massage. Very relaxing as well and with the use of special oils will leave you feeling younger and delay the aging process of your skin.'
+	*nl
+	'There is also the magic finger massage, which relaxes you in a different way. Designed to release tension from your body, it will have you moaning for the entire session we''re sure of it. It has very <i>climactic</i> results.'
+	*nl
+	'We also have a throat massage for those who have a bit of an oral fixation. Helps to satisfy the need to suck on something. Comes with a complimentary cocktail or facial, whichever you choose.'
+	*nl
+	'We have the hardcore massage and the double hardcore massage. The hardcore massage is there to quite literally pound the stress from your body. Our massage therapists are extremely skilled when it comes to relieving stress in this manner. A double hardcore massage is simply adding one more person. Instead of a single massage therapist, two of them will simultaneously pound you for maximum stress relief.'
+	*nl
+	'Lastly, we have a gentle massage. Not everybody likes it hard, so we have a more gentle version as well that should fill your needs quite nicely if you are inclined.'
+	*nl
+	'Does that explain all of our services to you? By the way, we''re cash only."'
+end
+
+if $ARGS[0] = 'massage_end':
+	gs 'clothing', 'wear_last_worn'
+	gs 'underwear', 'wear'
+	gs 'arousal', 'end'
+	gt 'salon', 'start'
+end
+
+if $ARGS[0] = 'normal_massage':
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'stat'
+	money -= iif(masseuse['jobtype'] > 0, 500, 1000)
+	pcs_sleep += 25
+	pcs_mood += 20
+	gs 'arousal', 'massage', 30
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/mass.jpg"></center>'
+	'After undressing and laying on the table, you spend the next 30 minutes in bliss while a massage therapist kneads through the muscles in your back.'
+	*nl
+	'Truth be told, his touch is almost... sensual, and you notice a growing heat between your legs. Fortunately, a towel covers your hips so he shouldn''t be able to see your wetness.'
+	*nl
+	'But soon enough, the massage is over and you are left to put redress, a renewed energy coming with your relaxed body.'
+	act 'Leave':gt'salon','massage_end'
+end
+
+if $ARGS[0] = 'wellness_massage':
 	cla & *clr
-	'<center><b><font color="maroon">Beauty</font></b></center>'
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
-	'You go to your workstation and prepare it as you wait for your first customer.'
-	act 'Start work':
-		smenaSalon += 1
-		gt 'worksalon', 'start'
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'massage', 30
+	gs 'stat'
+	vidageday += 30
+	pcs_skin += 4
+	pcs_sleep += 25
+	pcs_mood += 20
+	pcs_horny += 25
+	money -= iif(masseuse['jobtype'] > 0, 1250, 2500)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/mass.jpg"></center>'
+	'You undress and lay on the table before an attendant comes in. He begins kneading your back, rubbing a tingling oil all over your body. During your massage, you moan with pleasure as the guy really knows how to get your muscles to relax, it even makes you a little turned on.'
+	*nl
+	'The massage continues and you feel your whole body starting to heat up. The oil is also still tingles and your breathing starts to increase as well. Your face is hot and your nipples feel very sensitive against the soft fabric of the table. You struggle not to squirm beneath the touch of your masseur, especially not your legs which very much want to grind together. Your pussy is wet like a waterfall.'
+	*nl
+	'And suddenly the massage is over. With flushed face, you dress yourself after the masseur has left, wondering what the hell was in that oil they used on you.'
+	act 'Leave':gt'salon','massage_end'
+end
+
+if $ARGS[0] = 'magic_massage':
+	cla & *clr
+	money -= iif(masseuse['jobtype'] > 0, 1000, 2000)
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'massage', 5
+	gs 'arousal', 'foreplay', 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/magic.jpg"></center>'
+	'You undress and lay on the table before an attendant comes in. He begins by rubbing oil across your body and massaging your shoulders, before reaching for your breasts. He massages those too, groping you in such a perfect way that your nipples are already stiff before he ever touches them. When he does, your breath hitches and you feel a growing wetness between your legs.'
+	*nl
+	'After a few minutes of teasing you and building your arousal, he turns you over to lay on your stomach.'
+	act'Turn over':
+		cla & *clr
+		gs 'arousal', 'vaginal_finger', -40
+		minut += 20
+		gs 'stat'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/magic.mp4"></video></center>'
+		*nl
+		'The next part passes by in a blur of pleasure and orgasms. He starts by reaching for your ass and massaging that, but very quickly moved between you legs and starts showing you why they call it a "magic finger" massage. He digs into your snatch, leaving you writhing under his touch. He does something weird with his fingers causing you gasp and immediately clench down on them. Holy shit you just came. And then he makes you cum again. And again. And then after the next time you start drooling into the table. And then you start to lose track of what''s happening altogether.'
+		*nl
+		'This guy''s hands know your pussy better than you do. They massage every spot that sets you off, playing with your clit in just the right ways and snaking fingers inside you to rub G-spots you didn''t know existed. Your entire body becomes stuck in a repetitive cycle of tension while your orgasm builds followed by mind-numbing release after your climax winds down before it starts building up again. Under his touch the only thing you know how to do is cum and drool from both sets of lips.'
+		*nl
+		'<i>Ohhhhhh myyyyy godddddd...</i>'
+		act'Next':
+			pcs_mood += 40
+			orgasm += 10
+			pcs_sleep -= 20
+			gs 'stat'
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Eventually the massage comes to an end and you are left on your own to recover from the experience. Your entire body is flushed, your nipples are rock hard, your thighs are slick with your own juices, and your post orgasmic high makes you feel like you''re floating in space. And what do you know? You actually do feel pretty relaxed too. You could fall asleep right there.'
+			act 'Leave':
+				gs 'clothing', 'wear_last_worn'
+				gs 'underwear', 'wear'
+				gs 'arousal', 'end'
+				gt 'salon', 'start'
+			end
+		end
 	end
-	act 'Resign':gt 'salon', 'discharge'
+end
+
+if $ARGS[0] = 'throat_massage':
+	cla & *clr
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'foreplay', 15
+	gs 'arousal', 'bj', 15
+	gs 'stat'
+	pcs_mood += 20
+	money -= iif(masseuse['jobtype'] > 0, 750, 1500)
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj1.mp4"></video></center>'
+	'You undress and lay on the table before an attendant comes in. He quickly removes his robe to reveal a big beautiful cock and gently hangs your head off the table with a pillow to cushion your neck. He then proceeds to carefully begin throat fucking you. '
+	*nl
+	'His hands continue to roam your breasts and body while he plows his cock into your mouth and after a short time, you decide... yeah, this is actually pretty relaxing. A blowjob where you don''t have to do any of the work for once. You just sit back and let your eyes roll back into your head while a nice fat cock fills your mouth and hands tease your breasts.'
+	*nl
+	'Eventually, you are woken from your stupor from repeated taps on the should.'
+	'"Ma''am. Where would you like your cum?"'
+	act'"Mmm mm mmrph" (in my mouth)':
+		cla & *clr
+		gs'cum_call','mouth_swallow','masseur'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/bj1.mp4"></video></center>'
+		'"Mmm mm mmrph," you choke around the masseur''s cock. Surprisingly, he understands you perfectly and you immediately feel a hot liquid splash into your mouth, which you swallow. Once you''ve finished gulping down everything, the masseur cleans his cock on a towel, thanks you for your patronage, and leaves while you get dressed.'
+		act 'Leave':
+			gs 'clothing', 'wear_last_worn'
+			gs 'underwear', 'wear'
+			gs 'arousal', 'end'
+			gt 'salon', 'start'
+		end
+	end
+	
+	act'"Mmrph mrr mrrrph" (on my face)':
+		cla & *clr
+		gs'cum_call','face','masseur'
+		gs'cum_call','hair','masseur'
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/facial2.mp4"></video></center>'
+		'"Mmrph mrr mrrrph," you choke around the masseur''s cock. Surprisingly, he understands you perfectly and without hesitation pulls out of your mouth and climbs onto the edge of the table before spraying semen all over youe. The hot sticky liquid coats your face and hair and the masseur continues to smear it everywhere with his cock for as much coverage as possible. It''s strangely comforting after being throatfucked for half an hour Once your face is fully covered, he steps down off the table, cleans his cock with a towel, and thanks you for your patronage before leaving you to get dressed.'
+		act'Wipe the cum off your face':
+			cumspclnt = 12
+			gs 'cum_cleanup'
+			'Taking a nearby towel, you wipe your face and hair clean, tossing it into a bin and redressing before prreparing to leave.'
+			act 'Leave':
+				gs 'clothing', 'wear_last_worn'
+				gs 'underwear', 'wear'
+				gs 'arousal', 'end'
+				gt 'salon', 'start'
+			end
+		end
+		
+		act'Leave with it':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'Ignoring the plentiful supply of towels, you put your clothes back on and head out to the main salon.'
+			'"How was your massage?" the receptionist asks.'
+			'"Very good. I really enjoyed the complimentary facial," you say with a cum webbed smile.'
+			act 'Leave':
+				gs 'clothing', 'wear_last_worn'
+				gs 'underwear', 'wear'
+				gs 'arousal', 'end'
+				gt 'salon', 'start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'hardcore_massage':
+	cla & *clr
+	cumnostd = 1
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'vaginal', 30, '', 'rough'
+	gs 'stat'
+	pcs_mood += 20
+	money -= iif(masseuse['jobtype'] > 0, 1250, 2500)
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/fuck<<rand(7,15)>>.mp4"></video></center>'
+	'The next 30 minutes are spent getting absolutely <i>railed</i> by a man who''s cock must be harder than steel.'
+	*nl
+	'The repetitive sensation of flesh being pounded into your pussy is all you can think about and it''s driving you insane with pleasure.'
+	*nl
+	'But all good things must come to an end. At the edge of your consciousness you hear the grunts of the masseur.'
+	'"Would you like a creampie or a facial ma''am?"'
+	act'Moan incoherrently':
+		cla & *clr
+		gs'cum_call','','masseur'
+		orgasm += 1
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/creampie<<rand(2,4)>>.mp4"></video></center>'
+		'You don''t really understand what he''s saying but make some kind of sound with your voice as a response. It didn''t really sound like words, but you thought you should make some kind of response.'
+		'His response is to plunge into you balls deep, all the way to the hilt. Your toes curl in pleasure and a "Nnnngh~!" sound escapes your mouth before a flood of liquid fills the cracks between his cock and your pussy, and you cum hard. Everything tightens up, you feel yourself clenching onto his cock like a vise, so hard that it straddles the line between pain and pleasure, and then like a long held breath everything is released from you. You collapse on the table and feel him slip out of you, whimpering at the empty feeling. Moments later, cum gushes from your pussy.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The masseuse cleans himself off and thanks you for your patronage before giving you a little time to pull yourself back together.'
+			*nl
+			'They weren''t kidding when they said they''d pound the stress from your body...'
+			act'Get dressed and leave':gt'salon','massage_end'
+		end
+	end
+	
+	act'Inside! Inside!':
+		cla & *clr
+		gs'cum_call','','masseur'
+		orgasm += 1
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/creampie<<rand(2,4)>>.mp4"></video></center>'
+		'"Inside! Inside! Inside! <i><b>Inside!</b></i>" you scream.'
+		'Your reponse is savage and visceral. You are so high on pleasure and this guy''s cock, you can barely think. The only thing you know is you want to feel him cum inside you <i><b>now.</b></i>'
+		*nl
+		'At your word, he plunges balls deep into you, thrusting all the way to the hilt. Your toes curl in pleasure and a "Nnnngh~!" sound escapes your mouth before a flood of liquid fills the cracks between his cock and your pussy, and you cum hard. Everything tightens up, you feel yourself clenching onto his cock like a vise, so hard that it straddles the line between pain and pleasure, and then like a long held breath everything is released from you. You collapse on the table and feel him slip out of you, whimpering at the empty feeling. Moments later, cum gushes from your pussy and you feel it dribble from your lips.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The masseuse cleans himself off and thanks you for your patronage before giving you a little time to pull yourself back together.'
+			*nl
+			'You feel dazed. They weren''t kidding when they said they''d pound the stress from your body...'
+			act'Get dressed and leave':gt'salon','massage_end'
+		end
+	end
+	
+	act'Face! Face! Face!':
+		cla & *clr
+		gs'cum_call','face','masseur'
+		gs'cum_call','hair','masseur'
+		gs'cum_call','mouth','masseur'
+		orgasm += 1
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/facial<<rand(1,2)>>.mp4"></video></center>'
+		'"Face! Face! Face!" you cry out.'
+		'Your reponse is savage and visceral. You are so high on pleasure and this guy''s cock, you can barely think. The only thing you know is you want to feel him cum all over your face right now.'
+		*nl
+		'You spread your legs wide and he pulls himself from you, immediately rushing to your head. The moment he gets there, his cock bursts with cum, spattering all over your face and getting stuck in your hair. The moment it touches your skin, you feel an enormous rush and cum <i>hard.</i> You moan open mouthed with tongue sticking out and the only thing you''re aware of is his cum being slathered over the rest of your cheeks by his cock.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The masseuse cleans himself off and thanks you for your patronage before giving you a little time to pull yourself back together.'
+			*nl
+			'You feel dazed. To think you could cum just from someone ejaculating all over your face... The buildup must have been intense...'
+			act'Get dressed and leave':gt'salon','massage_end'
+			act'Wipe your face off first':
+				cumspclnt = 12
+				gs 'cum_cleanup'
+				gt 'salon','massage_end'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'double_hardcore_massage':
+	cla & *clr
+	cumnostd = 1
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'vaginal', 30, '', 'rough'
+	gs 'arousal', 'bj', -30, '', 'rough'
+	gs 'stat'
+	pcs_mood += 20
+	money -= iif(masseuse['jobtype'] > 0, 1500, 3000)
+	gs 'stat'
+	'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/double.mp4"></video></center>'
+	'"Mmmmm..." you moan around the cock in your mouth while the one behind you slams into you again and again for the hundredth time. Or is it two? Or probably more like four.'
+	*nl
+	'You have no idea how long its been since you started. Twenty minutes? Half an hour? The only thing you know is how much you have been enjoying being pistoned back and forth between these two cocks. And they guys attached to them know exactly what they''re doing. Every thrust fills you up just right, and the one you''ve been sucking on has the perfect shape and flavor for a girl''s enjoyment. You could stay between thes cocks forever...'
+	*nl
+	'But all good things must come to an end. Eventually one of them says, "Time is almost up ma''am. Would you like us to cum inside you or give you a double facial?"'
+	
+	act'"Mm-mm mmm" (inside please)':
+		gs'cum_call','','masseur'
+		gs'cum_call','mouth','masseur'
+		orgasm += 1
+		gs'stat'
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/double.mp4"></video></center>'
+		'"Mm-mm mmm," you mumble around the cock in your mouth. Interestingly enough, they seem to understand perfectly and begin to pick up the pace until they simultaneously thrust into both your holes, filling them to the limit with flesh and immediately after, cum. The tangy taste of semen fills your mouth and you feel another thick liquid squirting out into your pussy at the same time. It drives you crazy and sends you into a toe curling orgasm. Somewhere in the back of your mind, you notice cum in your mouth tastes remarkably sweet and you wonder if the salon encourages them to add lots of sweet fruits to their diet. As they both withdraw from you, you feel cum dribble from both sets of lips, though you can only lick one of them.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'After thanking you for your patronage, the two masseurs depart, giving you a little time to catch your breath and get dressed.'
+			*nl
+			'You lick your lips again, still feeling cum sticking to the corners of your mouth. Turns out that getting double teamed by trained masseurs is a very delicious experience, in more ways than one.'
+			act'Get dressed and leave':gt'salon','massage_end'
+		end
+	end
+	
+	act'"Mmm mmm mm mmmmph" (give me the facial)':
+		gs'cum_call','face','masseur'
+		gs'cum_call','face','masseur'
+		gs'cum_call','hair','masseur'
+		gs'cum_call','hair','masseur'
+		orgasm += 1
+		gs'stat'
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial28.jpg"></center>'
+		'"Mmm mmm mm mmmmph," you mumble around the cock in your mouth. Interestingly enough, they seem to understand perfectly and immediately withdraw from your holes, gathering around your face. You stick out your tongue in anticipation and are rewarded with hot streams of cum spattering across your face. It''s thick, it''s sticky, and makes you feel so fucking hot. You massage your clit furiously while they spray load after load that coats your face and hair and it finally sends you over the edge into orgasm.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'While your orgasm winds down, the two masseurs wipe themselves clean and thank you for your patronage before departing to give you a little time to catch your breath and get dressed.'
+			*nl
+			'You stretch and sigh in deep satisfaction. This place knows how to treat ladies right.'
+			act'Get dressed and leave':gt'salon','massage_end'
+			act'Wipe your face off first':
+				cumspclnt = 12
+				gs 'cum_cleanup'
+				gt 'salon','massage_end'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'gentle_massage':
+	cla & *clr
+	cumnostd = 1
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	gs 'arousal', 'massage', 5
+	gs 'arousal', 'vaginal', 25
+	gs 'stat'
+	pcs_mood += 20
+	money -= iif(masseuse['jobtype'] > 0, 1250, 2500)
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/mass.jpg"></center>'
+	'After a short but incredibly sensual massage, you have spent the last half an hour being sexually pampered by this masseur''s cock.'
+	*nl
+	'Within minutes of the beginning you were soaking wet. His cock slid inside you so smoothly, it''s like you were both made of butter. From then on, it''s been almost torturously gentle, every thrust long and slow, filling you up and stretching your walls, before retreating again like an ocean wave. In a weird way it feels like breathing if breathing could bring you to orgasm.'
+	*nl
+	'Still thrusting slowly and gently, the masseur whispers to you, "Where would you like your cum ma''am? Inside or on your face?"'
+	act'Inside':
+		gs'cum_call','','masseur'
+		orgasm += 1
+		cla & *clr
+		'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/creampie5.mp4"></video></center>'
+		'"Inside please," you mew back.'
+		*nl
+		'The masseur pushes into you until you''re stretched to the limit. Once he''s reached the deepest point inside you, that''s when you feel it. Something hot spreads inside you and you can feel it filling your uterus. His cock pulses inside you and you cum as well, eyes rolling back into your head as you do.'
+		*nl
+		'Eventually he finishes and pulls out of you, a thick stream of liquid flowing out after.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The masseuse cleans himself off and thanks you for your patronage before giving you a little time to clean up and get dressed, but you continue to lay on the table for a few moments.'
+			*nl
+			'That might have been the most relaxing orgasm of your life...'
+			act'Get dressed and leave':gt'salon','massage_end'
+		end
+	end
+!!	act'Outside':
+	
+	act'My face':
+		gs'cum_call','mouth','masseur'
+		gs'cum_call','face','masseur'
+		gs'cum_call','hair','masseur'
+		orgasm += 1
+		cla & *clr
+		'<center><video autoplay loop src="images/locations/city/citycenter/mall/salon/work/sex/facial2.mp4"></video></center>'
+		'"Face please," you mew.'
+		*nl
+		'He thrusts slowly into you a few more times, playing with your clit until you start orgasming. Once you start, he immediately pulls out and moves to your face to start cumming himself. The sensation of climax combined with the cum painting your face is incredible, and you spend the next few moments in bliss.'
+		act'Continue':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/work/room.jpg"></center>'
+			'The masseuse cleans himself off and thanks you for your patronage before giving you a little time to clean up and get dressed, but you continue to lay on the table for a few moments.'
+			*nl
+			'That might have been the most relaxing fuck of your life...'
+			act'Get dressed and leave':gt'salon','massage_end'
+			act'Wipe your face off first':
+				cumspclnt = 12
+				gs 'cum_cleanup'
+				gt 'salon','massage_end'
+			end
+		end
+		
+	end
 end
 
 if $ARGS[0] = 'discharge':
 	cla & *clr
 	minut += 10
-	worksalon = 0
+	masseuse['jobtype'] = 0
 	work = 0
 	pay = smenaSalon * 1560
 	money += pay

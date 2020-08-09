@@ -2,7 +2,7 @@
 
 if $ARGS[0] = 'start' or $ARGS[0] = '':
 	$loc = 'meadow'
-	$metka = 'start'
+	$loc_arg = 'start'
 	$location_type = 'secluded'
 
 	$menu_loc = 'meadow'
@@ -68,9 +68,9 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 		end
 	end
 
-	if MiraLoc = 2:
+	if MiraLoc = 2 and meadow ! 2:
 		act 'Go back to the forest': minut += 20 & MiraLoc = 3 & gt 'gadforest', 'forest_edge'
-	else
+	elseif meadow ! 2:
 		act 'Go back to the forest': minut += 20 & gt 'gadforest', 'forest_edge'
 	end
 
@@ -79,15 +79,22 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 			if $clothingworntype ! 'exercise':
 				*nl
 				'Your meadow is a perfect place to workout if you were wearing exercise clothes'
-			elseif pcs_inhib >= 35 and Miraloc ! 2 and temper >= 10:
-				*nl
-				'Your meadow is a perfect place to exercise. There is no one around, so you could probably exercise nude if you wanted.'
-				act 'Exercise': gt 'meadow', 'workout'
-				act 'Exercise nude':gt 'meadow', 'workout', 'nude'
-			elseif Miraloc = 2:
-				*nl
-				'Your meadow is a perfect place to exercise. Mira is here but she wouldn''t mind if you exercised for a little bit.'
-				act 'Exercise': gt 'meadow', 'workout'
+			   if temper >= 10:
+                    *nl
+                    gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+                    if Miraloc ! 2 or npc_rel['A60'] > 40 or mirasex = 1:
+                        if Miraloc = 2:
+                            'Your meadow is a perfect place to exercise. Mira is here but she wouldn''t mind if you exercised for a little bit, even if in the nude.'
+                        else
+                            'Your meadow is a perfect place to exercise. There is no one around, so you could probably exercise nude if you wanted.'
+                        end
+                        if will_cost <= pcs_willpwr:
+                            act 'Exercise nude':gt 'meadow', 'workout', 'nude'
+                        else
+                            act'Exercise nude (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+                        end
+                    end
+               end
 			else
 				*nl
 				'Your meadow is a perfect place to exercise.'
@@ -631,7 +638,7 @@ if $ARGS[0] = 'miraperversion11':
 	'But you were also drunk, and did not do what she did. Her face sinks with shame and she continues to look at the ground.'
 	'You speak with her awhile and somehow manage to soothe her and tell her that, she should just bite the bullet and move on.'
 	'Mira thanks you most sincerely for your support, but her eyes still look down....'
-	act 'Leave': gt $loc, $metka
+	act 'Leave': gt $loc, $loc_arg
 end
 
 if $ARGS[0] = 'lesb_mira':
@@ -670,7 +677,7 @@ if $ARGS[0] = 'mira_lesb':
 			'"- You''re mean, " she sulked at you in response.'
 			gs 'arousal', 'end'
 			gs 'stat'
-			act 'Continue':gt $loc, $metka
+			act 'Continue':gt $loc, $loc_arg
 		end
 	end
 end

@@ -1,0 +1,1772 @@
+# city_lake
+
+if $ARGS[0] = 'start':
+	$loc = 'city_lake'
+	$loc_arg = 'start'
+	$menu_loc = 'city_lake'
+	$menu_arg = 'start'
+	menu_off = 0
+	$location_type = 'public_outdoors'
+	*clr & cla
+	CLOSE ALL
+	if sound = 0:
+		if month >=11 and month <= 12 or month >=1 and month <=3:
+			if hour >= 8 and hour <= 23: PLAY 'sound/ozero.mp3',30 & PLAY 'sound/zima.mp3',30
+			if hour >= 0 and hour <= 7: PLAY 'sound/ozero.mp3',30 & PLAY 'sound/zima.mp3',30
+		else
+			if hour >= 8 and hour <= 23: PLAY 'sound/ozero.mp3',30
+			if hour >= 0 and hour <= 7:PLAY 'sound/ozero.mp3',30
+		end
+	end
+
+	gs 'stat'
+
+	'<center><h2>Lake</h2></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/lake2.jpg"></center>'
+
+	'A large lake close to the city, it is a favorite destination of residents in the summer.'
+	if $clothingworntype ! 'swimwear' and $clothingworntype ! 'beach':
+		'There is a winding <a href="exec:gt ''city_lake_path'',''start''">path</a> leading to the railway station in the city industrial region.'
+	else
+		'You can see the winding path to the railway station in the city industrial region, you should get properly dressed if you want to go there.'
+	end
+
+	if car > 0 and cardrive = 4:
+		cardrive = 4
+		'At the lake stands <a href="exec:GS ''carF'', ''start''">your <<$car>></a>.'
+	end
+
+	if func('changingroom','count_swim_item') > 0:
+		act 'Use changing room':gt 'changingroom', 'view_swim_list'
+	else
+		*nl
+		'You should probably buy some swimwear if you intend of spending time at the beach'
+		*nl
+	end
+
+	if npc_QW['A192'] = 3 and temper >= 15 and ($clothingworntype = 'swimwear' or $clothingworntype = 'beach') and hour >= 6 and hour <= 20:'Waving her hand at you is <a href="exec:gt ''nastja'', ''pos14''">Anastasia</a>.'
+
+	act 'Leave':
+		if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
+			cla
+			'You need to get dressed in regular clothing first.'
+			act'Return':gt 'city_lake','start'
+		else
+			minut += 40
+			gt 'city_residential'
+		end
+	end
+
+	if hour >= 6 and hour <= 20:
+		'Nearby are various '+iif($clothingworntype = 'swimwear' or $clothingworntype = 'beach','<a href="exec:gt ''city_lake'', ''aquapark''">water attractions</a>.','water attractions, but you need to put on some swimwear before you go there.')+''
+		'You can go for a ride on a <a href="exec:gt ''city_lake'', ''horse''">horse</a> along the beach.'
+		'And a short walk from here there is even a '+iif(pcs_inhib >= 30 or (exhibitionist_lvl > 1 and pcs_horny > 60),'<a href="exec:gt ''Nudelake''">nudist beach</a>','nudist beach, but you are''t confident enough to go in that direction.')+''
+		if temper >= 15 and ($clothingworntype = 'swimwear' or $clothingworntype = 'beach'):
+			'Also you can sunbathe or swim.'
+
+			act 'Walk on the beach':
+				cla & *clr
+				menu_off = 1
+				minut += 60
+				pcs_mood += 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/lake.jpg"></center>'
+				'You walk along the shore.'
+				walkrand = rand(0, 100)
+
+				if walkrand >= 50 and walkrand < 60:gt 'city_lake', 'walklake1'
+				if walkrand >= 60 and walkrand < 70:gt 'city_lake', 'walklake2'
+
+				act 'Finish':gt 'city_lake', 'start'
+			end
+
+			act 'Swim (1:00)':
+				*clr & cla
+				menu_off = 1
+				pcs_makeup = 1
+				cumspclnt = 4
+				gs 'cum_cleanup'
+				minut += 60
+				gs 'exercise', 'tier1', 1, 'stren_exp'
+				pcs_sweat = 10 + rand(0,4)
+				if pcs_inhib < 40:inhib_exp += rand(1,2)
+
+				'<center><img <<$set_imgh>> src="images/locations/shared/lake/swim.jpg"></center>'
+				'You swim in the lake, the water refreshes and invigorates.'
+				if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+
+				act 'Get out of the water':gt 'city_lake', 'start'
+			end
+			if sunWeather = 1:
+				act 'Sunbathe (1:00)':
+					*clr & cla
+					minut += 60
+					menu_off = 1
+					if pcs_inhib < 50:inhib_exp += rand(1,2)
+					if pcs_sweat < 35 : gs 'sweat', 'add', 5
+					if pcs_hydra >= 100:
+						pcs_hydra -= 10
+					else
+						pcs_hydra -= 20
+					end
+					pcs_mood += 5
+					'<center><img <<$set_imgh>> src="images/locations/shared/lake/zagar.jpg"></center>'
+
+					if krem = 0:
+						pcs_tan += 1
+						'You lie on the beach and sunbathe.'
+					else
+						krem -= 1
+						pcs_tan += 3
+						'You smear your body with sunblock and sunbathe.'
+					end
+
+					evrand = rand(0, 100)
+
+					if evrand > 50:
+						act 'Rise from the beach':gt 'city_lake', 'start'
+					elseif evrand <= 30 and andrei > 0:
+						act 'Rise from the beach':gt 'city_lake', 'start'
+					elseif evrand <= 30 and andrei = 0:
+						anreirape = 1
+						'You fall asleep on the beach while sunbathing. You dream that someone is caressing your chest. Your nipples harden, your breasts rise from deep breaths. It feels like something wet glides across your breast, and you moan sweetly.'
+						'Strong hands stroke the folds of your body, causing your whole body to be covered in goose bumps, and suddenly a finger slips under your swimwear down your pubis and starts to rub your pussy. Suddenly you gasp as it finds your clit.'
+						'Your body is thrown into a fever, sweet runs down your back, and below you are all wet. Already feeling that the pleasure comes from reality and not a dream, but still unable to overcome the sleepy bliss and open your eyes, you have your legs wide, yielding a seductive caress.'
+						'When cheeky finger dipped into your juices, easily ran up your bosom, you still wonder, is this a natural feeling. The finger movement leads you into a kind of trance, you are already moaning loudly, wriggling under the hot sun. And then when you think something is about to happen, you wake with a start.'
+
+						act 'Open your eyes':
+							*clr & cla
+							'Opening your eyes, you see the shadowy figure of an unshaven men lustfully staring at you. You become uncomfortable - you''re lying naked in front of a stranger, moaning in sexual bliss like a slut and really scared - there''s no one on the beach, he could do with you whatever he wants!'
+							'All these thoughts flash through your head as the man is pulling off his shorts. You look with horror at his exposed penis, it''s a fucking sea monster.'
+
+							act 'Run away':
+								*clr & cla
+								'You try to get up, but are immediately pulled to his hairy chest by his strong hands.'
+								
+								gs 'willpower', 'misc', 'resist', 'hard'
+								if will_cost <= pcs_willpwr:
+									act 'Knee hit him in the balls (<<will_cost>> Willpower)':
+										*clr & cla
+										andrei = 1
+										gs 'willpower', 'pay', 'resist'
+										gs 'stat'
+										'You very accurately knee him in the balls, he screams and lets you down.'
+
+										act 'Escape from the beach':gt 'city_lake', 'start'
+									end
+								else
+									act 'Knee him in the balls (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+								end	
+
+								act 'Escape from his clutches':
+									*clr & cla
+									andrei = 2
+									anreiday = daystart
+									guy += 1
+									gs 'boyStat', 'A46'
+									gs 'cum_call', 'anus', 'A46', 1
+									gs 'arousal', 'anal', 10
+
+									'<center><img <<$set_imgh>> src="images/characters/city/andrew/sex/andreia.jpg"></center>'
+									'You try to break out of his grasp, but your struggles just seem to make him even more excited and you feel his now rock hard cock firmly press into your tender thigh.'
+									'The stranger turn you to your stomach and begins to wet you anus with his saliva.'
+									'He forcefully spreads your buttocks, opening up your quivering hole and crushing you with its heavy body. You blinked, a wheeze escapes from your throat and painfully his giant cock enters into your inner sanctum.'
+									'You do not feel pleasure, only acute pain, your aversion to the rapist and the feeling that you are being using, like a whore. However, his fingers casually touch your clit, and you catch the wave of lust. Over and over again as if you punched through by the huge cock of your abuser, you push back wanting more of him, and can not hold back the sweet moans.'
+									$orgasm_or = 'yes'
+									gs 'arousal', 'end'
+
+									act 'More, more, more, more...':
+										*clr & cla
+										'<center><img <<$set_imgh>> src="images/characters/city/andrew/sex/andrei.jpg"></center>'
+										'More, more, more, more... pounding in your temples simultaneously with each thrust. Your clitoris turns into a live wire and spreeding through your body, you explode in orgasm. The man changed positions, now you''re sitting in an upright position, he keeps you on his fat cock with one hand, and continues to stimulate your clitoris and then fiercely squeezing one, then the other of your soft supple breasts, painfully squeezing your nipples between his fingers.'
+										'Here, at last, your body receives the long-awaited discharge, for a few seconds the inertia continues to bounce you on your rapist, as he lets out a dull growl and pumps hot, spicy, ropey, streams of sperm into your plump ass.'
+										'"Well, did you like that, Aphrodite?" The man asks, with a touch of irony.'
+
+										act 'Chat':
+											*clr & cla
+											'"Who are you?" You realise as you speak that it is a stupid thing to ask a rapist, but still, nothing ventured...'
+											'"Andrew" He grins.'
+											'"And yours?"'
+											'"<<$pcs_nickname>>" You answer.'
+											'"I see that you liked our game. Want to catch an even bigger thrill? Then come back tomorrow", Says Andrew suavely dressing. "Repeat our deeds."'
+
+											act 'Leave the beach':gt 'city_lake', 'start'
+										end
+									end
+								end
+							end
+						end
+					elseif evrand <= 40 and evrand > 30:
+						gt 'city_lake', 'vlake1'
+					elseif evrand <= 50 and evrand > 40:
+						gt 'city_lake', 'vlake2'
+					end
+				end
+			end
+		end
+
+		if anreiday ! daystart and andrei = 2:
+			'You see Andrew on the beach.'
+
+			act 'Approach Andrew':gt 'city_lake', 'andrey1'
+		end
+	end
+end
+
+if $ARGS[0] = 'aquapark':
+	cla & *clr
+	$location_type = 'public_outdoors'
+	minut += 5
+	$menu_loc = 'city_lake'
+	$menu_arg = 'aquapark'
+	menu_off = 0
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/aquapark.jpg"></center>'
+	'You go to the attractions.'
+	'There is <a href="exec:gt ''city_lake'', ''gidro''">Jet Skiing</a>, a <a href="exec:gt ''city_lake'', ''banan''">banana ride</a> and the <a href="exec:gt ''city_lake'', ''gorka''">water slide</a>.'
+
+	act 'Leave':gt 'city_lake', 'start'
+end
+
+if $ARGS[0] = 'gidro':
+	cla & *clr
+	$location_type = 'event_outdoors'
+	$menu_loc = 'city_lake'
+	$menu_arg = 'gidro'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/aquapark.jpg"></center>'
+	'You go to the jet ski kiosk.'
+	'Half an hour - 100 <b>₽</b>.'
+
+	if money >= 100:
+		act 'Go for a ride (100 <b>₽</b>)':
+			cla & *clr
+			menu_off = 1
+			pcs_mood += 10
+			money -= 100
+			minut += 30
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/gidro.jpg"></center>'
+			'You take a jet ski, and spend 30 minutes having loads of fun.'
+
+			if rand(0,4) = 0:gt 'city_lake', 'kater1'
+
+			act 'Finish':gt 'city_lake', 'aquapark'
+		end
+	end
+
+	act 'Move away':gt 'city_lake', 'aquapark'
+end
+
+if $ARGS[0] = 'banan':
+	$location_type = 'event_outdoors'
+	cla & *clr
+	$menu_loc = 'city_lake'
+	$menu_arg = 'banan'
+	menu_off = 0
+	gs 'stat'
+	minut += 1
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/aquapark.jpg"></center>'
+	'You go to the banana ride.'
+	'Half hour - 100 <b>₽</b>.'
+
+	if money >= 100:
+		act 'Go for a ride (100 <b>₽</b>)':
+			cla & *clr
+			menu_off = 1
+			pcs_mood += 10
+			minut += 30
+			money -= 100
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/banan.jpg"></center>'
+			'You get on the banana and the boat drags it around for half an hour, stopped every so often to let you and the others get back on. You have a great time.'
+			banrand = rand(0, 100)
+
+			if banrand >= 80 and banrand < 90:
+				gt 'city_lake', 'kater2'
+			elseif banrand >= 90:
+				gt 'city_lake', 'kater3'
+			end
+
+			act 'Finish':gt 'city_lake', 'aquapark'
+		end
+	end
+
+	act 'Move away':gt 'city_lake', 'aquapark'
+end
+
+if $ARGS[0] = 'gorka':
+	$location_type = 'event_outdoors'
+	cla & *clr
+	$menu_loc = 'city_lake'
+	$menu_arg = 'gorka'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/aquapark.jpg"></center>'
+	'You go to the hill.'
+	'Slide - 50 <b>₽</b> per go.'
+
+	if money >= 50:
+		act 'Go for a ride (50 <b>₽</b>)':
+			cla & *clr
+			menu_off = 1
+			pcs_mood += 10
+			minut += 15
+			money -= 50
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/gorka.jpg"></center>'
+			'You climb to the top, then whiz down and around, before splashing into the pool with a massive smile on your face.'
+			if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+
+			act 'Finish':gt 'city_lake', 'aquapark'
+		end
+	end
+
+	act 'Move away':gt 'city_lake', 'aquapark'
+end
+
+if $ARGS[0] = 'horse':
+	$location_type = 'event_outdoors'
+	cla & *clr
+	$menu_loc = 'city_lake'
+	$menu_arg = 'horse'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/horse0.jpg"></center>'
+	'You walk over to where the horses are gathered.'
+	'Horse ride - 100 <b>₽</b>.'
+
+	if money >= 100:
+		act 'Go for a ride (100 <b>₽</b>)':
+			cla & *clr
+			menu_off = 1
+			pcs_mood += 10
+			minut += 30
+			money -= 100
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/horse.jpg"></center>'
+			'You are helped into the saddle and have a pleasant ride along the lake shore.'
+			horserand = rand(0, 100)
+
+			if horserand >= 60 and horserand < 80:
+				gt 'city_lake', 'horse1'
+			elseif horserand >= 80:
+				gt 'city_lake', 'horse2'
+			end
+
+			act 'Finish':gt 'city_lake', 'start'
+		end
+	end
+
+	act 'Move away':gt 'city_lake', 'start'
+end
+
+if $ARGS[0] = 'walklake1':
+	$location_type = 'event_outdoors'
+	*clr & cla
+	menu_off = 1
+	gs 'boyStat', 'A177'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+	'Walking along the beach you hear someone calling you, "Hey beauty, come here." You turn around and see that next to the shore, between the trees, there is a hut and on the threshold sits a guy.'
+
+	if ribakSex = 0:
+		act 'Leave':gt 'city_lake', 'start'
+
+		act 'Approach':
+			cla & *clr
+			minut += 2
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+			'You approach the guy with a fishing rod. He looks at you from head to toe, lustfully and imposingly.'
+
+			act 'Leave':gt 'city_lake', 'start'
+
+			if pcs_apprnc < 60:
+				'The guy smiles and begins to hum, "You look terrible, you really should look after yourself better."'
+			elseif pcs_apprnc < 120:
+				'The man grins, "Well, looking good."'
+			else
+				'The man nods, "I don''t often see women as beautiful as you here."'
+			end
+
+			if pcs_apprnc >= 60:
+				act 'What do you want?':
+					cla & *clr
+					minut += 2
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+					'You asked what the guy wants. The guy looks at you again with a smirk. "You have written on your face that you are a whore. Here to earn your living?"'
+
+					act 'How dare you? (Troubled)':
+						cla & *clr
+						minut += 2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+						'You rebell at such brazen statements. The guy just grins more widely. "Come on. Do not worry. I love whores." After these words the man unbuttoned his pants and pulls out a hefty cock, which was clearly no less than 25 centimeters long. "Come on baby, look what papa has for your goddamned mouth." The man beckons you with a finger.'
+						gs 'city_lake', 'dinribak'
+					end
+
+					act 'What? (Wonder)':
+						cla & *clr
+						minut += 2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+						'You are surprised by such impudence. The guy just grins more widely. "You''ll be even hungrier after seeing this!" With these words the man unbuttoned his pants and pulls out a hefty cock, which was clearly no less than 25 centimeters long. "Come on baby, look what papa has for your goddamned mouth." The man beckons you with a finger.'
+						gs 'city_lake', 'dinribak'
+					end
+
+					act 'Hmm (thinking)':
+						cla & *clr
+						minut += 2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+						'You think for a second. The guy just grins more widely. "Damn, I knew it, just by looking at you, I have a nose for whores missing out on dick." With these words the man unbuttoned his pants and pulls out a hefty cock, which was clearly no less than 25 centimeters long. "Come on baby, look what papa has for your goddamned mouth." The man beckons you with a finger.'
+						gs 'city_lake', 'dinribak'
+					end
+				end
+			end
+		end
+	elseif ribakSex > 0:
+		'You go to the guy, who greets you. Hi <<$ribakName>> want more deliciousness?'
+
+		act 'Leave':gt 'city_lake', 'start'
+
+		if $ribakName = 'whore':
+			act 'Two pieces!':
+				cla & *clr
+				minut += 2
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+				'You tell the guy "Money first!" The guy grins, "If you are going to make money whoring, get ready to drink the cup of humiliation to the dregs." The guy takes the money out and hands it to you imposingly.'
+				
+				gs 'willpower', 'misc', 'resist', 'hard'
+				if will_cost <= pcs_willpwr:
+					act 'Leave (<<will_cost>> Willpower)':
+						gs 'willpower', 'pay', 'resist'
+						gs 'stat'
+						gt 'city_lake', 'start'
+					end
+				else
+					act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end	
+
+				act 'Take the money':
+					cla & *clr
+					money += 2000
+					ribakSex += 1
+					gs 'arousal', 'bj', 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck.jpg"></center>'
+					'You take the money from the guy and hide it. The guy grins wickedly "On your knees scum! Now I''m going to goddamned fuck your face so that you will not forget it for a long time!" You blush, but still kneel in front of the guy''s lap. He grabs your face in his hands and spits in your face, then rubs his hand over your face.'
+					'You freeze in confusion, but the guy does not stand on ceremony and immediately his penis is in your mouth and down your throat. You choke and tears flow from your eyes. The man growls, "So whore, you like it? Scum like you should enjoy it, you are a dirty whore. Do you like money? Then you will have to get used to such things."'
+					'The guy starts to fuck you roughly in the mouth, periodically wiping the current of snot from your nose and saliva from your mouth, his hand on your face and occasionally inflicting hefty slaps. You almost faint and expire snot, tears and saliva from the fact as his member roughly enters your throat. Your throat is on fire and incessant cramps twist and nauseate your body.'
+					'Time slows to a halt and you have start to think that this torment will never end, when the guy pulls his cock out of your mouth.'
+
+					act 'Continue':
+						cla & *clr
+						gs 'cum_call', 'face', 'A177', 1
+						gs 'cum_call', 'mouth', 'A177', 1
+						facial += 1
+						gs 'arousal', 'bj', 5
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck1.jpg"></center>'
+						'The guy starts to cum on your face, a jet of his semen flies into your mouth and you feel awful taste of his sperm.'
+
+						act 'Wait for the man':
+							cla & *clr
+							minut += 2
+							$ribakName = 'whore'
+							gs 'arousal', 'end'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck1.jpg"></center>'
+							'You are tired and haven''t got the energy to leave. The man takes your hair in his hand and wiped his cock on your hair. After that, he rudely tells you. "Whore to the core! Now get out."'
+
+							act 'Leave':gt 'city_lake', 'start'
+						end
+					end
+				end
+			end
+		elseif $ribakName ! 'whore':
+			act 'Kneel in front of the man':
+				cla & *clr
+				ribakSex += 1
+				gs 'arousal', 'bj', 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/big.jpg"></center>'
+				'You kneel in front of the guy and in front of your face is his big cock. Impatient the guy slaps your nose with his dick. "What me to slap your boobs too? Start sucking!" With these words, the guy grabs you by the hair and buries your face into his dick.'
+				'You do not understand how it happened, but his head is hot inside your mouth. The guy takes your head in your hands begins to fuck your face with his hefty dick. His cock is regularly pushed right down your throat, sometimes causing retching and salivation.'
+				'Suddenly the man sharply pushes his hips to your face driving his cock deep into your throat. Your eyes widen from the realization that this huge mass has filled your throat so completely. You put your hands on his hips trying to escape from the trap and breathe.'
+				'Finally the guy lets go of your head allows you to remove his member from your throat and rest. But the guy did not wait long, and again takes your hair and pulls your mouth onto his penis. This carries on for sometime, before the man pulls out his penis and masturbates in front of your face while you''re trying to catch your breath.'
+				'"Open your fucking mouth," Growls the man "and stick out your tongue."'
+
+				act 'Comply':
+					cla & *clr
+					gs 'cum_call', 'face', 'A177', 1
+					gs 'cum_call', 'mouth_swallow', 'A177', 1
+					facial += 1
+					gs 'arousal', 'bj', 5
+					gs 'arousal', 'end'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cum.jpg"></center>'
+					'You obediently open your mouth and stick out your tongue. Immediately you are slapped in the face with a jet of sperm. Then another and another, covering your face. The sperm gets into your mouth and you feel its nasty taste.'
+
+					act 'Wait for the man':
+						cla & *clr
+						minut += 2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cumeat.jpg"></center>'
+						'Your face is dripping with semen, you feel no taste in your mouth and look at the guy. The guy smile and with his finger collects some sperm from your face. Then he puts his finger in your mouth causing you to lick sperm. When his finger is clean, he gathers the remnants of sperm from your face on his finger and stuck it back in your mouth. Once again you suck his finger and swallow cum.'
+
+						act 'Wait for the man':
+							cla & *clr
+							minut += 2
+							$ribakName = 'lowered whore'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/spit.jpg"></center>'
+							'The guy suddenly thrust the fingers of both his hands in your mouth holding your lips apart and with relish spits in your mouth. You flinch from this and feel like your cheeks blush with a flood of shame. The guy looked at you angrily, "You are a lewd, vile creature that got what she deserved. Now get out!"'
+
+							act 'Leave':gt 'city_lake', 'start'
+						end
+					end
+				end
+
+				act 'Try to move out of the way':
+					cla & *clr
+					minut += 2
+					gs 'cum_call', 'face', 'A177', 1
+					$ribakName = 'whore'
+					gs 'arousal', 'end'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cum1.jpg"></center>'
+					'You try to dodge, but the guy grabs you by the hair and you get a jet of sperm on your face. Finally drying up and the guy says, "Get out of here bitch!"'
+
+					act 'Leave':gt 'city_lake', 'start'
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'dinribak':
+	gs 'boyStat', 'A177'
+	act 'Leave the idiot alone':
+		cla & *clr
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+		'You call the idiot an idiot and get ready to leave. The guy says, "Well, maybe I was wrong, and you are not whore and a slut. Maybe I''m right and you are a slut, and you will stay and earn two thousand."'
+
+		gs 'willpower', 'misc', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Leave (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'city_lake', 'start'
+			end
+		else
+			act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act 'Money first':
+			cla & *clr
+			minut += 2
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+			'You hesitating blurt out "Money up front!"'
+			'The guy laughs, "Well, that solves that one then! Take your money whore, and then you won''t need to play games pretending to be a schoolgirl virgin." The guy takes the money and hands it to you imposingly.'
+			
+			gs 'willpower', 'misc', 'resist', 'hard'
+			if will_cost <= pcs_willpwr:
+				act 'Change your mind and leave (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					gt 'city_lake', 'start'
+				end
+			else
+				act 'Change your mind and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+
+			act 'Take the money':
+				cla & *clr
+				money += 2000
+
+				if ribakSex = 0:ribakSex = 1 & guy += 1
+
+				gs 'arousal', 'bj', 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck.jpg"></center>'
+				'You take the money from the guy and hide it. The guy grins wickedly "On your knees scum! Now I''m going to goddamned fuck your face so that you will not forget it for a long time!" You blush, but still kneel in front of the guy''s lap. He grabs your face in his hands and spits in your face, then rubs his hand over your face.'
+				'You freeze in confusion, but the guy does not stand on ceremony and immediately his penis is in your mouth and down your throat. You choke and tears flow from your eyes. The man growls, "So whore, you like it? Scum like you should enjoy it, you are a dirty whore. Do you like money? Then you will have to get used to such things."'
+				'The guy starts to fuck you roughly in the mouth, periodically wiping the current of snot from your nose and saliva from your mouth, his hand on your face and occasionally inflicting hefty slaps. You almost faint and expire snot, tears and saliva from the fact as his member roughly enters your throat. Your throat is on fire and incessant cramps twist and nauseate your body.'
+				'Time slows to a halt and you have start to think that this torment will never end, when the guy pulls his cock out of your mouth.'
+
+				act 'Continue':
+					cla & *clr
+					gs 'cum_call', 'face', 'A177', 1
+					gs 'cum_call', 'mouth', 'A177', 1
+					gs 'arousal', 'bj', 5
+					facial += 1
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck1.jpg"></center>'
+					'The guy starts to cum on your face, a jet of his semen flies into your mouth and you feel awful taste of his sperm.'
+
+					act 'Wait for the man':
+						cla & *clr
+						minut += 2
+						$ribakName = 'whore'
+						gs 'arousal', 'end'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/facefuck1.jpg"></center>'
+						'You are tired and haven''t got the energy to leave. The man takes your hair in his hand and wiped his cock on your hair. After that, he rudely tells you. "Whore to the core! Now get out."'
+						act 'Leave':gt 'city_lake', 'start'
+					end
+				end
+			end
+		end
+	end
+
+	act 'Go closer':
+		cla & *clr
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk1/walk1.jpg"></center>'
+		'You hesitantly move closer to the guy and he quickly grabs you by the wrist, literally restraining you. "Come on baby, no need to think about it, we both know that you want to try the taste of my dick. So don''t be shy."'
+
+		gs 'willpower', 'misc', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Faint compliance then run (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'city_lake', 'start'
+			end
+		else
+			act 'Faint compliance then run (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act 'Kneel in front of the guy':
+			cla & *clr
+			minut += 2
+
+			if ribakSex = 0:ribakSex = 1 & guy += 1
+
+			gs 'arousal', 'bj', 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/big.jpg"></center>'
+			'You kneel in front of the guy and in front of your face is his big cock. Impatient the guy slaps your nose with his dick. "What me to slap your boobs too? Start sucking!" With these words, the guy grabs you by the hair and buries your face into his dick.'
+			'You do not understand how it happened, but his head is hot inside your mouth. The guy takes your head in your hands begins to fuck your face with his hefty dick. His cock is regularly pushed right down your throat, sometimes causing retching and salivation.'
+			'Suddenly the man sharply pushes his hips to your face driving his cock deep into your throat. Your eyes widen from the realization that this huge mass has filled your throat so completely. You put your hands on his hips trying to escape from the trap and breathe.'
+			'Finally the guy lets go of your head allows you to remove his member from your throat and rest. But the guy did not wait long, and again takes your hair and pulls your mouth onto his penis. This carries on for sometime, before the man pulls out his penis and masturbates in front of your face while you''re trying to catch your breath.'
+			'"Open your fucking mouth," Growls the man "and stick out your tongue."'
+
+			act 'Comply':
+				cla & *clr
+				gs 'cum_call', 'face', 'A177', 1
+				gs 'cum_call', 'mouth_swallow', 'A177', 1
+				gs 'arousal', 'bj', 5
+				facial += 1
+				gs 'arousal', 'end'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cum.jpg"></center>'
+				'You obediently open your mouth and stick out your tongue. Immediately you are slapped in the face with a jet of sperm. Then another and another, covering your face. The sperm gets into your mouth and you feel its nasty taste.'
+
+				act 'Wait for the man':
+					cla & *clr
+					minut += 2
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cumeat.jpg"></center>'
+					'Your face is dripping with semen, you feel no taste in your mouth and look at the guy. The guy smile and with his finger collects some sperm from your face. Then he puts his finger in your mouth causing you to lick sperm. When his finger is clean, he gathers the remnants of sperm from your face on his finger and stuck it back in your mouth. Once again you suck his finger and swallow cum.'
+
+					act 'Wait for the man':
+						cla & *clr
+						minut += 2
+						$ribakName = 'lowered whore'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/spit.jpg"></center>'
+						'The guy suddenly thrust the fingers of both his hands in your mouth holding your lips apart and with relish spits in your mouth. You flinch from this and feel like your cheeks blush with a flood of shame. The guy looked at you angrily, "You are a lewd, vile creature that got what she deserved. Now get out!"'
+
+						act 'Leave':gt 'city_lake', 'start'
+					end
+				end
+			end
+
+			act 'Try to move out of the way':
+				cla & *clr
+				minut += 2
+				gs 'cum_call', 'face', 'A177', 1
+				$ribakName = 'whore'
+				gs 'arousal', 'end'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/whore/cum1.jpg"></center>'
+				'You try to dodge, but the guy grabs you by the hair and you get a jet of sperm on your face. Finally drying up and the guy says, "Get out of here bitch!"'
+
+				act 'Leave':gt 'city_lake', 'start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'walklake2':
+	*clr & cla
+	$location_type = 'event_outdoors'
+	menu_off = 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk1.jpg"></center>'
+
+	if StasikValera = 0:
+		'You get hot and deciding to freshen up a bit, you walk out into the water, turning you notice not far behind you, two men looking at you.'
+	else
+		'You get hot and deciding to freshen up a bit, you walk out into the water, turning you notice not far behind you, Stasik and Valera looking at you.'
+	end
+
+	act 'Leave':gt 'city_lake', 'start'
+
+	if StasikValera = 0:
+		act 'Look at them':
+			cla & *clr
+			minut += 1
+			StasikValera = 1
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/stasValera.jpg"></center>'
+			'You look at the men and notice that they are whispering to each other. Then one of the men comes up to you. He says smiling, "Hey beautiful, I am Stasik, and this is my friend Valera. What''s your name?"'
+			act '<<$pcs_nickname>>': gt 'city_lake', 'stasValera'
+
+			act 'I have to go':
+				cla & *clr
+				minut += 1
+				gs 'stat'
+				'You''re not going to get acquainted with these fellows and began to leave. Stasik tries to persuade you. "Come on, babe. Do we look like savages? We just wanted to talk, but I understand if you''re frightened. I just wanted to ask you your name."'
+				act '<<$pcs_nickname>>': gt 'city_lake', 'stasValera'
+
+				act 'Leave':gt 'city_lake', 'start'
+			end
+		end
+	end
+
+	if npc_sex['A48'] > 0:
+		npc_sex['A48'] += 1
+		npc_sex['A49'] += 1
+		act 'Wave to them':
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk2.jpg"></center>'
+			'Looking directly at them you pull off your panties and wave to them. The men almost run toward you, you threw off the rest and kneel.'
+
+			act 'Wait':
+				*clr & cla
+				gs 'arousal', 'bj', 5, 'group'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk3.jpg"></center>'
+				'The men unbutton their pants as they run to you, you take their members alternately sucking one then the other. One of the men roughly grabs your ass and tries to put you on all fours.'
+
+				act 'Doggy-Style':
+					*clr & cla
+					gs 'arousal', 'vaginal', 5, 'group'
+					gs 'arousal', 'bj', 5, 'group'
+					minut -= 5
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk4.jpg"></center>'
+					'You succumb to his actions and bend over, a man with forcefully enters your pussy, and you continued to suck the other, but soon he, too, can not resist and tries to take his dick out of your mouth.'
+
+					act 'Let him go':
+						*clr & cla
+						gs 'arousal', 'anal', 5
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk5.jpg"></center>'
+						'As soon as you let go of his cock, he literally pulls you off the other mans cock, turns you around and spreading your buttocks penetrates your anus with his penis.'
+
+						act 'Beckon the other man':
+							*clr & cla
+							gs 'arousal', 'anal', 10, 'group'
+							gs 'arousal', 'vaginal', 10, 'group'
+							minut -= 10
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk6.jpg"></center>'
+							'With a simple glance you beckon the other man back to your pussy, he quickly takes the offer and drives his dick back into you. You feel their members moving within you, rubbing against each other through the thin partition separating them.'
+							'You lift yourself up by their shoulders and lower yourself again, getting all you can of their members, but none of you has yet reached the peak of pleasure.'
+
+							act 'Finish':
+								*clr & cla
+								gs 'boyStat', 'A48'
+								gs 'cum_call', 'face', 'A48', 1
+								gs 'cum_call', 'mouth', 'A48', 1
+								gs 'boyStat', 'A47'
+								gs 'cum_call', 'face', 'A47', 1
+								gs 'cum_call', 'mouth', 'A47', 1
+								gs 'arousal', 'end'
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/walk2/walk7.jpg"></center>'
+								'Sated the men lower you down, and begin to masturbate on your face, you open your mouth and wait patiently. They both finish, pouring a gulf of sperm in your mouth and on your face.'
+
+								act 'Leave':gt 'city_lake', 'start'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'stasValera':
+	cla & *clr
+	minut += 2
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/talk1.jpg"></center>'
+	'You tell Stasik that your name is <<$pcs_nickname>>. He smiles even wider and says, "Nice to meet you." Valera also comes over and says hello to you. The men stand by the shore near you.'
+
+	act 'Chat with them':
+		cla & *clr
+		minut += 2
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/talk6.jpg"></center>'
+		'You stand aroundtalking to the men. Stasik begins to tell you that he works with Valera as sales representatives of a major company, and boasts about their seniority and importance. Throughout the conversation, both men are making lewd gestures and Stasik moves his hand to your chest.'
+		act 'Remove Stasik''s hands from you': gt 'city_lake', 'stasValera2a'
+		act 'Smile and pretend nothing is happening': gt 'city_lake', 'stasValera2b'
+	end
+end
+
+if $ARGS[0] = 'stasValera2a':
+	cla & *clr
+	minut += 2
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/refuse1.jpg"></center>'
+	'You angrily remove his hands from your body. Stasik grins, "C''mon baby, relax."'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Rebel and go (<<will_cost>> Willpower)':
+			cla & *clr
+			minut += 2
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/refuse3.jpg"></center>'
+			'You angrily stand up and began to leave. Stasik gets to his feet and tries to persuade you to go with the guys to the cafe.'
+
+			act 'Leave':gt 'city_lake', 'start'
+		end
+	else
+		act 'Rebel and go (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+		
+	act 'Keep silent':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/tits1.jpg"></center>'
+		'You say nothing and Stasik immediately takes advantage of your confusion. His hands gently squeeze your chest and you feel a pleasant warmth and tenderness from your breasts being stimulated.'
+		gs 'arousal', 'foreplay', 5
+		minut -= 3
+		gs 'stat'
+		act 'Further': gt 'city_lake', 'stasValera3'
+	end
+end
+
+if $ARGS[0] = 'stasValera2b':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/tits1.jpg"></center>'
+	'You start to smile, feeling a Stasiks touch excite you. You close your eyes for a moment and suddenly feel a hand on your chest. You open your eyes in surprise and see how completely unflappable Stasik is squeezing your chest with a dreamy smile on his face.'
+	gs 'arousal', 'foreplay', 5
+	minut -= 3
+	gs 'stat'
+	act 'Further': gt 'city_lake', 'stasValera3'
+end
+
+if $ARGS[0] = 'stasValera3':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/tits2.jpg"></center>'
+	'You are relaxed and begin to enjoy the sensations in your chest arising from Stasiks touching. With a well honed movement he lowers the cups of your bra freeing your breasts. You do not have time to blink as Stasiks lips cover your nipple.'
+	gs 'arousal', 'foreplay', 5
+	minut -= 3
+	gs 'stat'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Hey! What are you doing? (<<will_cost>> Willpower)':
+			cla & *clr
+			minut += 2
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/refuse4.jpg"></center>'
+			'You jump to your feet adjusting your bra. Stasik smiles, "Do not be afraid girl."'
+
+			act 'Leave':gt 'city_lake', 'start'
+		end
+	else
+		act 'Hey! What are you doing? (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	gs 'willpower', 'misc', 'resist', 'medium'
+	if will_cost <= pcs_willpwr:
+		act 'Feebly protest (<<will_cost>> Willpower)':
+			cla & *clr
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/talk5.jpg"></center>'
+			'You try to pull your bra back and whisper, "No." Stasik smiles, "Do not be shy girl."'
+			gs 'arousal', 'foreplay', 5
+			minut -= 3
+			gs 'stat'
+			act 'Relax': gt 'city_lake', 'stasValera4'
+		end
+	else
+		act 'Feebly protest (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Be silent':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/tits3.jpg"></center>'
+		'You get comfortable enjoying the skillful way Staik sucks your breast, his hands begin to passionately caress your body. His strong fingers penetrate your panties and began to caress your pussy.'
+		gs 'arousal', 'foreplay', 5
+		minut -= 3
+		gs 'stat'
+		act 'Relax': gt 'city_lake', 'stasValera4'
+	end
+end
+
+if $ARGS[0] = 'stasValera4':
+	cla & *clr
+	npc_sex['A48'] += 1
+	npc_sex['A49'] += 1
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/oral<<rand(1,6)>>.jpg"></center>'
+	'The guys pull out they cocks and you kneel down to get them warmed up. It doesn''t take long before you are in the mood for more and it is clear they are too.'
+	gs 'arousal', 'bj', 5
+	minut -= 3
+	gs 'stat'
+	act 'Get fucked':
+		gs 'boyStat', 'A47'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/sex<<rand(7,9)>>.jpg"></center>'
+		'You feel ready as Stasik holding your feet, spreads your legs and brings his hard penis down to your soft pussy.'
+		gs 'dinsex','vaginal_sex',10
+		act 'Don''t forget Valera':
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/sex<<rand(1,6)>>.jpg"></center>'
+			'While you fuck Stasik, Valera slumps to your face and brings his erect cock to your lips.'
+			gs 'boyStat', 'A48'
+			gs 'dinSex', 'bj_random'
+			gs 'boyStat', 'A47'
+			pose = 1
+			gs 'dinsex','sexcum'
+			act 'Finish Valera off':
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/sex<<rand(1,4)>>.jpg"></center>'
+				'Valera groans and his cock shudders in your mouth.'
+				gs 'boyStat', 'A48'
+				gs 'cum_call', 'mouth_swallow', 'A48', 1
+				gs 'arousal', 'bj', 5
+				gs 'dinsex','bj_swallow_random'
+
+				act 'Further':
+					cla & *clr
+					minut += 2
+					gs 'arousal', 'end'
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/undress.jpg"></center>'
+					'The tired men dismount and help dress you as they dress themselves. Stasik lifts you back on to your feet, "You''re a cool girl <<$pcs_nickname>>, let us walk you home."'
+
+					act 'I''ll manage':
+						cla & *clr
+						minut += 2
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/refuse2.jpg"></center>'
+						'You refuse and Stasik shrugs, "Well, as you wish."'
+
+						act 'Leave':gt 'city_lake', 'start'
+					end
+
+					act 'Agree':
+						cla & *clr
+						minut += 5
+						cumface = 0
+						StasValeraKnow = 1
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/stas/stasValera.jpg"></center>'
+						if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
+							gs 'clothing', 'wear', $normalclothingworntype, normalclothingwornno
+							'You go to the changing room and quickly get out of your swimwear and dress in your regular clothes.'
+						end
+						'The boys walk either side of you like bodyguards as you make your way home. Along the way they keep silent, even the more sprightly Stasik seems to be at a loss for words. Finally you stop before the door of your apartment. You say goodbye to the guys and they go.'
+
+						act 'Leave':gt 'korr'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'vlake1':
+	$location_type = 'event_outdoors'
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake1.jpg"></center>'
+	'While you are sunbathing on the beach you come across a group of four guys and they begin to flirt with you'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Flirt':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake2.jpg"></center>'
+		'Boys are perched nearby, they flirt and try to sneak a touch of your body and caress it.'
+
+		gs 'willpower', 'misc', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Leave (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'city_lake', 'start'
+			end
+		else
+			act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act 'Relax and enjoy':
+			*clr & cla
+			guy += 4
+			gs 'arousal', 'bj', 10, 'group'
+			minut -= 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake3.jpg"></center>'
+			'One of the guys gets out his dick and holds it to your face, you grin lasciviously and lick it, the other guys get excited and get out their cocks. They surrounded you and you are kneeling in the middle trying to please four people.'
+
+			act 'Continue to suck':
+				*clr & cla
+				gs 'arousal', 'bj', 10, 'group'
+				gs 'arousal', 'vaginal_finger', 10, 'group'
+				minut -= 10
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake4.jpg"></center>'
+				'One of the guys leans toward your pussy, kisses it and begins to lick it, trying to shove his fingers inside.'
+
+				act 'Remove his fingers':gt 'city_lake', 'vlake1cum'
+
+				act 'Relax and enjoy':
+					*clr & cla
+					gs 'npcgeneratec', 0, 'Stranger at the lake', rand(18,45)
+					gs 'boyStat', $npclastgenerated
+					gs 'arousal', 'bj', 10, 'group'
+					gs 'arousal', 'vaginal', 10, 'group'
+					minut -= 10
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake7.jpg"></center>'
+					'Noticing that you reacted favorably to his fingers in your vagina, the guy took out his fingers, and their place was taken by his hard cock. The others carry on with their blowjobs, but start periodically changing places.'
+
+					act '"Take two"':
+						*clr & cla
+						gs 'arousal', 'bj', 10, 'group'
+						gs 'arousal', 'vaginal', 10, 'group'
+						gs 'arousal', 'anal', 10, 'group'
+						minut -= 20
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake8.jpg"></center>'
+						'"There''s space for two" you say, and don''t even have time to finish before a dick is in your ass. The guys often spin you around, trying all kinds of different positions, but always with all your holes plugged by their members, it''s crazy but you do not want it to finish, however, eventually it seems that it will.'
+
+						act 'Finish':gt 'city_lake', 'vlake1cum'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'vlake1cum':
+	*clr & cla
+
+	gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'cum_call', 'mouth', 'a stranger at the lake'
+	gs 'cum_call', 'face', 'a stranger at the lake'
+
+	gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'cum_call', 'mouth', 'a stranger at the lake'
+	gs 'cum_call', 'face', 'a stranger at the lake'
+
+	gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'cum_call', 'mouth', 'a stranger at the lake'
+	gs 'cum_call', 'face', 'a stranger at the lake'
+
+	gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'cum_call', 'mouth', 'a stranger at the lake'
+	gs 'cum_call', 'face', 'a stranger at the lake'
+
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake5.jpg"></center>'
+	'Boys begin to cum on your face and mouth. You lick the cum off their dicks and swallow it. Finally satisfied the guys, dress and go, you''re left unsatisfied.'
+
+	act 'Leave': gs 'arousal', 'end' & gt 'city_lake', 'start'
+
+	act 'Masturbate':
+		*clr & cla
+		gs 'arousal', 'masturbate', 5
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake1/vlake6.jpg"></center>'
+		'Left unsatisfied, you decide to take matters into their own hand, and caress your pussy vigorously until you scream out in orgasm.'
+		$orgasm_or = 'yes'
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Leave':gt 'city_lake', 'start'
+	end
+end
+
+if $ARGS[0] = 'vlake2':
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake1.jpg"></center>'
+	'While tanning you notice two naked men walking along the shore from the nudist beach.'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Disregard (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Disregard (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Wave at them':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake2.jpg"></center>'
+		'The men come up to you, one of them kneels down next to you and kisses your lips, the second one kneels in front of you and stokes your panties.'
+
+		gs 'willpower', 'misc', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'And push them away (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				gt 'city_lake', 'start'
+			end
+		else
+			act 'Leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act 'Kneel':
+			*clr & cla
+			guy += 2
+			gs 'arousal', 'bj', 10
+			minut -= 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake3.jpg"></center>'
+			'You goet up to your knees, tell them to stand while you remove your bikini then take their dicks and suck both alternately.'
+
+			act 'Proceed':
+				*clr & cla
+				gs 'arousal', 'vaginal', 5
+				gs 'arousal', 'bj', 5
+				minut -= 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake4.jpg"></center>'
+				'One of the men lays down and you continue to suck him lifting up your ass, the second enjoys the view then puts his penis in your wet pussy.'
+
+				act 'Take both':
+					*clr & cla
+					gs 'arousal', 'anal', 5
+					gs 'arousal', 'vaginal', 5
+					minut -= 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake5.jpg"></center>'
+					'"I want you both." you moan and straddle one of the men, and the second was not deaf to your request and puts his cock in your ass.'
+
+					act 'Change position':
+						*clr & cla
+						gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+						gs 'boyStat', $npclastgenerated
+						gs 'cum_call', 'anus', 'a stranger at the lake'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake6.jpg"></center>'
+						'Changing position, you plant your anus on the man lying down. The second man comes up to you and holding your head with one hand begin to fuck your mouth, penetrating his cock deeper and deeper. After a while you feel hot cum fill your anus and finished with him, the second man gets ready to cum in your mouth.'
+
+						act 'Continue to suck':gt 'city_lake', 'vlake2cum'
+
+						act 'Pull':
+							*clr & cla
+							gs 'npcgeneratec', 0, 'a stranger at the lake', rand(18,45)
+							gs 'boyStat', $npclastgenerated
+							gs 'cum_call', 'face', 'a stranger at the lake'
+							facial += 1
+							gs 'arousal', 'end'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake7.jpg"></center>'
+							'You remove the member from your mouth and the man finishes all over your face.'
+
+							act 'Leave':gt 'city_lake', 'start'
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'vlake2cum':
+	*clr & cla
+	gs 'cum_call', 'mouth', 'a stranger at the lake'
+	gs 'arousal', 'end'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/vlake2/vlake8.jpg"></center>'
+	'You continued to suck and soon your mouth is filled with streams of semen, you swallow it and carefully lick his cock, leaving not even a drop of sperm.'
+
+	act 'Leave':gt 'city_lake', 'start'
+end
+
+if $ARGS[0] = 'andrey1':
+	$location_type = 'event_outdoors'
+	*clr & cla
+	gs 'stat'
+	'You go to Andrew, he grins and says, "Let''s go for a swim!"'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Refuse (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Bathe':
+		*clr & cla
+		anreiday = daystart
+		anreirape = 0
+		pcs_makeup = 1
+		cumspclnt = 4
+		gs 'cum_cleanup'
+		minut += 30
+		gs 'exercise', 'tier1', 1, 'stren_exp'
+		pcs_sweat = 10 + rand(0,4)
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/andrey1/andrey1.jpg"></center>'
+		'"I see the lady agrees," predatory Andrew grins. "Then let''s go for a swim. He takes you in his arms, laughing at your ineffective attempts to stop him uncovering your chest, moving your hand his lips gently pinch your right nipple. You sigh, and from your abdomen begins to rise a warm wave of excitement.'
+		'You do get to do a little swimming, resting and relaxing. Now, you are already back on the shore, lying down, catching your breath your body relaxing. "First, you should excite a man," he says, "Take his penis to your mouth and rest the head on your lips."'
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+
+		act 'Open your mouth':
+			*clr & cla
+			gs 'boyStat', 'A46'
+			gs 'arousal', 'bj', 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/andrey1/andrey2.jpg"></center>'
+			'You open your mouth and run your tongue along his shaft, then pull him into you as far as you can. Andrew starts to fuck you in the mouth with gusto. Suddenly your hear a sob came from nearby bushes. You looked up and see in the bushes, a young man spying on you his hand moving up and down in the groin area.'
+			'Andrew also realizes that you have a peeping tom, and turns your head so that the observer can see all the details of how his red head appears and disappears in your mouth. You defiantly lick Andrews member, speed up, then slow the pace, periodically holding his full length in your mouth, your tongue then licking his testicles.'
+			'Where you were born in these instincts, you don''t know, but judging by Andrews reaction you''re doing it right. Finally, Andrew removes himself from you, you are knocked on your back and in one jerk he is deep inside your womb. You cringe in pain, but Andrew, without stopping, begins to move inside of you.'
+			'After a couple of minutes of monotonous movements, you are enveloped in sweet bliss, and when Andrews fingers stimulate your anus, penetrating directly into both holes, you blow on the waves of incredible pleasure. Through narrowed eyelids, you watched the young peeping tom, breathless, fascinated, as if in a trance, devouring every move.'
+
+			act 'Call boy':
+				*clr & cla
+				guy += 1
+				gs 'cum_call', 'mouth', 'A46', 1
+				gs 'npcgeneratec', 0, 'a voyeur at the beach', rand(18,45)
+				gs 'boyStat', $npclastgenerated
+				gs 'cum_call', 'butt', 'a voyeur at the beach'
+				gs 'arousal', 'bj', 5
+				gs 'arousal', 'anal', 5
+				minut -= 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/andrey1/andrey3.jpg"></center>'
+				'The shy young man comes up to you. "Well, what are you waiting for, briefs off and get against the girl." Andrew shouts at him, turning you over and pulling apart your buttocks with his hands. The young man comes from behind and puts his penis in your anus. Now two members move in you as pistons delivering incredible pleasure. Moaning you ride on the two cocks, until the young man finishes on your ass, and Andrew gets up and cums in your mouth.'
+
+				act 'Rise from the beach':gt 'city_lake', 'start'
+			end
+
+			act 'Deeper! Stronger!':
+				*clr & cla
+				gs 'cum_call', 'mouth', 'A46', 1
+				gs 'arousal', 'bj', 5
+				gs 'arousal', 'end'
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/andrey1/andrey4.jpg"></center>'
+				'"Deeper, Stronger!" You shout, you do not hesitate to enthusiastically absorb the whole man. He answers you with an inarticulate growl escaping to the beat of his ragged breathing. Even before the two of you finish off, the boy has run away.'
+
+				act 'Rise from the beach':gt 'city_lake', 'start'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'kater1':
+	*clr & cla
+	menu_off = 1
+	gs 'stat'
+	pcs_hydra += 20
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater1.jpg"></center>'
+	'Riding on the jet ski you try too steep a turn, which throws you into the water, you have swallowed alot of water and begin to sink. Thankfully you notice a guy on a boat, he pulls you out of the water, and binds the Jet ski to the boat. After a while, having coughed up some water, you catch your breath and start to feel much better, the guy comes up to you.'
+	'"Well, how are you beautiful, pulled yourself together, what about gratitude?" he asks, his hand now on your pussy.'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Take the Jet ski and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Take the Jet ski and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Spread your legs':
+		*clr & cla
+		gs 'npcgeneratec', 0, 'a rescuer at the lake', rand(18,45)
+		gs 'boyStat', $npclastgenerated
+		gs 'arousal', 'vaginal_finger', 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater2.jpg"></center>'
+		'You open your legs, making it clear that you are ready to thank your savior, the guy smiles, introduces his fingers into your vagina and with his tongue begins to caress your clitoris.'
+
+		act 'Give blowjob':
+			*clr & cla
+			gs 'arousal', 'bj', 5
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater3.jpg"></center>'
+			'You sit the guy down and lick his cock, then open your lips and start sucking selflessly, in a few minutes you feel like the dick in your mouth is ready to finish.'
+
+			act 'Continue to suck':gt 'city_lake', 'kater1cum'
+
+			act 'Stay':
+				*clr & cla
+				gs 'arousal', 'vaginal', 5
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater4.jpg"></center>'
+				'You stay, the guy bends you over and enters your vagina with his cock.'
+
+				act 'Change position':
+					*clr & cla
+					gs 'arousal', 'vaginal', 5
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater5.jpg"></center>'
+					'When he gets tired, you push him onto his back, jump on top of him and start riding him like a cowgirl.'
+
+					act 'Change position':
+						*clr & cla
+						gs 'arousal', 'vaginal', 5
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater6.jpg"></center>'
+						'You turn around on it without letting go and keep impaling your pussy on his cock and now with a groan of pleasure, you weaken and fall off him.'
+
+						act 'Proceed':
+							*clr & cla
+							gs 'arousal', 'vaginal', 5
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater7.jpg"></center>'
+							'The guy turns you onto your side and re-enters your pussy, continuing the rhythm from before.'
+
+							act 'Change position':
+								*clr & cla
+								gs 'arousal', 'bj', 5
+								'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater8.jpg"></center>'
+								'Then he stands up, lifting you with him, he rises one of your legs and forcefully inserts his penis into your vagina, you are satisfied and tired but hang on waiting for him to finish. After a few thrusts he pulls out his dick and lets you fall to your knees and the guy puts his dick to your mouth.'
+
+								act 'Suck':gt 'city_lake', 'kater1cum'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'kater1cum':
+	*clr & cla
+	gs 'stat'
+	gs 'cum_call', 'mouth_swallow', 'a rescuer at the lake'
+	gs 'cum_call', 'face', 'a rescuer at the lake'
+	gs 'cum_call', 'breasts', 'a rescuer at the lake'
+	facial += 1
+	gs 'arousal', 'end'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater9.jpg"></center>'
+	'The flow of sperm in your mouth was so large that you could not keep to all in your mouth and swallowing when filled to the brim, sperm flows out of your mouth, spreads over your chin and drips all down your chest and stomach.'
+
+	act 'Lick residues':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater1/kater10.jpg"></center>'
+		'When the stream dries up, you are covered in sperm and begin to lick the remnants off his cock, savoring every drop.'
+
+		act 'Leave':gt 'city_lake', 'start'
+	end
+end
+
+if $ARGS[0] = 'kater2':
+	*clr & cla
+	menu_off = 1
+	pcs_hydra += 20
+	gs 'npcgeneratec', 0, 'a rescuer at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater1.jpg"></center>'
+	'Riding on a banana you loss grip and fall in the water, you swallow alot of water and begin to sink. Thankfully you notice two guys on a boat and they get you out of the water. After a while you catch your breath, relax and start to look around. You saw that on the bow both your saviors are naked.'
+	if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Pretend to be asleep until docked (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Pretend to be asleep until docked (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+
+	act 'Approach them':
+		*clr & cla
+		guy += 2
+		gs 'arousal', 'vaginal', 5, 'group'
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater2.jpg"></center>'
+		'You strip out of your swimsuit, go to the guys and not saying a word, jump up to one of the guys and kiss him passionately. In a second you feel a member has risen and rests on your buttocks, you take it in your hand and guide it into your pussy.'
+
+		act 'Change position':
+			*clr & cla
+			gs 'arousal', 'anal', 5, 'group'
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater3.jpg"></center>'
+			'The guy removes his member and turns your back to him, grabs and lifts your buttocks, your legs lift up, and the guy presses into your anus with his dick. You moan, whether from pain inflicted by the huge dick in your ass, whether from the pleasure that he gives you, you don''t care and with each thrust you try to take his cock as deep as possible into yourself.'
+			'"Want deeper?" He asks'
+
+			act '"Yes, deeper, harder!"':
+				*clr & cla
+				gs 'arousal', 'bj', 5
+				gs 'arousal', 'anal', 5
+				minut -= 5
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater4.jpg"></center>'
+				'"Yes, deeper, harder!" you shout.'
+				'"Well then, hold on, " the guy says, puts you on all fours. He gets behind you and shoves his cock so deep in your ass that his balls clap on your butt. The second guy who has been watching you this whole time, pokes you in the face with his dick. You grab his cock and start sucking it.'
+
+				act '"Take both of them"':
+					*clr & cla
+					gs 'arousal', 'vaginal', 5
+					gs 'arousal', 'anal', 5
+					minut -= 5
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater5.jpg"></center>'
+					'"Fuck me in both holes!" You shout. They marvel at your lust, the guys were encouraged and with complete abandon went at it pushing their members as deep as they could. Soon lights danced before your eyes, then descended upon you and flowed through your whole body, it is an orgasm so spiritual you never want it to end.'
+					$orgasm_or = 'yes'
+					gs 'arousal', 'end'
+					gs 'stat'
+
+					act 'Further':
+						*clr & cla
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater6.jpg"></center>'
+						'Realizing that you are satisfied the guys sit you on the deck, and standing either side of you masturbate.'
+
+						act 'Turn to one':
+							*clr & cla
+							gs 'cum_call', 'mouth', 'a rescuer at the lake'
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater7.jpg"></center>'
+							'One of the guys groans, you turn to him, your mouth open. His aim is true and his seed fills your mouth, you swallow it with pleasure.'
+
+							act 'Turn to the second':
+								*clr & cla
+								gs 'npcgeneratec', 0, 'a rescuer at the lake', rand(18,45)
+								gs 'boyStat', $npclastgenerated
+								gs 'cum_call', 'mouth', 'a rescuer at the lake'
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater2/kater8.jpg"></center>'
+								'Soon the second one groans, you turn to him, but even though you opened your mouth, the guy completely covers your face.'
+
+								act 'Leave':gt 'city_lake', 'start'
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'kater3':
+	*clr & cla
+	menu_off = 1
+	pcs_hydra += 20
+	gs 'npcgeneratec', 0, 'a rescuer at the lake', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/1.jpg"></center>'
+	'Riding on the jet ski you try too steep a turn, which throws you into the water, you have swallowed alot of water and begin to sink. Thankfully you notice a guy on a boat, he pulls you out of the water, and binds the Jet ski to the boat. After a while, having coughed up some water, you catch your breath and start to feel much better, the guy comes up to you.'
+	'"Well, how are you beautiful, pulled yourself together, what about gratitude?" he asks, his hand now on your pussy.'
+	if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the water.'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Take the Jet ski and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Take the Jet ski and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Spread your legs':
+		*clr & cla
+		guy += 2
+		gs 'arousal', 'vaginal_finger', 5
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/2.jpg"></center>'
+		'You remove your swimwear and open your legs, making it clear that you are ready to thank your savior, the guy smiles, introduces his fingers into your vagina and with his tongue begins to caress your clitoris.'
+
+		act 'Give blowjob':
+			*clr & cla
+			gs 'arousal', 'vaginal', 5, 'group'
+			gs 'arousal', 'bj', 5, 'group'
+			minut -= 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/4.jpg"></center>'
+			'You sit the guy down and lick his cock, opening your mouth you start sucking selflessly until you see approaching from the depths, a second boat. Your saviour obviously knows him and waves him aboard, he comes up to you and puts his cock in your pussy.'
+
+			act 'Further':
+				*clr & cla
+				gs 'arousal', 'vaginal', 5, 'group'
+				gs 'arousal', 'anal', 5, 'group'
+				minut -= 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/6.jpg"></center>'
+				'You climb on top of one of them taking his cock in your pussy, and the second one takes you in the ass.'
+
+				act 'Change position':
+					*clr & cla
+					gs 'arousal', 'vaginal', 5, 'group'
+					gs 'arousal', 'anal', 5, 'group'
+					minut -= 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/8.jpg"></center>'
+					'You guys change position and re-enter both of your holes.'
+
+					act 'Change position':
+						*clr & cla
+						gs 'cum_call', 'mouth', 'a rescuer at the lake'
+						gs 'cum_call', 'mouth', 'a rescuer at the lake'
+						gs 'arousal', 'end'
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/kater3/11.jpg"></center>'
+						'Sated they kneel you down and end in your mouth.'
+
+						act 'Leave':gt 'city_lake', 'start'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'horse1':
+	*clr & cla
+	menu_off = 1
+	$location_type = 'event_outdoors'
+	gs 'npcgeneratec', 0, 'Quad rider', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse1.jpg"></center>'
+	'Riding along the beach you notice the two men on quad bikes, they wave to you and offered to keep you company.'
+
+	gs 'willpower', 'misc', 'resist', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Refuse (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'city_lake', 'start'
+	else
+		act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+
+	act 'Go with them':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse2.jpg"></center>'
+		'You dismount from the horse and go along with the men talking about nonsense.'
+
+		act 'Move on':
+			*clr & cla
+			gs 'arousal', 'foreplay', 5
+			minut -= 3
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse3.jpg"></center>'
+			'Suddenly one of the men turns you to his chest and begins to paw at you, the second man hugs you from behind, reaching into your panties.'
+
+			gs 'willpower', 'group', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Push them away (<<will_cost>> Willpower)': gs 'willpower', 'pay', 'resist' & gt 'city_lake', 'start'
+			else
+				act 'Push them away (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+
+			act 'Take their members':
+				*clr & cla
+				guy += 2
+				gs 'arousal', 'bj', 10, 'group'
+				minut -= 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse4.jpg"></center>'
+				'You take their members out of their pants, squat down and begin to suck greedily.'
+
+				act 'Fuck them':
+					*clr & cla
+					gs 'arousal', 'vaginal', 5, 'group'
+					gs 'arousal', 'bj', 5, 'group'
+					minut -= 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse5.jpg"></center>'
+					'"Fuck me," You cry. One of the men lies down and you continue to suck him, the second comes from behind and fulfills your desire by filling your pussy'
+
+					act 'Change position':
+						*clr & cla
+						gs 'arousal', 'vaginal', 5, 'group'
+						gs 'arousal', 'bj', 5, 'group'
+						minut -= 5
+						gs 'stat'
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse6.jpg"></center>'
+						'You straddle one of the men jumping on him like the horse you tied up a few minutes ago. The second guy comes up to you and starts to tease you with his member, lowering it to you so you can suck it, then lifting it up forcing you to stretch and strain to try and catch it in your mouth.'
+
+						act 'Change position':
+							*clr & cla
+							gs 'arousal', 'vaginal', 5, 'group'
+							gs 'arousal', 'bj', 5, 'group'
+							minut -= 5
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse7.jpg"></center>'
+							'You get off the penis you were riding and get on all fours, the men take you from both sides, one fucks your vagina, the second your mouth. You suck at the same time began as you thrust your hips, as you buck your hips, you have a small but satisfying orgasm. You soon feel that dick in your mouth is about to explode.'
+							$orgasm_or = 'yes'
+							gs 'arousal', 'end'
+							gs 'stat'
+
+							act 'Remove from mouth':
+								*clr & cla
+								gs 'cum_call', 'mouth_swallow', 'Quad rider'
+								gs 'stat'
+								'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse8.jpg"></center>'
+								'You remove the member from your mouth and begin stroking it with your tongue, in a second your efforts were rewarded and a stream of sperm covers your tongue.'
+
+								act 'Suck second':
+									*clr & cla
+									'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse9.jpg"></center>'
+									'You kneel before the second man and lick him from his balls to the head and take him in your mouth, as you suck his dick with pleasure the man trembles. "I''m going to finish."'
+
+									act 'Continue to suck':gt 'city_lake', 'horse1bj'
+
+									act 'Pull':
+										*clr & cla
+										gs 'cum_call', 'face', 'Quad rider'
+										facial += 1
+										gs 'stat'
+										'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse10.jpg"></center>'
+										'You remove his member from your mouth and the man had finishes on your face, with the words, "Here''s a babys face cream." You gladly licked the remnants of sperm from his penis.'
+
+										act 'Leave':gt 'city_lake', 'start'
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'horse1bj':
+	*clr & cla
+	gs 'cum_call', 'mouth_swallow', 'Quad rider'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse1/horse11.jpg"></center>'
+	'The flow of sperm gushes into your mouth, you swallow it purring with pleasure, lick the remnants of his cock and swallow again.'
+
+	act 'Leave':gt 'city_lake', 'start'
+end
+
+if $ARGS[0] = 'horse2':
+	*clr & cla
+	gs 'npcgeneratec', 0, 'Horse rider', rand(18,45)
+	gs 'boyStat', $npclastgenerated
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse1.jpg"></center>'
+	'While you are riding you meet two men on horseback and they ask you to join them for a walk together.'
+
+	gs 'willpower', 'misc', 'resist', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Refuse (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			gt 'city_lake', 'start'
+		end
+	else
+		act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+
+	act 'Go with them':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse2.jpg"></center>'
+		'You get down from your horses and start walking along the beach talking about any old nonsense.'
+
+		act 'Finish the walk':gt 'city_lake', 'start'
+
+		act 'Touch their pants':
+			*clr & cla
+			guy += 2
+			gs 'arousal', 'bj', 10, 'group'
+			minut -= 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse3.jpg"></center>'
+			'You touch their pants, rubbing their groins, the men look at each other and freeze, you kneel down and pull out their members, then begin to caress with your tongue and smoothly transition to blowjobs.'
+
+			act 'Lie on your back':
+				*clr & cla
+				gs 'arousal', 'anal', 5, 'group'
+				gs 'arousal', 'bj', 5, 'group'
+				minut -= 5
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse4.jpg"></center>'
+				'Releasing their members, you lie on your back, one of the men grabs your ankles and opens your legs wide enough that he can put his dick in your ass, you weren''t expecting that and squeal softly, the second kneels by your head and tries to shove his dick in your mouth.'
+
+				act 'Suck him':
+					*clr & cla
+					gs 'arousal', 'bj', 10, 'group'
+					minut -= 5
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse5.jpg"></center>'
+					'You take his dick in your mouth and greedily suck away on it.'
+
+					act 'Change position':
+						*clr & cla
+						gs 'arousal', 'bj', 5, 'group'
+						gs 'arousal', 'anal', 5, 'group'
+						minut -= 5
+						'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse6.jpg"></center>'
+						'You sit on the dick you were sucking on, and the other man comes from behind to ambush your butt, he fucks your ass strongly, your eyes turn dark with pleasure, and your whole body trembles as you feel the wave of orgasm. Soon you recover as the men begin to moan close to exploding.'
+						$orgasm_or = 'yes'
+						gs 'stat'
+
+						act 'Change position':
+							*clr & cla
+							gs 'cum_call', 'face', 'Horse rider'
+							facial += 1
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse7.jpg"></center>'
+							'You jumped of their cocks and kneel down, the men crowded around you from both sides, one finishes immediately.'
+
+							act 'Suck the other one':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse8.jpg"></center>'
+								'You turned to the second, and wrap your lips around his cock, but as you pull back, he pushes his cock deeper into your mouth, then the man groans, his cock stiffens ready to pour sperm into your mouth.'
+
+								act 'Remove from your mouth':
+									*clr & cla
+									gs 'cum_call', 'mouth_swallow', 'Horse rider'
+									gs 'stat'
+									'<center><img <<$set_imgh>> src="images/locations/city/residential/lake/sex/horse2/horse9.jpg"></center>'
+									'You remove the cock from your mouth and open wide, ready to catch the stream of sperm, the man does not keep you waiting and sperm splatters into your mouth, painting your tongue and throat.'
+
+									act 'Leave':gt 'city_lake', 'start'
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+--- city_lake ---------------------------------
+

@@ -1,7 +1,7 @@
 # budgetclothes
 
 if $ARGS[0] = 'start':
-	$metka = $ARGS[0]
+	$loc_arg = $ARGS[0]
 	$loc = 'budgetclothes'
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'start'
@@ -21,7 +21,7 @@ if $ARGS[0] = 'start':
 			minut += 3
 			gt 'torgcentr'
 		else
-			gt 'pavIndustrial'
+			gt 'pav_industrial'
 		end
 	end
 	
@@ -91,7 +91,7 @@ if $ARGS[0] = 'start':
 end
 
 if $ARGS[0] = 'clothes':
-	$metka = 'clothes'
+	$loc_arg = 'clothes'
 	$loc = 'budgetclothes'
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'clothes'
@@ -109,31 +109,36 @@ if $ARGS[0] = 'clothes':
 		gt 'budgetclothes', 'start'
 	end
 
-	i = Clothingstock + 1
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+		i = Clothingstock + 1
 
-	if Clothingstock - 18 > 0:
-		i -= 18
-	elseif Clothingstock - 12 > 0:
-		i -= 12
-	elseif Clothingstock - 6 > 0:
-		i -= 6
-	end
-
-	:loopcheap
-		if cheap[i] = 0:
-			gs 'clothing_attributes', 'cheap', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''cheapclo''"><img src="images/pc/clothing/1cheap/<<i>>.jpg" 	height="250" /></a>'
-			
+		if Clothingstock - 18 > 0:
+			i -= 18
+		elseif Clothingstock - 12 > 0:
+			i -= 12
+		elseif Clothingstock - 6 > 0:
+			i -= 6
 		end
-		i += 6
-		if i = 3: i = 9
-		if i = 10: i = 16
-		if i = 45: i = 57
-		if i = 80:i = 86
-		if i = 414:i = 415
-	if i <= 414:jump 'loopcheap'
+		
+		:loopcheap
+			if cheap[i] = 0:
+				gs 'clothing_attributes', 'cheap', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''cheapclo''"><img src="images/pc/clothing/1cheap/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 6
+			if i = 3: i = 9
+			if i = 10: i = 16
+			if i = 45: i = 57
+			if i = 80:i = 86
+			if i = 414:i = 415
+		if i <= 419:jump 'loopcheap'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
 if $ARGS[0] = 'cheapclo':
@@ -151,7 +156,7 @@ if $ARGS[0] = 'office':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'office'
 	menu_off = 0
-	$metka = $ARGS[0]
+	$loc_arg = $ARGS[0]
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'
@@ -166,23 +171,29 @@ if $ARGS[0] = 'office':
 		gt 'budgetclothes', 'start'
 	end
 
-	if Clothingstock > 15:
-		i = 3
-	elseif Clothingstock > 7:
-		i = 2
-	else
-		i = 1
-	end
-
-	:loopoffice
-		if office[i] = 0:
-			gs 'clothing_attributes', 'office', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''officeclo''"><img src="images/pc/clothing/5office/<<i>>.jpg" 	height="250" /></a>'
+	clothingfilter['qualitycheck'] = 7
+	:loopquality2
+		if Clothingstock > 15:
+			i = 3
+		elseif Clothingstock > 7:
+			i = 2
+		else
+			i = 1
 		end
-		i += 3
-	if i <= 101:jump 'loopoffice'
+
+		:loopoffice
+			if office[i] = 0:
+				gs 'clothing_attributes', 'office', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+					
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''officeclo''"><img src="images/pc/clothing/5office/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+		if i <= 128:jump 'loopoffice'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality2'
 end
 
 if $ARGS[0] = 'officeclo':
@@ -200,7 +211,7 @@ if $ARGS[0] = 'uniform':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'uniform'
 	menu_off = 0
-	$metka = $ARGS[0]
+	$loc_arg = $ARGS[0]
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'
@@ -215,23 +226,29 @@ if $ARGS[0] = 'uniform':
 		gt 'budgetclothes', 'start'
 	end
 
-	if Clothingstock > 15:
-		i = 1
-	elseif Clothingstock > 7:
-		i = 2
-	else
-		i = 3
-	end
-
-	:loopuniform
-		if uniform[i] = 0:
-			gs 'clothing_attributes', 'uniform', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''uniformclo''"><img src="images/pc/clothing/10uniform/<<i>>.jpg" 	height="250" /></a>'
+	clothingfilter['qualitycheck'] = 7
+	:loopquality3
+		if Clothingstock > 15:
+			i = 1
+		elseif Clothingstock > 7:
+			i = 2
+		else
+			i = 3
 		end
-		i += 3
-	if i <= 49:jump 'loopuniform'
+
+		:loopuniform
+			if uniform[i] = 0:
+				gs 'clothing_attributes', 'uniform', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+	
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''uniformclo''"><img src="images/pc/clothing/10uniform/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+		if i <= 49:jump 'loopuniform'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality3'
 end
 
 if $ARGS[0] = 'uniformclo':
@@ -249,7 +266,7 @@ if $ARGS[0] = 'school':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'school'
 	menu_off = 0
-	$metka = $ARGS[0]
+	$loc_arg = $ARGS[0]
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'
@@ -264,24 +281,30 @@ if $ARGS[0] = 'school':
 		gt 'budgetclothes', 'start'
 	end
 
-	if Clothingstock > 15:
-		i = 1
-	elseif Clothingstock > 7:
-		i = 2
-	else
-		i = 3
-	end
-
-	:loopschool
-		if school[i] = 0:
-			gs 'clothing_attributes', 'school', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''schoolclo''"><img src="images/pc/clothing/6school/<<i>>.jpg" 	height="250" /></a>'
+	clothingfilter['qualitycheck'] = 7
+	:loopquality4
+		if Clothingstock > 15:
+			i = 1
+		elseif Clothingstock > 7:
+			i = 2
+		else
+			i = 3
 		end
-		i += 3
-		if i = 6:i = 9
-	if i <= 62:jump 'loopschool'
+
+		:loopschool
+			if school[i] = 0:
+				gs 'clothing_attributes', 'school', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''schoolclo''"><img src="images/pc/clothing/6school/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+			if i = 6:i = 9
+		if i <= 63:jump 'loopschool'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality4'
 end
 
 if $ARGS[0] = 'schoolclo':
@@ -296,7 +319,7 @@ if $ARGS[0] = 'schoolclo':
 end
 
 if $ARGS[0] = 'shoes':
-	$metka = 'shoes'
+	$loc_arg = 'shoes'
 	$loc = 'budgetclothes'
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'shoes'
@@ -328,7 +351,7 @@ end
 if $ARGS[0] = 'budget_shoes': gt 'shoes', 'view_shoe_item', 'shop', 'gandm',i, 700
 
 if $ARGS[0] = 'trainers':
-	$metka = 'trainers'
+	$loc_arg = 'trainers'
 	$loc = 'budgetclothes'
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'trainers'
@@ -352,7 +375,7 @@ if $ARGS[0] = 'trainers':
 		if strainers[i] = 0:*p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''training_shoes''"><img src="images/pc/shoes/trainers/<<i>>.jpg" height="250" /></a>'
 		i += 2
 		if i = 21:i = 23
-	if i <= 29:jump 'looptrainers_shoes'
+	if i <= 30:jump 'looptrainers_shoes'
 end
 
 if $ARGS[0] = 'training_shoes': gt 'shoes', 'view_shoe_item', 'shop', 'trainers',i, 800
@@ -361,7 +384,7 @@ if $ARGS[0] = 'coats':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'coats'
 	menu_off = 0
-	$metka = $ARGS[0]
+	$loc_arg = $ARGS[0]
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'
@@ -379,7 +402,7 @@ if $ARGS[0] = 'coats':
 		if i = 5:i = 6
 		if i = 9:i = 10
 		if i = 11:i = 12
-	if i <= 19:jump 'loopcoats'
+	if i <= 20:jump 'loopcoats'
 end
 
 if $ARGS[0] = 'coatsclo':
@@ -397,7 +420,7 @@ if $ARGS[0] = 'purses':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'purses'
 	menu_off = 0
-	$metka = 'purses'
+	$loc_arg = 'purses'
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'
@@ -418,7 +441,7 @@ end
 if $ARGS[0] = 'purses2': gt 'purses', 'view_purse_item', 'shop', 'cheap',i, 1500
 
 if $ARGS[0] = 'panties':
-	$metka = 'panties'
+	$loc_arg = 'panties'
 	$loc = 'budgetclothes'
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'panties'
@@ -447,7 +470,7 @@ if $ARGS[0] = 'bras':
 	$menu_loc = 'budgetclothes'
 	$menu_arg = 'bras'
 	menu_off = 0
-	$metka = 'bras'
+	$loc_arg = 'bras'
 	$loc = 'budgetclothes'
 	*clr & cla
 	gs'stat'

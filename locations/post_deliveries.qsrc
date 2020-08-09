@@ -1,0 +1,1479 @@
+# post_deliveries
+
+!!variables used:
+!!postamountrand = (0-2), whether there is a little, medium or lots of mail to deliver. Affects how much time you have to do other things
+!!poststreets = (0-1), whether the "dangerous streets" are used to save time. Enables encounters with bandits
+!!eventrand = (1-x), selects which event plays
+!!posteventQW1-5 = (0-x) sets quest stage for events with after delivery stages
+!!posteventcounter = (0-1) used to set first and second round of events
+!!petrand = (0-2), whether a cat, dog or catgirl happens to walk by during your break
+!!postbandQW = (0-6), quest stages for the "bandits" story line
+!!postexhibi = (0-4), how often you''ve shown your boobs during postbandQW = 2
+!!posthj = how many times you''ve given the guys a handjob
+!!postbj = how many times you''ve given the guys a blowjob
+!!postlate = (0-15), how often you come back to the post office after 15:15. You get fired if this counter hits 15)
+!!postburn = (0-1), whether hoodlums tampered with your mail. Gets you fired if yes)
+!!postworkday = day check so postmaster knows you worked already
+
+menu_off = 1
+
+if $ARGS[0] = 'start':
+	cla
+	'He guides you to the back room, where a number of small packages and letters are packed into a shoulder bag.'
+!!decides how much mail there is on a day
+	postamountrand = rand(0,2)
+	if postamountrand = 0:
+		'"Not much mail today, should be a piece of cake!" he tells you. "Take it easy."'
+		'You lift the bag and nod, it feels fairly light indeed.'
+	elseif postamountrand = 1:
+		'"We got a decent amount, but nothing you can''t handle," he says. "Just do what you always do, and you''ll be fine."'
+		'You pick up the bag, getting ready to do your round.'
+	else
+		'"We''re swamped today, I hope you''re wearing your running shoes!" he smirks. You can tell he feels bad for giving you so much work and only three hours to do it in, but still expects you to get it done on time.'
+		'You have to carry your bag with both hands, it''s so heavy! You might have to use some shortcuts, just to make it back by 15:00!'
+	end
+	'You take some time to get ready for your round, checking all the addresses and planning a route, and leave the post office around noon to get started.'
+	
+	act 'Begin your round':
+		cla
+		*clr
+		posteventcounter = 0
+		if posteventQW1 = 2: posteventQW = 3
+		if posteventQW2 = 2: posteventQW = 3
+		if posteventQW3 = 2: posteventQW = 3
+		!! if posteventQW5 = 2: posteventQW = 3
+		minut += 90 - minut
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+		'The first half hour is easy, with you working your way through the streets near the post office. As you get further and further away from the center, you take a look into your bag and ponder how you''re going to handle your round today.'
+		if postamountrand = 0:
+			minut += 25
+			'Your bag feels fairly light, and you don''t see that many items left in it. You could easily make it back before 15:00, and would even have time to relax and take breaks!'
+		elseif postamountrand = 1:
+			minut += 35
+			'Your bag is still fairly full, and you''ll have to keep walking in a brisk pace to make it back on time. Nevertheless, you don''t think you would need to take any risks in the more dangerous streets.'
+		else
+			minut += 45
+			'Your bag still feels very full, and you realize there''s no way you''ll make it back on time if you stick to the predetermined route! Cutting through certain streets might be dangerous, though.'
+			'You could hope people are still at home after 15:00 and stick to the safe roads... surely the postmaster won''t mind you being back a bit late, if it means everyone got their mail safely?'
+			'Alternatively you could push your luck and hope you can get all deliveries done by 15:00, cutting through areas you might get in trouble in.'
+		end
+
+		act 'Stick to the safe route':
+			cla
+			*clr
+			minut += 15
+			poststreets = 0
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+			'You decide to stick to the predetermined route, and continue delivering the mail you have in your bag.'
+			if postamountrand = 0:
+				'You have more than enough time to finish your round, even with you taking it slowly.'
+			elseif postamountrand = 1:
+				'You figure you have enough time to stick to your predetermined route and be done on time, so that''s what you do. You won''t have time to stop for anything or talk to anyone for very long, but will finish just around 15:00 as expected.'
+			else
+				'After another half hour you take another look in your bag. Damn, there''s still so much left to deliver! There''s no way you''ll be able to finish your round on time if you keep this up.'
+			end
+			act 'During your round...':gt 'post_deliveries', 'event'
+		end
+		gs 'willpower', 'misc', 'self'
+		if will_cost <= pcs_willpwr:
+			act 'Use the more dangerous shortcuts to save time (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'self'
+				poststreets = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+				'You decide to use the streets the postmaster told you to avoid, in order to be done faster. What''s the worst that could happen?'
+				if postamountrand = 0:
+					'Your bag is emptying rapidly, and you don''t think you''ll need much more than a half hour to finish your round if you can keep this up!'
+				elseif postamountrand = 1:
+					'At this pace you''ll be able to finish your round with about a half hour left to spare. Assuming nothing happens...'
+				else
+					'After another half hour you take another look in your bag. Damn, there''s still so much left to deliver! You should be able to just about get it done on time, but you''re going to have to keep the pace up...'
+				end
+				
+				act 'During your round...':gt 'post_deliveries', 'event'
+			end
+		else
+			act 'Use the more dangerous shortcuts to save time (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+	end
+end
+
+if $ARGS[0] = 'event':
+	if postworkday = daystart:
+		eventrand = rand(20,120)
+	else
+		eventrand = rand(1,120)
+		postworkday = daystart
+	end
+!!change to determine which event is chosen. Easily moddable in case events ought to happen more or less often.
+	if eventrand <= 3 and posteventQW1 = 0:
+		gt 'post_deliveries', '1'
+	elseif eventrand <= 6 and posteventQW2 = 0:
+		gt 'post_deliveries', '2'
+	elseif eventrand <= 9 and posteventQW3 = 0:
+		gt 'post_deliveries', '3'
+	elseif eventrand <= 12 and posteventQW4 = 0:
+		gt 'post_deliveries', '4'
+	elseif eventrand <= 15 and posteventQW5 = 0:
+!!		gt 'post_deliveries', '5' - pending follow up event/s
+		gt 'post_deliveries', 'event'
+	elseif eventrand <= 20:
+		gt 'post_deliveries', '6'
+	elseif eventrand <= 25:
+		gt 'post_deliveries', '7'
+	elseif eventrand <= 30:
+		gt 'post_deliveries', '8'
+	elseif eventrand <= 35:
+		gt 'post_deliveries', '9'
+	elseif eventrand <= 40:
+		gt 'post_deliveries', '10'
+	elseif eventrand <= 45:
+		gt 'post_deliveries', '11'
+	elseif eventrand <= 50:
+		gt 'post_deliveries', '12'
+	elseif eventrand <= 55:
+		gt 'post_deliveries', '13'
+	elseif eventrand <= 60:
+		gt 'post_deliveries', '14'
+	elseif eventrand <= 65:
+		gt 'post_deliveries', '15'
+	elseif eventrand <= 70:
+		gt 'post_deliveries', '16'
+	elseif eventrand <= 75:
+		gt 'post_deliveries', '17'
+	elseif eventrand <= 80:
+		gt 'post_deliveries', '18'
+	elseif eventrand <= 85:
+		gt 'post_deliveries', '19'
+	elseif eventrand <= 90:
+		gt 'post_deliveries', '20'
+	elseif eventrand <= 95:
+		gt 'post_deliveries', '21'
+	elseif eventrand <= 100:
+		gt 'post_deliveries', '22'
+	elseif eventrand <= 105:
+		gt 'post_deliveries', '23'
+	elseif eventrand <= 110:
+		gt 'post_deliveries', '24'
+	elseif eventrand <= 115:
+		gt 'post_deliveries', '25'
+	elseif eventrand <= 120:
+		gt 'post_deliveries', '26'
+	else
+		gt 'post_deliveries', 'event'
+	end
+end
+	
+!!posteventrand 1-5 lead to longer events, the rest are casual events
+if $ARGS[0] = '1':
+	cla
+	*clr
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postevent1-1.jpg"></center>'
+	'You enter a posh apartment building, and a grey-haired man comes downstairs once you tell him you have a package for him over the intercom.'
+	'"Excellent, right in time for tonight! Thank you!" he smiles. You have him sign as per usual, and were just about to walk away when you suddenly feel his hand on your shoulder.'
+	'"Uhh, excuse me miss... could I ask you for a favour?" he asks. You can tell he''s nervous.'
+	'When you don''t tell him off immediately, he continues: "You see... it''s for my wife. Our love life has been rather stale, and I''m hoping to breathe some new life into our relationship with this. It''s an anniversary gift."'
+	'He pats his hand on the parcel. "I''m not 100% sure if I ordered the right size, though! You look like you''re roughly her size. Would yo- would you mind putting it on real quick?" he stutters nervously. "She''d kill me if I got it wrong!"'
+	''
+	gs 'willpower', 'exhib', 'resist', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Refuse and continue your round (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			cla
+			'"Yea, no. How would your wife feel, if she knew another girl put those clothes on before her?" you ask him, and continue your round without saying another word.'
+			'The man doesn''t bother to object, and closes the door dejectedly. He knows you''re right.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'	
+		end
+	else
+		act 'Refuse and continue your round (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+	act 'Ask him what''s in the parcel':
+		cla
+		posteventQW1 = 1
+		'"I don''t know... maybe. Depends. What did you buy your wife?" you ask him.'
+		'Glad to hear you didn''t shoot down the idea right away, he shrugs: "It''s lingerie. A fancy gown, of sorts. I don''t know, I think she''d like it."'
+		'When he sees your hesitant look, he adds: "You can change in the bathroom, I wouldn''t see anything inappropriate! The gown will cover you up! Please, I''m a married man! I only want to make my wife happy!"'
+		''
+		'After a few seconds of palpable silence, he pleads: "Please? I just need to see how it fits. I really need this to go well... my marriage might depend on it! I''m begging you!"'
+		''
+		gs 'willpower', 'exhib', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				cla
+				'"Sorry, but no. I really shouldn''t. I have to go!" you tell him.'
+				'The man''s shoulders sag a little, but he was expecting this response. What girl would agree to model lingerie for some random guy she just met?'			
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		else
+			act 'Refuse (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Say you would, but you have a job to do':
+			cla
+			posteventQW1 = 2
+			'"That... sounds interesting, but I really don''t have time," you apologize to the man. "I still have some mail to deliver."'
+			'He ponders for a moment, and suggests: "How about you come back after you finish your round? My wife won''t be home for a few more hours. Please?"'
+			'"I''ll think about it. I really have to go now! Maybe see you later!" you say, and continue your round.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	end
+end
+
+if $ARGS[0] = '2':
+	cla
+	*clr
+	posteventQW2 = 1
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postevent2-1.jpg"></center>'
+	'As you walk up some stairs to deliver a letter, you nearly bump into a drunk girl. "Hey, cutie!" she slurs, and winks at you. "What brings you here?"'
+	'"I uhh... I have a letter for Mr. Yanovich?" you tell her.'
+	'"Mr. Yanovich isn''t wearing any clothes right now!" she laughs. "He''s my boyfriend. Just give it to me, I''ll make sure he gets it. Unless you want to come in for some fun...?"'
+	''
+	act 'Insist you have to hand it over personally':
+		cla
+		'"I''m sorry miss, but I have to give it to him personally. Those are the rules," you tell her.'
+		'"Whatever, I was trying to do you a favor!" she scoffs. "Arsen! Put on some pants and come to the door!" she yells upstairs.'
+		'When you hear no response, she beckons you to follow her and enters the apartment. You find two guys: one who must be Arsen smoking a water pipe, and another man playing with a photo camera. They''re both completely naked!'
+		'"Arsen thought it''d be fun if Maksim takes pictures while we fuck! He says I''m too hot to not share with the world! Isn''t he the sweetest?" she smiles at you. The man with the camera gives you an idle nod and goes back to ignoring you, while Arsen puts the water pipe away and stands up.'
+		'"Well well, who is this hottie? Is she joining us?" Arsen asks his girlfriend. He seems quite into the idea.'
+		'"Maybe! What do you think? Want to have some fun with us?" the girl grins at you, while she puts her arm around Arsen''s waist. "Don''t worry about Maksim, he''s only here to take photos."'
+		''
+		gs 'willpower', 'sex', 'resist', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse and ask him to sign (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				cla
+				'"Uhh, no. I just need you to sign here please?" you ask him, handing him the clipboard.'
+				'Arsen signs where you want him to, looking at you with some regret. He says: "Are you sure? I bet Jenya could show you a trick or two! You two really seem to hit it off..."'
+				'His girlfriend nods eagerly and gives you a warm smile.'
+				'"I''m sure she could!" you laugh. "But I have a job to do."'
+				'Jenya kisses her boyfriend passionately, as you turn your back to them and head for the door. "Don''t worry, babe. I''ll take care of you!" she tells him. "Maksim, you ready?"'
+				'The last thing you see before you close the door is Jenya dropping to her knees before Arsen.'
+
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		else
+			act 'Refuse and ask him to sign (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Ask if they can wait until you finish your round':
+			cla
+			posteventQW2 = 2
+			'You point at your bag apologetically and say: "I want to but I can''t right now, I still have some deliveries to do! Maybe I can come back when I''m done with my round, though?"'
+			'The girl looks at Arsen and smiles: "What do you think, babe? I can just give you a quick BJ now, and we''ll play more when she''s back? Please? I really like her!"'
+			'Arsen looks you up and down again. He hates the idea of having to wait, but definitely wants you to join. He sits back down in his beanbag chair and shrugs: "I guess," while he grabs the water pipe again. "Start sucking then."'
+			'"Just a second, babe!" she tells him, as she walks you to the door and gives you a wicked grin: "This is gonna be great! I can''t wait to get my hands on you... see you soon!"'
+			'She gives you a quick kiss on the lips and closes the door.'
+
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	end
+end
+
+if $ARGS[0] = '3':
+	cla
+	*clr
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postevent3-1.jpg"></center>'
+	'"What!?" a man shouts in an annoyed voice, when you ring the door bell to an apartment in a well-off neighbourhood. When the door opens, you''re looking at a man in his 30s. He looks like a businessman.'
+	'"Yea? What do you want?" he shrugs. He doesn''t even try to hide that he''s ogling your body from top to bottom, not paying much attention to what you''re saying.'
+	'"I have a parcel for you, sir!" you tell him. "Sign here please? Sir?"'
+	'The man looks at the parcel and sighs: "I ordered that months ago! You guys are terrible..."'
+	'When you try to tell him that''s not your fault, he cuts you off: "Look, I''m not even fucking that girl any more! Her parents moved away and took her with them when they found out about me. So desperate to protect their girl..."'
+	'He laughs, and then looks at you closely. A creepy grin appears on his face and he says: "Say... let me ask you something, girl. Do you like clothes?"'
+	'"Are you kidding? Of course I like clothes!" you shrug. "What girl doesn''t?"'
+	'"Then I have a proposition for you! Come in for a moment," he grins. He steps aside and beckons you to enter his apartment.'
+	''
+	gs 'willpower', 'misc', 'resist', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Just get his signature and leave (<<will_cost>> Willpower)':
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			cla
+			'This guy gives you the creeps! "Uhhh... I don''t think so, sir. I just need you to sign here so I can be on my way," you tell him.'
+			'The man smirks, but signs where you ask him to: "You''d rather be poor, huh? Suit yourself."'
+			'He slams the door shut before you can even say anything more.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	else
+		act 'Just get his signature and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+	act 'Ask him what he wants':
+		cla
+		posteventQW3 = 1
+		'"Uhh... why?" you ask him. "What do you want?"'
+		'He casts a quick look down to the street to make sure no one''s listening in, and says: "You say you love clothes? I love cute little girls like you. You get whatever''s in this box if you suck my dick. I can guarantee you: you''ll want what''s in this box. And I want that mouth on my cock. Win-win. So... interested?"'
+		''
+		gs 'willpower', 'prostitution', 'resist', 'easy'
+		if will_cost <= pcs_willpwr:
+			act 'Tell him you''re not interested (<<will_cost>> Willpower)':
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				cla
+				'"I''m not that kind of girl, sir. I just need you to sign here so I can be on my way," you tell him.'
+				'The man smirks, but signs where you ask him to: "Suit yourself."'
+				'He slams the door shut before you can even say anything more.'
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		else
+			act 'Tell him you''re not interested (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Ask if you come back after your shift':
+			cla
+			posteventQW3 = 2
+			'Something about the way he says it makes it sound tempting... what could be in that box? If he''s so dead sure you want it, it must be nice! You still have a job to do, though...'
+			'"I still have some deliveries to make. Is it okay if I come back when I''m done?" you ask.'
+			'"You know what? Sure. That way I can take my time with you. But just so you know: once you enter my house, you do what I want. Unconditionally. I don''t want to hear a ''no'' or ''maybe'' out of you," he says resolutely. "Do we have a deal?"'
+			'You feel a shiver run down your back. He seems quite demanding!'
+			''
+			gs 'willpower', 'prostitution', 'resist'
+			if will_cost <= pcs_willpwr:
+				act 'Say you probably won''t be coming (<<will_cost>> Willpower)':
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					cla
+					'"I don''t know... I don''t think I''ll be coming, sir. I just need you to sign here so I can be on my way," you tell him.'
+					'The man smirks at you, but signs where you ask him to and pulls the box out of your hands: "We''ll see. That''s what you girls all say, until you get sick of the crappily paid jobs you''re doing now and realize how much more comfortable your lives can be. Come find me, if you change your mind. And if you''re brave enough."'
+					'He winks at you, and then slams the door shut before you can say anything more.'
+					act 'Continue your round':gt 'post_deliveries', 'resume'
+				end
+			else
+				act 'Say you probably won''t be coming (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end
+			act 'Say you''ll be back when you''re done':
+				cla
+				'"Deal. I''ll come back once I''m done," you tell him. "I should be done around 15:00."'
+				'"Heh... I can''t wait. I have a feeling we''re going to be good friends," he grins, as he signs for his parcel. "See you then."'
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		end
+	end
+end
+
+if $ARGS[0] = '4':
+	cla
+	*clr
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postevent4-1.jpg"></center>'
+	'A rather sleazy looking man opens the door when you ring the bell, wearing nothing but a robe.'
+	'He grins at you and says: "I haven''t seen you on the job before..."'
+	'Before you can say anything, he opens his robe and shows you his semi-erect cock: "If you know what''s good for you, I want to feel those hands of yours on my cock within the next ten seconds... just like your colleagues have before you. Unless you want the postmaster to receive complaints about you opening and damaging mail during your round?"'
+	'"But your mail is fine! That''s not fair!" you exclaim, to which the man replies: "Oh, really? Does this look fine to you!?"'
+	'He makes a big tear in the envelope, and balls his fist to crumple it. "Because it sure as hell doesn''t look fine to me!"'
+	gs 'willpower', 'misc', 'self', 'hard'
+	if will_cost <= pcs_willpwr:
+		act 'Say you don''t care if he reports you (<<will_cost>> Willpower)':
+			cla
+			gs 'willpower', 'misc', 'self', 'hard'
+			gs 'willpower', 'pay', 'self'
+			gs 'stat'
+			''
+			'"It was fine when I got here! Look... sign, don''t sign, I don''t care. The postmaster will believe my word over yours, when he hears about this!" you tell him, and you see the man''s confidence waver a little. You add: "If <b>you</b> know what''s good for you, you sign before this gets out of hand."'
+			'The man regains his posture quickly and scoffs: "We''ll see who he believes! I''m not signing shit, unless you do what I want. And I happen to know the postmaster. If there''s one thing he hates, it''s complaints... trust me. What''s it gonna be, girl?"'
+			'You take another good look at him, but you can''t tell whether the man is bluffing or not. From your dealings with the postmaster so far, you''re not quite sure who he''d believe either. Still, he always seemed like a reasonable man. Surely he''d believe you?'
+			''
+			gs 'willpower', 'hj', 'resist', 'easy'
+			if will_cost <= pcs_willpwr:
+				act 'Stick to your guns and leave (<<will_cost>> Willpower)':
+					cla
+					gs 'willpower', 'pay', 'resist'
+					gs 'stat'
+					posteventQW4 = 1
+					'Not saying another word, you turn around and leave his apartment. Hopefully you''re right about the postmaster believing you...'
+					act 'Continue your round':gt 'post_deliveries', 'resume'
+				end
+			else
+				act 'Stick to your guns and leave (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			end	
+			act 'Back down and agree to jerk him off': gt 'post_events', '4'
+		end
+	else
+		act 'Say you don''t care if he reports you (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end	
+	gs 'willpower', 'hj', 'resist', 'easy'
+	if will_cost <= pcs_willpwr:
+		act 'Run away from him (<<will_cost>> Willpower)':
+			cla
+			gs 'willpower', 'hj', 'resist', 'easy'
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			posteventQW4 = 1
+			'You don''t like where this is going at all! Deciding you''re better off leaving his apartment while you still can, you bolt for the door and run away. You don''t trust him one bit... who knows what kind of other things he''d make you do!?'
+			'Once you''re a few houses away and look behind you, you realize there''s no way he can follow you. Not with the way he was dressed.'
+			'You take a deep breath, and look at your clipboard to see where you have to go next while you try to put the last guy out of your head. One signature will be missing from your list today, but surely the postmaster will understand when you explain what happened?'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	else
+		act 'Run away from him (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Beg him to not go through with it':
+		cla
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postevent4-2.jpg"></center>'
+		'"Please sir, I don''t want to do this! You know this is wrong! Couldn''t you please just sign and let me go?" you beg him, but he ignores your pleas and comes a bit closer to you.'
+		'His cock is fully erect now, and some precum is leaking from the tip. The man must be getting off on bullying you!'
+		'"Don''t be afraid, girl! Go ahead and touch it, just like your colleagues have before you," he grins. "It would only take a minute, and then you can be on your way with your perfect record intact. Otherwise, I''ll just have to get you fired and hope the next girl does want to do what it takes to keep her job..."'
+		gs 'willpower', 'hj', 'resist'
+		if will_cost <= pcs_willpwr:
+			act 'Refuse and run away (<<will_cost>> Willpower)':
+				cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				posteventQW4 = 1
+				'When he slowly comes closer to you, you decide to quickly leave his apartment and run away while you still can. Who knows what else he''d make you do!?'
+				'Once you''re a few houses away and look back, you realize there''s no way he can follow you the way he was dressed. You take a deep breath, and look at your clipboard to see where you have to go next. One signature will be missing from your list today, but surely the postmaster will understand?'
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		else
+			act 'Refuse and run away (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Do as he says and jerk him off': gt 'post_events', '4'
+	end
+end
+
+if $ARGS[0] = '5':
+	cla
+	*clr
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postevent5-1.jpg"></center>'
+	'When you just finished your round and are on your way back to the post office, you encounter a small group of guys chatting outside a hostel. Probably tourists.'
+	'When you walk past them, one of them greets you: "Excuse me? Hi! We''re not from here, we''re just visiting for the weekend. Would you like to sit down and hang out with us for a while? You look like you could use a break!"'
+	'Another guy pitches in: "We were hoping you could point us to some interesting things to do around here? We got rooms for the whole weekend, but besides the palace this place seems pretty boring!"'
+	if postamountrand = 0: 'You cast a quick glance at your phone and realize you have some time to spare.'
+	if postamountrand = 1: 'You cast a quick glance at your phone and realize you''d roughly be back at the post office by 15:00. You can''t stick around for too long though...'
+	if postamountrand = 2: 'You cast a quick glance at your phone and realize you''re already behind schedule. You should probably keep going...'
+	''
+	if postamountrand = 0:
+		gs 'willpower', 'misc', 'resist'
+	else
+		gs 'willpower', 'misc', 'resist', 'easy'
+	end
+	if will_cost <= pcs_willpwr:
+		act 'Say you have no time (<<will_cost>> Willpower)':
+			cla
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'"Sorry guys, I have mail to deliver! No time to chat!" you say, and keep walking.'
+			'For a second you were afraid they were going to be more insistent, but luckily they leave you alone.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	else
+		act 'Say you have no time (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Chat with them for a while':
+		cla
+		*clr
+		minut += 10
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postevent5-2.jpg"></center>'
+		'"Uhh yea, I can spare a few minutes!" you say, and the guys give you a friendly smile and escort you into the building.'
+		'They lead you to their room, and they all sit down on their bunk beds. You get to know the guys a little, they''re tourists from Novgorod who were told there''s a lot to do in Pavlovsk.'
+		'One of the guys leaves the room for a moment and comes back with a tray of beers. He offers you one too: "I know you have to get back to work soon, but... one for the road?"'
+		''
+		act 'Not while you''re working!':
+			cla
+			posteventQW5 = 1
+			'If the postmaster had even the slightest suspicion of you drinking on the job, he''d fire you for sure!'
+			'"I really shouldn''t. Thanks for the offer, though!" you tell the guy, declining the beer.'
+			'The guys chat with you for a few minutes more, and you tell them about things they can do in Pavlovsk during their stay. They don''t seem particularly interested in any of your suggestions, though.'
+			'Then, one of them very subtly shakes his head ''no'' to the others. You were probably not supposed to see that...'
+			'One of the others interrupts you and says: "Well, it''s been nice getting to know you, but we shouldn''t keep you from your work any longer. Are you done any time soon? Perhaps you could guide us around town later? We''d love to hang out with you some more!"'
+			'Taking this as your cue to leave, you pick up your bag and think for a second. Do you?'
+			'Deciding to just leave it in the middle for now, you simply say: "I''ll think about it. Bye guys!" and leave the hostel.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	end
+end
+
+if $ARGS[0] = '6':
+	cla
+	gs 'stat'
+	''
+	'During your delivery round, you have to do a lot of walking. Today''s round is particularly bad; the addresses all seem very far apart from one another. For some reason it feels like your bag is heavier than usual too, and like you''ve been walking uphill this whole time! Your feet are begging you for a little break...'
+	''
+	if postamountrand = 0:
+		gs 'willpower', 'misc', 'resist'
+	else
+		gs 'willpower', 'misc', 'resist', 'easy'
+	end
+	if will_cost <= pcs_willpwr:
+		act 'No time for breaks, keep working! (<<will_cost>> Willpower)':
+			cla
+			gs 'willpower', 'pay', 'resist'
+			gs 'pain', 3, 'feet', 'ache'
+			pcs_mood -= 5
+			gs 'stat'
+			'Even though you would like to sit down for a while, you decide it''s better to just deliver your mail first. You can relax when you''re done, right?'
+			'You ignore your aching feet and keep walking to your next address, and the one after that. You try to not let your feet slow you down, but the pain in your feet gets worse the longer you ignore it. You get used to it over time, but the constant nagging pain slowly wears down your mood a little while you continue your run.'
+			act 'Continue':gt 'post_deliveries', 'resume'
+		end
+	else
+		act 'No time for breaks, keep working! (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Take a five minute break':
+		cla
+		minut += 5
+!!decides whether a pet walks by while you rest
+		petrand = rand(1,100)
+		if petrand <= 30:
+			pcs_mood += 10
+			gs 'stat'
+			'You sit down and take in your surroundings for a few minutes, simply enjoying watching the passers-by go about their day. When you stand up to resume your round you feel more relaxed and energized, ready to take on the world again.'
+		elseif petrand <= 60:
+			*clr
+			pcs_mood += 15
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/petcat.jpg"></center>'
+			'You decide to sit down and take a break for a few minutes, to give your legs and feet some respite.'
+			'A grey cat looks curiously at you, and walks over to you when you remain seated for a while. You spend a few minutes petting the happily purring cat. Cats can be such funny creatures!'
+			'You feel more relaxed when you stand up to continue your round.'
+		elseif petrand <= 90:
+			*clr
+			pcs_mood += 15
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/petdog.jpg"></center>'
+			'You decide to sit down and take a break for a few minutes, to give your legs and feet some respite.'
+			'A friendly couple was just walking their dog, and they happily chat with you for a few minutes while you pet the dog. He''s a good boy.'
+			'You feel great when you stand up to continue your round.'
+		else
+			*clr
+			pcs_mood += 50
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/catgirl.jpeg"></center>'
+			'You decide to sit down and take a break for a few minutes, to give your legs and feet some respite.'
+			'Not long after you sit down, a cute girl with cat ears walks by! She waves happily at you, and walks up to you.'
+			'She turns out to have a very happy and bubbly personality, and enthusiastically talks to you about trivial things while you take your break.'
+			'Her cheerful nature spreads to you while the two of you talk, and you feel great by the time the two of you part ways. You resume your round with a slight spring in your step.'
+		end
+		act 'Resume your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '7':
+	pcs_horny += 10
+	cla
+	*clr
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/window.jpg"></center>'
+	'Continuing along your route, you manage to catch a glimpse through a nearby window to see a woman looking out over the street expectantly. She''s completely naked! You wonder who she''s waiting for...'
+
+	act 'Who knows?':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '8':
+	cla
+	*clr
+	minut += 15
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/streets.jpg"></center>'
+	'Another set of houses down, another street of mail to be delivered. You only get halfway down this row of buildings before you hear the ripping of threads and a firm tug against your bag. You look behind you to spot the nail that tore open your bag and the pile of letters that fell out onto the floor.'
+	'Sighing, you bend down and spend a couple of minutes hunting them all down and cramming them back into your broken bag. As you stand up to resume your round, you notice you now have to constantly make sure you don''t lose anything... that''s definitely going to slow you down for the rest of the day!'
+
+	act 'Resume your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '9':
+	cla
+	*clr
+	pcs_mood -= 15
+	pcs_horny -= 10
+	if pcs_makeup > 1: pcs_makeup = 0
+	gs 'sweat', 'add', 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/splashed.jpg"></center>'
+	'One house down, two houses down, you''re on a roll with this set of houses, nothing can hold you back!'
+	'The driver of that car seems to have other ideas, however. You''d swear he purposely aimed for that puddle, dousing you in a huge spray of dirty, cold puddle water. You might be able to pull off the wet T-shirt look nicely, but this definitely put a dampener on your day! On the other hand: you''re improving the mood of everyone around you, with your boobs showing like this...'
+
+	act 'Carry on, ignoring the cat calls':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '10':
+	cla
+	*clr
+	gs 'stat'
+	if temper > 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/angrydog.jpg"></center>'
+	if temper <= 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/angrydogw.jpg"></center>'
+	'As you arrive at your next address, you see a large dog baring its teeth as soon as you reach for the gate. There''s no way you''re opening that!'
+	'You cast a quick glance at your signature sheet and realize: "I can''t just ignore this house..."'
+	'Wait, did you just see someone moving indoors?'
+	if pcs_intel > 60:
+		act 'Count out the houses and go around the back':
+			cla
+			minut += 2
+			'You quickly spot that the front and back yards aren''t connected, and try to go around the back after counting out which house you need to be at.'
+			'The home owner is a bit startled to see you suddenly entering her back yard, but understands: "Oh don''t worry about Boomer! I know he looks scary, but he just wants to play!"'
+			'She signs for her mail so you can continue your round. You can still hear the dog barking angrily when you leave the street... no matter what that lady says, there''s no way you would enter that yard!'
+			
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	end
+	act 'Try to draw the attention of the dog''s owner':
+		minut += 5
+		gs 'stat'
+		cla
+		'It takes a good while for the person in the house to finally realize you need to talk to them, and after a few minutes a woman comes out with an apologetic smile.'
+		'"I''m so sorry, he''s usually never like this! He probably just wants to play!" she says, as she finally signs for her mail.'
+		'You managed to get her signature, but that did set you back a few minutes...'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '11':
+	cla
+	*clr
+	minut += 10
+	pcs_mood -= 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/shops.jpg"></center>'
+	'You come up to a block of rather shoddy looking shops, where you have to deliver a small package. For some reason the numbers on the posters don''t seem to align with the address numbers!'
+	'Despite your best efforts to try and find the correct address, finding the place is a struggle. The store owners aren''t very helpful either, just shrugging and grunting when they realize you''re not here to buy something from their shop.'
+	'At long last, you find a staircase leading upwards, to a shabby office. The man looks at you as if he doesn''t have time, and mutters: "You''re late, I needed this an hour ago! Leave now so I can work!"'
+	'After some convincing he finally signs so you can leave, but only after complaining about how late you are once more. What a jerk...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '12':
+	cla
+	*clr
+	gs 'stat'
+	if (daystart-NatbelQW['pregday']) > 90 and NatbelQW['pregday'] > 0:
+		if (daystart-NatbelQW['pregday']) < 200:
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/natasha/16(2).jpg" width="356"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/natasha/16(3).jpg" width="356"></center>'
+		end
+	else
+		'<center><img <<$set_imgh>> src="images/pc/npc_headshots/big16.jpg"></center>'
+	end
+	'Your next address is a familiar one: it''s Natasha Belova''s, one of your classmates. It looks like you have bad news for her, it''s not one but two final notices! Damn, how much debt is this girl in!?'
+	'Natasha''s face saddens when she sees the envelopes in your hand as she opens the door: "Oh no, not again... hi <<$pcs_nickname>>."'
+	'Some tears are starting to well in her eyes as she signs your sheet, so you can continue your round. She weakly waves you goodbye, feeling rather ashamed you see her in this predicament.'
+	''
+	*nl
+	if NatbelQW['Debt'] > 0:
+		act 'Remind her she still owes you money too':
+			cla
+			'"I hope this doesn''t mean you ignore your debt to me?" you ask her sternly.'
+			'She bites her lip and shakes her head: "I... I won''t, <<$pcs_nickname>>. I''ll find a way to repay you."'
+			'"Good," you give her a satisfied nod, and leave her apartment.'
+			if NatbelQW['QWstage'] >= 5: 'You smile evilly as you walk down the stairs, replaying her words over and over in your mind. "I''ll find a way to repay you!" she said... you can think of several ways! Whether she''ll like them is a different matter...'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	end
+	act 'Stay a few minutes and try to cheer her up':
+		cla
+		minut += 10
+		if NatbelQW['BestFriend'] > 0: NatbelQW['BestFriend'] += 5
+		gs 'stat'
+		'She really looks like she could use a friend right now.'
+		'"Natasha, wait!" you say, and put your foot between the door so she can''t close it.'
+		'She doesn''t have the energy to object when you enter her apartment, and you take her by the shoulder and chat with her for about ten minutes.'
+		'By the end you can see a faint smile on her face again... it may not make her problems go away, but at least you made her feel a bit better.'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '13':
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/serge/serge2.jpg"></center>'
+	'Your next letter is for someone you know: it''s uncle Sergey. You walk up the familiar stairs to the third floor and ring the doorbell, and sure enough he opens a few seconds later.'
+	'"Hi, <<$pcs_firstname>>! What can I do for you?" Sergey says, giving you a confident smile. "Oh, you deliver mail nowadays, right?"'
+	'You tell him you do, and give him his mail in exchange for a signature. He waves you off, and slowly closes the door behind him.'
+	if momslut >= 1:
+		'Just before he closes the door completely, you''d swear you saw your <<$npc_nickname[''A29'']>> walking through Sergey''s apartment wearing nothing but a towel! Her hair looked rather disheveled, too...'
+	elseif soniaPS >= 1:
+		'When the door is half closed, you catch a glimpse of Sonia walking through his apartment completely naked!'
+		'"Oh hi, <<$pcs_nickname>>!" she says cheerfully and gives you a little wave, right before the door closes.'
+	else
+		'Just before he closes the door completely, you''d swear you saw a nude girl walking through Sergey''s apartment! You didn''t get a good enough look to see who it is, though.'
+	end
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '14':
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/vladimir/father.jpg"></center>'
+	'The next package is for... your stepfather? You didn''t know he ordered anything!'
+	'"Oh hi, <<$pcs_nickname>>!" he says as he sees you. "Why did you ring the doorb- ooooh! Shhh! Give me that!"'
+	'He interrupts you while he pulls the package out of your hands, and quickly holds it behind his back right as your mother comes into the hallway.'
+	'"Hi, <<$pcs_nickname>>! What are you doing here? I thought you were working?" she says, eyeing you up and down suspiciously.'
+	'Your stepfather gives you a desperate smile, hoping you''ll cover for him. He obviously didn''t mean for your mother to find out about this package!'
+	''
+	act 'Tell her you forgot something':
+		cla
+		npc_rel['A28'] += 5
+		gs 'stat'
+		'"I forgot my phone!" you shrug apologetically. "I was in the area anyway, and I thought I''d come pick it up quickly."'
+		'"Ah I see... you''re such a scatterbrain sometimes!" she smiles, and returns to the kitchen.'
+		'Your stepfather gives you a grateful nod as he signs your sheet, and whispers: "Phew! Thanks, <<$pcs_nickname>>... I didn''t want your mother to find out I bought her something! I''m waiting for the right time to give it to her, you see?"'
+		'You give him a conspiratory nod and turn around, you still have more mail to deliver! As you walk down the stairs, you can''t help but wonder what he bought her.'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+	act 'Tell her you''re delivering a package':
+		cla
+		npc_rel['A28'] -= 5
+		gs 'stat'
+		'"I am, <<$npc_nickname[''A29'']>>! I was just delivering a pac-" you say, but your stepfather quickly puts his hand over your mouth out of your mother''s view.'
+		'"S-uhh... She forgot her phone!" he says quickly. You hear your mother laugh from the hallway.'
+		'"Silly <<$pcs_nickname>>, she can be such a scatterbrain sometimes!" she says, and goes back to the kitchen.'
+		'"I said ssssh! Your mother doesn''t know I bought her this, and I want to surprise her! What''s wrong with you!?" he sighs, definitely unhappy about you nearly ruining his surprise.'
+		'He signs your sheet quickly, and slams the door shut. As you walk down the stairs, you can''t help but wonder what he bought her.'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '15':
+	cla
+	*clr
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postdoor.jpg"></center>'
+	'A rather scary looking guy opens the door at your next address, an apartment on the fourth floor of a building. He has a scar across his eye, and gives you a distrusting look.'
+	'"I have a package for Mr. Y-" you begin, but he interrupts you.'
+	'"Did anyone follow you?" he asks you sharply. "Well?"'
+	'When you say you don''t think so, he glances down the hallway and asks you again: "Are you sure? Think hard!"'
+	'He pulls the package out of your hands when you take too long to answer and opens it right away. The contents bring a smile to his face, though you can''t see what''s in it.'
+	'He says threateningly: "You didn''t see me! If anyone asks, you saw nothing, heard nothing and met no one! Understood?"'
+	'When you nod nervously, he grunts: "Good. Now get lost."'
+	'When he turns around, you can see the clear outline of a gun in his jacket. Yikes!'
+	'You definitely don''t want to bother him again, so you quickly forge a signature on your sheet and walk down the stairs again. There''s no way you''ll get complaints about this package... but you can''t help but wonder why he was so paranoid. And rather: what you just brought him!'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '16':
+	cla
+	*clr
+	pcs_mood -= 30
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postclinic.jpg"></center>'
+	'The next address is the Pavlovsk clinic. The girl at the reception looks at you for a moment and says: "Oh, mail. That''s for the doctor. He''s in his office, third door on the right. Could you go bring it to him? I''m kinda busy right now."'
+	'You shrug and walk down the hallway, opening the door where she said he''d be. You freeze...'
+	'In front of you are two dead people, on metal tables. One male, one female. Both naked. And very much dead. This must be some sort of mistake! They can''t possibly expect you to come in here!'
+	'As you are backing out of the room, the reception girl comes racing down the hall, out of breath: "I meant the second door on the right! The second door! I''m so sorry!"'
+	'"Uhh, t-that''s okay..." you mutter, still rather rattled.'
+	act 'Let the girl take you to the doctor''s office':
+		cla
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/doclaugh.jpg"></center>'
+		'"Oh, she sent you to the wrong room?" the doctor laughs, when the receptionist explains why you look so pale. "That wasn''t very smart of you, Tanya!"'
+		'He signs your form without giving it another thought, and dismisses you. Your heart is still pounding when Tanya walks you out of the clinic, apologizing all the way.'
+		'The image of those dead people will be haunting you for a while...'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '17':
+	cla
+	*clr
+	minut += 5
+	pcs_horny += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/boundgirl.jpg"></center>'
+	'At your next address, your pen appears to have run out of ink when the man is supposed to sign.'
+	'"Ugh. Come on in," he grunts. "I should have a spare pen somewhere you can have."'
+	'Just when you were about to thank him, you''re a bit taken aback by what you see when you enter his apartment: a nearly naked girl lies on the couch, with her wrists and ankles all cuffed together!'
+	'"Don''t mind her," the guy grins smugly. "The silly cunt couldn''t keep her mouth shut, and now she''s being punished. Isn''t that right, honey?"'
+	'The girl doesn''t make a sound, but just looks at you with her big blue eyes. You can tell that she''s deeply embarrassed to be seen like this, but doesn''t seem to be in distress. Apparently this is normal to her?'
+	'"The guys are on their way, you just lie there and be pretty for a while!" he smirks. Then he turns back to you and says: "I swear, sometimes I think she does it on purpose! Horny little bitch... anyway, here''s a pen. You can keep that. Have a nice day, miss."'
+	'He ushers you out the door, and you quickly cast one more glance at the girl on your way out. You wonder what he has in store for her...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '18':
+	cla
+	*clr
+	minut += 5
+	pcs_horny += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/stonedgirl.jpg"></center>'
+	'You can already faintly smell the marijuana as you go near the house. When you knock on the door a completely nude girl opens it almost immediately.'
+	'If walls of smell existed you just got hit by one... the smell of ganja is impossible to ignore, it''s making your eyes tear up!'
+	'"Uhh... hi. I uhhh... hi. I have mail for you," you stumble, while you rub the tears from your eyes and ogle the girl''s nude body. "So uhhh... hi."'
+	'She doesn''t seem the slightest bit insulted, and grins: "No need to be embarrassed, sweetie! Take it in... look as much as you want. I have nothing to hide! Especially not from a cutie like you..."'
+	'She has another puff of her cigarette and blows the smoke away with a seductive smile on her face, striking a pose. She idly begins to knead her boob, too! She seems to be incredibly horny.'
+	'"Damn, you''re no fun..." she groans mockingly, when you try to just get her to sign so you can be on your way. "Are you sure you don''t want to come in for a little while? You seem stressed, I bet I could help you relax..."'
+	'You respectfully decline the offer, and turn around to continue your round. You''d swear you feel a bit wobbly, just from standing near that house for so long!'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '19':
+	cla
+	*clr
+	minut += 2
+	pcs_horny += 15
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postcock.jpg"></center>'
+	'The door swings open at your next address before you can even ring the doorbell. You have to do a quick double-check when you see who opened the door; the man is naked, and what a man he is! His body looks about as perfectly chiseled as a man''s body can get, and a humongous semi-hard cock swings between his legs.'
+	'He scrapes his throat insistently, and suddenly you realize you have been staring at his cock for nearly ten seconds!'
+	'"Wow... I err... I have mail... so uhh... yea!" you blabber, still unable to take your eyes off his body. His cock in particular!'
+	'The man laughs and takes your clipboard out of your hands, while you just stand there. He signs, and asks: "Should I go look for my mail in your bag, or...?"'
+	'This snaps you back to reality, and you quickly mutter an apology while you find his mail.'
+	'"Thanks! You have a nice day, miss!" he says, giving you a friendly nod before closing the door again.'
+	'You bury your head in your hands for a moment and let out a deep sigh; what must that man be thinking of you right now? That was definitely not your proudest moment...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '20':
+	cla
+	*clr
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/hugeman.jpg"></center>'
+	'Your next address is in a really run-down part of town; a lot of people you know refuse to go here, because of how dangerous it can be.'
+	'You arrive at the apartment building and climb the stairs. The light in the stairwell is broken, so you have to get by using the bit of light from the floor below, and the light that comes in through a window at the end of the hallway. On top of that, some burly looking guys are blocking your path! This place is creepy...'
+	'You squeeze your way past them as best you can, trying your best to not to offend them.'
+	'"Excuse me, miss... you dropped these?" you hear a deep voice behind you. One of the men is holding a few envelopes in his huge fist, and gives you a friendly smile.'
+	'Your heart skipped a beat when you first heard him, but these guys don''t seem so bad! You thank him and continue on your way to your destination.'
+	act 'Continue':
+		cla
+		*clr
+		minut += 20
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/oldlady.jpg"></center>'
+		'At the end of the hallway you find your address, and an elderly lady promptly opens the door.'
+		'"Hello dear! Come in, I just made tea!" she says with a mostly toothless grin, ignoring the envelope in your hand. "Go on, sit! It''s so nice to finally get a visitor..." she sighs, and guides you onto a chair with surprising strength for a woman her age.'
+		'The tea is scalding hot! You and her chat about trivial things, while you keep testing your tea to see if it''s safe to drink yet. You''re wasting time here!'
+		'The lady seems to be so happy to have a visitor, you don''t dare to get up until you finish the tea. You barely manage to stop her from pouring you another cup!'
+		'"Thank you so much, I wish I could but I really have to go!" you smile apologetically at the woman.'
+		'"I understand... you youngsters, always on the move!" she laughs heartily. She offers you a small paper bag: "Here, at least take some cookies! You look like you could use a snack for the road!"'
+		'The burly guys give you a friendly nod on your way out of the building, wishing you a good day. Maybe this area isn''t so bad after all... and those cookies are really good, too!'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '21':
+	cla
+	*clr
+	minut += 5
+	pcs_horny += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/girltail.jpg"></center>'
+	'"I have a delivery for uhhh... ''Hot Tails''?" you ask when the door opens, reading the name off your sheet. That can''t be right...'
+	'"It''s here already!" the girl squees. She''s wearing a maid outfit for some reason. "This is so awesome!" She pulls the package out of your hand and runs into the house, completely ignoring you.'
+	'"Miss? You still need to sign! Miss!?" you shout after her, but you hear no response. With a deep sigh you enter the house.'
+	'You find the girl on a bed, wearing a butt plug with a tail attached to it. She''s still panting with pleasure, she probably just put it in. Her pussy looks all slick with her juices - she''s incredibly aroused right now.'
+	'"My new tail! Isn''t it adorable? I''m so happy right now! Master will be so happy, too! You''re the best!" she squees again, besides herself with happiness. She moves her bare ass back and forth, making it look like she''s wagging her tail at you.'
+	'You''re not entirely surprised when you see her signature looks exactly like a cat''s paw.'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '22':
+	cla
+	*clr
+	minut += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/manorman.jpg"></center>'
+	'You come up to Albina''s manor, by the lake. The driveway is very long and since you need someone to sign, you can''t simply put their mail in the box by the road. Sigh.'
+	'As you begin the trek to the manor, you are startled to see a half-naked man jump over the high stone wall. He''s wearing nothing but underpants, but gives you a dapper grin as if it''s not strange at all.'
+	'"Hello, miss!" he smiles charmingly, softly gasping from the running he has been doing. "Would you be so kind as to tell me the fastest way to... way out of town? Anywhere but here, really?"'
+	'You see some commotion by the manor; several men are coming out and are running in your direction.'
+	'You quickly give him some directions to the train station and the main road, to which he thanks you and starts running again.'
+	'"Where is that bastard!?" Mr. Barlovsky yells, when the other men finally reach you. "You, girl! Did he tell you where he was going?"'
+	'You shrug, but offer him his mail. He signs absent-mindedly, tracking the horizon for a sign of the man who just ran off. You wonder what he did to make Mr. Barlovsky this angry...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '23':
+	cla
+	*clr
+	pcs_horny += 10
+	if temper > 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/voyeur.jpg"></center>'
+	if temper <= 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/voyeurw.jpg"></center>'
+	gs 'stat'
+	'On the way to your next address, you pause for a second when you hear a giggle coming from behind some trees.'
+	'Curious as to what''s going on, you push aside a few branches and get an eyeful of a brunette''s ass! Her pants and panties are around her knees, and she''s grinning proudly at her boyfriend... until she sees you.'
+	'"Eeeep!" she squeaks, and quickly pulls up her pants again.'
+	'You giggle a bit, the embarrassed face of the girl makes her look all the cuter! You keep walking, realizing the show''s over, and in the background you can hear the two bickering.'
+	'The girl is furious: "I told you this would happen! You said you''d keep an eye out!"'
+	'"Come on, show me again! It''ll be fine. See? She''s no longer looking!" the guy says, laughing.'
+	'"You think that was funny!? You can be such an ass sometimes!" the girl sneers at him, as you walk around the corner and out of earshot. Sounds like he''s in trouble...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '24':
+	cla
+	*clr
+	pcs_horny += 5
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/mailbox.jpg"></center>'
+	'While you walk through the posh area of town, you see the strangest mailbox! Whoever lives here must have a lot of money, if even their mailbox is this fancy...'
+
+	act 'Continue your round':gt 'post_deliveries', 'resume'
+end
+
+if $ARGS[0] = '25':
+	cla
+	*clr
+	pcs_horny += 10
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/domme.jpg"></center>'
+	'You knock on the door several times, but no one answers! Still, you know someone''s home... you can clearly hear activity indoors.'
+	'Just when you are about to give up, the door finally opens. The woman who opens the door is panting slightly, her hair is a bit disheveled and she looks all sweaty. That''s not the first thing you notice though! The first thing you notice is her attire: all leather, and very revealing!'
+	'You can''t help but check out the rest of her outfit, and then notice the enormous strap-on she''s wearing. She''s playfully bobbing it up and down with a whip, and asks in a demanding voice: "Yea? What do you want?"'
+	'When you don''t respond quick enough, she coughs insistently and reminds you: "My eyes are up here, girl! Make it quick, I have things to do."'
+	'She gives you a scolding look, and you feel yourself shrinking a bit in front of her.'
+	''
+	act 'Apologize and give her her mail':
+		cla
+		'"I have a package for uhh... Maitresse Madeline. That''s you, right?" you mumble. "I''m sorry, I jus-"'
+		'"That''s me," she interrupts you. "Excellent timing! He was so proud he could just about take this one... this''ll take him down a few pegs!" she grins evilly, and quickly signs for the package. "Thanks, dear."'
+		'Surely she''s not talking about the strap-on? Judging from the size of the package, it''s even larger than the strap-on she''s wearing now!'
+		'She quickly closes the door while tearing the box open, and through the door you can hear her voice: "The Black Stallion I ordered just arrived, sweetie! I hope you''re ready!"'
+		'Poor guy...'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = '26':
+	cla
+	*clr
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/smallboy.jpg"></center>'
+	'During your round you suddenly feel a gentle tug on your bag, and hear a soft voice behind you that says: "Uhhh... excuse me, miss?"'
+	'When you turn around, you see nothing at first. Until you look down; there''s a small boy, holding a note with a big pink heart on it.'
+	'"You deliver notes, right?" he asks. When you nod, he continues: "Could you deliver this note, please? It''s for that girl over there!"'
+	'He points in a general direction, where you see a girl his age walking on the other side of the street with her mother. They move around the corner and disappear from sight.'
+	if postamountrand = 0:
+		gs 'willpower', 'misc', 'resist', 'hard'
+	else
+		gs 'willpower', 'misc', 'resist'
+	end
+	if will_cost <= pcs_willpwr:
+		act 'Decline and say you''re in a hurry (<<will_cost>> Willpower)':
+			cla
+			gs 'willpower', 'pay', 'resist'
+			gs 'stat'
+			'"Sorry kid, I have no time to deliver your note, very busy day today!" you shrug at him, and keep walking.'
+			'The boy''s shoulders sag, and he sadly looks at the note he has in his hand. How is he going to get it delivered to her, if even the postal service won''t help him?'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	else
+		act 'Decline and say you''re in a hurry (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+	end
+	act 'Deliver the note for him':
+		cla
+		*clr
+		minut += 10
+		pcs_mood += 20
+		money += 100
+		gs 'stat'
+		if temper > 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/smallgirl.jpg"></center>'
+		if temper <= 0: '<center><img <<$set_imgh>> src="images/locations/shared/postoffice/smallgirlw.jpg"></center>'
+		'"Of course, sir! Give me the note and I''ll go bring it to her!" you tell him.'
+		'The boy gives you the note with a big smile on his face, and you quickly walk in the direction you last saw the woman and her daughter go.'
+		'You lose track of them for a moment, but after a quick search you see them walking. "Excuse me, miss! I have a note for you!" you shout after them, and walk towards them.'
+		'The mother looks at you a bit surprised, but you stop her before she can say something and say: "Not for you... but for you!" as you hand the note to the little girl.'
+		'She needs her mother''s help to read the note, but a big grin appears on her face when her mother explains who it''s from. It may have cost you a few minutes, and it will cost you a few minutes more to get back on track, but the feeling you get from seeing her genuine happiness is amazing! When you''re about to leave, her mother stops you and gives you 100 <b>₽</b> and says: "What a nice thing of you to do! Thank you so much, that made her day!"'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end
+
+if $ARGS[0] = 'resume':
+!!if after first event
+	if posteventcounter = 0:
+		posteventcounter = 1
+		cla
+		*clr
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+		'You continue delivering mail on your round like before, and your bag is slowly getting lighter.'
+		if poststreets = 1:
+			if postamountrand = 0: minut += 35
+			if postamountrand = 1: minut += 45
+			if postamountrand = 2: minut += 55
+			gs 'stat'
+			'Occasionally, in the corner of your eye, you think you see some guys following you. But when you look back, you don''t see them any more...'
+			if rand(0,2) < 2:
+				if postbandQW = 0:
+					*clr
+					'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/shush.jpg"></center>'
+					'You''re almost done in the streets you''re not supposed to be in! With only a few mail pieces to go, you suddenly hear a deep voice behind you: "You, girl. Come here!"'
+					'Before you can do anything, two men catch up to you and block your path.'
+
+					act 'See what they want': gt 'post_deliveries', 'bandits'
+				else
+					*clr
+					'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/shush.jpg"></center>'
+					'You''re almost done in the streets you''re not supposed to be in! With only a few mail pieces to go, you suddenly hear a deep voice behind you: "I see you came back to play! We''ve been keeping an eye on you for a while..."'
+					'Before you can do anything, two men catch up to you and block your path.'
+
+					act 'See what they want': gt 'post_deliveries', 'bandits'
+				end
+			else
+				'You can''t help but feel a bit relieved, as you walk through the last of the streets you''re not supposed to be in. Looks like, if there actually were guys following you, they decided not to bother you today.'
+!!second round of events
+				act 'Then...':gt 'post_deliveries', 'event'
+			end
+		else
+			if postamountrand = 0: minut += 50
+			if postamountrand = 1: minut += 70
+			if postamountrand = 2: minut += 90
+			gs 'stat'
+			'Before you know it, you only have a few mail pieces left.'
+!!second round of events
+			act 'Then...':gt 'post_deliveries', 'event'
+		end
+!!if after second event
+	else
+		cla
+		*clr
+		gs 'stat'
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+		'You deliver the last few pieces of mail without anything of note happening, and nod contently to yourself after you hand off the last parcel. You''re all done for the day.'
+		if hour < 15:
+			'You check the time and see that it''s not even 15:00 yet. The postmaster will be pleased!'
+		elseif hour = 15 and minut <= 15:
+			'You check the time and see it''s around 15:00 still. You''re done just in time to not get into trouble! Phew...'
+		else
+			'You check the time and see it''s already well past 15:00. The postmaster won''t be happy...'
+		end
+		act 'Return to the post office': gt 'post_deliveries', 'finishround'
+	end
+end
+
+if $ARGS[0] = 'bandits':
+	if postbandQW = 0:
+		cla
+		'"New at the job? Most of you know to avoid this area, unless you''re looking to play!" he grins at you, while his friend begins to rummage through your bag. "Anything good?" he asks his friend.'
+		'"Nice, someone sent money to Nikolai!" the other laughs. "That bastard owed me 5000 <b>₽</b>, I thought I was never going to see that money again. Guess he just paid me back... thanks, Nikolai! Asshole..."'
+		'He pockets the money and tosses the envelope away.'
+		''
+		act 'Tell them they can''t do that':
+			cla
+			'The guys laugh heartily when you say: "Hey, you can''t do that! Give that back!"'
+			'"Shut the fuck up. If you want to be left alone on our turf, you should''ve stayed out of our sight," he barks. He signs on your sheet and gives you a cruel grin: "There, you have the signature you need. Now get lost... unless you came to play?"'
+			'Well, so much for that idea! Hopefully the postmaster won''t find out about that forged signature.'
+			''
+			act 'Ask what they''re talking about':
+				cla
+				postbandQW = 1
+				'"What do you mean, play!? Let go of me!" you shout at him.'
+				'The man tightens his grip on your shoulders and says: "Shut up and listen. We had a deal with the previous delivery girl. Eager little slut, she was! She even made a game out of it... if she used our streets during her round, she''d do what we want if we caught her. Since you took her place, that goes for you too. We''ll go easy on you this time, but now that you know the rules: if we see you again around here, you better be ready to put out if you want to keep your job. Understood?"'
+				'He doesn''t wait for an answer but walks away with his friend, leaving you alone to collect your thoughts. What the hell did they make that girl do!?'
+				act 'Deliver the last envelopes in your bag':gt 'post_deliveries', 'resume'
+			end
+		end
+	else
+		cla
+		'"So... you know the rules, yet you came back. I guess that means you want to play?" he whispers triumphantly in your ear, while his friend digs through your bag again. "Let''s go somewhere a bit more quiet, so we won''t be disturbed. This way."'
+		'You can clearly feel his growing erection poking against the small of your back as he pulls your body tightly against his, not leaving any doubt as to what they want from you.'
+		'They begin to drag you towards a fenced building. Once they get you in there, you figure it''s going to be difficult to back out of what they have in mind...'
+		''
+		gs 'willpower', 'skill', 'resist', 'run_lvl'
+		if will_cost <= pcs_willpwr:
+			act 'Wrest yourself free and try to run away (<<will_cost>> Willpower)':
+				cla
+				gs 'willpower', 'pay', 'resist'
+				gs 'stat'
+				'You replay in your head what the man said earlier: they only get to play with you if they catch you! So... it''s okay to run, right? All part of the game!'
+				'You quickly snag your bag away from them and try to run away from them.'
+				''
+	!!running check
+				begminus = 0
+				if salo > 40: begminus = ((salo - 35)/5)
+				begresult = pcs_run - begminus
+				randrun = rand(1, 6)
+				if begresult >= 23 and randrun >= 3:
+					'"Hey, come back here!" the guy yells, but you running away clearly caught them by surprise.'
+					'You''re a good enough runner to outrun them, despite the bag you''re carrying.'
+					'Once you''re sure you''ve lost them, you stop to catch your breath. They probably gave up on chasing you.'
+					'You smile to yourself: "Nice try, idiots..."'
+					act 'Continue your round':gt 'post_deliveries', 'resume'
+				elseif begresult >= 23 and randrun = 1:
+					'You manage to break free from them and start running, but the strap of your bag gets caught on a fence when you try to run away.'
+					'The guys are upon you moments later, grabbing onto you tightly to make sure you can''t try to run again.'
+					'"Nice try, bitch! You almost got away... almost, but not quite!" one of them pants, gasping for breath.'
+					'They drag you away from the street, entering an alleyway between two buildings. They have a firm grip on you, and the two of them look way too tough to fight. Looks like you have no choice...'
+					act 'Continue':gt 'post_deliveries', 'bandsex'
+				elseif begresult >= 23 and randrun = 2:
+					'You manage to break free from them and start running, but you almost immediately trip over a loose rock you failed to notice.'
+					'The guys are upon you moments later, and one of them places his knee between your shoulder blades as you scramble to try and get back on your feet.'
+					'"Nice try, bitch! Looks like you''re ours, though!" one of them grins, somewhat amused at how clumsily you tripped over that rock.'
+					'They hoist you up and drag you away from the street, entering an alleyway between two buildings. They have a firm grip on you, and the two of them look way too tough to fight. Looks like you have no choice...'
+					''
+					act 'Continue':gt 'post_deliveries', 'bandsex'
+				else
+					'"Where the fuck do you think you''re going!?" his friend yells when he notices you''re trying to yank the bag out of his hands. The guy who initially talked to you firmly grabs you by the arms, with a wide grin on his face. Uh oh!'
+					'"Hah! Nice try, but it''s too late to run now!" he laughs, somehow entertained by your failed attempt to get away.'
+					'They drag you away from the street, entering an alleyway between two buildings. They have a firm grip on you, and the two of them look way too tough to fight. Looks like you have no choice...'
+					''
+					act 'Continue':gt 'post_deliveries', 'bandsex'
+				end
+			end
+		else
+			act 'Wrest yourself free and try to run away (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Don''t bother trying to run':
+			cla
+			'They look like they''re pretty fast, and way too strong to fight off. You quietly resign to the fact that there''s no way you''re getting out of this, and meekly let them guide you to behind the building.'
+			''
+			act 'Behind the building...':gt 'post_deliveries', 'bandsex'
+		end
+	end
+end
+
+if $ARGS[0] = 'bandsex':
+	cla
+	if postbandQW = 1:
+		'Your heart is pounding in your chest when the two men somewhat forcefully drag you behind a building.'
+		'When you get there, the man who does most of the talking grins: "Like I said... we had a deal with the former delivery girl. Haven''t seen her in a while by the way, only seen some older guy. Any idea where she is?"'
+		'You shake your head: "I don''t even know who she is!"'
+		'"Shame, I liked her. But it doesn''t matter," he shrugs. "You''re here now. Anyway, the deal with her was that in exchange for free passage, she''d... take care of us, from time to time. If you know what I mean, and I think you do."'
+		'There''s an icy silence in the air for a few seconds, and he adds: "Let''s start simple. Show us your tits."'
+		'You give him a hesitant look, and the other guy pitches in: "Come on, girl. Just show us your tits, and you can go. Unless you want to lose your job..."'
+		'He pulls a lighter out of his pocket, lights it and moves it dangerously close to a fistful of envelopes. If you don''t do something now, he''ll torch them.'
+		gs 'willpower', 'exhib', 'self', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Agree to show your boobs (<<will_cost>> Willpower)':
+				cls
+				gs 'willpower', 'pay', 'self'
+				postbandQW = 2
+				postexhibi += 1
+				inhib_exp += rand(0,3)
+				'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postboobs1.jpg"></center>'
+				'"No, wait!" you blurt out, quickly stopping him. "I''ll do it..."'
+				'"I knew you would!" he grins, putting out his lighter but keeping it in his hand. He adds: "Go on, then... we don''t have all day!"'
+				'You quickly look around you to make sure no one else can see you, and pull your clothes aside. When you proceed to correct your clothes, the first guy slaps your hands away and says: "Not so fast! You''re done when we say you are."'
+				'After another ten seconds of awkward silence, the quiet one nods approvingly and says: "Very nice."'
+				gs 'arousal', 5,'flash'
+				gs 'stat'
+				'While you quickly cover up, his friend smiles benevolently and offers you your bag: "See, what wasn''t so bad!"'
+				'You quickly take it out of his hands and leave, assuming they''re done with you. From the greedy looks in their eyes, you figure they will probably expect more from you if they catch you again.'
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		else
+			act 'Agree to show your boobs (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+		act 'Say nothing ':
+			cls
+			postburn = 1
+			minut += 5
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postburn.jpg"></center>'
+			'When you don''t speak up, he theatrically moves the envelopes into the flame. Within seconds, the contents of your bag are consumed by the flames.'
+			'"You could''ve easily prevented this! If only you weren''t such a prude..." he grins cruelly.'
+			'His friend mockingly pretends to be warming his hands over the smouldering remains of the letters and laughs: "Good luck finding a new job. Now get lost!"'
+			'When you pick up the empty bag and return to the street dejectedly, you realize he''s right. You''re going to get fired, for sure!'
+			act 'Return to the post office':gt 'post_deliveries', 'finishround'
+		end
+	elseif postbandQW = 2:
+		'You follow the two men to behind the building again, while one of them digs through your bag.'
+		'The first one claps his hands and grins: "Alright, girl. You know what we want."'
+		act 'Show your boobs again':
+			cls
+			postexhibi += 1
+			inhib_exp += rand(1,3)
+			if postexhibi >=4: postbandQW = 3
+			postboobsrand = rand(1,4)
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/postboobs<<postboobsrand>>.jpg"></center>'
+			'You shrug and pull your clothes aside, letting the men ogle them for a while. It''s a small price to pay, given the time you''re saving!'
+			'The two guys whisper amongst themselves while they stare at you. "No, not yet..." you overhear, but you''re not sure what they''re talking about. Are they talking about you?'
+			gs 'arousal',5 ,'flash'
+			gs 'stat'
+			'They give you back your bag, and shoo you away. Looks like they''re satisfied for now.'
+			act 'Continue your round':gt 'post_deliveries', 'resume'
+		end
+	elseif postbandQW = 3:
+		'"Strip!" one of them orders you, once you''re behind the building.'
+		'"Like... everything?" you ask them. You quickly expose your boobs again and offer: "I can show you my boobs again! See?"'
+		'"Everything!" he barks impatiently, ignoring your tits. "I want to see what our new slut looks like..."'
+		'His friend is only paying half attention to you, while skimming through your letters of today to see if there''s anything of interest among them.'
+		'He doesn''t find anything to his liking in your bag, and looks at you intently now.'
+		act 'Strip for them':
+			cls
+			postbandQW = 4
+			inhib_exp += rand(1,6)
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/events/poststrip.jpg"></center>'
+			'With a sigh you begin to strip for them, and soon you stand before them just wearing your shoes and socks.'
+			'"You have a nice body, girl. I can''t wait to get better acquainted with it!" one grins.'
+			'"Are you any good with your mouth?" the other asks you intently, rubbing his groin. What the hell!?'
+			'"All in good time," his friend laughs. "She''s done enough for today."'
+			gs 'arousal',10 ,'flash'
+			gs 'stat'
+			''
+			act 'Laugh it off and get dressed again':
+				cla
+				'You shrug and laugh it off, quickly putting your clothes back on before the talkative one changes his mind. If it was up to the other guy, you would have his cock in your mouth by now!'
+				'"It''s okay, you''ll get lots of practise soon enough. The former delivery girl was terrible at it, at first... but by the end she sucked like a pro!" the creepy one says.'
+				'He gives you your bag, and the friendlier one of the two adds: "Consider this your last freebie. You know what we want. You better be ready to put that mouth to work, if we catch you in our streets again!"'
+				'Then he lets you leave. Their words keep lingering in your mind, though. They obviously expect you to put out next time, demanding you give them a blowjob just to walk through some streets! And who knows what else they''ll want, after that! Is it even worth it?'
+				'You complete your round without any more issues. The guys see you walking several times more, but other than a few lewd remarks they leave you alone.'
+
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+		end
+	elseif postbandQW = 4:
+		'"So... you''re back! I assume that''s because you have something to prove?" the hoodlum laughs, hinting at what you talked about last time.'
+		'"Watch the street while I go test her skills. You can have her next time," he tells his friend, and guides you into one of the apartments on the street before his friend can object.'
+		'It takes a minute for your eyes to adjust to the darkness; all the curtains are closed and the only light in the room is coming from a TV.'
+		'The man quickly takes his clothes off and crashes down onto a bed, taking the remote in his hand. You take your clothes off too, expecting that''s what he wants.'
+		'"Go ahead, slut. Start sucking," he orders you. His uncut cock is already fully erect, and intimidatingly large.'
+		'"But..." you mumble.'
+		'"Did you really think we''d keep settling for a quick glance at your tits forever?" he asks sharply, getting impatient. "If you did, you''re even more naive than I thought. I want to feel those lips around my cock within the next ten seconds, if you want to keep that job of yours..."'
+		'He counts down out loud, you have to decide fast!'
+		gs 'willpower', 'bj', 'resist', 'hard'
+		if will_cost <= pcs_willpwr:
+			act 'Beg him to not make you do it (<<will_cost>> Willpower)':
+				*clr & cla
+				gs 'willpower', 'pay', 'resist'
+				postbandQW = 5
+				posthj += 1
+				gs 'boyStat', 'A104'
+				'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/posthj1.jpg"></center>'
+				'"Please, sir! You can''t make me do this! Please..." you beg him, interrupting his counting. "Anything but this..."'
+				'The man sighs deeply, and then says: "Well, you''re getting me off one way or the other!" After a few seconds of silence, he adds: "Fine. I guess you can use your hands, this time. You better make it good, though!"'
+				'Realizing that''s the best offer you''re going to get, you kneel down before him and begin to jerk him off.'
+				'"Spit on it, girl. Make it nice and slippery, and show some more enthusiasm!" he orders you, and you comply quickly. "Yeah, that''s it..."'
+				'After a few minutes he groans: "I''m gonna cum! Jerk me off over your tits!"'
+				'Seconds later, warm jets of his sperm splatter all over your tits. You feel a twinge of pride when you see how thoroughly satisfied the guy is. That wasn''t so bad!'
+				gs 'arousal', 'hj', 10, 'sub'
+				gs 'arousal', 'end'
+				gs 'stat'
+				''
+				act 'Find some tissues to clean yourself up with':
+					cla
+					*clr
+					postbandQW = 6
+					postbj += 1
+					gs 'boyStat', 'A105'
+					'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj2.jpg"></center>'
+					'"Why are you still here, girl?" the other guy laughs when he sees you loitering about the apartment naked, looking for tissues. "Are you looking for more cocks to suck?"'
+					'Before you can tell him no, he grabs you by the arm and forcefully drags you to another room of the apartment. He doesn''t bother undressing, but simply takes his cock out of his pants expecting you to do the rest.'
+					'"But I only gave your fri-" you try to tell him, but he''ll have none of your story and slaps you on the cheek. Not hard, but hard enough to derail your train of thought and demand your attention.'
+					'"Open your mouth, girl. I''m not asking again!" he threatens you in a menacing voice.'
+					'You realize he''s not going to let you walk away and sigh, before closing your lips around his shaft obediently. Maybe he''ll go easy on you?'
+					'Unfortunately, he does not. He makes you take the full length of his cock down your throat several times, testing your limits thoroughly. His cock is even bigger than his friend''s, and you have to open your mouth as far as you can to allow him access.'
+					'After a few minutes of uncomfortable throat fucking he finally shoots his load down your throat, and grins at you: "You''re even better than the last Postslut! I''m already looking forward to next week..."'
+					gs 'arousal', 'bj', 10, 'sub'
+					gs 'arousal', 'end'
+					gs 'cum_call', 'mouth', $boy
+					gs 'stat'
+					'While you get dressed again, you overhear the two guys talking. One voice says: "Wha- she did what!? She refused to blow me, and only gave me a handjob! That bitch... is she still here?"'
+					act 'Leave quickly':
+						cla
+						'You quickly find your bag and leave the apartment, before they come find you again. There''s no way either of them will settle for a handjob now, if they catch you again...'
+						act 'Continue your round':gt 'post_deliveries', 'resume'
+					end
+				end
+				act 'Put your clothes back on and leave':
+					cla
+					'You quickly put your clothes back on, ignoring the man''s cum on your body. The other guy might come looking for you too!'
+					'You quickly pull your bag out of his hand when you leave the apartment, and walk away to finish your round.'
+					act 'Continue your round':gt 'post_deliveries', 'resume'
+				end
+			end
+		else
+			act 'Beg him to not make you do it (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+		act 'Do what he wants':
+			cls
+			postbandQW = 6
+			gs 'boyStat', 'A104'
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj1.jpg"></center>'
+			'If you want to keep your job, what choice do you have?'
+			'You kneel down before him and begin to suck the head of his cock. Within the minute, you feel several jets of his bittery sperm landing in your mouth. He didn''t give you any warning, and you recoil a bit from the sudden sharp taste in your mouth.'
+			gs 'arousal', 'bj', 10, 'sub'
+			gs 'arousal', 'end'
+			gs 'cum_call', 'mouth', $boy
+			gs 'stat'
+			'"Hah, you''re a natural!" he groans, slowly recovering from his orgasm. "Quick and efficient. Not bad! Could be better, but... we''ll work on that next time."'
+			'He waves you off, his attention focused on the TV now. As far as he''s concerned, you''re no longer there.'
+			'You quickly get dressed again and pull your bag out of the other guy''s hand, who was waiting outside. He eyes you up and down suspiciously, with a rather unkind look in his eyes.'
+			'You should probably start walking, before he decides he wants a piece of you too...'
+			''
+			act 'Walk away before he can say anything':
+				cla
+				gs 'stat'
+				'You quickly walk away from him before he can say anything, and continue your round as usual. Despite the hold-up you''re done a fair bit earlier than usual, but the tangy taste in your mouth is a constant reminder of what you had to do for it.'
+				act 'Continue your round':gt 'post_deliveries', 'resume'
+			end
+			act 'Ask if you''re supposed to give him a blowjob too':
+				cls
+				gs 'boyStat', 'A105'
+				'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj11.jpg"></center>'
+				'Figuring you''re better off staying on his good side, you stop and ask: "Uhhh... was I supposed to help you too?"'
+				'"No. But you will now. Come this way," he laughs.'
+				'Without waiting for an answer he grabs you by the arm and forcefully drags you to another room of the apartment. He doesn''t bother to undress but simply takes his cock out of his pants, expecting you to do the rest.'
+				'He groans when you close your lips around his shaft obediently and makes you take the full length of his cock down your throat several times, testing your limits thoroughly. His cock is even bigger than his friend''s, and you have to open your mouth as far as you can to allow him access.'
+				'Finally he dumps his load all over your face, and he grins at you: "You''re even more eager than the last Postslut! We''re going to have a lot of fun with you..."'
+				gs 'arousal', 'bj', 10, 'sub'
+				gs 'arousal', 'end'
+				gs 'cum_call', 'face', $boy
+				gs 'stat'
+				'While you get dressed again, you overhear the two guys talking. One of them says: "Wha... she did you too!? I told her she could leave! Maybe she enjoys this a lot more than we thought?"'
+				act 'Continue your round':
+					cla
+					'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postgirl.jpg"></center>'
+					'You quickly leave the apartment before they come find you again, and complete your round without any more issues. You run into the guys several times more, but other than a few lewd remarks they leave you alone.'
+
+					act 'Continue your round':gt 'post_deliveries', 'resume'	
+				end
+			end
+		end
+	elseif postbandQW = 5:
+		cla
+		*clr
+		posthj += 1
+		if posthj >= 5: postbandQW = 6
+		posthjrand = RAND(1,5)
+		gs 'boyStat', 'A104'
+		'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/posthj<<posthjrand>>.jpg"></center>'
+		'If you want the guys to keep settling for handjobs, you figure you''d better show some enthusiasm! After the guys decide who gets to have you this time, today''s winner guides you inside the apartment.'
+		'You automatically get rid of your clothes before kneeling down in front of him. Surely being able to look at your naked body will get him off faster!'
+		'You try to show some enthusiasm while you jerk him off, occasionally nuzzling or licking his cock between strokes. Making the guys orgasm as fast as you can is a challenge in itself, and you''re not one to back down from a challenge! In a way, this is rather fun...'
+		'He orgasms in no time at all, and you make sure you point his cock at your boobs when he does. Somehow, the splattering of his cum onto your tits make you feel empowered in a way.'
+		gs 'arousal', 'hj', 10
+		gs 'arousal', 'end'
+		'You quickly wipe his cum off your body with a tissue, before putting your clothes back on.'
+		if posthj >= 5:
+			'"You know, <<$pcs_firstname>>... we''ve postponed it long enough. Next time I want a blowjob, okay?" the guy groans, still in orgasmic bliss.'
+			'You knew this moment was coming. Just a handjob won''t cut it any more, next time... but on the other hand, getting them off quickly with your mouth probably isn''t so bad!'
+			'"Yea, okay..." you nod, before leaving the apartment.'
+		end
+		'The other guy was already standing by with your bag, letting you get on your way.'
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	else
+		cla
+		*clr
+		postbj += 1
+		if postbj <= 4:
+			postbjrand = rand(1,4)
+		elseif postbj <= 7:
+			postbjrand = rand(1,7)
+		else
+			postbjrand = rand(1,10)
+		end
+		if postbj <= 4:
+			gs 'boyStat', 'A'+str(rand(104, 105))
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj<<postbjrand>>.jpg"></center>'
+			'A quick blowjob in exchange for using their streets doesn''t sound so bad... if you make it quick, you can still gain a fair bit of time.'
+			'After the guys decide who gets to have you this time, <<$boydesc>> guides you inside the apartment.'
+			'You automatically get rid of your clothes before kneeling down in front of him. Surely being able to look at your naked body will get him off faster!'
+			'You dutifully give the guy a blowjob, even though you''re not that enthusiastic about it.'
+			'You flick your tongue over the head of his cock and close your lips around it, blowing to an orgasm as quickly as you can. He doesn''t last long, and unloads inside your mouth within minutes.'
+			gs 'arousal', 'bj', 10
+			gs 'arousal', 'end'
+			gs 'cum_call', 'mouth', $boy
+			gs 'stat'
+		elseif postbj > 4 and postbj <= 7:
+			gs 'boyStat', 'A'+str(rand(104, 105))
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj<<postbjrand>>.jpg"></center>'
+			'A quick blowjob in exchange for using their streets doesn''t sound so bad... and from your experience, you know they don''t last very long if you show some enthusiasm.'
+			'After the guys decide who gets to have you this time, <<$boydesc>> guides you inside the apartment.'
+			'You automatically get rid of your clothes before kneeling down in front of him and begin to suck the guy off eagerly, teasing him by licking his balls before you take his cock in your mouth again. The man orgasms in no time at all, and you swallow his load without giving it another thought.'
+			gs 'arousal', 'bj', 10
+			gs 'arousal', 'end'
+			gs 'cum_call', 'mouth', $boy
+			gs 'stat'
+			'The guy still lies on the bed in post-orgasmic bliss while you put your clothes back on and resume your round, with only the tangy taste of his cum in your mouth as a reminder of what you just did.'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/sex/postbj<<postbjrand>>.jpg"></center>'
+			if postbjrand > 7:
+				'You grin at the guys and say: "No need to argue, guys! Why don''t you both come in with me?"'
+				'The guys can''t believe their ears and both follow you inside, where you undress and kneel down between the two of them. "Come on, boys! Show me how much you want me!" you encourage them, and the guys scurry to pull their pants down.'
+				'You blow both of them in turns, jerking off the cock you don''t have in your mouth. You''ve spent enough time with the guys by now to know what they like, and both of them shoot their loads in no time at all.'
+				gs 'boyStat', 'A104'
+				gs 'arousal', 'bj', 5, 'dom'
+				gs 'arousal', 'end'
+				gs 'cum_call', 'mouth', $boy
+				gs 'boyStat', 'A105'
+				gs 'arousal', 'bj', 5, 'dom'
+				gs 'arousal', 'end'
+				gs 'cum_call', 'mouth', $boy
+				gs 'stat'
+				'"Already!?" you laugh, and the guys actually seem a bit disappointed in themselves.'
+				'You wink at them and smile: "That''s okay, I still had fun! Maybe you''ll last longer next time..."'
+			else
+				'You''re so accustomed to servicing the guys by now, you don''t feel any shame or hesitation any more. It''s just part of the job.'
+				'You take one of them by the hand and lead him into the building, before they can even decide who gets to spend time with you.'
+				'You quickly undress and drop to your knees, and begin tugging at his pants: "Come on, big boy!" you grin at him. "Help me out a little... you do want me to blow you, right?"'
+				'The guy is actually a bit taken aback by how eager you are nowadays, and quietly lets you take his cock out of his pants.'
+				'You begin jerking and sucking him off immediately, trying to get him off as quick as possible so you can resume your round.'
+				'Sure enough, he doesn''t last long. "That''s it! There you go..." you smile sweetly at him, when you feel his sperm land on your face.'
+				gs 'arousal', 'bj', 10
+				gs 'arousal', 'end'
+				gs 'cum_call', 'mouth', $boy
+				gs 'stat'
+				'You quickly wipe the sperm into your mouth using your fingers, and theatrically lick them clean one by one in front of him. All he can do is groan in response.'
+			end
+		end
+		'You quickly put your clothes back on, so you can resume your round as soon as possible. The sexual services the guys want from you barely take up any time any more, now that you''re getting to know their cocks better.'
+		'"Bye, boys! See you next time!" you grin at them.'
+
+		act 'Continue your round':gt 'post_deliveries', 'resume'
+	end
+end	
+	
+if $ARGS[0] = 'finishround':
+	cla
+	*clr
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/postoffice/postmaster.jpg"></center>'
+!! your mail got burnt, you''re fired
+	if postburn = 1:
+		postjobQW = 999
+		'You return to the post office empty-handed, way earlier than you should. The postmaster can immediately tell by the look on your face that something''s wrong.'
+		'"What happened? Why are you back so early?" he asks, rather worried.'
+		'"They... they torched everything! Some guys stopped me, and they burnt all the letters! Just for the hell of it!" you blurt out. "There was nothing I could do..."'
+		'That last bit is a lie, but he doesn''t have to know what they wanted you to do!'
+		'He shakes his head angrily and says: "I warned you to avoid those streets! I knew this was going to happen... damnit. You leave me no choice. You''re fired!"'
+!! you''re back early
+	elseif hour = 14 and minut <= 30:
+		postlate -= 1
+		'"Wow, back already?" the postmaster asks when he sees you come in so early. "You know, <<$pcs_firstname>>... I don''t know how you do it, but keep up the good work!"'
+!! you''re back late, you''re fired if it happens too often
+	elseif hour = 15:
+		postlate += 3
+		if postlate <= 3:
+			'"You''re late, what happened?" the postmaster asks when you return to the post office.'
+			'You shrug and say: "I got held up a little... I managed to deliver everything, though! See?"'
+			'His anger dissipates when he sees your sheet, with all the signatures where they should be. He smiles benevolently and says: "Well... it can happen, I guess. Nice job getting everything done."'
+		elseif postlate > 3 and postlate < 12:
+			'"You''re late again," the postmaster remarks when you return to the post office. "Did you at least manage to deliver everything?"'
+			'When you nod, his stern expression softens a little.'
+			'"Well... alright then," he says, still a bit reluctant. "It''s important people get their mail on time, though. Don''t make a habit out of it!"'
+		elseif postlate >= 12 and postlate < 15:
+			'"You''re late... yet again!" the postmaster scoffs when you enter the post office. Your remarks that you did deliver everything fall on deaf ears.'
+			'"I don''t care! Everyone knows that mail is delivered before 15:00! You may be getting lucky with people still being home after that, but your luck won''t last," he remarks, mumbling something about how you make the postal service look bad. Then his voice grows louder again, and he says: "I will not stand for this! Be late one more time and you''re fired! You hear me?"'
+			'Knowing it''s no use to argue, you nod. If you want to keep this job, you really need to look at the clock more next time...'
+		else
+			postjobQW = 999
+			'"Enough''s enough, <<$pcs_firstname>>. I warned you enough times, and I''m starting to get complaints from people getting their mail late," the postmaster sighs, when he sees you entering the post office late yet again. "You''re fired."'
+		end
+!! you''re back at the normal time
+	else
+		if postlate > 0: postlate -= 1
+		'You return to the post office on time, with an empty bag. The postmaster smiles at you when he sees you come in and says: "Hello, <<$pcs_firstname>>... I assume everything went okay?"'
+	end
+	''
+!! possible responses to what happened during your round
+	if posteventQW4 = 1:posteventQW4 = 2 & '"One missing signatu- oh never mind, it''s him!" the postmaster remarks dryly when he notices the missing signature of the pervert who tried to blackmail you. "No need to explain. I hope you didn''t listen to him? He tries that with every girl we hire. I''ve reported him to captain Katalkin several times, but nothing ever happens..."'
+	if postjobQW ! 999:
+		money += 450
+		'You receive your pay for the day, 450 <b>₽</b>.'
+	end
+	if postjobQW = 999: '"I better let Aleksiy know he needs to come in again on Saturdays, from now on. I knew I shouldn''t have trusted you!" he sighs, shaking his head in disappointment as he walks off. Guess you''re not getting paid for the day...'
+!! actions after your round is finished, default plus options if a long scene was triggered during your round
+	act 'Leave':gt 'pav_commercial'
+	if posteventQW1 = 2: act 'Return to the married man''s house': gt 'post_events', '1'
+	if posteventQW2 = 2: act 'Go back to Jenya and Arsen''s apartment': gt 'post_events', '2'
+	if posteventQW3 = 2: act 'Return to the businessman''s house': gt 'post_events', '3'
+!!	if posteventQW5 = 2: act 'Return to the hostel to rejoin the tourists': gt 'post_events', '5'
+end
+
+--- post_deliveries ---------------------------------
+

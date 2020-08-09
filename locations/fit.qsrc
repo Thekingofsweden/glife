@@ -31,7 +31,7 @@ if $ARGS[0] = 'start':
 	*nl
 	'Sportswear is required for all available classes.'
 
-	act 'Leave': minut += 5 & gt 'down'
+	act 'Leave': minut += 5 & gt 'city_center'
 
 	if abonement > 0:
 		act 'Go to the dressing room': gt 'fit', 'dressing room'
@@ -82,10 +82,10 @@ end
 
 if $ARGS[0] = 'dressing room':
 	$locM = 'fit'
-	$metkaM = 'dressing room'
+	$locM_arg = 'dressing room'
 	$sexloc = 'fit'
 	$loc = 'fit'
-	$metka = 'dressing room'
+	$loc_arg = 'dressing room'
 	$menu_loc = 'fit'
 	$menu_arg = 'dressing room'
 	menu_off = 0
@@ -104,14 +104,18 @@ if $ARGS[0] = 'dressing room':
 	end
 
 	act 'Exit the locker room':
-		if $clothingworntype ! 'nude' and $clothingworntype ! 'swimwear':
-			gt 'fit', 'start'
-		else
-			cla
-			msg'<b><font color = red>You need to get dressed.</font></b>'
-			act 'Return': gt 'fit', 'dressing room'
-		end
-	end
+        if $clothingworntype ! 'nude' and $clothingworntype ! 'swimwear' and $clothingworntype ! 'beach':
+            if Fit['FMR'] = 0 and vidage <= 40 and hotcat >=6 and city_sport >=10:
+                gt 'fit', 'FMR'
+            else
+                gt 'fit', 'start'
+            end
+        else
+            cla
+            msg'<b><font color = red>You need to get dressed.</font></b>'
+            act 'Return': gt 'fit', 'dressing room'
+        end
+    end
 
 	if shampoo > 0:
 		act 'Take a shower (0:15)':
@@ -144,7 +148,7 @@ if $ARGS[0] = 'dressing room':
 		gt 'wardrobe', 'start'
 	end
 
-	if $clothingworntype = 'swimwear':
+	if $clothingworntype = 'swimwear' or $clothingworntype = 'beach':
 		act 'Use the pool': gt 'bass', 'start'
 	else
 		act 'Change into swimwear': gt 'changingroom', 'view_swim_list'
@@ -198,7 +202,7 @@ if $ARGS[0] = 'dressing room':
 			gs 'sweat', 'deo'
 			iif(func('body_din','pregnancyVisibility') = 1, '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant_preg.jpg"></center>', '<center><img <<$set_imgh>> src="images/shared/home/bathroom/deodorant.jpg"></center>')
 			'You apply deodorant to your armpits. It will keep you feeling fresh and clean for longer.'
-			act 'Continue': menu_off = 0 & gt $loc, $metka
+			act 'Continue': menu_off = 0 & gt $loc, $loc_arg
 		end
 	end
 end
@@ -343,7 +347,7 @@ if $ARGS[0] = 'gym':
 		timemult = 0
 		if pcs_inhib < 30:inhib_exp += rand(1,2)
 
-		'<center><img <<$set_imgh>> src="images/locations/shared/gym/fit1.jpg"></center>'
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/gym/exercise/fit11.jpg"></center>'
 		'You do very vigorous exercises to the music, and burn some fat.'
 
 		if pcs_stam < 30:
@@ -848,6 +852,32 @@ if $ARGS[0] = 'kickboxing':
 
 			gt 'kikbox', 'start'
 		end
+	end
+end
+
+if $ARGS[0] = 'FMR':    
+    *clr & cla
+    menu_off = 0
+    minut += 5
+    Fit['FMR'] = 1
+    gs 'stat'
+    '<center><b><font color="maroon">Photographer</font></b></center>'
+    '<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+	if model = 1:
+		'"Hey! <<$pcs_nickname>>!"'
+		'Waiting for you, there is a man with several cameras hanging from his neck. You remember him, as one of Aphrodite''s photographers. Now that you think about it, he has been hanging around some of the sports events, you have participated.'
+		'"<<$pcs_nickname>>, the agency has sent me to tell you, that our sponsors want to give you an opportunity as a fitness model. Congratulations! You are getting famous!"'
+		'You smile, at the sudden good news. The fitness jobs in the agency are paid based not only on your modeling cache but taking into consideration your relative sports fame and bodybuild. Good job!'
+		'"Congratulations <<$pcs_nickname>>! you have earned it!"'
+		'Saying this, he turns around, and after waving a final goodbye, he leaves.'
+		act 'Leave':gt 'fit', 'start'
+	else
+		'Waiting for you, there is a man with several cameras hanging from his neck. You vaguely remember him, hanging around some of the sports events, you have participated in. He smiles and quickly takes your hands in a handshake.'
+		'"<<$pcs_lastname>> Isn''t it? I''m here to make you a proposal. Don''t be afraid! Not that kind of "proposal". A serious... business... career-oriented... proposal. Tell me... would you consider becoming a model?"'
+		'You blink, utterly taken by the sudden verbal barrage... What has he said? You a model?! You have the looks, and it''s not that weird for a woman in the sports career to be offered a job in the model business, but, are you going to trust this stranger? Sensing your hesitation, the man pushes a business card into your hands, before continuing.'
+		'"Don''t worry. You don''t need to answer me right now, investigate, ask around if you want, and when you''ve made your decision. Come to see us. If you pass some basic tests, you can initiate a new exciting career."'
+		'Saying this, the man turns around, and after waving goodbye, he leaves. On the card, the name "Aphrodite Photography" can be read with and attached are directions. You remember seeing that name around the city center. Maybe you could go and take a look?'
+		act 'Leave':gt 'fit', 'start'
 	end
 end
 

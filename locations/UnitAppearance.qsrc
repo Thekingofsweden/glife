@@ -1,0 +1,1551 @@
+# UnitAppearance
+if $ARGS[0] = '':
+    unitDisplayType = ARGS[1]
+    unitRowType = ARGS[2]
+    *clr
+    'Hotcat'
+	'<table>'
+		gs 'UnitAppearance', 'GenerateSvetas'
+	'</table>'
+end
+
+if $ARGS[0] = 'gashtest':
+end
+
+if $ARGS[0] = 'GenRow':
+    if unitDisplayType = 0:
+        if unitRowType = 0:
+    	    '<tr><td align="left"><<$ARGS[1]>></td><td align="right"><<unitHotcat>></td></td><td align="right"><<unitpcs_apprnc>></td><td align="right"><<unitbmi_calc>></td><td align="right"><<unitbodykoef>></td><td align="right"><<unitHeadBonus>></td><td align="right"><<unitAttributeBonus>></td><td align="right"><<unitclothingbonus>></td><td align="right"><<unitAccessoriesBonus>></td><td align="right"><<unitGroomingBonus>></td><td align="right"><<unitGroomingPenalty>></td><td align="right"><<unitpcs_apprncbase>></tr>'
+        else
+    	    '<tr><td align="left"><<$ARGS[1]>></td><td align="right"><<unitclothingbonus1>></td><td align="right"><<unitclothingbonus2>></td><td align="right"><<unitclothingbonus3>></td><td align="right"><<unitclothingbonus4>></td><td align="right"><<unitclothingbonus5>></td><td align="right"><<unitclothingbonus6>></td><td align="right"><<unitclothingbonus7>></td><td align="right"><<unitclothingbonusnude>></td></tr>'
+        end
+    else
+	    '<<$ARGS[1]>>,<<unitHotcat>>,<<unitpcs_apprnc>>,<<unitbmi_calc>>,<<unitbodykoef>>,<<unitHeadBonus>>,<<unitAttributeBonus>>,<<unitclothingbonus>>,<<unitAccessoriesBonus>>,<<unitGroomingBonus>>,<<unitGroomingPenalty>>,<<unitpcs_apprncbase>>'
+    end
+end 
+
+if $ARGS[0] = 'GenRowBreak':
+    if unitDisplayType = 0:
+        if unitRowType = 0:
+            '<tr><th align="left"><<$ARGS[1]>></th><th align="right">hotcat</th><th align="right">pcs_apprnc</th><th align="right">bmi</th><th>bodykoef</th><th align="right">HeadBonus</th><th align="right">AttributeBonus</th><th align="right">clothingbonus</th><th align="right">AccessoriesBonus</th><th align="right">GroomingBonus</th><th align="right">GroomingPenalty</th><th align="right">pcs_apprncbase</th></tr>'
+        else
+            '<tr><th align="left"><<$ARGS[1]>></th><th align="right">clothingbonus Q1</th></th><th align="right">clothingbonus Q2</th></th><th align="right">clothingbonus Q3</th></th><th align="right">clothingbonus Q4</th></th><th align="right">clothingbonus Q5</th></th><th align="right">clothingbonus Q6</th></th><th align="right">clothingbonus Q7</th><th align="right">clothingbonus Nude</th></tr>'
+        end
+    else
+        '<<$ARGS[1]>>,hotcat,pcs_apprnc,bmi,bodykoef,HeadBonus,AttributeBonus,clothingbonus,AccessoriesBonus,GroomingBonus,GroomingPenalty,pcs_apprncbase'
+    end
+end 
+
+if $ARGS[0] = 'calcHotcat':
+	unitbmi_calc = FUNC('body_shape', 'bmicalc', unitsalo, unitpcs_hgt)
+	unitbodykoef = FUNC('body_shape', 'setbodykoef', unitbmi_calc, unitstrenbuf, unitsalocatnow, unitvofat)
+	unitHeadBonus = FUNC('body_shape', 'calcHeadBonus', unitpcs_lashes, unitpcs_eyesize, unitpcs_lip, unitpcs_teeth, unitbmi_calc)
+	unitAttributeBonus = FUNC('body_shape', 'calcAttributeBonus', unitpcs_agil, unitpcs_vital, unitbmi_calc)
+	unitpcs_apprncbase = FUNC('body_shape', 'basebeautycalc2', unitResetBase, unitvidage, unitpcs_skin, unitbodykoef, unitHeadBonus, unitAttributeBonus, unitpcs_apprncbase)
+	unitclothingbonus = FUNC('body', 'calcClothesBonus', unitPXCloThinness, unitPXCloTopCut, unitPXCloBottomShortness, unitPCloQuality, $unitclothingworntype, unitbmi_calc)
+	unitAccessoriesBonus = FUNC('body', 'calcAccessoriesBonus', unitbonusZ, unitPShoQuality, $unitpantyworntype, $unitbraworntype)
+	unitGroomingBonus = FUNC('body', 'calcGroomingBonus', unitpcs_lipbalm, unitmopkoef, unitpcs_hairbsh, unitpcs_breath, unitdeodorant_on, unitbmi_calc)
+	unitGroomingPenalty = FUNC('body', 'calcGroomingPenalty', unitpcs_hairlng, unitpcs_sweat, unitglassvnesh, unitdyevmod, unitlegkoef)
+	unitHotcat = FUNC('body', 'calcHotcat', unitpcs_apprncbase, unitsupnatvnesh, unitclothingbonus, unitAccessoriesBonus, unitGroomingBonus, unitGroomingPenalty)
+    !!use value without the cap as what gets returned in temppcs_apprnc is capped at 200
+	unitpcs_apprnc = temppcs_maxapprnc & killvar 'temppcs_apprnc' & killvar 'temppcs_maxapprnc'
+	if unitRowType = 0: gs 'UnitAppearance', 'GenRow', $ARGS[1]
+end
+
+if $ARGS[0] = 'headbonus':
+	*clr
+    'HeadBonus'
+	'<table>'
+		'<tr>
+			<th>headbonus</th>
+			<th>pcs_lashes</th>
+			<th>pcs_eyesize</th>
+			<th>pcs_lip</th>
+			<th>pcs_teeth</th>
+		</tr>'
+		gs 'UnitAppearance', 'HeadBonusCalc'
+	'</table>'
+end
+
+if $ARGS[0] = 'HeadBonusCalc':
+    gs 'UnitAppearance', 'GenHeadRow', 5,3,3,-1
+    gs 'UnitAppearance', 'GenHeadRow', 4,3,4,-1
+    gs 'UnitAppearance', 'GenHeadRow', 3,2,2,0
+    gs 'UnitAppearance', 'GenHeadRow', 2,2,2,0
+    gs 'UnitAppearance', 'GenHeadRow', 1,1,1,1
+    gs 'UnitAppearance', 'GenHeadRow', 0,0,0,3
+end
+
+if $ARGS[0] = 'GenHeadRow':
+    unitHeadBonus = FUNC('body_shape', 'calcHeadBonus', ARGS[1], ARGS[2], ARGS[3], ARGS[4])
+    '<tr>'
+        '<td><<unitHeadBonus>></td>'
+        '<td><<ARGS[1]>></td>'
+        '<td><<ARGS[2]>></td>'
+        '<td><<ARGS[3]>></td>'
+        '<td><<ARGS[4]>></td>'
+    '</tr>'
+end
+
+if $ARGS[0] = 'attributebonus':
+	*clr
+    'AttributeBonus'
+	'<table>'
+		'<tr>
+			<th>attributebonus</th>
+			<th>pcs_agil</th>
+			<th>pcs_vital</th>
+		</tr>'
+		gs 'UnitAppearance', 'AttribBonusCalc'
+	'</table>'
+end
+
+if $ARGS[0] = 'AttribBonusCalc':
+    gs 'UnitAppearance', 'GenAttribRow', 100,100
+    gs 'UnitAppearance', 'GenAttribRow', 80,80
+    gs 'UnitAppearance', 'GenAttribRow', 60,60
+    gs 'UnitAppearance', 'GenAttribRow', 40,40
+    gs 'UnitAppearance', 'GenAttribRow', 20,20
+    gs 'UnitAppearance', 'GenAttribRow', 0,0
+end
+
+if $ARGS[0] = 'GenAttribRow':
+    unitAttribBonus = FUNC('body_shape', 'calcAttributeBonus', ARGS[1], ARGS[2])
+    '<tr>'
+        '<td><<unitAttribBonus>></td>'
+        '<td><<ARGS[1]>></td>'
+        '<td><<ARGS[2]>></td>'
+    '</tr>'
+end
+
+if $ARGS[0] = 'GenerateSvetas':
+
+	$svetadesc = 'Current Sveta'
+	unitsalo = salo
+	unitpcs_hgt = pcs_hgt
+	unitstrenbuf = strenbuf
+	unitsalocatnow = salocatnow
+	unitvofat = vofat
+	unitpcs_lashes = pcs_lashes
+	unitpcs_eyesize = pcs_eyesize
+	unitpcs_lip = pcs_lip
+	unitpcs_teeth = pcs_teeth
+	unitpcs_agil = pcs_agil
+	unitpcs_vital = pcs_vital
+	unitvidage = vidage
+	unitpcs_skin = pcs_skin
+	unitPXCloThinness = PXCloThinness
+	unitPXCloTopCut = PXCloTopCut
+	unitPXCloBottomShortness = PXCloBottomShortness
+	unitPCloQuality = PCloQuality
+	$unitclothingworntype = $clothingworntype
+	unitbonusZ = bonusZ
+	unitPShoQuality = PShoQuality
+	$unitpantyworntype = $pantyworntype
+	$unitbraworntype = $braworntype
+	unitpcs_lipbalm = pcs_lipbalm
+	unitmopkoef = mopkoef
+	unitpcs_hairbsh = pcs_hairbsh
+	unitpcs_breath = pcs_breath
+	unitdeodorant_on = deodorant_on
+	unitpcs_hairlng = pcs_hairlng
+	unitpcs_sweat = pcs_sweat
+	unitglassvnesh = glassvnesh
+	unitdyevmod = dyevmod
+	unitlegkoef = legkoef
+	unitsupnatvnesh = supnatvnesh
+    unitpcs_apprncbase = pcs_apprncbase
+    unitResetBase = 0
+	gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Queen Nerd Start'
+    unitsalo = 103
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 5
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 300
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Good Student Start'
+    unitsalo = 161
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 8
+    unitvofat = 10
+    unitpcs_lashes = 0
+    unitpcs_eyesize = 1
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 20
+    unitPXCloThinness = 200
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 10
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+   
+    $svetadesc = 'Computer Geek Start'
+    unitsalo = 132
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 7
+    unitvofat = 3
+    unitpcs_lashes = 0
+    unitpcs_eyesize = 1
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 30
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 120
+    unitpcs_sweat = 0
+    unitglassvnesh = 10
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+   
+    $svetadesc = 'Chess Player Start'
+    unitsalo = 40
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 2
+    unitvofat = 0
+    unitpcs_lashes = 0
+    unitpcs_eyesize = 1
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 35
+    unitPXCloThinness = 250
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+    $svetadesc = 'Volleyball Start'
+    unitsalo = 75
+    unitpcs_hgt = 170
+    unitstrenbuf = 45
+    unitsalocatnow = 4
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 50
+    unitpcs_vital = 50
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 55
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+    $svetadesc = 'Dancer Start'
+    unitsalo = 55
+    unitpcs_hgt = 170
+    unitstrenbuf = 40
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 2
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 55
+    unitpcs_vital = 50
+    unitvidage = 16
+    unitpcs_skin = 60
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 0
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+    $svetadesc = 'Runner Start'
+    unitsalo = 51
+    unitpcs_hgt = 170
+    unitstrenbuf = 45
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 50
+    unitpcs_vital = 60
+    unitvidage = 16
+    unitpcs_skin = 40
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 55
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+    $svetadesc = 'Football Start'
+    unitsalo = 80
+    unitpcs_hgt = 170
+    unitstrenbuf = 50
+    unitsalocatnow = 4
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 40
+    unitpcs_vital = 50
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 55
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+    $svetadesc = 'Popular Friends Start'
+    unitsalo = 80
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 4
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 2
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Popular Beautiful Start'
+    unitsalo = 65
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 2
+    unitpcs_eyesize = 2
+    unitpcs_lip = 3
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 70
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 300
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Gopnik Start'
+    unitsalo = 80
+    unitpcs_hgt = 170
+    unitstrenbuf = 40
+    unitsalocatnow = 4
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 35
+    unitpcs_vital = 40
+    unitvidage = 16
+    unitpcs_skin = 40
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 250
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 120
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Punk Start'
+    unitsalo = 80
+    unitpcs_hgt = 170
+    unitstrenbuf = 40
+    unitsalocatnow = 4
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 35
+    unitpcs_vital = 35
+    unitvidage = 16
+    unitpcs_skin = 40
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 250
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 55
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Viteks Girlfriend Start'
+    unitsalo = 60
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 2
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Alt Party Girl Start'
+    unitsalo = 60
+    unitpcs_hgt = 170
+    unitstrenbuf = 35
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 2
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 40
+    unitpcs_vital = 40
+    unitvidage = 16
+    unitpcs_skin = 60
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 250
+    unitPXCloBottomShortness = 300
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 120
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Outcast No Friends Start'
+    unitsalo = 104
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 5
+    unitvofat = 0
+    unitpcs_lashes = 0
+    unitpcs_eyesize = 1
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 10
+    unitPXCloThinness = 200
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Ugly Duckling Start'
+    unitsalo = 220
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 11
+    unitvofat = 25
+    unitpcs_lashes = 2
+    unitpcs_eyesize = 0
+    unitpcs_lip = 0
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 1
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 10
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Good Girl Start'
+    unitsalo = 104
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 5
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 30
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 300
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Slut Start'
+    unitsalo = 60
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 3
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 2
+    unitpcs_lip = 2
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 60
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 400
+    unitPXCloBottomShortness = 300
+    unitPCloQuality = 2
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'none'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 120
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+
+    $svetadesc = 'Goth Start'
+    unitsalo = 45
+    unitpcs_hgt = 170
+    unitstrenbuf = 30
+    unitsalocatnow = 2
+    unitvofat = 0
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 250
+    unitPCloQuality = 1
+    $unitclothingworntype = 'cheap'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+    unitpcs_lipbalm = 0
+    unitmopkoef = 0
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 0
+    unitpcs_hairlng = 265
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    gs 'UnitAppearance', 'GenerateSvetaOptions', $svetadesc
+	
+   gs 'UnitAppearance', 'GenRowBreak', 'BMI Maximums'
+
+    unitstrenbuf = 100
+    unitpcs_lashes = 5
+    unitpcs_eyesize = 3
+    unitpcs_lip = 3
+    unitpcs_teeth = -1
+    unitpcs_agil = 100
+    unitpcs_vital = 100
+    unitvidage = 20
+    unitpcs_skin = 100
+    unitpcs_lipbalm = 1
+    unitmopkoef = 30
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 1
+    unitdeodorant_on = 1
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 0
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    unitpcs_hgt = 170
+    $unitclothingworntype = ''
+    unitPCloQuality = 7
+    unitbonusZ = 5
+    unitPShoQuality = 7
+    $unitpantyworntype = 'boutique'
+    $unitbraworntype = 'boutique'
+
+    $svetadesc = 'Max morbidly obese'
+    unitsalo = 220
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max very severely obese'
+    unitsalo = 190
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max severely obese'
+    unitsalo = 160
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max moderately obese'
+    unitsalo = 135
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max overweight'
+    unitsalo = 105
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max normal'
+    unitsalo = 75
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max underweight'
+    unitsalo = 40
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Max severely underweight'
+    unitsalo = 25
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+   gs 'UnitAppearance', 'GenRowBreak', 'BMI Average Apperance cheap clothes'
+
+    unitstrenbuf = 30
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitpcs_lipbalm = 1
+    unitmopkoef = 19
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 1
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 0
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    unitpcs_hgt = 170
+    $unitclothingworntype = 'cheap'
+    unitPCloQuality = 1
+    unitbonusZ = 0
+    unitPShoQuality = 1
+    $unitpantyworntype = 'cheap'
+    $unitbraworntype = 'cheap'
+
+    $svetadesc = 'morbidly obese'
+    unitsalo = 220
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'very severely obese'
+    unitsalo = 190
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'severely obese'
+    unitsalo = 160
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'moderately obese'
+    unitsalo = 135
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'overweight'
+    unitsalo = 105
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'normal'
+    unitsalo = 75
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'underweight'
+    unitsalo = 40
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'severely underweight'
+    unitsalo = 25
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+   gs 'UnitAppearance', 'GenRowBreak', 'BMI Average Apperance expensive clothes'
+
+    unitstrenbuf = 30
+    unitpcs_lashes = 1
+    unitpcs_eyesize = 3
+    unitpcs_lip = 1
+    unitpcs_teeth = 0
+    unitpcs_agil = 30
+    unitpcs_vital = 30
+    unitvidage = 16
+    unitpcs_skin = 50
+    unitpcs_lipbalm = 1
+    unitmopkoef = 19
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 0
+    unitdeodorant_on = 1
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 0
+    unitdyevmod = 0
+    unitlegkoef = 0
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    unitpcs_hgt = 170
+    $unitclothingworntype = ''
+    unitPCloQuality = 7
+    unitbonusZ = 0
+    unitPShoQuality = 7
+    $unitpantyworntype = 'boutique'
+    $unitbraworntype = 'boutique'
+
+    $svetadesc = 'morbidly obese'
+    unitsalo = 220
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'very severely obese'
+    unitsalo = 190
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'severely obese'
+    unitsalo = 160
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'moderately obese'
+    unitsalo = 135
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'overweight'
+    unitsalo = 105
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'normal'
+    unitsalo = 75
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'underweight'
+    unitsalo = 40
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'severely underweight'
+    unitsalo = 25
+    gs 'UnitAppearance', 'CalcSaloVars'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+
+end
+
+if $ARGS[0] = 'CalcSaloVars':
+
+    unitvhips = (unitsalo - 80) / 2
+	unithrtemp = (2 * unitpcs_agil + unitpcs_vital + unitstrenbuf) /4
+
+	if unithrtemp < 35:
+		unithratio = 60
+	elseif unithrtemp < 45:
+		unithratio = 59
+	elseif unithrtemp < 60:
+		unithratio = 58
+	elseif unithrtemp < 80:
+		unithratio = 57
+	else
+		unithratio = 56
+	end
+
+    unitvofat = ((unitpcs_hgt * unithratio) / 100 + unitvhips - (unitpcs_hgt * 72) / 100) / 2
+
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    unitbmi_calc = FUNC('body_shape', 'bmicalc', unitsalo, unitpcs_hgt)
+    gs 'UnitAppearance', 'GetClothThick', unitbmi_calc
+end
+
+if $ARGS[0] = 'GenerateSvetaOptions':
+    gs 'UnitAppearance', 'SaveBase'
+    gs 'UnitAppearance', 'GenRowBreak', $ARGS[1]
+    unitbmi_calc = FUNC('body_shape', 'bmicalc', unitsalo, unitpcs_hgt)
+
+    $svetadesc = 'Current Clothes'
+    
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+    $svetadesc = 'Naked'
+    unitPXCloThinness = 0
+    unitPXCloTopCut = 0
+    unitPXCloBottomShortness = 0
+    unitPCloQuality = 0
+    $unitclothingworntype = 'nude'
+    unitbonusZ = 0
+    unitPShoQuality = 0
+    $unitpantyworntype = ''
+    $unitbraworntype = ''
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+    gs 'UnitAppearance', 'RestoreBase'
+
+    $svetadesc = 'Max Bonus'
+    unitpcs_teeth = -1
+    unitpcs_skin = 100
+    unitpcs_lashes = 5
+    unitmopkoef = 30
+    unitpcs_lipbalm = 1
+    unitlegkoef = 0
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+    gs 'UnitAppearance', 'RestoreBase'
+
+    $svetadesc = 'Low Clothes'
+    gs 'UnitAppearance', 'GetClothThick', unitbmi_calc
+    unitPCloQuality = 1
+    $unitclothingworntype = ''
+    unitbonusZ = 1
+    unitPShoQuality = 1
+    $unitpantyworntype = ''
+    $unitbraworntype = ''
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+    gs 'UnitAppearance', 'RestoreBase'
+
+    $svetadesc = 'Med Clothes'
+    gs 'UnitAppearance', 'GetClothThick', unitbmi_calc
+    unitPCloQuality = 4
+    $unitclothingworntype = ''
+    unitbonusZ = 3
+    unitPShoQuality = 4
+    $unitpantyworntype = 'fashionista'
+    $unitbraworntype = 'fashionista'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+    gs 'UnitAppearance', 'RestoreBase'
+
+    $svetadesc = 'High Clothes'
+    gs 'UnitAppearance', 'GetClothThick', unitbmi_calc
+    unitPCloQuality = 7
+    $unitclothingworntype = ''
+    unitbonusZ = 5
+    unitPShoQuality = 7
+    $unitpantyworntype = 'boutique'
+    $unitbraworntype = 'boutique'
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+    gs 'UnitAppearance', 'RestoreBase'
+
+    $svetadesc = 'High Clothes Max Bonus'
+    gs 'UnitAppearance', 'GetClothThick', unitbmi_calc
+    unitPCloQuality = 7
+    $unitclothingworntype = ''
+    unitbonusZ = 5
+    unitPShoQuality = 7
+    $unitpantyworntype = 'boutique'
+    $unitbraworntype = 'boutique'
+    unitpcs_teeth = -1
+    unitpcs_skin = 100
+    unitpcs_lashes = 5
+    unitmopkoef = 30
+    unitpcs_lipbalm = 1
+    unitlegkoef = 0
+    gs 'UnitAppearance', 'calcHotcat', $svetadesc
+
+end 
+
+if $ARGS[0] = 'GetClothThick':
+	if ARGS[1] < 16:
+		!!severely underweight
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	elseif ARGS[1] >= 16 and ARGS[1] < 19:
+		!!underweight
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	elseif ARGS[1] >= 19 and ARGS[1] < 25:
+		!!normal, healthy weight
+        unitPXCloThinness = 400
+        unitPXCloTopCut = 500
+        unitPXCloBottomShortness = 400
+	elseif ARGS[1] >= 25 and ARGS[1] < 30:
+		!!overweight
+        unitPXCloThinness = 400
+        unitPXCloTopCut = 500
+        unitPXCloBottomShortness = 400
+	elseif ARGS[1] >= 30 and ARGS[1] < 35:
+		!!moderately obese
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	elseif ARGS[1] >= 35 and ARGS[1] < 40:
+		!!severely obese
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	elseif ARGS[1] >= 40 and ARGS[1] < 45:
+		!!very severely obese
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	elseif ARGS[1] >= 45:
+		!!morbidly obese
+        unitPXCloThinness = 150
+        unitPXCloTopCut = 100
+        unitPXCloBottomShortness = 100
+	end
+end
+
+
+
+if $args[0] = 'SaloTest':
+    unitDisplayType = ARGS[1]
+    unitRowType = ARGS[2]
+	*clr
+    'Hotcat'
+	'<table>'
+
+    unitstrenbuf = 19
+    unitvofat = 0
+    unitpcs_lashes = 5
+    unitpcs_eyesize = 3
+    unitpcs_lip = 3
+    unitpcs_teeth = -1
+    unitpcs_agil = 100
+    unitpcs_vital = 100
+    unitvidage = 20
+    unitpcs_skin = 1
+    unitpcs_lipbalm = 1
+    unitmopkoef = 5
+    unitpcs_hairbsh = 1
+    unitpcs_breath = 1
+    unitdeodorant_on = 1
+    unitpcs_hairlng = 200
+    unitpcs_sweat = 0
+    unitglassvnesh = 10
+    unitdyevmod = 0
+    unitlegkoef = 9
+    unitsupnatvnesh = 0
+    unitpcs_apprncbase = 0
+    unitResetBase = 1
+    unitpcs_hgt = 170
+    $unitclothingworntype = ''
+    unitbonusZ = 1
+    unitPShoQuality = 1
+    $unitpantyworntype = ''
+    $unitbraworntype = ''
+
+    unitsalo = 220
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'morbidly obese'
+
+    unitsalo = 190
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'very severely obese'
+
+    unitsalo = 160
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'severely obese'
+
+    unitsalo = 135
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'moderately obese'
+
+    unitsalo = 105
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'overweight'
+
+    unitsalo = 75
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'normal'
+
+    unitsalo = 40
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'underweight'
+
+    unitsalo = 25
+    unitsalocatnow = 1 + (unitsalo - 10) / 20
+    gs 'UnitAppearance', 'SaloGenerateTest', 'severely underweight'
+
+	'</table>'
+end
+
+if $args[0] = 'SaloGenerateTest':
+
+    gs 'UnitAppearance', 'GenRowBreak', $ARGS[1]
+
+    unitPXCloThinness = 400
+    unitPXCloTopCut = 500
+    unitPXCloBottomShortness = 400
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], 'Most Revealing'
+
+    unitPXCloThinness = 350
+    unitPXCloTopCut = 400
+    unitPXCloBottomShortness = 350
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 300
+    unitPXCloTopCut = 350
+    unitPXCloBottomShortness = 300
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 250
+    unitPXCloTopCut = 300
+    unitPXCloBottomShortness = 250
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 200
+    unitPXCloTopCut = 250
+    unitPXCloBottomShortness = 200
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 200
+    unitPXCloBottomShortness = 150
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 150
+    unitPXCloBottomShortness = 100
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], ''
+
+    unitPXCloThinness = 150
+    unitPXCloTopCut = 100
+    unitPXCloBottomShortness = 100
+
+    gs 'UnitAppearance', 'SaloGenerateRows', $ARGS[1], 'Least Revealing'
+
+end
+
+if $args[0] = 'SaloGenerateRows':
+
+    $unitclothingworntype = ''    
+    unitPCloQuality = 1
+    $svetadesc = '<<$ARGS[2]>> Q1'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus1 = unitclothingbonus
+
+    unitPCloQuality = 2
+    $svetadesc = '<<$ARGS[2]>> Q2'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus2 = unitclothingbonus
+
+    unitPCloQuality = 3
+    $svetadesc = '<<$ARGS[2]>> Q3'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus3 = unitclothingbonus
+
+    unitPCloQuality = 4
+    $svetadesc = '<<$ARGS[2]>> Q4'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus4 = unitclothingbonus
+
+    unitPCloQuality = 5
+    $svetadesc = '<<$ARGS[2]>> Q5'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus5 = unitclothingbonus
+
+    unitPCloQuality = 6
+    $svetadesc = '<<$ARGS[2]>> Q6'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus6 = unitclothingbonus
+
+    unitPCloQuality = 7
+    $svetadesc = '<<$ARGS[2]>> Q7'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonus7 = unitclothingbonus
+
+    $unitclothingworntype = 'nude'    
+    $svetadesc = '<<$ARGS[2]>> Nude'
+    gs 'UnitAppearance', 'calcHotcat', '<<$ARGS[1]>> <<$svetadesc>>'
+    unitclothingbonusnude = unitclothingbonus
+
+    if unitRowType = 1: $svetadesc = '<<$ARGS[2]>>' & gs 'UnitAppearance', 'GenRow', $svetadesc, ARGS[1]
+
+end
+
+
+
+if $ARGS[0] = 'SaveBase':
+    tunitsalo = unitsalo
+    tunitpcs_hgt = unitpcs_hgt
+    tunitstrenbuf = unitstrenbuf
+    tunitsalocatnow = unitsalocatnow
+    tunitvofat = unitvofat
+    tunitpcs_lashes = unitpcs_lashes
+    tunitpcs_eyesize = unitpcs_eyesize
+    tunitpcs_lip = unitpcs_lip
+    tunitpcs_teeth = unitpcs_teeth
+    tunitpcs_agil = unitpcs_agil
+    tunitpcs_vital = unitpcs_vital
+    tunitvidage = unitvidage
+    tunitpcs_skin = unitpcs_skin
+    tunitPXCloThinness = unitPXCloThinness
+    tunitPXCloTopCut = unitPXCloTopCut
+    tunitPXCloBottomShortness = unitPXCloBottomShortness
+    tunitPCloQuality = unitPCloQuality
+    $tunitclothingworntype = $unitclothingworntype
+    tunitbonusZ = unitbonusZ
+    tunitPShoQuality = unitPShoQuality
+    $tunitpantyworntype = $unitpantyworntype
+    $tunitbraworntype = $unitbraworntype
+    tunitpcs_lipbalm = unitpcs_lipbalm
+    tunitmopkoef = unitmopkoef
+    tunitpcs_hairbsh = unitpcs_hairbsh
+    tunitpcs_breath = unitpcs_breath
+    tunitdeodorant_on = unitdeodorant_on
+    tunitpcs_hairlng = unitpcs_hairlng
+    tunitpcs_sweat = unitpcs_sweat
+    tunitglassvnesh = unitglassvnesh
+    tunitdyevmod = unitdyevmod
+    tunitlegkoef = unitlegkoef
+    tunitsupnatvnesh = unitsupnatvnesh
+    tunitpcs_apprncbase = unitpcs_apprncbase
+    tunitResetBase = unitResetBase
+end
+
+if $ARGS[0] = 'RestoreBase':
+    unitsalo = tunitsalo
+    unitpcs_hgt = tunitpcs_hgt
+    unitstrenbuf = tunitstrenbuf
+    unitsalocatnow = tunitsalocatnow
+    unitvofat = tunitvofat
+    unitpcs_lashes = tunitpcs_lashes
+    unitpcs_eyesize = tunitpcs_eyesize
+    unitpcs_lip = tunitpcs_lip
+    unitpcs_teeth = tunitpcs_teeth
+    unitpcs_agil = tunitpcs_agil
+    unitpcs_vital = tunitpcs_vital
+    unitvidage = tunitvidage
+    unitpcs_skin = tunitpcs_skin
+    unitPXCloThinness = tunitPXCloThinness
+    unitPXCloTopCut = tunitPXCloTopCut
+    unitPXCloBottomShortness = tunitPXCloBottomShortness
+    unitPCloQuality = tunitPCloQuality
+    $unitclothingworntype = $utnitclothingworntype
+    unitbonusZ = tunitbonusZ
+    unitPShoQuality = tunitPShoQuality
+    $unitpantyworntype = $tunitpantyworntype
+    $unitbraworntype = $tunitbraworntype
+    unitpcs_lipbalm = tunitpcs_lipbalm
+    unitmopkoef = tunitmopkoef
+    unitpcs_hairbsh = tunitpcs_hairbsh
+    unitpcs_breath = tunitpcs_breath
+    unitdeodorant_on = tunitdeodorant_on
+    unitpcs_hairlng = tunitpcs_hairlng
+    unitpcs_sweat = tunitpcs_sweat
+    unitglassvnesh = tunitglassvnesh
+    unitdyevmod = tunitdyevmod
+    unitlegkoef = tunitlegkoef
+    unitsupnatvnesh = tunitsupnatvnesh
+    unitpcs_apprncbase = tunitpcs_apprncbase
+    unitResetBase = tunitResetBase
+end
+
+if $ARGS[0] = 'CurVal':
+    $SvetaDesc = input("Enter a description for Sveta")
+	*clr
+	''
+	'    $svetadesc = ''<<$SvetaDesc>>'''
+	'    unitsalo = <<salo>>'
+	'    unitpcs_hgt = <<pcs_hgt>>'
+	'    unitstrenbuf = <<strenbuf>>'
+	'    unitsalocatnow = <<salocatnow>>'
+	'    unitvofat = <<vofat>>'
+	'    unitpcs_lashes = <<pcs_lashes>>'
+	'    unitpcs_eyesize = <<pcs_eyesize>>'
+	'    unitpcs_lip = <<pcs_lip>>'
+	'    unitpcs_teeth = <<pcs_teeth>>'
+	'    unitpcs_agil = <<pcs_agil>>'
+	'    unitpcs_vital = <<pcs_vital>>'
+	'    unitvidage = <<vidage>>'
+	'    unitpcs_skin = <<pcs_skin>>'
+	'    unitPXCloThinness = <<PXCloThinness>>'
+	'    unitPXCloTopCut = <<PXCloTopCut>>'
+	'    unitPXCloBottomShortness = <<PXCloBottomShortness>>'
+	'    unitPCloQuality = <<PCloQuality>>'
+	'    $unitclothingworntype = ''<<$clothingworntype>>'''
+	'    unitbonusZ = <<bonusZ>>'
+	'    unitPShoQuality = <<PShoQuality>>'
+	'    $unitpantyworntype = ''<<$pantyworntype>>'''
+	'    $unitbraworntype = ''<<$braworntype>>'''
+	'    unitpcs_lipbalm = <<pcs_lipbalm>>'
+	'    unitmopkoef = <<mopkoef>>'
+	'    unitpcs_hairbsh = <<pcs_hairbsh>>'
+	'    unitpcs_breath = <<pcs_breath>>'
+	'    unitdeodorant_on = <<deodorant_on>>'
+	'    unitpcs_hairlng = <<pcs_hairlng>>'
+	'    unitpcs_sweat = <<pcs_sweat>>'
+	'    unitglassvnesh = <<glassvnesh>>'
+	'    unitdyevmod = <<dyevmod>>'
+	'    unitlegkoef = <<legkoef>>'
+	'    unitsupnatvnesh = <<supnatvnesh>>'
+    '    unitpcs_apprncbase = 0'
+    '    unitResetBase = 1'
+	'    gs ''UnitAppearance'', ''GenerateSvetaOptions'', $svetadesc'
+    ''
+
+end
+
+--- UnitAppearance ---------------------------------

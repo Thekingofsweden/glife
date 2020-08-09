@@ -1,10 +1,10 @@
 # swamphouse
 
-if $ARGS[0] = 'start':
+if $ARGS[0] = 'start' or $ARGS[0] = '':
 	*clr & cla
 	$location_type = 'indoors'
 	$loc = 'swamphouse'
-	$metka = 'start'
+	$loc_arg = 'start'
 	$menu_loc = 'swamphouse'
 	$menu_arg = 'start'
 	menu_off = 0
@@ -44,9 +44,9 @@ if $ARGS[0] = 'start':
 	end
 	*nl
 	'Beside the stove, there''s a stack of old <a href="exec: gs ''swamphouse'', ''stackmagazines''">magazines</a>, most likely used for ignition.'
-	if clothesAtLocation = 1:'Your clothes are laying on the shelf.'
-	if $clothingworntype = 'nude' and hunters_inside = 1 and ((hunterknowday ! daystart or (inhibitioncheck !  daystart and pcs_inhib >= 25) or exhibitionist_lvl < 1)):gt 'swamphouse', 'get_dressed'
-	if hunters_inside = 1 and huntersknow = 0:
+	!TODO: fix this showing after dare, Sveta accepting Igors request or with hessian
+    if clothesAtLocation = 1:'Your clothes are laying on the shelf.'
+	if hunters_inside = 1 and hunters_were_met = 0:
 		if hunters_drink = 1:
 			*nl
 			'You see the <a href="exec: gs ''swamphouse'', ''huntersrelax''">hunters</a> hanging out in the hut.'
@@ -61,7 +61,7 @@ if $ARGS[0] = 'start':
 			'The Hunters said they will be out hunting for a couple hours. You have the camp to yourself!'
 		end
 	else
-		if huntersknow = 0:
+		if hunters_were_met = 0:
 			*nl
 			'The camp is quiet. There''s nobody here right now, where could they be.'
 		else
@@ -72,20 +72,12 @@ if $ARGS[0] = 'start':
 	*nl
 
 	act 'Go outside':
-		if $clothingworntype = 'nude' and ((hunterknowday ! daystart and hunters_outside = 1 and hunters_available = 1) or (inhibitioncheck !  daystart and pcs_inhib >= 25) or exhibitionist_lvl < 1):
-			$loc = 'swamp_yard'
-			$metka = 'start'
-			hunter_refuse = 0
-			inhibitioncheck = daystart
-			gs 'stat'
-			gt 'swamphouse', 'get_dressed'
-		else
-			minut += 5
-			hunter_refuse = 0
-			gs 'stat'
-			gt 'swamp_yard', 'start'
-		end
+		minut += 1
+		hunter_refuse = 0
+		gs 'stat'
+		gt 'swamp_yard', 'start'
 	end
+
 
 	!re-arrange it, there should be no logic error now by illume
 	if $clothingworntype ! 'nude' and clothesAtLocation = 0:
@@ -401,7 +393,7 @@ end
 if $ARGS[0] = 'stove':
 	*clr & cla
 	$loc = 'swamphouse'
-	$metka = 'stove'
+	$loc_arg = 'stove'
 	menu_off = 1
 	minut += 1
 	gs 'stat'
@@ -529,8 +521,8 @@ if $ARGS[0] = 'washstand':
 	cla
 	*clr
 	$loc = 'swamphouse'
-	$metka = 'washstand'
-	$metkaM = 'washstand'
+	$loc_arg = 'washstand'
+	$locM_arg = 'washstand'
 	$locM = 'swamphouse'
 	menu_off = 1
 	minut += 1
@@ -551,7 +543,7 @@ end
 if $ARGS[0] = 'tub':
 	*clr & cla
 	$loc = 'swamphouse'
-	$metka = 'tub'
+	$loc_arg = 'tub'
 	minut += 1
 	menu_off = 1
 	gs 'stat'
@@ -567,7 +559,7 @@ if $ARGS[0] = 'tub':
 		dynamic $enema
 	end
 		
-	if hotwater = 1 and ($clothingworntype = 'nude' or $clothingworntype = 'swimwear'):
+	if hotwater = 1 and ($clothingworntype = 'nude' or $clothingworntype = 'swimwear' or $clothingworntype = 'beach'):
 		act 'Bathe in the tub (0:30)':
 			cla
 			*clr
@@ -678,7 +670,7 @@ if $ARGS[0] = 'stackmagazines':
 		if $clothingworntype = 'nude' and $pantyworntype = 'none':'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/readpornomag_nude.jpg"></center>'
 		*nl
 		'You''re flipping through a porn magazine, reading the stories and looking at pictures, when all of a sudden you realize you''ve started touching yourself.'
-		gs 'arousal', 'voyeur', 60
+		gs 'arousal', 'porn', 60
 		gs 'arousal', 'end'
 		gs 'stat'
 		act 'Continue': gs 'swamphouse', 'stackmagazines'
@@ -738,8 +730,7 @@ if $ARGS[0] = 'hunterstableBJ':
 				act 'Keep sucking':
 					*clr & cla
 					minut += 1
-					gs 'cum_call', 'mouth', $boy, 1
-					swallow += 1
+					gs 'cum_call', 'mouth_swallow', $boy, 1
 					hunterstableBJA = 1
 					gs 'stat'
 
@@ -792,8 +783,7 @@ if $ARGS[0] = 'hunterstableBJ':
 				act 'Keep sucking':
 					*clr & cla
 					minut += 1
-					gs 'cum_call', 'mouth', $boy, 1
-					swallow += 1
+					gs 'cum_call', 'mouth_swallow', $boy, 1
 					hunterstableBJS = 1
 					gs 'stat'
 
@@ -846,8 +836,7 @@ if $ARGS[0] = 'hunterstableBJ':
 				act 'Keep sucking':
 					*clr & cla
 					minut += 1
-					gs 'cum_call', 'mouth', $boy, 1
-					swallow += 1
+					gs 'cum_call', 'mouth_swallow', $boy, 1
 					hunterstableBJI = 1
 					gs 'stat'
 
@@ -875,13 +864,6 @@ if $ARGS[0] = 'hunterstable':
 
 	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterstable.jpg"></center>'
 	*nl
-	if hunters_drink = 1:
-		dirty_swamphouse += rand(1,3)
-		'There are loads of vodka bottles and beer on the makeshift table. The hunters are sitting around the table drinking and talking.'
-	else
-		dirty_swamp_yard  += rand(0,2)
-		'You see loads of spirits on the makeshift table. The hunters are enjoying their meal and discussing current events.'
-	end
 
 	if hunters_drink = 1:
 		act 'Drink vodka (0:15)':
@@ -1804,8 +1786,7 @@ if $ARGS[0] = 'huntersmokBJ':
 		act 'Keep sucking':
 			*clr & cla
 			minut += 1
-			gs 'cum_call', 'mouth', $boy, 1
-			swallow += 1
+			gs 'cum_call', 'mouth_swallow', $boy, 1
 			huntersmokBJ = 0
 			gs 'stat'
 
@@ -1865,7 +1846,7 @@ if $ARGS[0] = 'get_dressed':
 			'Seeing you naked, the men just shake their heads...'
 			'"Look here <<$pcs_nickname>>, if you want to charm us, you will need to think of something else." said one of the guys.'
 
-			act 'Continue': gt $loc, $metka
+			act 'Continue': gt $loc, $loc_arg
 		end
 	else
 		*clr & cla
@@ -1886,7 +1867,7 @@ if $ARGS[0] = 'get_dressed':
 				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swampdvornude1.jpg"></center>'
 				*nl
 				'You look around searching for your clothes. When you spot them, you dash over to grab them.'
-				act 'Continue': gt $loc, $metka
+				act 'Continue': gt $loc, $loc_arg
 			end
 		else
 			act 'Cover yourself':
@@ -1897,7 +1878,7 @@ if $ARGS[0] = 'get_dressed':
 				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/tkan_cloth.jpg"></center>'
 				*nl
 				'You look around searching for your clothes but can''t seem to find them, instead you hide behind a piece of hessian... It''s better than nothing.'
-				act 'Continue': gt $loc, $metka
+				act 'Continue': gt $loc, $loc_arg
 			end
 		end
 		act 'Stay naked':
@@ -1909,7 +1890,7 @@ if $ARGS[0] = 'get_dressed':
 			*nl
 			'You take a deep breath and decided to disregard your nerves and leave it as it is. Upon encountering the hunters, they can''t help themselves, they start staring at your most private parts.'
 			'"Damn, <<$pcs_nickname>>, you look really good. The things I would want to do to you..." said a somewhat aroused Andrei.'
-			act 'Continue': gt $loc, $metka
+			act 'Continue': gt $loc, $loc_arg
 		end
 	end
 end

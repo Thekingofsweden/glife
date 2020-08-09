@@ -54,6 +54,8 @@ if $ARGS[0] = 'list':
 		if ARRSIZE('office') > 0:'<center><a href="exec:gt ''clothing_QV'', ''list'', ''gm_office''">Office wear</a></center>'
 
 		if ARRSIZE('uniform') > 0:'<center><a href="exec:gt ''clothing_QV'', ''list'', ''gm_uniform''">Work uniforms</a></center>'
+
+		act 'Return': killvar '$ward_list_store' & gt 'clothing_QV', 'list'
 	end
 
 	if $ARGS[1] = 'gm_cheap':
@@ -383,7 +385,7 @@ if $ARGS[0] = 'gym':
 	i += 1
 	if i <= ARRSIZE('exercise'):jump 'loopexercise2'
 
-	act 'Return': gt $loc, $metka
+	act 'Return': gt $loc, $loc_arg
 
 	if $clothingworntype ! $regularwornclothingtype: gs 'clothing_QV', 'gym2'
 
@@ -433,7 +435,7 @@ if $ARGS[0] = 'strip':
 		end
 	end
 
-	act 'Leave': gt $loc, $metka
+	act 'Leave': gt $loc, $loc_arg
 end
 
 if $ARGS[0] = 'change':
@@ -447,7 +449,7 @@ if $ARGS[0] = 'change':
 		$RESULT = FUNC('$short_description', $ARGS[1], CloStyle2)
 		$RESULT += '<<ARGS[2]>>'
 		'<<$RESULT>>'
-		if $ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear':
+		if $ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear' and $ARGS[1] ! 'beach':
 			gs 'clothing_descriptions'
 			'<<$description>>'
 		else
@@ -497,7 +499,9 @@ if $ARGS[0] = 'change':
 	elseif ARRPOS('$CloLosTyp', $ARGS[1]) ! -1 and ARRPOS('CloLosNum',ARGS[2]) ! -1 :
 		'You lost these clothes somewhere, maybe you can find them again?.'
 	else
-		if CloInhibit + 10 > pcs_inhib: 'You find this outfit more revealing than you are completely comfortable with but that makes it quite exciting too.'
+		if CloInhibit > 10:
+			if CloInhibit + 10 > pcs_inhib: 'You find this outfit more revealing than you are completely comfortable with but that makes it quite exciting too.'
+		end
 		act 'Wear this outfit':
 			gs 'clothing', 'wear', $ARGS[1], ARGS[2]
 
@@ -511,46 +515,53 @@ if $ARGS[0] = 'change':
 end
 
 if $ARGS[0] = 'shop_header':
-	$Headerstring = '<TH>Prostitute clothing '
-	if clothingfilter_prost = 0:
-		$Headerstring += '<a href="exec:clothingfilter_prost = 1 & gt $loc, $metka">Included</a></TH>'
+	$Headerstring = '<TH>Sort by quality '
+	if clothingfilter['quality'] = 0:
+		$Headerstring += '<a href="exec:clothingfilter[''quality''] = 1 & gt $loc, $loc_arg">High - Low</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_prost = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter[''quality''] = 0 & gt $loc, $loc_arg">Random</a></TH>'
+	end
+
+	$Headerstring += '<TH>Prostitute clothing '
+	if clothingfilter_prost = 0:
+		$Headerstring += '<a href="exec:clothingfilter_prost = 1 & gt $loc, $loc_arg">Included</a></TH>'
+	else
+		$Headerstring += '<a href="exec:clothingfilter_prost = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	$Headerstring += '<TH>Bimbo clothing '
 	if clothingfilter_bimbo = 0:
-		$Headerstring += '<a href="exec:clothingfilter_bimbo = 1 & gt $loc, $metka">Included</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_bimbo = 1 & gt $loc, $loc_arg">Included</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_bimbo = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_bimbo = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	$Headerstring += '<TH>Neither Prostitute or Bimbo clothing '
 	if clothingfilter_norm = 0:
-		$Headerstring += '<a href="exec:clothingfilter_norm = 1 & gt $loc, $metka">Included</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_norm = 1 & gt $loc, $loc_arg">Included</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_norm = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_norm = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	$Headerstring += '<TH>Clothing you don''t find risqué '
 	if clothingfilter_comf = 0:
-		$Headerstring += '<a href="exec:clothingfilter_comf = 1 & gt $loc, $metka">Included</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_comf = 1 & gt $loc, $loc_arg">Included</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_comf = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_comf = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	$Headerstring += '<TH>Risqué clothing '
 	if clothingfilter_daring = 0:
-		$Headerstring += '<a href="exec:clothingfilter_daring = 1 & gt $loc, $metka">Included</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_daring = 1 & gt $loc, $loc_arg">Included</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_daring = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_daring = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	$Headerstring += '<TH>Clothing too risqué for you  '
 	if clothingfilter_too_daring = 0:
-		$Headerstring += '<a href="exec:clothingfilter_too_daring = 1 & gt $loc, $metka">Included</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_too_daring = 1 & gt $loc, $loc_arg">Included</a></TH>'
 	else
-		$Headerstring += '<a href="exec:clothingfilter_too_daring = 0 & gt $loc, $metka">Excluded</a></TH>'
+		$Headerstring += '<a href="exec:clothingfilter_too_daring = 0 & gt $loc, $loc_arg">Excluded</a></TH>'
 	end
 
 	'<center><table border=1><<$Headerstring>></table></center>'

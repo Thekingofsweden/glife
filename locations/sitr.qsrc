@@ -1,7 +1,7 @@
 # sitr
 
 CLOSE ALL
-$metka = ''
+$loc_arg = ''
 $loc = 'sitr'
 $menu_loc = 'sitr'
 $menu_arg = ''
@@ -87,6 +87,118 @@ if student > 0 and kursovik < 100:
 
 		act 'Exit':gt 'sitr'
 	end
+end
+
+!!Storing and picking up the guitar
+if ml_guitar['carried'] = 1:
+	act 'Place the guitar next to your desk': 
+		ml_guitar['carried'] = 0
+		ml_guitarAtHome = 1
+		gt $loc
+	end
+elseif ml_guitarAtHome = 1:
+	act 'Pick up the guitar':
+		ml_guitar['carried'] = 1
+		ml_guitarAtHome = 0
+		gt $loc
+	end
+end
+
+!!Guitar practice 
+if ml_guitar['hasguitar'] = 1 and (ml_guitar['chordbook'] = 1 or ml_guitarlesson['lessoncount'] > 0) and ml_performance['performed_minutes'] <= ml_performance['max_perform_minutes']:
+	act 'Practice guitar (0:30)': gt 'music_bedroomPractice', 'guitar'
+end
+		
+if ml_online['account'] = 0 and internet > 0:
+	act 'Set up an online music account (0:30)': gt 'music_onlinemusic', 'setupAccount'
+end
+
+!! Streaming music 
+if ml_online['account'] = 1 and internet > 0 and ml_performance['performed_minutes'] <= ml_performance['max_perform_minutes']:
+	if pcs_inhib < 30:
+		if pcs_inhib < 10: 
+			$diff = 'hard'
+		elseif pcs_inhib < 20: 
+			$diff = 'medium'
+		else 
+			$diff = 'easy'
+		end
+		gs 'willpower', 'skill', 'self', $diff
+		will_cost = (will_cost * 3) - (pcs_perform)
+
+		if will_cost <= pcs_willpwr:
+			act 'Live stream (1:00) (<<will_cost>> Willpower)': 
+				inhib_exp += rand(1,3)	
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'music_onlinemusic', 'liveStream'
+			end
+		else	
+			act 'Live stream (1:00) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	else 
+		act 'Live stream (1:00)': gt 'music_onlinemusic', 'liveStream'			
+	end
+end
+
+!! Recording music
+if ml_performance['performed_minutes'] <= ml_performance['max_perform_minutes']:
+	if pcs_inhib < 20:
+		if pcs_inhib < 10: 
+			$diff = 'medium'
+		elseif pcs_inhib < 20: 
+			$diff = 'easy'
+		end
+		gs 'willpower', 'skill', 'self', $diff
+
+		if will_cost <= pcs_willpwr:
+			act 'Record a song with your phone (0:30) (<<will_cost>> Willpower)': 
+				inhib_exp += rand(1,2)	
+				gs 'willpower', 'pay', 'self'
+				gs 'stat'
+				gt 'music_onlinemusic', 'recordSong'
+			end							
+			if komp = 1 and webcamera = 1 and ml_studio['scarlet-3rd-gen'] = 1:
+				act 'Record and edit a song (2:00) (<<will_cost>> Willpower)': 
+					inhib_exp += rand(1,2)	
+					gs 'willpower', 'pay', 'self'
+					gs 'stat'
+					gt 'music_onlinemusic', 'recordAndEditSong' 
+				end						
+			end
+		else	
+			act 'Record a song (0:30) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+			act 'Record and edit a song (1:30) (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'				
+		end
+	else
+		act 'Record a song with your phone (0:30)': gt 'music_onlinemusic', 'recordSong'
+		if komp = 1 and webcamera = 1 and ml_studio['scarlet-3rd-gen'] = 1:
+			act 'Record and edit a song (1:30)': gt 'music_onlinemusic', 'recordAndEditSong'
+		end	
+	end
+end
+
+
+!!Uploading recorded music if there are any not uploaded yet
+if ml_uploadablemusic > 0 and internet > 0 and ml_online['account'] = 1:
+	if pcs_inhib < 30:
+		if pcs_inhib < 10: 
+			$diff = 'hard'
+		elseif pcs_inhib < 20: 
+			$diff = 'medium'
+		else 
+			$diff = 'easy'
+		end
+		gs 'willpower', 'skill', 'self', $diff
+
+		will_cost = (will_cost * 2) - (pcs_perform)
+		if will_cost <= pcs_willpwr:
+			act 'Upload music (<<will_cost>> Willpower)': gt 'music_onlinemusic', 'uploadmusic'
+		else	
+			act 'Upload music (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end
+	end
+	act 'Upload music': gt 'music_onlinemusic', 'uploadallmusic'
 end
 
 act 'Go out on the balcony': gt 'balkon','start'

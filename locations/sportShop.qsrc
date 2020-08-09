@@ -79,7 +79,7 @@ if $ARGS[0] = 'start':
 	end
 
 	if bookYog = 0 and money >= 1500:
-		act 'Buy "Benifits of yoga" (1,500 <b>₽</b>)':
+		act 'Buy "Benefits of yoga" (1,500 <b>₽</b>)':
 			cla
 			minut += 5
 			money -= 1500
@@ -88,7 +88,7 @@ if $ARGS[0] = 'start':
 			act 'Pick up a package':gt 'sportshop', 'start'
 		end
 	elseif bookYog = 0:
-		act 'Buy "Benifits of yoga" (<font color="red">1500 <b>₽</b></font>)': '<br><font color="red">You don''t have enough money to buy that.</font>'
+		act 'Buy "Benefits of yoga" (<font color="red">1500 <b>₽</b></font>)': '<br><font color="red">You don''t have enough money to buy that.</font>'
 	end
 	
 	if konki = 0 and money >= 3000:
@@ -106,7 +106,7 @@ if $ARGS[0] = 'start':
 end
 
 if $ARGS[0] = 'clo':
-	$metka = 'clo'
+	$loc_arg = 'clo'
 	$loc = 'sportShop'
 	cls
 	gs'stat'
@@ -121,29 +121,35 @@ if $ARGS[0] = 'clo':
 		gt 'sportshop', 'start'
 	end
 
-	if Clothingstock > 16:
-		i = 1
-	elseif Clothingstock > 8:
-		i = 2
-	else
-		i = 3
-	end
-
-	:loopexercise
-		if exercise[i] = 0:
-			gs 'clothing_attributes', 'exercise', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''sportshop'', ''exercise''"><img src="images/pc/clothing/7exercise/<<i>>.jpg" 	height="250" /></a>'
+	clothingfilter['qualitycheck'] = 7
+	:loopquality2
+		if Clothingstock > 16:
+			i = 1
+		elseif Clothingstock > 8:
+			i = 2
+		else
+			i = 3
 		end
-		i += 3
-	if i <= 113:jump 'loopexercise'
+
+		:loopexercise
+			if exercise[i] = 0:
+				gs 'clothing_attributes', 'exercise', i
+				gs 'clothing_QV', 'shop_filter'
+					
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''sportshop'', ''exercise''"><img src="images/pc/clothing/7exercise/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+		if i <= 145:jump 'loopexercise'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality2'
 end
 
 if $ARGS[0] = 'exercise': gt 'clothing', 'view_clothing_item', 'shop', 'exercise',i, 2000
 
 if $ARGS[0] = 'trainers':
-	$metka = 'trainers'
+	$loc_arg = 'trainers'
 	$loc = 'sportShop'
 	cls
 	gs'stat'
@@ -158,13 +164,13 @@ if $ARGS[0] = 'trainers':
 	:looptrainers_shoes
 		if strainers[i] = 0:*p '<a href="exec: i = <<i>> & gt ''sportShop'', ''training_shoes''"><img src="images/pc/shoes/trainers/<<i>>.jpg" height="250" /></a>'
 		i += 1
-	if i <= 29:jump 'looptrainers_shoes'
+	if i <= 30:jump 'looptrainers_shoes'
 end
 
 if $ARGS[0] = 'training_shoes': gt 'shoes', 'view_shoe_item', 'shop', 'trainers',i, 1500
 
 if $ARGS[0] = 'swim':
-	$metka = 'swim'
+	$loc_arg = 'swim'
 	$loc = 'sportShop'
 	cls
 	gs'stat'
@@ -179,32 +185,38 @@ if $ARGS[0] = 'swim':
 		gt 'sportshop', 'start'
 	end
 
-!!4 is in he supermarket, so skipped
-	if Clothingstock > 18:
-		i = 1
-	elseif Clothingstock > 12:
-		i = 2
-	elseif Clothingstock > 6:
-		i = 3
-	else
-		i = 8
-	end
-
-	:loopswim
-		if swimwear[i] = 0:
-			gs 'clothing_attributes', 'swimwear', i
-			gs 'clothing_QV', 'shop_filter'
-				
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''sportshop'', ''swim1''"><img src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+	!!4 is in he supermarket, so skipped
+		if Clothingstock > 18:
+			i = 1
+		elseif Clothingstock > 12:
+			i = 2
+		elseif Clothingstock > 6:
+			i = 3
+		else
+			i = 8
 		end
-		i += 4
-	if i <= 158:jump 'loopswim'
+
+		:loopswim
+			if swimwear[i] = 0:
+				gs 'clothing_attributes', 'swimwear', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''sportshop'', ''swim1''"><img src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 4
+		if i <= 213:jump 'loopswim'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
 if $ARGS[0] = 'swim1': gt 'clothing', 'view_clothing_item', 'shop', 'swimwear',i, 1750
 
 if $ARGS[0] = 'panties':
-	$metka = 'panties'
+	$loc_arg = 'panties'
 	$loc = 'sportShop'
 	cls
 	gs'stat'
@@ -236,7 +248,7 @@ if $ARGS[0] = 'panties2':
 end
 
 if $ARGS[0] = 'bras':
-	$metka = 'bras'
+	$loc_arg = 'bras'
 	$loc = 'sportShop'
 	cls
 	gs'stat'

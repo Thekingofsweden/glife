@@ -1,0 +1,112 @@
+# pav_commclubs
+
+$loc_arg = ''
+$loc = 'pav_commclubs'
+$menu_loc = 'pav_commclubs'
+$menu_arg = ''
+menu_off = 0
+$location_type = 'public_indoors'
+
+frost = 0
+gs 'stat'
+
+gs 'themes', 'indoors'
+
+'<center><b><font color = maroon>The community center</font></b></center>'
+'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/gdkkru.jpg"></center>'
+
+
+act 'Leave': gt 'pav_commcenter'
+
+act 'Go to the toilets': gt 'gdktoilet', 'start'
+
+if nerd_game['game_day'] = daystart and hour = 20: act '<b>Join nerds</b>': gt 'nerd_game_night','game'
+
+if hour >= 12 and hour < 20:
+	'At this time of day, the community center operates various clubs.'
+
+	if krumonth = month and kruyear = year:
+		act 'Go to the sewing club': gt 'krupo'
+	else
+		act 'Go to the sewing club':
+			cls
+			menu_off = 1
+			gs 'stat'
+			'<center><b><font color = maroon>Sewing circle</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/krupo.jpg"></center>'
+			'You go to the sewing club room. As you walk in, a teacher looks at you and says "It costs 500 <b>₽</b> for one month to join and you can come as many days as you like. Once the month is up, any days you did not attend are not refunded."'
+			if money >= 500:
+				act 'Sign up':
+					cls
+					money -= 500
+					krumonth = month
+					kruyear = year
+					gs 'stat'
+					'You pay for the tuition.'
+					act 'Leave': gt 'pav_commclubs'
+				end
+			end
+
+			act 'Leave': gt 'pav_commclubs'
+		end
+	end
+     
+	if chessmonth = month and chessyear = year:
+		act 'Go to the chess club': gt 'kruchess'
+	else
+		act 'Go to the chess club':
+			cls
+			menu_off = 1
+			gs 'stat'
+			'<center><b><font color = maroon>Chess Circle</font></b></center>'
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/kruchess.jpg"></center>'
+			'You go to the chess club room. As you walk in, a teacher looks at you and says "It costs 500 <b>₽</b> for one month to join and you can come as many days as you like. Once the month is up, any days you did not attend are not refunded."'
+			if money >= 500:
+				act 'Sign up':
+					cls
+					money -= 500
+					chessmonth = month
+					chessyear = year
+					gs'stat'
+					'You pay for the tuition.'
+					act 'Leave': gt 'pav_commclubs'
+				end
+			end
+
+			act 'Leave': gt 'pav_commclubs'
+		end
+	end
+
+	if ml_guitarlesson['advertisement'] = 1 and ml_guitarlesson['enquired'] = 0:
+		act 'Enquire about the guitar lessons': gt 'music_guitarlesson', 'enquiry'
+	end
+
+	if  ml_guitarlesson['lessonday']  = 8:
+		act 'Arrange a lesson day': gt 'music_guitarlesson', 'setlessonday'
+	end
+
+	if (ml_guitarlesson['nextlesson'] = daystart):
+		if (ml_guitarlesson['lessonhour']-1 = hour): 
+			if (money >= ml_guitarlesson['lessoncost']):
+				act 'Wait for your guitar lesson (<<ml_guitarlesson[''lessoncost'']>> rubles)': 
+					minut += (60 - minut)
+					gt 'music_guitarlesson', 'lesson'
+				end
+			else
+				act 'Wait for your guitar lesson (<font color="red"><<ml_guitarlesson[''lessoncost'']>> rubles</font>))':'<font color="red">You don''t have enough money to pay for the lesson.</font>' 
+			end
+		end
+		if (ml_guitarlesson['lessonhour'] = hour):		
+			if (money >= ml_guitarlesson['lessoncost']):
+				act 'Go to your guitar lesson (<<ml_guitarlesson[''lessoncost'']>> rubles)': gt 'music_guitarlesson', 'lesson'
+			else
+				act 'Go to your guitar lesson (<font color="red"><<ml_guitarlesson[''lessoncost'']>> rubles</font>))':'<font color="red">You don''t have enough money to pay for the lesson.</font>' 
+			end
+		end
+	end
+else
+	'Club''s closed.'
+end
+
+--- pav_commclubs ---------------------------------
+

@@ -87,17 +87,17 @@ if $ARGS[0] = 'start':
 	*clr & cla
 	CLOSE ALL
 	$location_type = 'indoors'
-	$metka = 'start'
+	$loc_arg = 'start'
 	$loc = 'gadhouse'
 	$menu_loc = 'gadhouse'
 	$menu_arg = ''
 	menu_off = 1
 	$locclass = 'singleroom'
-	curr_home = 2
+
 	display_bb = 1
 	frost = 0
 	mira_temp = rand(1,10)
-
+	home_owned[14] = 1
 	gs 'gadhouse', 'nudity_trouble_limit'
 
 	!! Grandma sends Sveta back to Pavlovsk for school to start
@@ -128,8 +128,8 @@ if $ARGS[0] = 'start':
 		'As you turn to leave, she stops you, "One last thing, here are some rubles for the train ticket to get you back to Pavlovsk."'
 
 		act 'Leave': gadstay = 0 & gt 'gaddvor'
-	!! Returning home after being lost; no penalty for not doing chores or disappointing either grandparent
-	elseif lost_girl = 1 and hour >= 6 and hour < 20:
+	!! Returning home after being lost at least overnight; no penalty for not doing chores or disappointing either grandparent
+	elseif lost_girl = 1 and hour >= 6 and hour < 20 and daystart > forest_lostday:
 		*clr & cla
 		lost_girl = 0
 		grandmaQW['disappointment'] = 0
@@ -143,12 +143,17 @@ if $ARGS[0] = 'start':
 		*nl
 		'"<<$pcs_firstname>>, your grandfather and I were so worried when you didn''t come back home from the forest."'
 		'"We are so glad you are back safe and sound. Go have a hot meal and shower and relax."'
-		'"Also, don''t worry about any chores today or tomorrow, just focus on recovering."'
+		'"Also, don''t worry about any chores today, just focus on recovering."'
 
 		act 'Continue':gt 'gadhouse', 'main'
+	!! Returning home after being lost but escaped within the same day; no reaction from grandparents and still expected to get chores done
+	elseif lost_girl = 1:
+		lost_girl = 0
+		gt 'gadhouse', 'main'
 	!!Grandma kicks Sveta out for being a whore
 	elseif grandmaQW['nudity_trouble_limit'] = 50 and hour >= 6 and hour < 20:
 		*clr & cla
+		home_owned[14] = 0
 		grandmaQW['help_amount'] = 0
 		grandmaQW['block'] = 1
 		minut += 5
@@ -288,7 +293,7 @@ if $ARGS[0] = 'start':
 end
 
 if $ARGS[0] = 'main':
-	$metkaM = 'main'
+	$locM_arg = 'main'
 	$locM = 'gadhouse'
 	$locclass = 'livingr'
 	$menu_loc = 'gadhouse'
@@ -1496,7 +1501,7 @@ end
 
 if $ARGS[0] = 'intro':
 	cla & *clr
-	$metka = ''
+	$loc_arg = ''
 	$loc = 'gadhouse'
 	$temp_nickname = '<<$npc_nickname[''A29'']>>'
 	grandmaQW['last_month_paid'] = month
@@ -1574,7 +1579,7 @@ if $ARGS[0] = 'intro':
 						minut += 2
 						gs 'stat'
 						$loc = 'gadhouse'
-						$metka = 'start'
+						$loc_arg = 'start'
 						'<center><H4>Your Grandparents'' Cottage</H4></center>'
 						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/mom/prost5.jpg"></center>'
 						*nl

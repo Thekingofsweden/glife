@@ -35,7 +35,7 @@ $clothing_list_line = {
 
 	if $ARGS[1] = 'cheap' and ARGS[2] = 414:
 		$RESULT += '<TD>A hessian sack the hunters gave you.</TD>'
-	elseif $ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear':
+	elseif $ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear' and $ARGS[1] ! 'beach':
 		gs 'clothing_descriptions'
 		$RESULT += '<TD><<FUNC(''$short_description'', $ARGS[1])>> <<ARGS[2]>><br/><br/><<$description>></TD>'
 	else
@@ -59,7 +59,7 @@ $clothing_list_line = {
 	if $ARGS[0] ! 'sell' and $ARGS[0] ! 'resize':
 		if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $ARGS[1] = 'school' and ARGS[2] = 6:
 			$RESULT += ' <a href="exec:gs ''clothing'', ''wear'', ''<<$ARGS[1]>>'', <<ARGS[2]>> & gt ''clothing'', ''view_clothing_list'', ''wardrobe'', ''<<$ward_list_store>>''">Wear</a></TD>'
-		elseif ($ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear') and dyneval('RESULT = <<$ARGS[1]>>H[<<ARGS[2]>>]') > 0:
+		elseif ($ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear' and $ARGS[1] ! 'beach') and dyneval('RESULT = <<$ARGS[1]>>H[<<ARGS[2]>>]') > 0:
 			if $ARGS[1] ! 'exercise' and CloStyle ! 5 and (dyneval('RESULT = <<$ARGS[1]>>B[<<ARGS[2]>>]') < (pcs_hips - 8) or dyneval('RESULT = <<$ARGS[1]>>B[<<ARGS[2]>>]') > (pcs_hips + 8)) or (ARRPOS('$CloLosTyp', $ARGS[1]) ! -1 and ARRPOS('CloLosNum',ARGS[2]) ! -1):
 				$RESULT += '</TD>'
 			else
@@ -150,15 +150,18 @@ if $ARGS[0] = 'view_clothing_list':
 	elseif $ARGS[2] = 'sports':
 		!'<center><b><font color="maroon">Viewing sportswear from Danilovich</font></b></center>'
 		'<center><img src="images/locations/city/citycenter/mall/sports.png"></center>'
+	elseif $ARGS[2] = 'beach':
+		!'<center><b><font color="maroon">Viewing clothes from Scandalicious</font></b></center>'
+		'<center><img src="images/locations/city/citycenter/mall/scandalicious.png"></center>'
 	else
 		'<center><b><font color="maroon">Click on a shop name to view clothes from that shop</font></b></center>'
 
 		if $wloc = 'wardrobe':
 			act 'Return': killvar '$ward_list_store' & gt 'wardrobe', 'start'
 		elseif $ARGS[1] = 'sell' or $ARGS[1] = 'resize':
-			act 'Leave': killvar '$ward_list_store' & gt $loc, $metka
+			act 'Leave': killvar '$ward_list_store' & gt $loc, $loc_arg
 		else
-			act 'Leave': killvar '$ward_list_store' & gt $loc, $metka			
+			act 'Leave': killvar '$ward_list_store' & gt $loc, $loc_arg			
 		end
 	end
 	*nl
@@ -188,6 +191,8 @@ if $ARGS[0] = 'view_clothing_list':
 		if ARRSIZE('expensive') > 0:'<center><a href="exec:$ward_list_store = ''fashionista'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''fashionista''"><img src="images/locations/city/citycenter/mall/fashionistat.png"></a></center>'
 
 		if ARRSIZE('formal') > 0:'<center><a href="exec:$ward_list_store = ''moncheri'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''moncheri''"><img src="images/locations/city/citycenter/mall/moncheri.png"></a></center>'
+
+		if ARRSIZE('beach') > 0:'<center><a href="exec:$ward_list_store = ''scandalicious'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''scandalicious''"><img src="images/locations/city/citycenter/mall/scandalicious.png"></a></center>'
 
 		if ARRSIZE('fetish') > 0 or ARRSIZE('burlesque') > 0:'<center><a href="exec:$ward_list_store = ''sexshop'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''sexshop''"><img src="images/locations/city/citycenter/sexshop/shop_name.png"></a></center>'
 
@@ -316,6 +321,18 @@ if $ARGS[0] = 'view_clothing_list':
 			gs 'clothing', 'clothwidth'
 		end
 
+		if $ARGS[2] = 'scandalicious':
+			$ward_list_store = $ARGS[2]
+			i = 1
+			:loopbeach
+				if beach[i] = 1 and beachS[i] = cloc and ($clothingworntype ! 'beach' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'beach', i)
+				i += 1
+			if i <= ARRSIZE('beach'):jump 'loopbeach'
+
+			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
+			gs 'clothing', 'clothwidth'
+		end
+
 		if $ARGS[2] = 'sexshop':
 			$ward_list_store = $ARGS[2]
 			i = 1
@@ -411,7 +428,7 @@ if $ARGS[0] = 'view_clothing_item':
 	'<<$RESULT>>'
 	if $ARGS[1] = 'cheap' and ARGS[2] = 414:
 		'A hessian sack the hunters gave you.'
-	elseif $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear':
+	elseif $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear' and $ARGS[2] ! 'beach':
 		gs 'clothing_descriptions'
 		'<<$description>>'
 	else
@@ -422,7 +439,9 @@ if $ARGS[0] = 'view_clothing_item':
 
 	if CloStyle = 4:'This outfit can be used for prostitution.'
 
-	if CloInhibit + 10 > pcs_inhib and CloInhibit <= pcs_inhib: 'You find this outfit more revealing than you are completely comfortable with but that makes it quite exciting too.'
+	if CloInhibit > 10:
+		if CloInhibit + 10 > pcs_inhib and CloInhibit <= pcs_inhib: 'You find this outfit more revealing than you are completely comfortable with but that makes it quite exciting too.'
+	end
 
 	if $ARGS[2] = 'uniform':
 		if CloStyle2 = 1:
@@ -468,7 +487,7 @@ if $ARGS[0] = 'view_clothing_item':
 	if $ARGS[1] = 'shop':
 		if dyneval('RESULT = <<$ARGS[2]>>[<<ARGS[3]>>]') = 1:
 			'You already own this item.'
-			act 'Leave': gt $loc, $metka
+			act 'Leave': gt $loc, $loc_arg
 		else
 			if $ARGS[2] = 'coat' and ARGS[3] = 5:
 				price = ARGS[4]
@@ -477,7 +496,7 @@ if $ARGS[0] = 'view_clothing_item':
 				price = price / 50 * 50
 			end
 			'Price: <<price>> <b>₽</b>'
-			act 'Leave': gt $loc, $metka
+			act 'Leave': gt $loc, $loc_arg
 			if CloInhibit > pcs_inhib:
 				'You don''t feel daring enough to wear an outfit this revealing and can''t bring yourself to buy it.'
 			elseif karta + bankDebtLimit < Price and money < Price:
@@ -511,7 +530,7 @@ if $ARGS[0] = 'view_clothing_item':
 						dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = pcs_hips'
 						dynamic $ARGS[2] + 'S[<<ARGS[3]>>] = 0'
 						gs 'stat'
-						gt $loc, $metka
+						gt $loc, $loc_arg
 					end
 				end
 				if karta + bankDebtLimit >= Price:
@@ -542,7 +561,7 @@ if $ARGS[0] = 'view_clothing_item':
 						dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = pcs_hips'
 						dynamic $ARGS[2] + 'S[<<ARGS[3]>>] = 0'
 						gs 'stat'
-						gt $loc, $metka
+						gt $loc, $loc_arg
 					end
 				end
 			end
@@ -611,7 +630,7 @@ if $ARGS[0] = 'view_clothing_item':
 			end
 		end
 
-		if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear':
+		if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear' and $ARGS[2] ! 'beach':
 
 			if CloInhibit > pcs_inhib:
 				'You don''t feel daring enough to wear an outfit this revealing.'
@@ -806,6 +825,11 @@ if $ARGS[0] = 'wear':
 
 	dynamic '<<$ARGS[1]>>S[<<ARGS[2]>>] = 0'
 
+	if CloStyle2 = 4:
+		$schbrand = $clothingworntype
+		schtype = clothingwornnumber
+	end
+
 	PCloQuality = CloQuality
 	PCloThinness = CloThinness
 	PCloTopCut = CloTopCut
@@ -836,15 +860,15 @@ if $ARGS[0] = 'wear':
 !Calculations for clothing beauty, multiplied by natural beauty
 	if PCloThinness > 0:
 		if PCloThinness = 1:
-			PXCloThinness = 25
+			PXCloThinness = 150
 		elseif PCloThinness = 2:
-			PXCloThinness = 50
-		elseif PCloThinness = 3:
-			PXCloThinness = 100
-		elseif PCloThinness = 4:
 			PXCloThinness = 200
-		elseif PCloThinness = 5:
+		elseif PCloThinness = 3:
+			PXCloThinness = 250
+		elseif PCloThinness = 4:
 			PXCloThinness = 300
+		elseif PCloThinness = 5:
+			PXCloThinness = 350
 		elseif PCloThinness = 6:
 			PXCloThinness = 400
 		end
@@ -852,17 +876,17 @@ if $ARGS[0] = 'wear':
 
 	if PCloTopCut > 0:
 		if PCloTopCut = 1:
-			PXCloTopCut = 25
-		elseif PCloTopCut = 2:
-			PXCloTopCut = 50
-		elseif PCloTopCut = 3:
 			PXCloTopCut = 100
-		elseif PCloTopCut = 4:
+		elseif PCloTopCut = 2:
 			PXCloTopCut = 150
-		elseif PCloTopCut = 5:
+		elseif PCloTopCut = 3:
 			PXCloTopCut = 200
-		elseif PCloTopCut = 6:
+		elseif PCloTopCut = 4:
+			PXCloTopCut = 250
+		elseif PCloTopCut = 5:
 			PXCloTopCut = 300
+		elseif PCloTopCut = 6:
+			PXCloTopCut = 350
 		elseif PCloTopCut >= 7:
 			PXCloTopCut = 400
 		end
@@ -877,17 +901,17 @@ if $ARGS[0] = 'wear':
 
 	if PCloSkirt > 0:
 		if PCloSkirt = 1:
-			PXCloBottomShortness = 25
-		elseif PCloSkirt = 2:
-			PXCloBottomShortness = 50
-		elseif PCloSkirt = 3:
 			PXCloBottomShortness = 100
-		elseif PCloSkirt = 4:
+		elseif PCloSkirt = 2:
 			PXCloBottomShortness = 150
-		elseif PCloSkirt = 5:
+		elseif PCloSkirt = 3:
 			PXCloBottomShortness = 200
-		elseif PCloSkirt = 6:
+		elseif PCloSkirt = 4:
+			PXCloBottomShortness = 250
+		elseif PCloSkirt = 5:
 			PXCloBottomShortness = 300
+		elseif PCloSkirt = 6:
+			PXCloBottomShortness = 350
 		elseif PCloSkirt >= 7:
 			PXCloBottomShortness = 400
 		end
@@ -895,17 +919,17 @@ if $ARGS[0] = 'wear':
 
 	if PCloPants > 0:
 		if PCloPants = 1:
-			PXCloBottomShortness = 25
-		elseif PCloPants = 2:
-			PXCloBottomShortness = 50
-		elseif PCloPants = 3:
 			PXCloBottomShortness = 100
-		elseif PCloPants = 4:
+		elseif PCloPants = 2:
 			PXCloBottomShortness = 150
-		elseif PCloPants = 5:
+		elseif PCloPants = 3:
 			PXCloBottomShortness = 200
-		elseif PCloPants = 6:
+		elseif PCloPants = 4:
+			PXCloBottomShortness = 250
+		elseif PCloPants = 5:
 			PXCloBottomShortness = 300
+		elseif PCloPants = 6:
+			PXCloBottomShortness = 350
 		elseif PCloPants >= 7:
 			PXCloBottomShortness = 400
 		end

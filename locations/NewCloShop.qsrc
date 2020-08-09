@@ -2,10 +2,11 @@
 $location_type = 'event'
 
 if $ARGS[0] = 'start':
-	$metka = 'start'
+	$loc_arg = 'start'
 	$loc = 'NewCloShop'
 	$menu_loc = 'NewCloShop'
 	$menu_arg = 'start'
+	killvar '$locclass'
 	menu_off = 0
 	!!Variable for buying underwear for Natasha so it only procs once per changingroom event
 	NatbelQW['underwearShop'] = 0
@@ -36,7 +37,7 @@ end
 
 if $ARGS[0] = 'changingroom':
 	$locclass = 'changingroom'
-	$metka = 'changingroom'
+	$loc_arg = 'changingroom'
 	$loc = 'NewCloShop'
 	$menu_loc = 'NewCloShop'
 	$menu_arg = 'changingroom'
@@ -131,7 +132,7 @@ end
 
 if $ARGS[0] = 'dressingclothes':
 	*clr & cla
-	$metka = 'dressingclothes'
+	$loc_arg = 'dressingclothes'
 	$loc = 'NewCloShop'
 	!clorand = rand(1,ARRSIZE('expensive'))
 	!gt 'clothing', 'view_clothing_item', 'shop', 'expensive', clorand, 8000
@@ -148,18 +149,25 @@ if $ARGS[0] = 'dressingclothes':
 		gt 'NewCloShop', 'changingroom'
 	end
 
-	i = Clothingstock +1
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+		i = Clothingstock +1
 
-	if Clothingstock - 12 > 0:i -= 12
+		if Clothingstock - 12 > 0:i -= 12
 
-	:loopexpensive2
-		if expensive[i] = 0:
-			gs 'clothing_attributes', 'expensive', i
-			gs 'clothing_QV', 'shop_filter'
-			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''NewCloShop'', ''dressingshmotmag''"><img src="images/pc/clothing/3expensive/<<i>>.jpg" 	height="250" /></a>  '
-		end
-		i += 12
-	if i <= 425:jump 'loopexpensive2'
+		:loopexpensive2
+			if expensive[i] = 0:
+				gs 'clothing_attributes', 'expensive', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''NewCloShop'', ''dressingshmotmag''"><img src="images/pc/clothing/3expensive/<<i>>.jpg" 	height="250" /></a>  '
+				end
+			end
+			i += 12
+		if i <= 433:jump 'loopexpensive2'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
 if $ARGS[0] = 'dressingshmotmag':
@@ -174,7 +182,7 @@ if $ARGS[0] = 'dressingshmotmag':
 end
 
 if $ARGS[0] = 'dressingbra':
-	$metka = 'dressingbra'
+	$loc_arg = 'dressingbra'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
@@ -191,7 +199,7 @@ if $ARGS[0] = 'dressingbra':
 	:loopfashionista_bras2
 		if fashionista_bras[i] = 0:*p '<a href="exec: i = <<i>> & gt ''NewCloShop'', ''dressingbras2''"><img src="images/pc/bras/fashionista/<<i>>.jpg" 	height="150" /></a> '
 		i += 1
-	if i <= 38:jump 'loopfashionista_bras2'
+	if i <= 42:jump 'loopfashionista_bras2'
 end
 
 if $ARGS[0] = 'dressingbras2':
@@ -215,7 +223,7 @@ if $ARGS[0] = 'changingend':
 end
 
 if $ARGS[0] = 'dressingpanties':
-	$metka = 'dressingpanties'
+	$loc_arg = 'dressingpanties'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
@@ -232,7 +240,7 @@ if $ARGS[0] = 'dressingpanties':
 	:loopfashionista_panties2
 		if fashionista_panties[i] = 0:*p '<a href="exec: i = <<i>> & gt ''NewCloShop'', ''dressingpanties2''"><img src="images/pc/panties/fashionista/<<i>>.jpg" 	height="150" /></a> '
 		i += 1
-	if i <= 75:jump 'loopfashionista_panties2'
+	if i <= 79:jump 'loopfashionista_panties2'
 end
 
 if $ARGS[0] = 'dressingpanties2':
@@ -249,7 +257,7 @@ end
 
 !! Old code
 if $ARGS[0] = 'clothes':
-	$metka = 'clothes'
+	$loc_arg = 'clothes'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
@@ -277,7 +285,7 @@ if $ARGS[0] = 'clothes':
 			if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''NewCloShop'', ''shmotmag''"><img src="images/pc/clothing/3expensive/<<i>>.jpg" 	height="250" /></a>'
 		end
 		i += 12
-	if i <= 425:jump 'loopexpensive'
+	if i <= 442:jump 'loopexpensive'
 end
 
 if $ARGS[0] = 'shmotmag':
@@ -292,7 +300,7 @@ if $ARGS[0] = 'shmotmag':
 end
 
 if $ARGS[0] = 'panties':
-	$metka = 'panties'
+	$loc_arg = 'panties'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
@@ -325,7 +333,7 @@ if $ARGS[0] = 'panties2':
 end
 
 if $ARGS[0] = 'bras':
-	$metka = 'bras'
+	$loc_arg = 'bras'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
@@ -357,7 +365,7 @@ if $ARGS[0] = 'bras2':
 end
 
 if $ARGS[0] = 'purses':
-	$metka = 'purses'
+	$loc_arg = 'purses'
 	$loc = 'NewCloShop'
 	menu_off = 1
 	*clr & cla
