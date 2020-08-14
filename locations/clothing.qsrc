@@ -610,19 +610,32 @@ if $ARGS[0] = 'view_clothing_item':
 						'This item is too large for you to wear.'
 					end
 
-					if pcs_sewng >= 60 and tkan > 0:
-						cla
-						'You can resize this thanks to your sewing skill.'
+					if (pcs_sewng >= 50 and tkan > 0) or $loc_arg = 'tailor':
+						cla & *nl
+						if $loc_arg = 'tailor':
+							'You can pay to have this resized for (500 <b>₽</b>).'
+						else
+							'You can resize this thanks to your sewing skill.'
+						end
+						
+						act 'Return': gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>', '<<$ward_list_store>>'
+						
 						act 'Resize item':
 							cla
-							tkan -= 1
-							minut += 30
-							dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = pcs_hips'
-							'You spend 30 minutes resizing the outfit.'
+							if $loc_arg = 'tailor':
+								minut += 15
+								money -= 500
+								dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = pcs_hips'
+								*nl
+								'You hand the clothing over to the tailor who takes it into the back. Fifteen minutes later, he presents your clothing back to you, adjusted to fit you perfectly.'
+							else
+								tkan -= 1
+								minut += 30
+								dynamic $ARGS[2] + 'B[<<ARGS[3]>>] = pcs_hips'
+								'You spend 30 minutes resizing the outfit.'
+							end
 							act 'Return':gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>', '<<$ward_list_store>>'
 						end
-
-						act 'Return': gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>', '<<$ward_list_store>>'
 					end
 				exit
 
