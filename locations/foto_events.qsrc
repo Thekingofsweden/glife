@@ -4,30 +4,52 @@ menu_off = 1
 
 if $ARGS[0] = 'fame':
 	*clr & cla
+	modelpay = (pcs_mdlng/2 * 10) + ((min(city_modelling, 700) + pcs_apprnc)/2)
+	:reroll_1
 	special_model = 2000
 	special_skill_model = 2000
 	fame_model_event = daystart
-	if first_fame_event < 1:gt'foto_events','topless1'
-	mdlng_fame_event = rand(1,3)
-	if mdlng_fame_event = 1:gt'foto_events','pool1'
-	if mdlng_fame_event = 2 and pcs_agil < 40:
-		gt'foto_events','pool1'
+	if first_fame_event < 1:
+		gt'foto_events','topless1'
+	else
+		mdlng_fame_event = rand(1,3)
+		if mdlng_fame_event = 1 and sunWeather = 1 and daystage < 3:
+			gt'foto_events','pool1'
+		elseif mdlng_fame_event = 2 and pcs_agil >= 40:
+			gt'foto_events','tennis'
+		elseif mdlng_fame_event = 2 and sunWeather = 1 and daystage < 3:
+			gt'foto_events','pool1'
+		elseif mdlng_fame_event = 3:
+			gt'foto_events2','champagne1'
+		else
+			jump 'reroll_1'
+		end
 	end
-	if mdlng_fame_event = 3:gt'foto_events2','champagne1'
-	if mdlng_fame_event = 2 and pcs_agil >= 40:gt'foto_events','tennis'
 end
 
 if $ARGS[0] = 'skill':
+	modelpay = (pcs_mdlng/2 * 10) + ((min(city_modelling, 700) + pcs_apprnc)/2)
+	:reroll_2
 	special_model = 2000
 	special_skill_model = 2000
 	skill_model_event = daystart
 	*clr & cla
 	mdlng_skill_event = rand(1,5)
-	if mdlng_skill_event = 1:gt'foto_events','topless2'
-	if mdlng_skill_event = 2:gt'foto_events','beach2'
-	if mdlng_skill_event = 3:gt'foto_events','pool2'
-	if mdlng_skill_event = 4:gt'foto_events','runway2'
-	if mdlng_skill_event = 5:gt'foto_events','wet'
+	if mdlng_skill_event = 1 and sunWeather = 1 and daystage < 3:
+		gt'foto_events','topless2'
+	elseif mdlng_skill_event = 2 and sunWeather = 1 and daystage < 3:
+		gt'foto_events','beach2'
+	elseif mdlng_skill_event = 3 and sunWeather = 1 and daystage < 3:
+		gt'foto_events','pool2'
+!!	elseif mdlng_skill_event = 4:
+!!		gt'foto_events','runway1'
+	elseif mdlng_skill_event = 4 and daystage > 2:
+		gt'foto_events','runway2'
+	elseif mdlng_skill_event = 5:
+		gt'foto_events','wet'
+	else
+		jump 'reroll_2'
+	end
 end
 
 !!------------------------------------------------------------------- Special Events ------------------------------------------------------------------
@@ -394,45 +416,60 @@ if $ARGS[0] = 'fashion_persuasion':
 	elseif foto_persuade = 1:
 		'"You know, that offer to do a fashion shoot is still open you know. We really think you have what it takes! Want to give it a try?"'
 	end
+	if foto['suborn'] >= 5:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	elseif foto['suborn'] >= 3:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+	elseif foto['suburn'] > 0:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+	else
+		will_cost = 0
+	end
 	
-	act'No thanks':
-		cla & *clr
-		foto_persuade = 1
-		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-		'"Thanks for the offer, but I think I''d be more comfortable just sticking to the catalogues for now."'
-		'"Oh. Okay..."'
-		'The manager seems disappointed by your answer.'
-		'"So clothing or swimsuits today?"'
-		act'Clothing':
-			modelfoto_catalog += 1
+	if will_cost <= pcs_willpwr:
+		act'No thanks (<<will_cost>> Willpower)':
 			cla & *clr
-			mdlng_exp += rand(2,5)
-			minut += 120
-			money += 450
-			'<center><video autoplay loop src="images/locations/city/citycenter/photo/fashion3.mp4"></video></center>'
-			'You spend two hours modelling for the online catalogs of retail clothing stores, wearing various different dresses but the same expression. It''s boring but it still gets you paid.'
-			*nl
-			'You recieve 450 <b>₽</b> for the job.'
-			act 'Leave':gt 'foto', 'end'
+			foto_persuade = 1
+			foto['suborn'] += 1
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+			'"Thanks for the offer, but I think I''d be more comfortable just sticking to the catalogues for now."'
+			'"Oh. Okay..."'
+			'The manager seems disappointed by your answer.'
+			'"So clothing or swimsuits today?"'
+			act'Clothing':
+				modelfoto_catalog += 1
+				cla & *clr
+				mdlng_exp += rand(2,5)
+				minut += 120
+				money += 450
+				'<center><video autoplay loop src="images/locations/city/citycenter/photo/fashion3.mp4"></video></center>'
+				'You spend two hours modelling for the online catalogs of retail clothing stores, wearing various different dresses but the same expression. It''s boring but it still gets you paid.'
+				*nl
+				'You recieve 450 <b>₽</b> for the job.'
+				act 'Leave':gt 'foto', 'end'
+			end
+			act'Swimsuits':
+				modelfoto_catalog += 1
+				cla & *clr
+				mdlng_exp += rand(2,5)
+				minut += 120
+				money += 450
+				'<center><video autoplay loop src="images/locations/city/citycenter/photo/bikini<<rand(3,5)>>.mp4"></video></center>'
+				bikinicatalog += 1
+				'You change in and out of various different bikinis, modelling them with the same pose and expression for use in online and department store catalogs.'
+				*nl
+				'You recieve 450 <b>₽</b> for the job.'
+				act 'Leave':gt 'foto', 'end'
+			end
 		end
-		act'Swimsuits':
-			modelfoto_catalog += 1
-			cla & *clr
-			mdlng_exp += rand(2,5)
-			minut += 120
-			money += 450
-			'<center><video autoplay loop src="images/locations/city/citycenter/photo/bikini<<rand(3,5)>>.mp4"></video></center>'
-			bikinicatalog += 1
-			'You change in and out of various different bikinis, modelling them with the same pose and expression for use in online and department store catalogs.'
-			*nl
-			'You recieve 450 <b>₽</b> for the job.'
-			act 'Leave':gt 'foto', 'end'
-		end
+	else
+		act'No thanks (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
 	end
 	
 	act'Yes':
 		cla & *clr
 		foto_persuade = 2
+		foto['suborn'] = 0
 		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 		'"That sounds really good actually! I''ll do it!"'
 		'The manager smiles wide at you.'
@@ -454,11 +491,20 @@ if $ARGS[0] = 'lingerie_persuasion':
 		'"We can do a fashion shoot today if you like, but the studio would still really love to see you do that lingerie shoot. What do you say?"'
 	end
 	
-	gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+	if foto['suborn'] >= 5:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	elseif foto['suborn'] >= 3:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+	elseif foto['suburn'] > 0:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+	else
+		will_cost = 0
+	end
 	if will_cost <= pcs_willpwr:
 		act'No thanks (<<will_cost>> Willpower)':
 			cla & *clr
 			foto_persuade = 1
+			foto['suborn'] += 1
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Thanks for the offer, but I think I''ll keep on doing regular fashion shoots for now."'
 			'"Oh. Okay..."'
@@ -471,6 +517,7 @@ if $ARGS[0] = 'lingerie_persuasion':
 	if foto_persuade = 2 and pcs_inhib < 20:
 		act'I guess so':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Well... I guess it turned out well last time..."'
 			'The manager smiles wide at you.'
@@ -481,6 +528,7 @@ if $ARGS[0] = 'lingerie_persuasion':
 		act'Yes':
 			cla & *clr
 			foto_persuade = 2
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"That sounds really good actually! I''ll do it!"'
 			'The manager smiles wide at you.'
@@ -506,10 +554,19 @@ if $ARGS[0] = 'glamour_persuasion':
 	end
 	
 	if foto_persuade = 3:
-		gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+		if foto['suborn'] >= 5:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+		elseif foto['suborn'] >= 3:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+		elseif foto['suburn'] > 0:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+		else
+			will_cost = 0
+		end
 		if will_cost <= pcs_willpwr:
 			act'No thanks (<<will_cost>> Willpower)':
 				cla & *clr
+				foto['suborn'] += 1
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 				'"Thanks for the offer, but I think I''ll stick to the lingerie shoot today."'
 				'"Oh. Okay."'
@@ -522,6 +579,7 @@ if $ARGS[0] = 'glamour_persuasion':
 			act'I guess I could try it...':
 				cla & *clr
 				foto_persuade = 2
+				foto['suborn'] = 0
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 				'"I guess I could try it..."'
 				'"Great! Thank you so much <<$pcs_firstname>>! Just go to this set and we''ll set somebody up for you."'
@@ -530,6 +588,7 @@ if $ARGS[0] = 'glamour_persuasion':
 		else
 			act'Yes, I''m ready':
 				cla & *clr
+				foto['suborn'] = 0
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 				'"You know what? Yeah, I think I''ll give it a try today. I think I''m ready."'
 				'The manager smiles wide at you.'
@@ -538,11 +597,20 @@ if $ARGS[0] = 'glamour_persuasion':
 			end
 		end
 	else
-		gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+		if foto['suborn'] >= 5:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+		elseif foto['suborn'] >= 3:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+		elseif foto['suburn'] > 0:
+			gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+		else
+			will_cost = 0
+		end
 		if will_cost <= pcs_willpwr:
 			act'No thanks (<<will_cost>> Willpower)':
 				cla & *clr
 				foto_persuade = 1
+				foto['suborn'] += 1
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 				'"Thanks for the offer, but I think I''ll stick to the lingerie shoot today."'
 				'"Oh. Okay..."'
@@ -570,6 +638,7 @@ if $ARGS[0] = 'glamour_persuasion':
 						act'No (<<will_cost>> Willpower)':
 							cla & *clr
 							foto_persuade = 3
+							foto['suborn'] += 1
 							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 							'"No, I''m not doing anything like that. I''m just going to stick to my lingerie shoot today."'
 							'"Oh, okay. That''s fine <<$pcs_firstname>>. Maybe another time."'
@@ -581,6 +650,7 @@ if $ARGS[0] = 'glamour_persuasion':
 					act'That''s not so bad...':
 						cla & *clr
 						foto_persuade = 4
+						foto['suborn'] = 0
 						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 						'"That''s not so bad I guess... I''m already doing lingerie so that''s not much of a difference."'
 						'"Yes, exactly! Think of it just like that. Thanks for this <<$pcs_firstname>>. Just go to this set and we''ll set somebody up for you."'
@@ -594,6 +664,7 @@ if $ARGS[0] = 'glamour_persuasion':
 			if foto_persuade = 2 and pcs_inhib < 45:
 				act'I guess so':
 					cla & *clr
+					foto['suborn'] = 0
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 					'"Well... I guess it turned out well last time... I could give it a try..."'
 					'The manager smiles wide at you.'
@@ -604,6 +675,7 @@ if $ARGS[0] = 'glamour_persuasion':
 				act'I guess I could try it...':
 					cla & *clr
 					foto_persuade = 2
+					foto['suborn'] = 0
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 					'"I guess I could try it..."'
 					'"Great! Thank you so much <<$pcs_firstname>>! Just go to this set and we''ll set somebody up for you."'
@@ -612,6 +684,7 @@ if $ARGS[0] = 'glamour_persuasion':
 			else
 				act'Yes':
 					cla & *clr
+					foto['suborn'] = 0
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 					'"That sounds really good actually! I''ll do it!"'
 					'The manager smiles wide at you.'
@@ -639,11 +712,20 @@ if $ARGS[0] = 'trans_persuasion':
 		'"Hey <<$pcs_firstname>>, the staff have been talking again. I know I asked before, but I was wondering if you might be more comfortable now. Is it possible that you might consider doing a transparent clothing shoot today instead of a basic glamour one? No pressure if not, but I just wanted to check and see if you''re ready."'
 	end
 	
-	gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+	if foto['suborn'] >= 5:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	elseif foto['suborn'] >= 3:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+	elseif foto['suburn'] > 0:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+	else
+		will_cost = 0
+	end
 	if will_cost <= pcs_willpwr:
 		act'No thanks (<<will_cost>> Willpower)':
 			cla & *clr
 			foto_persuade = 1
+			foto['suborn'] += 1
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Thanks for the offer, but I think I''ll stick to the basic glamour shoot today."'
 			'"Oh. Okay..."'
@@ -656,6 +738,7 @@ if $ARGS[0] = 'trans_persuasion':
 	if foto_persuade > 1 and foto_persuade < 4 and pcs_inhib < 45:
 		act'I guess so':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Well... I guess it turned out well last time..."'
 			'The manager smiles wide at you.'
@@ -666,6 +749,7 @@ if $ARGS[0] = 'trans_persuasion':
 	elseif foto_persuade = 1 or foto_persuade = 4:
 		act'I guess I could try':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Well... I guess I could give it a try..."'
 			'The manager smiles wide at you.'
@@ -676,6 +760,7 @@ if $ARGS[0] = 'trans_persuasion':
 		
 		act'Yes, I''m ready':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"You know what? I think I <i>am</i> ready. I''ll give it a try."'
 			'The manager smiles wide at you.'
@@ -686,6 +771,7 @@ if $ARGS[0] = 'trans_persuasion':
 	else
 		act'Yes':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"That sounds really good actually! I''ll do it!"'
 			'The manager smiles wide at you.'
@@ -708,11 +794,20 @@ if $ARGS[0] = 'topless_persuasion':
 		'"Hey <<$pcs_firstname>>, you seem to be doing really well with the transparent shoots, just like we thought. I know that initially took some convincing, but we got here didn''t we? Now, I was wondering if you''d like to try go a step further just like before and take the whole top off? You''ve never done a topless shoot and it isn''t much different from what we''re doing now. Our rates for topless shoots are better and you''ll get a lot more exposure than what you''re doing now. Want to try it?"'
 	end
 	
-	gs 'willpower', 'skill', 'pcs_inhib', 'resist'
+	if foto['suborn'] >= 5:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	elseif foto['suborn'] >= 3:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+	elseif foto['suburn'] > 0:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+	else
+		will_cost = 0
+	end
 	if will_cost <= pcs_willpwr:
 		act'No thanks (<<will_cost>> Willpower)':
 			cla & *clr
 			foto_persuade = 1
+			foto['suborn'] += 1
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Thanks for the offer, but I think I''ll stick to what I''m doing for now."'
 			'"Oh. Okay..."'
@@ -729,6 +824,7 @@ if $ARGS[0] = 'topless_persuasion':
 	if foto_persuade = 2 and pcs_inhib < 50:
 		act'I guess so':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Well... I guess you''re right, it isn''t that much different. I suppose I can give it a shot..."'
 			'The manager smiles wide at you.'
@@ -739,6 +835,7 @@ if $ARGS[0] = 'topless_persuasion':
 	elseif foto_persuade = 1:
 		act'Yes, I''m ready':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"You know what? Yeah, I think I''ll give it a try today. I think I <i>am</i> ready!"'
 			'The manager smiles wide at you.'
@@ -749,6 +846,7 @@ if $ARGS[0] = 'topless_persuasion':
 	else
 		act'Yes':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"That sounds really good actually! Let''s do it!"'
 			'The manager smiles wide at you.'
@@ -771,11 +869,20 @@ if $ARGS[0] = 'nude_persuasion':
 		'"Hey <<$pcs_firstname>>, I''ve got a new offer from the studio for you. They''ve really loved your willingness to try new things like with the past shoots and all and they wanted to know if you would like to step it up to the final level. Would you be willing to do a full frontal nude shoot with us? As a special bonus, the studio said they''re willing to double your pay for your full debut. I have to say, this is a great offer. What do you think of it?"'
 	end
 	
-	gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	if foto['suborn'] >= 5:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'hard'
+	elseif foto['suborn'] >= 3:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'medium'
+	elseif foto['suburn'] > 0:
+		gs 'willpower', 'skill', 'pcs_inhib', 'resist', 'easy'
+	else
+		will_cost = 0
+	end
 	if will_cost <= pcs_willpwr:
 		act'No thanks (<<will_cost>> Willpower)':
 			cla & *clr
 			foto_persuade = 1
+			foto['suborn'] += 1
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Thanks for the offer, that''s really kind, but I think I''ll stick to what I''m doing for now."'
 			'"Oh. Okay..."'
@@ -794,6 +901,7 @@ if $ARGS[0] = 'nude_persuasion':
 	if foto_persuade = 2 and pcs_inhib < 60:
 		act'Wow! I... I guess I''ll take it':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Wow! That''s a really amazing offer! I mean... well to be honest, I''m not sure if I''m ready for that but... I guess, I''ll do it if the studio really believes in me so much."'
 			'The manager smiles wide at you.'
@@ -802,9 +910,11 @@ if $ARGS[0] = 'nude_persuasion':
 			foto_persuade = 5
 			act'Do the nude shoot':gt'foto_shoot','nude'
 		end
-	elseif foto_persuade = 1 and pcs_inhib < 60:
+	end
+	if foto_persuade = 1 and pcs_inhib < 60:
 		act'Well... I guess':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"Well..." You mull it over a little bit more, still unsure of yourself. "I mean, I... I guess I can give it a try."'
 			'The manager smiles wide at you. "Thank you so much for your courage <<$pcs_firstname>>."'
@@ -816,22 +926,23 @@ if $ARGS[0] = 'nude_persuasion':
 	elseif foto_persuade = 1:
 		act'Yes, I''m ready':
 			cla & *clr
+			foto['suborn'] = 0
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
 			'"You know what? I think I''m ready to do it today! I''ll do the nude shoot," you say, smiling. "And I''ll take the bonus."'
 			'The manager laughs showing you his clipboard. "Go to this set here and everything is already set up for you."'
 			foto_persuade = 5
 			act'Do the nude shoot':gt'foto_shoot','nude'
 		end
-	else
-		act'Wow! Yes!':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-			'"Wow! That''s a really amazing offer! That''s so generous! Yes! I''ll absolutely do it!"'
-			'The manager smiles wide at you.'
-			'"Great! Then go to this set here and the photographer will be ready for you."'
-			foto_persuade = 5
-			act'Do the nude shoot':gt'foto_shoot','nude'
-		end
+	end
+	act'Wow! Yes!':
+		cla & *clr
+		foto['suborn'] = 0
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+		'"Wow! That''s a really amazing offer! That''s so generous! Yes! I''ll absolutely do it!"'
+		'The manager smiles wide at you.'
+		'"Great! Then go to this set here and the photographer will be ready for you."'
+		foto_persuade = 5
+		act'Do the nude shoot':gt'foto_shoot','nude'
 	end
 end
 
@@ -1320,19 +1431,7 @@ if $ARGS[0] = 'designer_wedding':
 	end
 end
 
-!!if $ARGS[0] = 'documentary':
-!!	cla & *clr
-!!	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-!!	'"Documentary?" you ask. "What do you mean documentary? What''s this about?"'
-!!	'"It''s not a modelling job, but someone''s going around asking about life as a model and in the industry. They want to interview some of the models here. Point a camera at them, ask them a few questions, put it on the internet and stuff. The pay is about that of a standard nude shoot but it''s also likely to increase your profile more than the average nude shoot, how many people who''ve seen your face, know your name. Could be good for increasing your reputation or popularity."'
-!!	'"Hmmm..."'
-!!	act'Back to the list':gt'foto_events','list'
-!!	act'I''d like to do this one':
-!!		cla
-!!		*nl
-!!		specialjob7 = 0
-!!
-!!end
+
 
 
 
@@ -1414,7 +1513,7 @@ end
 if $ARGS[0] = 'topless1.1':
 	*clr & cla
 	pcs_hairbsh = 1
-	pcs_makeup = 2
+	pcs_makeup = 5
 	pcs_lipbalm += 8
 	gs 'underwear', 'wear'
 	gs 'stat'
@@ -1551,7 +1650,7 @@ if $ARGS[0] = 'pool1':
 					*clr & cla
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/mirrors.jpg"></center>'
 					pcs_hairbsh = 1
-					pcs_makeup = 2
+					pcs_makeup = 5
 					pcs_lipbalm += 8
 					'You go over to your station and touch up your makeup, make sure it''s perfect. You see a few of the other girls who are participating in the shoot doing the same. Soon, everyone is ready and you all pile into a shuttle and drive to the shooting location.'
 					'As promised, as soon as you all arrive, they''re ready to start.'
@@ -1652,7 +1751,7 @@ if $ARGS[0] = 'tennis':
 					*clr & cla
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/mirrors.jpg"></center>'
 					pcs_hairbsh = 1
-					pcs_makeup = 2
+					pcs_makeup = 5
 					pcs_lipbalm += 8
 					'You go over to your station and see what they left for you. You see sneakers and a skirt, a visor and a sweat band, and a racket. There is a noticable lack of top or underwear. They didn''t tell you this was going to be a topless shoot, but you guess you shouldn''t be that surprised.'
 					'You pull up the skirt and put on your makeup before heading over to the set.'
@@ -1700,8 +1799,7 @@ if $ARGS[0] = 'topless2':
 		act'"What''s up?"':
 			*clr & cla
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-			'"You''ve been doing well around here lately. We were going to do a sunny penthouse topless pool shoot off site. Wanted to know if you wanted to be our girl and get paid for an job this week? It''ll take an extra hour though so if you''re busy we can always grab one of the other girls. How ''bout it? You want in?"'
-			
+			'"Are you free right now? We were going to do a sunny penthouse topless pool shoot off site but one of the girls who was scheduled for it cancelled on us. Wanted to know if you wanted to take her place? It''ll be about 3 hours. You want in?"'
 			gs 'willpower', 'exhib', 'resist'
 			if will_cost <= pcs_willpwr:
 				act'"No thanks" (<<will_cost>> Willpower)':
@@ -1728,7 +1826,7 @@ if $ARGS[0] = 'topless2':
 					*clr & cla
 					minut += 30
 					pcs_hairbsh = 1
-					pcs_makeup = 2
+					pcs_makeup = 5
 					pcs_lipbalm += 8
 					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/mirrors.jpg"></center>'
 					'You head over to your makeup station to get yourself sorted out before getting changed and jumping in the van with the rest of the crew.'
@@ -1775,8 +1873,7 @@ if $ARGS[0] = 'beach2':
 		act'"What''s up?"':
 			*clr & cla
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-			'"Hey <<$pcs_firstname>>, Looking to get an extra job in this week? We were planning on doing a topless beach shoot today. It''s a five hour job if you include the travel time but we''ll pay you extra on top of what you''d normally get as a bit of compensation. So, do you want it?'
-
+			'"Hey <<$pcs_firstname>>, we''re looking for girls to do a topless beach shoot today. It''s a five hour job if you include the travel time but we''ll pay you extra on top of what you''d normally get as a bit of compensation. So, do you want it?"'
 			gs 'willpower', 'exhib', 'resist'
 			if will_cost <= pcs_willpwr:
 				act'"No thanks" (<<will_cost>> Willpower)':
@@ -1803,7 +1900,7 @@ if $ARGS[0] = 'beach2':
 					*clr & cla
 					minut += 30
 					pcs_hairbsh = 1
-					pcs_makeup = 2
+					pcs_makeup = 5
 					pcs_lipbalm += 8
 					gs 'underwear', 'wear'
 					gs 'stat'
@@ -1860,7 +1957,7 @@ if $ARGS[0] = 'pool2':
 		act'"What''s up?"':
 			*clr & cla
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
-			'"Hey <<$pcs_firstname>>, we were thinking about doing a topless pool shoot. It''s offsite so it''ll be an extra hour or two but it''s also an extra payday if you want it. So? Do you want it?'
+			'"Hey <<$pcs_firstname>>, we were thinking about doing a topless pool shoot. It''s offsite so it''ll be an extra hour or two but it''s also an extra payday if you want it. So? Do you want it?"'
 
 			gs 'willpower', 'exhib', 'resist'
 			if will_cost <= pcs_willpwr:
@@ -1882,7 +1979,7 @@ if $ARGS[0] = 'pool2':
 			act'"Sure"':
 				*clr & cla
 				pcs_hairbsh = 1
-				pcs_makeup = 2
+				pcs_makeup = 5
 				pcs_lipbalm += 8
 				minut += 30
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/mirrors.jpg"></center>'
@@ -1917,6 +2014,21 @@ if $ARGS[0] = 'pool2':
 	end
 end
 
+if $ARGS[0] = 'runway1':
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
+	'"<<$pcs_firstname>>!"'
+	'As you walk out of the changing room you hear someone call your name.'
+	act'Turn around':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
+		'As you turn you see a photographer running towards you, waving you over. You walk over to talk to him.'
+		act'"What''s up?"':
+			*clr & cla
+			
+		end
+	end
+end
+
 
 if $ARGS[0] = 'runway2':
 	*clr & cla
@@ -1933,7 +2045,6 @@ if $ARGS[0] = 'runway2':
 			'Hey <<$pcs_firstname>>, listen. We have an emergency situation and we''re looking for whoever is available. A clothing studio we sometimes shoot for is having a fashion show tonight but for some reason something''s gone wrong and they''re missing models."'
 			'"Missing models?" you gasp. "You mean like they''ve disappeared or something?"'
 			'He looks confused for a second and says, "What? No! Just for whatever reason, they don''t have enough models for tonight. I don''t know if it''s because some of them got sick or had an accident or if they just planned poorly and were supposed to have more than they hired. In any case, we need people to jump in tonight. It''s going to be an all day thing though. We can''t have anymore hiccups so if you agree you''ll have to stay here until the show starts and then the show itself runs until 22:00 tonight. We know it''s a big commitment so if you do we''re willing to shell out a ton of money to make this work. We''re talking a three grand bonus on top of your normal variety shoot rate. Can we count on you for tonight?"'
-
 			gs 'willpower', 'exhib', 'resist', 'easy'
 			if will_cost <= pcs_willpwr:
 				act'"I''m sorry, I can''t be out that late" (<<will_cost>> Willpower)':
@@ -1977,7 +2088,7 @@ if $ARGS[0] = 'runway2':
 				act'Continue':
 					*clr & cla
 					'<center><video autoplay loop src="images/locations/city/citycenter/photo/runway_waiting.mp4"></video></center>'
-					'Eventually the photographer succeeds in rounding up as many models including one really new girl who looks like it might have been her first day here when the photographer found her. You''re all sat down on a line of chairs and told to wait for the studio to do your makeup and wardrobe.'
+					'Eventually the photographer succeeds in rounding up as many models including girl who looks like it might have been her first day here when the photographer found her. You''re all sat down on a line of chairs and told to wait for the studio to do your makeup and wardrobe.'
 					act'Continue':
 						*clr & cla
 						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/mirrors.jpg"></center>'
@@ -1988,27 +2099,54 @@ if $ARGS[0] = 'runway2':
 						'The runway crew shows up and immediately moves you to the makeup station to get your hair and everything done. They really shovel it on for this. A bit different to the subtle makeup you normally put on for modelling.'
 						'They put you into the clothes that they''ve decided you''re going to be modelling and you wait for the show to begin.'
 						act'Continue':
-							hour = 20
-							modelpayfin = 6000 + (modelpay * 3) + (50*rand(0,7))
-							city_modelling += 30
-							pav_modelling += rand(0,city_modelling)/5
+							hour += 1
+							modelpayfin = 500 + (city_modelling * 10) + (modelpay * 3) + (50*rand(0,7))
+							city_modelling += rand(10,30)
+							pav_modelling += rand(0,city_modelling)/8
 							mdlng_exp += rand(8,10)
 							modelfoto_nip += 1
+							gs'stat'
 							*clr & cla
-							'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/skill_runway.mp4"></video></center>'
-							'As soon as they send you down the runway you realize something''s gone wrong. The loose cleavage of the dress you''re wearing is too loose. With the kind of purposeful steps you''re taking and your breasts jiggling underneath, the fabric falls to the sides and your breasts are left completely exposed. You try your best to recover but the dress is just too loose and skimpy and no matter what you do your breasts end up coming loose.'
-							'With nothing left to it and not wanting to make a big deal out of it and ruin the show, you put on your best model smile and just get through the rest of your walk.'
+							model['runway_outfit'] = rand(1,5)
+							if model['runway_outfit'] = 1:
+								'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/runway/1.mp4"></video></center>'
+								'As soon as they send you down the runway you realize something''s gone wrong. The loose cleavage of the dress you''re wearing is <i>too</i> loose. With the kind of purposeful steps you''re taking and your breasts jiggling underneath, the fabric falls to the sides and your breasts are left completely exposed. You try your best to recover but the dress is just too loose and skimpy and no matter what you do your breasts end up coming loose.'
+								'With nothing left to it and not wanting to make a big deal out of it and ruin the show, you put on your best model smile and just get through the rest of your walk.'
+							elseif model['runway_outfit'] = 2:
+								'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/runway/2.mp4"></video></center>'
+								'One of the problems with being a model is that you don''t get to actually choose the clothing you''re going to wear.'
+								*nl
+								'In this case, it''s really nothing more than panties with a backless and transparent mesh top that completely exposes your breasts. You aren''t sure what the intention of the designer was, but you know that modesty wasn''t part of it. But you smile and show off the outfit and your body anyways, posing briefly before walking back.'
+							elseif model['runway_outfit'] = 3:
+								'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/runway/3.mp4"></video></center>'
+								'The outfit you''re dressed in is a leopard print jumpsuit will bellbottoms. The outrageous pattern aside, it doesn''t show much skin and as a result, you find it easy to work your body to show off the outfit instead of your own assets. With a smile, a pose, and a wink, you get it done and begin your walk back.'
+							elseif model['runway_outfit'] = 4:
+								'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/runway/4.mp4"></video></center>'
+								if tits >= 3:
+									'As you walk forward, you can''t help but wonder if the girl this outfit was designed for a girl with small breasts. It''s tight around your chest and you can feel it riding up with every step. In the short the time it takes you to get to the end of the runway, the top has risen so much that your nipples are just barely still hidden by its hem. Within a few steps on the way back you need to pull it back in place. But at least once the walk is finished you''ll finally be able to let your sweater puppies free.'
+								elseif tits >= 2:
+									'As you walk forward, you can''t help but wonder if the girl this outfit was designed for a girl with smaller breasts than you. Or maybe even a girl who is completely flat. Even around your humble bosom, you can feel the material straining against your chest and it rides up with every step you take forward. In the short the time it takes you to get to the end of the runway, the top has risen so much that your nipples are just barely still hidden by its hem. Within a few steps on the way back you need to pull it back in place. But at least once the walk is finished you''ll finally be able to take this thing off and breathe normally again.'
+								else
+									'As you walk forward, you can''t help but wonder what idiot designed this outfit. Even with your virtually flat chest, your body strains against the material. You can feel it riding up with every step you take forward. In the short the time it takes you to get to the end of the runway, the top has risen so much that your nipples are just barely still hidden by its hem. Within a few steps on the way back you need to pull it back in place. But at least once the walk is finished you''ll finally be able to take this thing off and breathe normally again.'
+								end
+							elseif model['runway_outfit'] = 5:
+								'<center><video autoplay loop src="images/locations/city/citycenter/photo/skill/runway/5.mp4"></video></center>'
+								'The outfit you''re placed in really has you wondering again if fashion is really about art and style or if it''s just about putting women in exposed situations.'
+								*nl
+								'It''s hard not to wonder when the outfit is nothing more than a pink swimsuit bottom with wide overall type straps that only exist to cover up your nipples.'
+							end
 							act'Continue':
 								*clr & cla
-								hour = 22
+								hour += 1
 								money += modelpayfin
 								modelfotomoney += modelpayfin
+								gs'stat'
 								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
 								if StoryLine = 1 and age < 18:
-									'Two hours later, the show is over and you''re left naked in the studio, counting the <<modelpayfin>> <b>₽</b> you''ve been paid and musing over the happenings of the night. Your fame has almost certainly increased by a large margin thanks to your professional composure during the wardrobe malfunction and that''s great. But at the same time, this kind of thing has the tendency to circle around and you <i>really</i> hope nobody in Pavlovsky hears about this...'
+									'Another hour later, the show is over, the clothes are taken back, and you''re left naked in the studio, counting the <<modelpayfin>> <b>₽</b> you''ve been paid and musing over the happenings of the night. Working the runway isn''t too bad. But at the same time, this kind of thing has the tendency to circle around and you <i>really</i> hope nobody in Pavlovsk hears about this...'
 									act'Back in the studio':gt'foto','studio'
 								else
-									'Two hours later, the show is over and you''re left naked in the studio, counting the <<modelpayfin>> <b>₽</b> you''ve been paid and musing over the happenings of the night. Your fame has almost certainly increased by a large margin thanks to your professional composure. You''re proud of yourself that you held it together like that and you''re excited to see what opportunities this added fame might bring.'
+									'Another hour later, the show is over and you''re left naked in the studio, counting the <<modelpayfin>> <b>₽</b> you''ve been paid and musing over the happenings of the night. Working the runway isn''t too bad.'
 									act'Back in the studio':gt'foto','studio'
 								end
 							end
@@ -2065,14 +2203,14 @@ if $ARGS[0] = 'wet':
 						*clr & cla
 						minut += 120
 						pcs_hairbsh = 1
-						pcs_makeup = 2
+						pcs_makeup = 5
 						pcs_lipbalm += 8
 						'<center><video autoplay loop src="images/locations/city/citycenter/photo/special/wet.mp4"></video></center>'
 						'You put on your makeup and follow him over to the water proof set in the studio and spend the next two hours shrieking and giggling as you get blasted with water while photographed nude.'
 						'He wasn''t kidding! That water is cold!'
 						act'Continue':
 							cla
-							modelpayfin = 3000 + (modelpay * 2) + (50*rand(0,7))
+							modelpayfin = 1000 + (modelpay * 2) + (50*rand(0,7))
 							modelfoto_nip += 1
 							modelfoto_topless += 1
 							modelfoto_nude += 1
