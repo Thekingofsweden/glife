@@ -2,7 +2,6 @@
 
 CLOSE ALL
 $loc_arg = $ARGS[0]
-$prevloc = $loc
 $loc = $CURLOC
 $menu_loc = 'HotelHole'
 $menu_arg = ''
@@ -16,7 +15,7 @@ gs'stat'
 if $ARGS[0] = 'skip_resepevent': jump 'skipresepevent'
 
 if hour = 0 and hotresepQW_day ! daystart and (hotresepQW < 3 or (hotresepQW = 3 and rand(1,10) = 10)):
-	if $prevloc ! 'HotelRoom':
+	if hotelroom = 0:
 		*clr
 		'When you want to enter the hotel you notice the doors are closed.'
 		'You try knocking on the door but nobody comes to open them.'
@@ -43,7 +42,12 @@ if hour = 0 and hotresepQW_day ! daystart and (hotresepQW < 3 or (hotresepQW = 3
 			*clr & cla
 			observ_exp += 3
 			gs 'stat'
-			'You creep down to the lobby, and then around the corner, carefully, you sneak a glimpse.'
+			if $prevloc = 'HotelRoom': 
+				'You creep down to the lobby, and then around the corner, carefully, you sneak a glimpse.'
+			else 
+				'You find the door closed, and you realise that the receptionist and the manager are probably fooling around again. You carefully open the door with your key, and enter as quietly as you can.'
+				'Moving to the corner carefully, you sneak a glimpse.'
+			end
 			'You spy <<$receptionName>>. Yep, you nod, she''s already showing herself off to the cameras.'
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/resep_event1.jpg"></center>'
 			'She flashes her breasts beneath a devilish smile.'
@@ -125,7 +129,11 @@ if hour >= 12 and hour <= 13 and GermanQW > 0: 'Next to the reception desk, you 
 
 if hotwait = 1: 'You go sit in one of the comfortable chairs in the lobby and watch the guests checking in an out.' & hotwait = 0
 
-act 'Leave the hotel':minut += 3 & gt'pav_train'
+act 'Leave the hotel':
+	minut += 3
+	killvar 'prevloc'
+	gt'pav_train'
+end
 
 if maidqw >= 1 and hour >= 16 and hour < 17:
 	act'<b>Work as a maid</b>':
