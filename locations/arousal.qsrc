@@ -55,6 +55,7 @@ The lubrication is binded with anal or vaginal action. I think that the best com
 Only call one at a time, if more required, use multiple calls
 
 Unaware - if one of the arguments $ARGS[2] - [8] is set to 'unaware', Sveta is not aware of this Sexact. Sveta will never know she had Sex!
+no_orgasm_msg - if one of the arguments $ARGS[2] - [8] is set to 'no_orgasm_msg', the system will not generate a generic arousal message
 
 You can override the orgasm to force or prevent, to do so use:
 $orgasm_or = 'yes' to force orgasm, it will reset in orgasm call so if you want to force it again, you have to enter it again
@@ -67,6 +68,8 @@ $orgasm_txt is used to add custom text that will be called if Sveta orgasms in t
 
 temp_anal = 0
 temp_unaware = 0
+!!turns orgasm text off, there will be no confirmation that Sveta has orgasmed
+temp_text = 0
 !!orgasms restricted to direct stimulation using this flag
 orgasm_flag = 0
 
@@ -76,6 +79,10 @@ if $ARGS[0] ! 'end' and $ARGS[0] ! 'checks' and $ARGS[0] ! 'count' and $ARGS[0] 
 		temp_unaware = 1
 	end
 
+	if strpos($ARGS[2]+$ARGS[3]+$ARGS[4]+$ARGS[5]+$ARGS[6]+ $ARGS[7]+ $ARGS[8],'no_orgasm_msg') > 0:
+		temp_text = 1
+	end
+	
 	if mid($ARGS[2],1,4) = 'dick':
 		temp_dick = dyneval('result='+$ARGS[2])
 		temp_silavag = dyneval('result=silavag'+mid($ARGS[2],5,len($ARGS[2])-4))
@@ -684,6 +691,7 @@ if $ARGS[0] ! 'end' and $ARGS[0] ! 'checks' and $ARGS[0] ! 'count' and $ARGS[0] 
 
 	orgasm_buildup += stim['total']
 
+!! This is determining if Sveta will orgasm
 	if $orgasm_or ! 'no' and $ARGS[0] ! 'flashlite' and $ARGS[0] ! 'flash' and orgasm_flag ! 0:
 		if $orgasm_or = 'yes' or $orgasm_or = 'custom':
 			gs 'orgasm', $ARGS[0]
@@ -696,10 +704,13 @@ if $ARGS[0] ! 'end' and $ARGS[0] ! 'checks' and $ARGS[0] ! 'count' and $ARGS[0] 
 		end
 	end
 
+!!This is release is Sveta is so horny and pent up that she can cum with minimal stimulation
 	if $orgasm_or ! 'no' and orgasm_buildup >= 300 and pcs_horny >= 60: gs 'orgasm', $ARGS[0]
 
+!!Clearing temporary variables with orgasm as a gs this will catch anything there too
 	killvar 'temp_dick'
 	killvar 'temp_unaware'
+	killvar 'temp_text'
 	killvar '$orgasm_txt'
 	killvar '$stim_les'
 	killvar '$stim_foot'
@@ -710,6 +721,7 @@ end
 
 !!-----------------------------------------------
 
+!!This calculates the various sex stats and includes a small cooldown of stimulation so only use it once per event
 if $ARGS[0] = 'end':
 	if orgasm_buildup > 350: orgasm_buildup = 350
 	if orgasm_buildup > 300: orgasm_buildup -= 10
