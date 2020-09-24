@@ -12,14 +12,14 @@ if $ARGS[0] = 'start':
 	'<center><b><font color="maroon">The University</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/univer.jpg"></center>'
 
-	if student = 0 and abiturient = 0:'You can take preparatory classes at the University for 15,000 <b>₽</b>.'
+	if func('uniutil', 'student_status') = 0 and abiturient = 0:'You can take preparatory classes at the University for 15,000 <b>₽</b>.'
 
 	'Admission examinations for the University are held in <b>August</b>.'
 	'The lectures begin at <b>08:00</b>. You won''t be allowed to attend if late.'
 	'First semester: September, October, November.'
 	'Second semester: February, March, April.'
 
-	if student > 0:'You have completed <<kurs>> assignments for <<semestr>>.'
+	if func('uniutil', 'student_status') > 0:'You have completed <<kurs>> assignments for <<semestr>>.'
 
 	if abiturient = 1:'You''ve enrolled in the preparatory classes.'
 
@@ -29,7 +29,7 @@ if $ARGS[0] = 'start':
 		gt 'city_island'
 	end
 
-	if student = 0 and abiturient = 0 and money >= 15000 and month < 9 and diplom = 0 and (age >= 17 or fakepassport = 1):
+	if func('uniutil', 'student_status') = 0 and abiturient = 0 and money >= 15000 and month < 9 and diplom = 0 and (age >= 17 or fakepassport = 1):
 		''
 
 		act 'Pay for the preparatory classes (15,000 <b>₽</b>)':
@@ -56,7 +56,7 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if month = 8 and student = 0 and diplom = 0 and (age >= 17 or fakepassport = 1):
+	if month = 8 and func('uniutil', 'student_status') = 0 and diplom = 0 and (age >= 17 or fakepassport = 1):
 		'You can try to take an entrance exam.'
 
 		act 'Take the entrance exam (1:00)':
@@ -66,10 +66,7 @@ if $ARGS[0] = 'start':
 			'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
 
 			if pcs_intel + abiturient >= 60:
-				student = 1
-				kurs = 1
-				semestr = 1
-				abiturient = 0
+				gs 'uniutil', 'enroll_university'
 				'You have successfully passed the entrance exam and can attend the University in September.'
 			else
 				'You have failed the entrance exam. You need to study harder...'
@@ -79,7 +76,7 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if week < 6 and student > 0 and month > 8 and month < 12:
+	if week < 6 and func('uniutil', 'student_status') > 0 and month > 8 and month < 12:
 		!! 1st semester
 		act 'Visit the Dean':
 			cla
@@ -88,7 +85,7 @@ if $ARGS[0] = 'start':
 
 			gt 'univer', 'dekanat'
 		end
-	elseif week < 6 and student > 0 and month > 1 and month < 5:
+	elseif week < 6 and func('uniutil', 'student_status') > 0 and month > 1 and month < 5:
 		!! 2nd semester
 		act 'Visit the Dean':
 			cla
@@ -97,10 +94,10 @@ if $ARGS[0] = 'start':
 
 			gt 'univer', 'dekanat'
 		end
-	elseif week < 6 and student > 0 and month = 12 and examen = 0 and semestr = 1:
+	elseif week < 6 and func('uniutil', 'student_status') > 0 and month = 12 and examen = 0 and semestr = 1:
 		!! 1st semester exams
 		act 'Do the exam':gt 'univer', 'examen'
-	elseif week < 6 and student > 0 and month = 5 and examen = 0 and semestr = 2:
+	elseif week < 6 and func('uniutil', 'student_status') > 0 and month = 5 and examen = 0 and semestr = 2:
 		!! 2nd semester exams
 		act 'Do the exam':gt 'univer', 'examen'
 	end
@@ -121,23 +118,14 @@ if $ARGS[0] = 'dekanat':
 			semestr = 2
 		end
 	elseif examen = 2:
-		student = 0
-		kurs = 0
-		semestr = 0
-		abiturient = 0
-		stipuha = 0
-		lektor = 0
+		gs 'uniutil', 'expel'
 
 		'You got expelled from the University.'
 	end
 
 	if kurs = 2:
-		diplom = 1
-		student = 0
-		kurs = 0
-		semestr = 0
-		abiturient = 0
-		stipuha = 0
+		gs 'uniutil', 'graduate'
+
 		'Congratulations, you''ve earned your degree!'
 	end
 
@@ -151,7 +139,7 @@ if $ARGS[0] = 'dekanat':
 
 	act 'Leave the Dean''s office':gt 'univer', 'start'
 
-	if hour < 8 and student > 0:
+	if hour < 8 and func('uniutil', 'student_status') > 0:
 		act 'Attend the lecture (6:00)':
 			cla 
 			*clr
