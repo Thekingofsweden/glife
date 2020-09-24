@@ -12,7 +12,9 @@ if $ARGS[0] = 'start':
 	'<center><b><font color="maroon">The University</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/univer.jpg"></center>'
 
-	if func('uniutil', 'student_status') = 0 and abiturient = 0:'You can take preparatory classes at the University for 15,000 <b>₽</b>.'
+	if func('uniutil', 'student_status') = 0 and func('uniutil', 'is_enrolled_prepclass') = 0:
+		'You can take preparatory classes at the University for '+func('uniutil', 'prepclass_cost')' <b>₽</b>.'
+	end
 
 	'Admission examinations for the University are held in <b>August</b>.'
 	'The lectures begin at <b>08:00</b>. You won''t be allowed to attend if late.'
@@ -21,7 +23,7 @@ if $ARGS[0] = 'start':
 
 	if func('uniutil', 'student_status') > 0:'You have completed <<kurs>> assignments for <<semestr>>.'
 
-	if abiturient = 1:'You''ve enrolled in the preparatory classes.'
+	if func('uniutil', 'is_enrolled_prepclass') ! 0:'You''ve enrolled in the preparatory classes.'
 
 	act 'Leave':
 		cla
@@ -29,50 +31,46 @@ if $ARGS[0] = 'start':
 		gt 'city_island'
 	end
 
-	if func('uniutil', 'student_status') = 0 and abiturient = 0 and money >= 15000 and month < 9 and diplom = 0 and (age >= 17 or fakepassport = 1):
-		''
+	if func('uniutil', 'eligible_for_university') and month <= func('uniutil', 'entrance_exam_month'):
+		if func('uniutil', 'is_enrolled_prepclass') = 0 and money >= func('uniutil', 'prepclass_cost'):
+			act 'Pay for the preparatory classes ('+func('uniutil', 'prepclass_cost')+' <b>₽</b>)':
+				cla
+				menu_off = 1
+				gs 'uniutil', 'enroll_prepclass'
+				'You paid '+func('uniutil', 'prepclass_cost')+' <b>₽</b> for the preparatory classes. They are held every weekday until <b>'+func('uniutil', 'prepclass_closing_hour')+':00</b>.'
 
-		act 'Pay for the preparatory classes (15,000 <b>₽</b>)':
-			cla
-			minut += 5
-			money -= 15000
-			abiturient = 1
-			menu_off = 1
-			'You paid 15,000 <b>₽</b> for the preparatory classes. They are held every weekday at <b>21:00</b>.'
-
-			act 'Move away':gt 'univer', 'start'
-		end
-	elseif abiturient >= 1 and month < 9 and hour < 21 and week < 6:
-		act 'Attend preparatory class (1:00)':
-			cla
-			*clr
-			minut += 60
-			abiturient += 1
-			intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
-			'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
-			'You attend the preparatory class for an hour, you pay close attention to what is being said and make notes for the entrance examination later on.'
-
-			act 'Leave class':gt 'univer', 'start'
-		end
-	end
-
-	if month = 8 and func('uniutil', 'student_status') = 0 and diplom = 0 and (age >= 17 or fakepassport = 1):
-		'You can try to take an entrance exam.'
-
-		act 'Take the entrance exam (1:00)':
-			cla
-			*clr
-			minut += 60
-			'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
-
-			if pcs_intel + abiturient >= 60:
-				gs 'uniutil', 'enroll_university'
-				'You have successfully passed the entrance exam and can attend the University in September.'
-			else
-				'You have failed the entrance exam. You need to study harder...'
+				act 'Move away':gt 'univer', 'start'
 			end
+		elseif func('uniutil', 'is_enrolled_prepclass') ! 0 and func('uniutil', 'prepclass_in_session') ! 0:
+			act 'Attend preparatory class (1:00)':
+				cla
+				*clr
+				gs 'uniutil', 'prepclass_outcome'
+				'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
+				'You attend the preparatory class for an hour. You pay close attention to what is being said and make notes for the entrance examination later on.'
 
-			act 'Leave class':gt 'univer', 'start'
+				act 'Leave class':gt 'univer', 'start'
+			end
+		end
+
+		if month = func('uniutil', 'entrance_exam_month'):
+			'You can try to take an entrance exam.'
+
+			act 'Take the entrance exam (1:00)':
+				cla
+				*clr
+				minut += 60
+				'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
+
+				if pcs_intel + func('uniutil', 'prepclass_count') >= 60:
+					gs 'uniutil', 'enroll_university'
+					'You have successfully passed the entrance exam and can attend the University in September.'
+				else
+					'You have failed the entrance exam. You need to study harder...'
+				end
+
+				act 'Leave class':gt 'univer', 'start'
+			end
 		end
 	end
 
