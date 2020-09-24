@@ -17,7 +17,7 @@ if $ARGS[0] = 'start':
 	end
 
 	'Admission examinations for the University are held in <b>August</b>.'
-	'The lectures begin at <b>08:00</b>. You won''t be allowed to attend if late.'
+	'The lectures begin at <b>'+func('uniutil', 'lecture_start_hour')+':00</b>. You won''t be allowed to attend if late.'
 	'First semester: September, October, November.'
 	'Second semester: February, March, April.'
 
@@ -133,18 +133,17 @@ if $ARGS[0] = 'dekanat':
 	'You have completed <<kurs>> assignments for <<semestr>>.'
 	'Before the semester ends you must at least complete <<kurs>> of classes. It is positively looked upon if you manage to complete more.'
 
-	if kursovikD > 0:'You''ve passed <<kursovikD>> assignments.'
+	if func('uniutil', 'assignments_done') > 0:'You''ve passed '+func('uniutil', 'assignments_done')+' assignments.'
 
 	act 'Leave the Dean''s office':gt 'univer', 'start'
 
-	if hour < 8 and func('uniutil', 'student_status') > 0:
-		act 'Attend the lecture (6:00)':
+	if hour < func('uniutil', 'lecture_start_hour') and func('uniutil', 'student_status') > 0:
+		act 'Attend the lecture ('+func('uniutil', 'lecture_length')+':00)':
 			cla 
 			*clr
-			minut += 360
-			hour = 14
+			hour = func('uniutil', 'lecture_start_hour') + func('uniutil', 'lecture_length')
 			minut = 0
-			lektor += 1
+			gs 'uniutil', 'update_lectures_attended'
 			intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
 			menu_off = 1
 			gs 'stat'
@@ -287,13 +286,12 @@ if $ARGS[0] = 'dekanat':
 	end
 !!end of secent scene expansion.
 
-	if kursovik >= 100:
+	if func('uniutil', 'finished_assignment') ! 0:
 		act 'Hand in your assignment':
 			cla
 			*clr
 			intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
-			kursovik = 0
-			kursovikD += 1
+			gs 'uniutil', 'update_assignments_done'
 			'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom1.jpg"></center>'
 			'You hand in your completed assignment.'
 
@@ -311,21 +309,21 @@ if $ARGS[0] = 'examen':
 	'<center><b><font color="maroon">Exam</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/examen.jpg"></center>'
 
-	if lektor > 55 and kursovikD >= kurs:
+	if func('uniutil', 'have_great_attendence') ! 0 and func('uniutil', 'did_min_num_assignments') ! 0:
 		gs 'uniutil', 'exam_outcome', 'passed_honors'
-		'You completed all your examinations, passing them with honors, and on top of that you had outstanding attendance.'
+		'You completed all your examinations, passing them with honors, and on top of that, you had outstanding attendance.'
 
-	elseif ((pcs_intel >= 80) or (lektor > 40 and lektor <= 55)) and kursovikD >= kurs:
+	elseif pcs_intel >= 100 and func('uniutil', 'have_ok_attendence') = 0 and func('uniutil', 'did_great_num_assignments') ! 0:
+		gs 'uniutil', 'exam_outcome', 'passed_honors'
+		'Despite missing a lot of classes, you still managed to complete all the assignments and somehow still managed to pass with honors.'
+
+	else if pcs_intel >= 100 and func('uniutil', 'have_ok_attendence') ! 0 and func('uniutil', 'did_min_num_assignments') ! 0:
+		gs 'uniutil', 'exam_outcome', 'passed_honors'
+		'You completed all your examinations, passing them with honors.'
+
+	elseif (pcs_intel >= 80 or func('uniutil', 'have_ok_attendence') ! 0) and func('uniutil', 'did_min_num_assignments') ! 0:
 		gs 'uniutil', 'exam_outcome', 'passed'
 		'You completed all your assignments and passed the exam.'
-
-	elseif (pcs_intel >= 100) and kursovikD >= kurs + 10:
-		gs 'uniutil', 'exam_outcome', 'passed_honors'
-		'Despite missing a lot of classes you still managed to complete all the assignments and somehow still managed to pass with honors.'
-
-	elseif (pcs_intel < 70 and lektor <= 40) or kursovikD < kurs:
-		gs 'uniutil', 'exam_outcome', 'failed'
-		'You failed to pass the exam.'
 
 	else
 		gs 'uniutil', 'exam_outcome', 'failed'
