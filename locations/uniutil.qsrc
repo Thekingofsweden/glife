@@ -20,6 +20,10 @@ if $ARGS[0] = 'prepclass_closing_hour':
 	RESULT = 21
 end
 
+if $ARGS[0] = 'is_prepclass_month':
+	RESULT = month <= func('uniutil', 'entrance_exam_month')
+end
+
 if $ARGS[0] = 'prepclass_in_session':
 	RESULT = hour < func('uniutil', 'prepclass_closing_hour') and week < 6
 
@@ -37,6 +41,10 @@ if $ARGS[0] = 'unenroll_prepclass':
 
 if $ARGS[0] = 'entrance_exam_month':
 	RESULT = 8
+end
+
+if $ARGS[0] = 'is_entrance_exam_month':
+	RESULT = month = func('uniutil', 'entrance_exam_month')
 end
 
 if $ARGS[0] = 'student_status':
@@ -90,6 +98,10 @@ if $ARGS[0] = 'update_lectures_attended':
 	lektor += 1
 end
 
+if $ARGS[0] = 'reset_lectures_attended':
+	killvar 'lektor'
+end
+
 if $ARGS[0] = 'have_great_attendence':
 	RESULT = func('uniutil', 'lectures_attended') > 55
 end
@@ -122,7 +134,12 @@ end
 if $ARGS[0] = 'update_assignments_done':
 	gs 'uniutil', 'reset_assignment_progress'
 	kursovikD += 1
-end	
+end
+
+if $ARGS[0] = 'reset_assignments_done':
+	gs 'uniutil', 'reset_assignment_progress'
+	killvar 'kursovikD'
+end
 
 if $ARGS[0] = 'did_great_num_assignments':
 	RESULT = func('uniutil', 'assignments_done') > 10
@@ -132,27 +149,160 @@ if $ARGS[0] = 'did_min_num_assignments':
 end
 
 if $ARGS[0] = 'scholarship_active':
-	RESULT = stipuha = 1
+	RESULT = stipuha = 1 and func('uniutil', 'is_semester_month') ! 0
 end
 
 if $ARGS[0] = 'scholarship_value':
 	RESULT = 1200
 end
 
+if $ARGS[0] = 'enable_scholarship'
+	stipuha = 1
+end
+
+if $ARGS[0] = 'reset_scholarship':
+	killvar 'stipuha'
+end
+
+if $ARGS[0] = 'semester':
+	RESULT = semestr
+end
+
+if $ARGS[0] = 'lecture_start_month':
+	if ARGS[1] = 1:
+		RESULT = 9
+	elseif ARGS[1] = 2:
+		RESULT = 2
+	else:
+		!! Set to impossible month if it is not semester 1 or 2
+		RESULT = 13
+	end
+end
+
+if $ARGS[0] = 'lecture_end_month':
+	if ARGS[1] = 1:
+		RESULT = 11
+	elseif ARGS[1] = 2:
+		RESULT = 4
+	else:
+		!! Set to impossible month if it is not semester 1 or 2
+		RESULT = 0
+	end
+end
+
+if $ARGS[0] = 'exam_month':
+	if ARGS[1] = 1:
+		RESULT = 12
+	elseif ARGS[1] = 2:
+		RESULT = 5
+	else:
+		!! Set to impossible month if it is not semester 1 or 2
+		RESULT = 0
+	end
+end
+
+if $ARGS[0] = 'is_lecture_month':
+	unilect_sm = func('uniutil', 'lecture_start_month', func('uniutil', 'semester'))
+	unilect_em = func('uniutil', 'lecture_end_month', func('uniutil', 'semester'))
+	if unilect_sm <= unilect_em:
+		!! if semester is in one calendar year
+		RESULT = month >= unilect_sm and month <= unilect_em
+	else:
+		!! if semester continues through New Years
+		RESULT = month >= unilect_sm or month <= unilect_em
+	end
+	killvar 'unilect_sm'
+	killvar 'unilect_em'
+end
+
+if $ARGS[0] = 'lecture_in_session':
+	RESULT = func('uniutil', 'is_lecture_month') ! 0 and week < 6
+
+if $ARGS[0] = 'is_exam_month':
+	RESULT = month = func('uniutil', 'exam_month', func('uniutil', 'semester'))
+end
+
+if $ARGS[0] = 'exam_in_session':
+	RESULT = func('uniutil', 'is_exam_month') ! 0 and week < 6
+
+if $ARGS[0] = 'is_semester_month':
+	RESULT = func('uniutil', 'is_lecture_month') ! 0 or func('uniutil', 'is_exam_month') ! 0
+end
+
+if $ARGS[0] = 'next_semester':
+	if func('uniutil', 'semester') = 1:
+		RESULT = 2
+	else:
+		RESULT = 1
+	end
+end
+
+if $ARGS[0] = 'update_semester':
+	semestr = func('uniutil', 'next_semester')
+end
+
+if $ARGS[0] = 'semester_result':
+	RESULT = examen
+end
+
+if $ARGS[0] = 'set_semester_passed':
+	examen = 1
+end
+
+if $ARGS[0] = 'set_semester_failed':
+	examen = -1
+end
+
+if $ARGS[0] = 'set_semester_skipped':
+	examen = -2
+end
+
+if $ARGS[0] = 'reset_semester_result':
+	killvar 'examen'
+end
+
+if $ARGS[0] = 'semester_passed':
+	RESULT = func('uniutil', 'semester_result') > 0
+end
+
+if $ARGS[0] = 'semester_failed':
+	RESULT = func('uniutil', 'semester_result') < 0
+end
+
 if $ARGS[0] =  'exam_outcome':
-	kursovikD = 0
-	lektor = 0
+	gs 'uniutil', 'reset_assignments_done'
+	gs 'uniutil', 'reset_lectures_attended'
 
 	if $ARGS[1] = 'passed_honors':
-		examen = 1
-		stipuha = 1
+		gs 'uniutil', 'set_semester_passed'
+		gs 'uniutil', 'enable_scholarship'
 	elseif $ARGS[1] = 'passed'
-		examen = 1
-		stipuha = 0
+		gs 'uniutil', 'set_semester_passed'
+		gs 'uniutil', 'reset_scholarship'
 	else:
-		examen = 2
-		stipuha = 0
+		gs 'uniutil', 'set_semester_failed'
+		gs 'uniutil', 'reset_scholarship'
 	end
+end
+
+if $ARGS[0] = 'check_semester_vs_date':
+	unilect_sm = func('uniutil', 'lecture_start_month', func('uniutil', 'semester'))
+	uniexam_m = func('uniutil', 'exam_month', func('uniutil', 'semester'))
+
+	if unilect_sm <= uniexam_m:
+		!! if semester is in one calendar year
+		if func('uniutil', 'semester_passed') = 0 and (month < unilect_sm or month > uniexam_m):
+			gs 'uniutil', 'set_semester_skipped'
+		end
+	else:
+		!! if semester continues through New Years
+		if func('uniutil', 'semester_passed') = 0 and (month < unilect_sm and month > uniexam_m):
+			gs 'uniutil', 'set_semester_skipped'
+		end
+	end
+
+	killvar 'unilect_sm'
+	killvar 'uniexam_m'
 end
 
 --- uniutil ---------------------------------
