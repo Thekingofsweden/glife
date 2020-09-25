@@ -5,11 +5,11 @@ if $ARGS[0] = 'eligible_for_university':
 end
 
 if $ARGS[0] = 'is_enrolled_prepclass':
-	RESULT = abiturient > 0
+	RESULT = prepclassstats['enrolled'] = 1
 end
 
 if $ARGS[0] = 'prepclass_count':
-	RESULT = abiturient - 1
+	RESULT = prepclassstats['count'] += 1
 end
 
 if $ARGS[0] = 'prepclass_cost':
@@ -28,16 +28,17 @@ if $ARGS[0] = 'prepclass_in_session':
 	RESULT = hour < func('uniutil', 'prepclass_closing_hour') and week < 6
 
 if $ARGS[0] = 'update_prepclass_count':
-	abiturient += 1
+	prepclassstats['count'] += 1
 end
 
 if $ARGS[0] = 'enroll_prepclass':
 	money -= func('uniutil', 'prepclass_cost')
-	abiturient = 1
+	prepclassstats['enrolled'] = 1
+	prepclassstats['count'] = 0
 end
 
 if $ARGS[0] = 'unenroll_prepclass':
-	killvar 'abiturient'
+	killvar 'prepclassstats'
 
 if $ARGS[0] = 'entrance_exam_month':
 	RESULT = 8
@@ -48,23 +49,44 @@ if $ARGS[0] = 'is_entrance_exam_month':
 end
 
 if $ARGS[0] = 'student_status':
+	gs 'uniutil', 'transfer_legacy_vars'
 	RESULT = student
+end
+
+if $ARGS[0] = 'transfer_legacy_vars':
+	if semestr = 0:exit
+
+	unisemestrstats['num'] = semestr
+	unisemestrstats['scholarship'] = stipuha
+	unisemestrstats['lectures_attended'] = lektor
+	unisemestrstats['assignment_progress'] = kursovik
+	unisemestrstats['assignments_done'] = kursovikD
+	unisemestrstats['is_passed'] = examen
+
+	killvar 'semestr'
+	killvar 'stipuha'
+	killvar 'lektor'
+	killvar 'kursovik'
+	killvar 'kursovikD'
+	killvar 'examen'
 end
 
 if $ARGS[0] = 'enroll_university':
 	gs 'uniutil', 'unenroll_prepclass'
 	student = 1
 	kurs = 1
-	semestr = 1
+	unisemestrstats['num'] = 1
+	gs 'uniutil', 'reset_scholarship'
+	gs 'uniutil', 'reset_lectures_attended'
+	gs 'uniutil', 'reset_assignments'
+	gs 'uniutil', 'reset_semester_result'
 end
 
 if $ARGS[0] = 'unenroll_university':
 	if student > 0:
 		killvar 'student'
 		killvar 'kurs'
-		killvar 'semestr'
-		killvar 'stipuha'
-		killvar 'lektor'
+		killvar 'unisemestrstats'
 	end
 end
 
@@ -91,7 +113,7 @@ if $ARGS[0] = 'lecture_length':
 	RESULT = 6
 
 if $ARGS[0] = 'lectures_attended':
-	RESULT = lektor
+	RESULT = unisemestrstats['lectures_attended']
 end
 
 if $ARGS[0] = 'update_lectures_attended':
@@ -99,7 +121,7 @@ if $ARGS[0] = 'update_lectures_attended':
 end
 
 if $ARGS[0] = 'reset_lectures_attended':
-	killvar 'lektor'
+	unisemestrstats['lectures_attended'] = 0
 end
 
 if $ARGS[0] = 'have_great_attendence':
@@ -111,16 +133,16 @@ if $ARGS[0] = 'have_ok_attendence':
 end
 
 if $ARGS[0] = 'assignment_progress':
-	RESULT = kursovik
+	RESULT = unisemestrstats['assignment_progress']
 end
 
 if $ARGS[0] = 'update_assignment_progress':
-    kursovik += rand(pcs_intel / 20, pcs_intel / 10)
-    if func('uniutil', 'assignment_progress') > 100:kursovik = 100
+    unisemestrstats['assignment_progress'] += rand(pcs_intel / 20, pcs_intel / 10)
+    if func('uniutil', 'assignment_progress') > 100:unisemestrstats['assignment_progress'] = 100
 end
 
 if $ARGS[0] = 'reset_assignment_progress':
-	killvar 'kursovik'
+	unisemestrstats['assignment_progress'] = 0
 end
 
 if $ARGS[0] = 'finished_assignment':
@@ -128,17 +150,21 @@ if $ARGS[0] = 'finished_assignment':
 end
 
 if $ARGS[0] = 'assignments_done':
-	RESULT = kursovikD
+	RESULT = unisemestrstats['assignments_done']
 end
 
 if $ARGS[0] = 'update_assignments_done':
 	gs 'uniutil', 'reset_assignment_progress'
-	kursovikD += 1
+	unisemestrstats['assignments_done'] += 1
 end
 
 if $ARGS[0] = 'reset_assignments_done':
+	unisemestrstats['assignments_done'] = 0
+end
+
+if $ARGS[0] = 'reset_assignments':
 	gs 'uniutil', 'reset_assignment_progress'
-	killvar 'kursovikD'
+	gs 'uniutil', 'reset_assignments_done'
 end
 
 if $ARGS[0] = 'did_great_num_assignments':
@@ -149,7 +175,7 @@ if $ARGS[0] = 'did_min_num_assignments':
 end
 
 if $ARGS[0] = 'scholarship_active':
-	RESULT = stipuha = 1 and func('uniutil', 'is_semester_month') ! 0
+	RESULT = unisemestrstats['scholarship'] = 1 and func('uniutil', 'is_semester_month') ! 0
 end
 
 if $ARGS[0] = 'scholarship_value':
@@ -157,15 +183,15 @@ if $ARGS[0] = 'scholarship_value':
 end
 
 if $ARGS[0] = 'enable_scholarship'
-	stipuha = 1
+	unisemestrstats['scholarship'] = 1
 end
 
 if $ARGS[0] = 'reset_scholarship':
-	killvar 'stipuha'
+	unisemestrstats['scholarship'] = 0
 end
 
 if $ARGS[0] = 'semester':
-	RESULT = semestr
+	RESULT = unisemestrstats['num']
 end
 
 if $ARGS[0] = 'lecture_start_month':
@@ -238,27 +264,27 @@ if $ARGS[0] = 'next_semester':
 end
 
 if $ARGS[0] = 'update_semester':
-	semestr = func('uniutil', 'next_semester')
+	unisemestrstats['num'] = func('uniutil', 'next_semester')
 end
 
 if $ARGS[0] = 'semester_result':
-	RESULT = examen
+	RESULT = unisemestrstats['is_passed']
 end
 
 if $ARGS[0] = 'set_semester_passed':
-	examen = 1
+	unisemestrstats['is_passed'] = 1
 end
 
 if $ARGS[0] = 'set_semester_failed':
-	examen = -1
+	unisemestrstats['is_passed'] = -1
 end
 
 if $ARGS[0] = 'set_semester_skipped':
-	examen = -2
+	unisemestrstats['is_passed'] = -2
 end
 
 if $ARGS[0] = 'reset_semester_result':
-	killvar 'examen'
+	unisemestrstats['is_passed'] = 0
 end
 
 if $ARGS[0] = 'semester_passed':
@@ -270,7 +296,7 @@ if $ARGS[0] = 'semester_failed':
 end
 
 if $ARGS[0] =  'exam_outcome':
-	gs 'uniutil', 'reset_assignments_done'
+	gs 'uniutil', 'reset_assignments'
 	gs 'uniutil', 'reset_lectures_attended'
 
 	if $ARGS[1] = 'passed_honors':
