@@ -12,18 +12,36 @@ if $ARGS[0] = 'start':
 	'<center><b><font color="maroon">The University</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/univer.jpg"></center>'
 
-	if func('uniutil', 'student_status') = 0 and func('uniutil', 'is_enrolled_prepclass') = 0:
-		'You can take preparatory classes at the University for '+func('uniutil', 'prepclass_cost')' <b>₽</b>.'
-	end
-
-	'Admission examinations for the University are held in <b>August</b>.'
-	'The lectures begin at <b>'+func('uniutil', 'lecture_start_hour')+':00</b>. You won''t be allowed to attend if late.'
+	'University lectures begin at <b>'+func('uniutil', 'lecture_start_hour')+':00</b>. Students aren''t allowed to attend if late.'
 	'First semester: September, October, November.'
 	'Second semester: February, March, April.'
 
-	if func('uniutil', 'student_status') > 0:'You have completed <<kurs>> assignments for '+func('uniutil', 'semester')+'.'
-
-	if func('uniutil', 'is_enrolled_prepclass') ! 0:'You''ve enrolled in the preparatory classes.'
+	if func('uniutil', 'graduated') ! 0:
+		'You have graduated from the University.'
+	elseif func('uniutil', 'expelled_for_failing') ! 0:
+		'You have been expelled from the University for failing your exams.'
+	elseif func('uniutil', 'expelled_for_skipping') ! 0:
+		'You have been expelled from the University for skipping your exams.'
+	elseif func('uniutil', 'expelled_for_other_reason') ! 0:
+		'You have been expelled from the University for reasons unrelated to your exam results.'
+	elseif func('uniutil', 'student_status') > 0:
+		if func('uniutil', 'passed_semester_count') = func('uniutil', 'semesters_to_graduate'):
+			gs 'uniutil', 'graduate'
+			'Congratulations, you''ve earned your degree!'
+		elseif func('uniutil', 'semester_failed') ! 0:
+			gs 'uniutil', 'expel'
+			'You got expelled from the University.'
+		else:
+			'You are enrolled at the University.'
+		end
+	else:
+		if func('uniutil', 'is_enrolled_prepclass') ! 0:
+			'You''ve enrolled in the preparatory classes.'
+		else:
+			'You can take preparatory classes at the University for '+func('uniutil', 'prepclass_cost')' <b>₽</b>.'
+		end
+		'Admission examinations for the University are held in <b>August</b>.'
+	end
 
 	act 'Leave':
 		cla
@@ -51,7 +69,7 @@ if $ARGS[0] = 'start':
 					gs 'uniutil', 'update_prepclass_count'
 					intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
 					'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
-					'You attend the preparatory class for an hour. You pay close attention to what is being said and make notes for the entrance examination later on.'
+					'You attend the preparatory class for an hour. You pay close attention to what is being said and take notes for the entrance examination later on.'
 
 					act 'Leave class':gt 'univer', 'start'
 				end
@@ -97,33 +115,15 @@ if $ARGS[0] = 'dekanat':
 	cla & *clr
 	minut += 5
 
-	if func('uniutil', 'semester_passed') ! 0:
-		gs 'uniutil', 'reset_semester_result'
-
-		if func('uniutil', 'semester') = 2:
-			kurs += 1
-		end
-
-		gs 'uniutil', 'update_semester'
-	elseif func('uniutil', 'semester_failed') ! 0:
-		gs 'uniutil', 'expel'
-
-		'You got expelled from the University.'
-	end
-
-	if kurs = 2:
-		gs 'uniutil', 'graduate'
-
-		'Congratulations, you''ve earned your degree!'
-	end
-
 	gs 'stat'
 	'<center><b><font color="maroon">Dean</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/dekanat.jpg"></center>'
-	'You have completed <<kurs>> assignments for '+func('uniutil', 'semester')+'.'
-	'Before the semester ends you must at least complete <<kurs>> of classes. It is positively looked upon if you manage to complete more.'
+	'You are enrolled at the University for semester '+func('uniutil', 'semester')+'.'
+	'At the end of your semester, you must pass your exams. Attending lectures will help you prepare.'
+	'You must also pass at least '+func('uniutil', 'min_num_assignments')+' assignment'+iif(func('uniutil', 'min_num_assignments') = 1, '', 's')+'before the semester ends.'
+	'It is positively looked upon if you manage to complete more.'
 
-	if func('uniutil', 'assignments_done') > 0:'You''ve passed '+func('uniutil', 'assignments_done')+' assignments.'
+	if func('uniutil', 'assignments_done') > 0:'You''ve passed '+func('uniutil', 'assignments_done')+' assignment'+iif(func('uniutil', 'assignments_done') = 1, '', 's')+'.'
 
 	act 'Leave the Dean''s office':gt 'univer', 'start'
 
@@ -320,7 +320,7 @@ if $ARGS[0] = 'examen':
 		'You failed to pass the exam.'
 	end
 
-	act 'Leave the exam room':gt 'univer', 'dekanat'
+	act 'Leave the exam room':gt 'univer', 'start'
 end
 
 --- univer ---------------------------------
