@@ -12,33 +12,33 @@ if $ARGS[0] = 'start':
 	'<center><b><font color="maroon">The University</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/univer.jpg"></center>'
 
-	'University lectures begin at <b>'+func('uniutil', 'lecture_start_hour')+':00</b>. Students aren''t allowed to attend if late.'
+	'University lectures begin at <b>'+func('uniutil', 'lecture', 'start_hour')+':00</b>. Students aren''t allowed to attend if late.'
 	'First semester: September, October, November.'
 	'Second semester: February, March, April.'
 
-	if func('uniutil', 'graduated') ! 0:
+	if func('uniutil', 'student', 'graduated'):
 		'You have graduated from the University.'
-	elseif func('uniutil', 'expelled_for_failing') ! 0:
+	elseif func('uniutil', 'student', 'expelled_for_failing'):
 		'You have been expelled from the University for failing your exams.'
-	elseif func('uniutil', 'expelled_for_skipping') ! 0:
+	elseif func('uniutil', 'student', 'expelled_for_skipping'):
 		'You have been expelled from the University for skipping your exams.'
-	elseif func('uniutil', 'expelled_for_other_reason') ! 0:
+	elseif func('uniutil', 'student', 'expelled_for_other_reason'):
 		'You have been expelled from the University for reasons unrelated to your exam results.'
-	elseif func('uniutil', 'student_status') > 0:
-		if func('uniutil', 'passed_semester_count') = func('uniutil', 'semesters_to_graduate'):
-			gs 'uniutil', 'graduate'
+	elseif func('uniutil', 'student', 'enrolled'):
+		if func('uniutil', 'passed_semesters', 'get') = func('uniutil', 'student', 'semesters_to_graduate'):
+			gs 'uniutil', 'student', 'graduate'
 			'Congratulations, you''ve earned your degree!'
-		elseif func('uniutil', 'semester_failed') ! 0:
-			gs 'uniutil', 'expel'
+		elseif func('uniutil', 'semester_result', 'is_failed'):
+			gs 'uniutil', 'student', 'expel'
 			'You got expelled from the University.'
 		else:
 			'You are enrolled at the University.'
 		end
 	else:
-		if func('uniutil', 'is_enrolled_prepclass') ! 0:
+		if func('uniutil', 'prepclass', 'is_enrolled'):
 			'You''ve enrolled in the preparatory classes.'
 		else:
-			'You can take preparatory classes at the University for '+func('uniutil', 'prepclass_cost')' <b>₽</b>.'
+			'You can take preparatory classes at the University on weekdays for '+func('uniutil', 'prepclass', 'cost')' <b>₽</b>.'
 		end
 		'Admission examinations for the University are held in <b>August</b>.'
 	end
@@ -49,34 +49,38 @@ if $ARGS[0] = 'start':
 		gt 'city_island'
 	end
 
-	if func('uniutil', 'eligible_for_university') ! 0:
-		if func('uniutil', 'is_prepclass_month') ! 0:
-			if func('uniutil', 'is_enrolled_prepclass') = 0 and money >= func('uniutil', 'prepclass_cost'):
-				act 'Pay for the preparatory classes ('+func('uniutil', 'prepclass_cost')+' <b>₽</b>)':
-					cla
-					minut += 5
-					menu_off = 1
-					gs 'uniutil', 'enroll_prepclass'
-					'You paid '+func('uniutil', 'prepclass_cost')+' <b>₽</b> for the preparatory classes. They are held every weekday until <b>'+func('uniutil', 'prepclass_closing_hour')+':00</b>.'
+	if func('uniutil', 'eligible_for_university'):
+		if func('uniutil', 'prepclass', 'offered_this_month'):
+			if func('uniutil', 'prepclass', 'is_enrolled'):
+				if func('uniutil', 'prepclass', 'in_session'):
+					act 'Attend preparatory class (1:00)':
+						cla
+						*clr
+						minut += 60
+						gs 'uniutil', 'prepclass', 'update_count'
+						intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
+						'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
+						'You attend the preparatory class for an hour. You pay close attention to what is being said and take notes for the entrance examination later on.'
 
-					act 'Move away':gt 'univer', 'start'
+						act 'Leave class':gt 'univer', 'start'
+					end
 				end
-			elseif func('uniutil', 'is_enrolled_prepclass') ! 0 and func('uniutil', 'prepclass_in_session') ! 0:
-				act 'Attend preparatory class (1:00)':
-					cla
-					*clr
-					minut += 60
-					gs 'uniutil', 'update_prepclass_count'
-					intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
-					'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
-					'You attend the preparatory class for an hour. You pay close attention to what is being said and take notes for the entrance examination later on.'
+			else:
+				if money >= func('uniutil', 'prepclass', 'cost'):
+					act 'Pay for the preparatory classes ('+func('uniutil', 'prepclass', 'cost')+' <b>₽</b>)':
+						cla
+						minut += 5
+						menu_off = 1
+						gs 'uniutil', 'prepclass', 'enroll'
+						'You paid '+func('uniutil', 'prepclass', 'cost')+' <b>₽</b> for the preparatory classes. They are held every weekday until <b>'+func('uniutil', 'prepclass', 'closing_hour')+':00</b>.'
 
-					act 'Leave class':gt 'univer', 'start'
+						act 'Move away':gt 'univer', 'start'
+					end
 				end
 			end
 		end
 
-		if func('uniutil', 'is_entrance_exam_month') ! 0:
+		if func('uniutil', 'entrance_exam', 'offered_today'):
 			'You can try to take an entrance exam.'
 
 			act 'Take the entrance exam (1:00)':
@@ -85,8 +89,8 @@ if $ARGS[0] = 'start':
 				minut += 60
 				'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom.jpg"></center>'
 
-				if pcs_intel + func('uniutil', 'prepclass_count') >= 60:
-					gs 'uniutil', 'enroll_university'
+				if pcs_intel + func('uniutil', 'prepclass', 'count') >= 60:
+					gs 'uniutil', 'student', 'enroll'
 					'You have successfully passed the entrance exam and can attend the University in September.'
 				else
 					'You have failed the entrance exam. You need to study harder...'
@@ -97,14 +101,13 @@ if $ARGS[0] = 'start':
 		end
 	end
 
-	if func('uniutil', 'student_status') > 0:
-		if func('uniutil', 'lecture_in_session') ! 0:
+	if func('uniutil', 'student', 'enrolled'):
+		if func('uniutil', 'lecture', 'offered_today'):
 			act 'Visit the Dean':
 				cla
-				gs 'uniutil', 'check_semester_vs_date'
 				gt 'univer', 'dekanat'
 			end
-		elseif func('uniutil', 'exam_in_session') ! 0:
+		elseif func('uniutil', 'exam', 'offered_today'):
 			act 'Take the exam':gt 'univer', 'examen'
 		end
 	end
@@ -118,22 +121,21 @@ if $ARGS[0] = 'dekanat':
 	gs 'stat'
 	'<center><b><font color="maroon">Dean</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/dekanat.jpg"></center>'
-	'You are enrolled at the University for semester '+func('uniutil', 'semester')+'.'
+	'You are enrolled at the University for semester '+func('uniutil', 'semester', 'get')+'.'
 	'At the end of your semester, you must pass your exams. Attending lectures will help you prepare.'
-	'You must also pass at least '+func('uniutil', 'min_num_assignments')+' assignment'+iif(func('uniutil', 'min_num_assignments') = 1, '', 's')+'before the semester ends.'
+	'You must also pass at least '+func('uniutil', 'assignments_done', 'min_num')+' assignment'+iif(func('uniutil', 'assignments_done', 'min_num') = 1, '', 's')+'before the semester ends.'
 	'It is positively looked upon if you manage to complete more.'
-
-	if func('uniutil', 'assignments_done') > 0:'You''ve passed '+func('uniutil', 'assignments_done')+' assignment'+iif(func('uniutil', 'assignments_done') = 1, '', 's')+'.'
+	'You''ve passed '+func('uniutil', 'assignments_done', 'get')+' assignment'+iif(func('uniutil', 'assignments_done', 'get') = 1, '', 's')+' so far.'
 
 	act 'Leave the Dean''s office':gt 'univer', 'start'
 
-	if hour < func('uniutil', 'lecture_start_hour') and func('uniutil', 'student_status') > 0:
-		act 'Attend the lecture ('+func('uniutil', 'lecture_length')+':00)':
+	if func('uniutil', 'lecture', 'in_session') and func('uniutil', 'student', 'enrolled'):
+		act 'Attend the lecture ('+func('uniutil', 'lecture', 'length')+':00)':
 			cla 
 			*clr
-			hour = func('uniutil', 'lecture_start_hour') + func('uniutil', 'lecture_length')
+			hour = func('uniutil', 'lecture', 'start_hour') + func('uniutil', 'lecture', 'length')
 			minut = 0
-			gs 'uniutil', 'update_lectures_attended'
+			gs 'uniutil', 'attendance', 'update'
 			intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
 			menu_off = 1
 			gs 'stat'
@@ -276,12 +278,12 @@ if $ARGS[0] = 'dekanat':
 	end
 !!end of secent scene expansion.
 
-	if func('uniutil', 'finished_assignment') ! 0:
+	if func('uniutil', 'assignment_progress', 'is_finished'):
 		act 'Hand in your assignment':
 			cla
 			*clr
 			intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
-			gs 'uniutil', 'update_assignments_done'
+			gs 'uniutil', 'assignments_done', 'update'
 			'<center><img <<$set_imgh>> src="images/locations/city/island/university/classroom1.jpg"></center>'
 			'You hand in your completed assignment.'
 
@@ -299,19 +301,19 @@ if $ARGS[0] = 'examen':
 	'<center><b><font color="maroon">Exam</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/examen.jpg"></center>'
 
-	if func('uniutil', 'have_great_attendence') ! 0 and func('uniutil', 'did_min_num_assignments') ! 0:
+	if func('uniutil', 'attendance', 'is_great') and func('uniutil', 'assignments_done', 'did_min_num'):
 		gs 'uniutil', 'exam_outcome', 'passed_honors'
 		'You completed all your examinations, passing them with honors, and on top of that, you had outstanding attendance.'
 
-	elseif pcs_intel >= 100 and func('uniutil', 'have_ok_attendence') = 0 and func('uniutil', 'did_great_num_assignments') ! 0:
+	elseif pcs_intel >= 100 and func('uniutil', 'attendance', 'is_bad') and func('uniutil', 'assignments_done', 'did_great_num'):
 		gs 'uniutil', 'exam_outcome', 'passed_honors'
 		'Despite missing a lot of classes, you still managed to complete all the assignments and somehow still managed to pass with honors.'
 
-	else if pcs_intel >= 100 and func('uniutil', 'have_ok_attendence') ! 0 and func('uniutil', 'did_min_num_assignments') ! 0:
+	else if pcs_intel >= 100 and func('uniutil', 'attendance', 'is_ok') and func('uniutil', 'assignments_done', 'did_min_num'):
 		gs 'uniutil', 'exam_outcome', 'passed_honors'
 		'You completed all your examinations, passing them with honors.'
 
-	elseif (pcs_intel >= 80 or func('uniutil', 'have_ok_attendence') ! 0) and func('uniutil', 'did_min_num_assignments') ! 0:
+	elseif (pcs_intel >= 80 or func('uniutil', 'attendance', 'is_ok')) and func('uniutil', 'assignments_done', 'did_min_num'):
 		gs 'uniutil', 'exam_outcome', 'passed'
 		'You completed all your assignments and passed the exam.'
 
