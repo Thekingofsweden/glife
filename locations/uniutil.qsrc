@@ -68,6 +68,10 @@ if $ARGS[0] = 'entrance_exam':
 	if $ARGS[1] = 'is_passed':
 		RESULT = pcs_intel + func('uniutil', 'prepclass', 'count') >= 60
 	end
+
+	if $ARGS[1] = 'print_month':
+		$RESULT = $monthName[func('uniutil', 'entrance_exam', 'month')]
+	end
 end
 
 !! The legacy vars are the vars used by the university before the vars were largely consolidated into
@@ -414,6 +418,26 @@ if $ARGS[0] = 'lecture':
 	if $ARGS[1] = 'in_session':
 		RESULT = func('uniutil', 'lecture', 'offered_today') and hour < func('uniutil', 'lecture', 'start_hour')
 	end
+
+	if $ARGS[1] = 'print_start_month':
+		$RESULT = $monthName[func('uniutil', 'lecture', 'start_month', ARGS[2])]
+	end
+
+	if $ARGS[1] = 'print_months':
+		unilect_idx = func('uniutil', 'lecture', 'start_month', ARGS[2])
+		unilect_end = func('uniutil', 'lecture', 'end_month', ARGS[2])
+
+		:lectureprintmonthsloop
+		$RESULT += $monthname[unilect_idx]
+		if unilect_idx ! unilect_end:
+			$RESULT += ', '
+			unilect_idx = (unilect_idx mod 12) + 1
+			jump :lectureprintmonthsloop
+		end
+
+		killvar 'unilect_idx'
+		killvar 'unilect_end'
+	end
 end
 
 if $ARGS[0] = 'exam':
@@ -435,6 +459,10 @@ if $ARGS[0] = 'exam':
 	if $ARGS[1] = 'offered_today':
 		RESULT = func('uniutil', 'exam', 'offered_this_month') and week < 6
 	end
+
+	if $ARGS[1] = 'print_month':
+		$RESULT = $monthname[func('uniutil', 'exam', 'month', ARGS[2])]
+	end
 end
 
 if $ARGS[0] = 'semester':
@@ -447,11 +475,11 @@ if $ARGS[0] = 'semester':
 	end
 
 	if $ARGS[1] = 'next':
-		if func('uniutil', 'semester', 'get') = 1:
-			RESULT = 2
-		else:
-			RESULT = 1
-		end
+		RESULT = (func('uniutil', 'semester', 'get') mod func('uniutil', 'semester', 'total')) + 1
+	end
+
+	if $ARGS[1] = 'total':
+		RESULT = 2
 	end
 
 	if $ARGS[1] = 'update':
@@ -468,6 +496,26 @@ if $ARGS[0] = 'semester':
 
 	if $ARGS[1] = 'is_active':
 		RESULT = func('uniutil', 'lecture', 'offered_this_month') or func('uniutil', 'exam' 'offered_this_month')
+	end
+
+	if $ARGS[1] = 'print_months':
+		$RESULT = 'Semester ' + ARGS[2] + ' lectures: ' + func('uniutil', 'lecture', 'print_months') + '.
+'
+		$RESULT += 'Semester ' + ARGS[2] + ' exams: ' + func('uniutil', 'exam', 'print_month') + '.
+'
+	end
+
+	if $ARGS[1] = 'print_all_months':
+		unisemester_idx = 1
+
+		:semesterprintmonthsloop
+		$RESULT += func('uniutil', 'semester', 'print_months', unisemester_idx)
+		if unisemester_idx < func('uniutil', 'semester', 'total')
+			unisemester_idx += 1
+			jump 'semesterprintmonthsloop'
+		end
+
+		killvar 'unisemester_idx'
 	end
 end
 
