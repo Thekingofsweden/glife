@@ -90,7 +90,7 @@ if $ARGS[0] = 'transfer_legacy_vars':
 			!! under the old system, the semestr variable was advanced when the exam was passed, so if the
 			!! variable is set to a value that does not match the current month, the player skipped the exam
 			!! and is expelled
-			gs 'student', 'set_status', -2
+			gs 'uniutil', 'student', 'set_status', -2
 			killvar 'unisemestrstats'
 		elseif semestr = 2 and month = func('uniutil', 'exam', 'month', 1):
 			!! semestr = 2 in first semester exam month in the old system indicates that its still the first
@@ -111,7 +111,7 @@ if $ARGS[0] = 'transfer_legacy_vars':
 		end
 
 		gs 'uniutil', 'semester', 'update_year'
-		gs 'uniutil', 'scholarship', 'set', stipuha
+		gs 'uniutil', 'scholarship', 'set', iif(stipuha = 1, func('uniutil', 'scholarship', 'honors_value'), 0)
 	end
 
 	killvar 'kurs'
@@ -263,7 +263,7 @@ if $ARGS[0] = 'student':
 	end
 end
 
-if $ARGS[0] = 'attendance'
+if $ARGS[0] = 'attendance':
 	if $ARGS[1] = 'get':
 		RESULT = unisemestrstats['lectures_attendad']
 	end
@@ -294,7 +294,7 @@ if $ARGS[0] = 'attendance'
 end
 
 if $ARGS[0] = 'assignment_progress':
-	if $ARGS[1] = 'get'
+	if $ARGS[1] = 'get':
 		RESULT = unisemestrstats['assignment_progress']
 	end
 
@@ -370,6 +370,10 @@ if $ARGS[0] = 'scholarship':
 	if $ARGS[1] = 'is_active':
 		RESULT = unisemestrstats['scholarship'] > 0 and func('uniutil', 'semester', 'is_active')
 	end
+
+	if $ARGS[1] = 'honors_value':
+		RESULT = 1200
+	end
 end
 
 if $ARGS[0] = 'lecture':
@@ -379,6 +383,7 @@ if $ARGS[0] = 'lecture':
 
 	if $ARGS[1] = 'length':
 		RESULT = 6
+	end
 
 	if $ARGS[1] = 'start_month':
 		if ARGS[2] = 1:
@@ -437,7 +442,7 @@ if $ARGS[0] = 'lecture':
 		if unilect_idx ! unilect_end:
 			$RESULT += ', '
 			unilect_idx = (unilect_idx mod 12) + 1
-			jump :lectureprintmonthsloop
+			jump 'lectureprintmonthsloop'
 		end
 
 		killvar 'unilect_idx'
@@ -500,13 +505,13 @@ if $ARGS[0] = 'semester':
 	end
 
 	if $ARGS[1] = 'is_active':
-		RESULT = func('uniutil', 'lecture', 'offered_this_month') or func('uniutil', 'exam' 'offered_this_month')
+		RESULT = func('uniutil', 'lecture', 'offered_this_month') or func('uniutil', 'exam', 'offered_this_month')
 	end
 
 	if $ARGS[1] = 'print_months':
-		$RESULT = 'Semester ' + ARGS[2] + ' lectures: ' + func('uniutil', 'lecture', 'print_months') + '.
+		$RESULT = 'Semester ' + ARGS[2] + ' lectures: ' + func('uniutil', 'lecture', 'print_months', ARGS[2]) + '.
 '
-		$RESULT += 'Semester ' + ARGS[2] + ' exams: ' + func('uniutil', 'exam', 'print_month') + '.
+		$RESULT += 'Semester ' + ARGS[2] + ' exams: ' + func('uniutil', 'exam', 'print_month', ARGS[2]) + '.
 '
 	end
 
@@ -515,7 +520,7 @@ if $ARGS[0] = 'semester':
 
 		:semesterprintmonthsloop
 		$RESULT += func('uniutil', 'semester', 'print_months', unisemester_idx)
-		if unisemester_idx < func('uniutil', 'semester', 'total')
+		if unisemester_idx < func('uniutil', 'semester', 'total'):
 			unisemester_idx += 1
 			jump 'semesterprintmonthsloop'
 		end
@@ -561,7 +566,7 @@ if $ARGS[0] =  'exam_outcome':
 
 	if $ARGS[1] = 'passed_honors':
 		gs 'uniutil', 'semester_result', 'set_passed'
-		gs 'uniutil', 'scholarship', 'set', 1200
+		gs 'uniutil', 'scholarship', 'set', func('uniutil', 'scholarship', 'honors_value')
 	elseif $ARGS[1] = 'passed'
 		gs 'uniutil', 'semester_result', 'set_passed'
 		gs 'uniutil', 'scholarship', 'reset'
