@@ -1,7 +1,7 @@
 # uniutil
 
 if $ARGS[0] = 'eligible_for_university':
-	RESULT = func('uniutil', 'student', 'status') = 0 and func('uniutil', 'student', 'graduated') = 0 and (age >= 17 or fakepassport = 1)
+	RESULT = func('uniutil', 'student', 'status') = 0 and func('uniutil', 'diploma', 'obtained') = 0 and (age >= 17 or fakepassport = 1)
 end
 
 if $ARGS[0] = 'prepclass':
@@ -222,7 +222,7 @@ if $ARGS[0] = 'student':
 			gs 'uniutil', 'student', 'set_status', -1
 		elseif func('uniutil', 'check_semester_vs_date') < 0:
 			gs 'uniutil', 'student', 'unenroll'
-			sgs 'uniutil', 'student', 'set_status', -2
+			gs 'uniutil', 'student', 'set_status', -2
 		else:
 			gs 'uniutil', 'student', 'unenroll'
 			gs 'uniutil', 'student', 'set_status', -3
@@ -231,11 +231,7 @@ if $ARGS[0] = 'student':
 
 	if $ARGS[1] = 'graduate':
 		gs 'uniutil', 'student', 'unenroll'
-		diplom = 1
-	end
-
-	if $ARGS[1] = 'graduated':
-		RESULT = diplom > 0
+		gs 'uniutil', 'diploma', 'set_obtained'
 	end
 
 	if $ARGS[1] = 'expelled_for_failing':
@@ -261,6 +257,61 @@ if $ARGS[0] = 'student':
 	if $ARGS[1] = 'semesters_to_graduate':
 		RESULT = 2
 	end
+end
+
+if $ARGS[0] = 'diploma':
+	if $ARGS[1] = 'get':
+		RESULT = diplom
+	end
+
+	if $ARGS[1] = 'set':
+		diplom = ARGS[2]
+	end
+
+	if $ARGS[1] = 'set_obtained':
+		gs 'uniutil', 'diploma', 'set', 1
+		if func('uniutil', 'fake_diploma', 'aware_needed'):
+			gs 'uniutil', 'fake_diploma', 'reset'
+		end
+	end
+
+	if $ARGS[1] = 'obtained':
+		RESULT = func('uniutil', 'diploma', 'get') > 0
+	end
+end
+
+if $ARGS[0] = 'fake_diploma':
+	if $ARGS[1] = 'get':
+		RESULT = fakediplom
+	end
+
+	if $ARGS[1] = 'set':
+		fakediplom = ARGS[2]
+	end
+
+	if $ARGS[1] = 'set_aware_needed':
+		gs 'uniutil', 'fake_diploma', 'set', 2
+	end
+
+	if $ARGS[1] = 'set_obtained':
+		gs 'uniutil', 'fake_diploma', 'set', 1
+	end
+
+	if $ARGS[1] = 'reset':
+		gs 'uniutil', 'fake_diploma', 'set', 0
+	end
+
+	if $ARGS[1] = 'aware_needed':
+		RESULT = func('uniutil', 'student', 'get_fake_diploma_status') = 2
+	end
+
+	if $ARGS[1] = 'obtained':
+		RESULT = func('uniutil', 'student', 'get_fake_diploma_status') = 1
+	end
+end
+
+$ARGS[0] = 'appear_to_have_graduated':
+	RESULT = func('uniutil', 'diploma', 'obtained') or func('uniutil', 'fake_diploma', 'obtained')
 end
 
 if $ARGS[0] = 'attendance':
