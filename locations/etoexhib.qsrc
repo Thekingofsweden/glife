@@ -767,12 +767,9 @@ if $ARGS[0] = 'pos19' or $ARGS[0] = '':
 				gs 'stat'
 				'<center><b><font color="maroon">Personnel department</font></b></center>'
 				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/altschool/ptu_cadr.jpg"></center>'
-				'"Hello!" Welcomes the Human Relations employee. She tells you that they need a certified teacher. Working days are Monday to Saturday from 14.00 to 16.00. The pay is 300 <b>₽</b> per day, plus a room in a hostel. The terms of the contract say that, because of a full salary, at the moment, there is no free meals. There is a strict dress code, it must be business atire. Also it is not recommended for women to have bright makeup or a strong perfume.'
+				'"Hello!" Welcomes the Human Relations employee. She tells you that they need a certified teacher. Working days are Monday to Saturday from 14:00 to 16:00. The pay is 300 <b>₽</b> per day, plus a room in a hostel. The terms of the contract say that, because they pay a full salary, at the moment there are no free meals. There is a strict dress code: business attire is required. Also, it is not recommended for women to have bright makeup or strong perfume.'
 
-				if diplom = 0 and fakediplom < 0:
-					'You are told that you can not take the job without a diploma of higher pedagogical education.'
-					fakediplom = 2
-				elseif diplom = 1 or fakediplom = 1:
+				if func('uniutil', 'appear_to_have_graduated'):
 					act 'Pass an interview for a job':
 						cla
 						*clr
@@ -780,7 +777,7 @@ if $ARGS[0] = 'pos19' or $ARGS[0] = '':
 						gs 'stat'
 						'<center><b><font color="maroon">Human Resource Department</font></b></center>'
 						'<center><img <<$set_imgh>> src="images/locations/pavlovsk/altschool/ptu_cadr.jpg"></center>'
-						'You have passed the oral interview, left a copy of your diploma and other documents to the personnel department, where you are told that you can start working.'
+						'After passing the oral interview, you leave a copy of your '+iif(func('uniutil', 'diploma', 'obtained'), '', 'forged ')+'diploma and other documents with the personnel department, who tell you that you can start working.'
 
 						act 'Become a teacher':
 							cla
@@ -791,6 +788,9 @@ if $ARGS[0] = 'pos19' or $ARGS[0] = '':
 							act 'Exit to Hall':gt 'etoexhib', 'pos19'
 						end
 					end
+				else:
+					'You are told that you cannot take the job without a diploma from an institute of higher education.'
+					gs 'uniutil', 'fake_diploma', 'set_aware_needed'
 				end
 
 				act 'Exit to Hall':gt 'etoexhib', 'pos19'
@@ -1681,19 +1681,18 @@ if $ARGS[0] = 'pos54':
 	gs 'stat'
 
 	'<center><img <<$set_imgh>> src="images/locations/shared/train/spy.jpg"></center>'
-	'A suspicious man. He constantly looks around. Occasionally, some people approach him and leave with papers. After looking carefully, you understand, he sells gas station checks and forged documents. It''s possible and you could find something useful.'
+	'A suspicious man. He constantly looks around. Occasionally, some people approach him and leave with papers. After looking carefully, you understand: he sells gas station checks and forged documents. It''s possible you could find something useful.'
 
-	if fakepassport = 2 or fakediplom = 2:
+	if fakepassport = 2:
 		!only notify player 1 time after events triggered
-		if fakepassport = 2:
-			fakepassport = 0
-			'He tells you "A passport with a fake age will cost you 30,000 <b>₽</b>"'
-		end
+		fakepassport = 0
+		'He tells you "A passport with a fake age will cost you 30,000 <b>₽</b>"'
+	end
 
-		if fakediplom = 2:
-			fakediplom = 0
-			'He tells you "A diploma of bachelor degree will cost you 100,000 <b>₽</b>"'
-		end
+	if func('uniutil', 'fake_diploma', 'aware_needed'):
+		!only notify player 1 time after events triggered
+		gs 'uniutil', 'fake_diploma', 'reset'
+		'He tells you "A diploma for a bachelor''s degree will cost you 100,000 <b>₽</b>"'
 	end
 
 	act 'Leave': gt 'city_industrial_train', 'outside'
@@ -1716,13 +1715,13 @@ if $ARGS[0] = 'pos54':
 		end
 	end
 
-	if diplom = 0 and fakediplom ! 1:
+	if func('uniutil', 'appear_to_have_graduated') = 0:
 		if money => 100000:
 			act 'Buy fake diploma (100,000 <b>₽</b>)':
 				*clr & cla
 				minut += 10
 				money -= 100000
-				fakediplom = 1
+				gs 'uniutil', 'fake_diploma', 'set_obtained'
 
 				'<center><img <<$set_imgh>> src="images/locations/shared/train/spy.jpg"></center>'
 				'You bought a fake diploma.'
