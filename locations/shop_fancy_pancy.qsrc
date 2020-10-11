@@ -1,0 +1,78 @@
+# shop_fancy_pancy
+
+if $ARGS[0] = 'start':
+	$loc_arg = $ARGS[0]
+	$loc = 'shop_fancy_pancy'
+    $location_type = 'public_indoors'
+	$menu_loc = 'shop_fancy_pancy'
+	$menu_arg = 'start'
+	menu_off = 0
+	*clr & cla
+	mag = 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Fancy Pancy</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/boutique/butik.jpg"></center>'
+	*nl
+	'This small boutique shop looks more like a dressing room at the burlesque club nearby. Satin, leather, ruffles and glamour make it clear this is not a place to buy a practical outfit. It is the only place to buy outfits suitable for the burlesque club or perhaps spice up things in the bedroom.'
+	*nl
+
+	'The boutique sells designer winter coats, burlesque clothing, beautiful shoes and exquisite handbags.'
+
+	act 'Leave the boutique': minut += 3 & gt 'torgcentr'
+	
+	act 'View clothing': minut += 5 & gt 'shop_fancy_pancy', 'clothes'
+end
+
+if $ARGS[0] = 'clothes':
+	$loc_arg = 'clothes'
+	$loc = 'shop_fancy_pancy'
+	$menu_loc = 'shop_fancy_pancy'
+	$menu_arg = 'clothes'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing Fancy Pancy outfits</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return': minut += 1 & gt 'shop_fancy_pancy', 'start'
+
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+		if Clothingstock > 11:
+			i = 1
+		else
+			i = 2
+		end
+
+		:loopfancypancy
+			if fancypancy[i] = 0:
+				gs 'clothing_attributes', 'fancypancy', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+				
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''shop_fancy_pancy'', ''fancypancy''"><img src="images/pc/clothing/fancypancy/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 2
+		if i <= 22:jump 'loopfancypancy'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
+end
+
+if $ARGS[0] = 'fancypancy':
+	cla
+	menu_off = 1
+	if fancypancy[i] ! 0:
+		msg 'You already own these clothes.'
+		gt 'shop_fancy_pancy', 'clothes'
+	end
+
+	gt 'clothing', 'view_clothing_item', 'shop', 'fancypancy',i, 20000
+
+end
+
+--- shop_fancy_pancy ---------------------------------
+
