@@ -13,7 +13,7 @@
 !! cheerleadingQW['skipped']		- tracks times Sveta skipped practice/game day (3 > gets you kicked out)
 !! cheerleadingQW['skipped_ev']		- primes Albina confronting Sveta about missing practice next time she sees her
 !! cheerleadingQW['skipped_ev_g']	- primes Albina confronting Sveta about missing the game next time she sees her
-
+!! It can happen that Christina (A18) becomes an outcast, in that case her acts should be avoided.
 menu_off = 1
 $location_type = 'event'
 
@@ -224,7 +224,10 @@ if $ARGS[0] = 'afterschool_practice':
 		end
 	else
 		act 'Skip practice (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end
+	end if
+	if cheerleadingQW['skipped'] > 1:
+		act 'Disjoin cheerleading squad': gt 'gschool_cheerleading', 'Disjoin'
+	end if
 end
 
 if $ARGS[0] = 'afterschool_game':
@@ -255,13 +258,15 @@ if $ARGS[0] = 'afterschool_game':
 	else
 		act 'Skip the game (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
 	end
+	
 end
 
 if $ARGS[0] = 'practice':
 	*clr & cla
 	minut += 5
-	if pregtime >= 90:
-		gt 'gschool_cheerleading', 'Cheerleadersreact'
+	if (pregtime >= 90) or (grupTipe = 5):
+		if pregtime >= 90: gt 'gschool_cheerleading', 'Cheerleadersreact'
+		if grupTipe = 5: gt 'gschool_cheerleading', 'CheerleaderEnd'
 	else
 		cheerleadingQW['practice_count'] += 1
 		gs 'stat'
@@ -289,7 +294,17 @@ if $ARGS[0] = 'practice':
 			end
 		else
 			if cheerleadingQW['quest_stage'] = 2:
-				'The squad is already out practicing when you arrive at the locker room and change. You don''t have the privelege of owning a uniform and instead train in your sports clothing.'
+				if (cheerleadingQW['game_count'] > 6) and (rand(0,3)=0):
+					'As you enter the hall, Albina walks up to you, looking strangely cheerful. "Hey <<$pcs_firstname>>, I''ve been talking with the girls and, since you''ve proven yourself capable, we''re <i>mostly</i> in agreement that you deserve a spot on the squad. I''ll sort you out with a uniform in due time, but you''re part of the squad now. So..welcome, I guess?" she says before walking away to prepare the rest of the squad for practice. You contain your excitement as you take your place among the other girls, overjoyed that you actually made it onto the squad!'
+					cheerleadingQW['quest_stage'] = 3
+				else
+					if npc_grupTipe['A18'] = 5:
+						'As you enter the hall and prepare to take your place in the corner, you notice Albina begrudingly walking up to you. "Let''s just keep this simple, okay? I don''t like and the girls don''t like it, but we need you to take Christina''s place on the squad. Just don''t do anything stupid that embarrasses me or the others and we won''t have any problems okay?" Hearing her warning loud and clear, you meekly take your place among the other girls, your excitment at your ''promotion'' snuffed out by the dread of screwing up and angering Albina looming over you.'
+						cheerleadingQW['quest_stage'] = 3
+					else 
+						'The squad is already out practicing when you arrive at the locker room and change. You don''t have the privelege of owning a uniform and instead train in your sports clothing.'
+					end if
+				end if
 			else
 				'Heading into the locker room, you see Albina and the rest of the squad have already arrived and are in various states of changing into their outfits while chatting to each other. You head to your locker and and strip down. You pull your uniform out and start getting dressed. You just finish tying your shoes when Albina gives the order to head out into the PE hall.'
 			end if
@@ -346,7 +361,7 @@ if $ARGS[0] = 'practice':
 							She then taps her nose at you, silently asking you to keep her secret, before she cheerfully bounces off to get changed.'
 						end if
 					end if
-					if (cheerleadingQW['backup_game'] ! 1) and (rand(0,5) = 0):
+					if (cheerleadingQW['backup_game'] ! 1) and (rand(0,5) = 0) and (npc_grupTipe['A18'] ! 5):
 						*clr & cla
 						'As you are practicing, Lariska goes over on her ankle and falls to the ground. Albina has the group stop and she and Vicky go to check on her. She meekly insists that she is fine, but Albina disagrees and has her stay on the ground as Vicky checks her over. Christina then walks over and chimes in, a worried looking Lina silently standing behind her. "She said she''s fine, so stop fussing and get back to bossing us around!" Albina narrows her gaze. "Does she look fine to you? No, she''s going to sit this one out and we''ll see how ''fine'' she is later!" In response, Lariska tries to get back on her feet, but whimpers slightly in pain. "Stop faking it and get off your lazy ass!" Christina shouts. Lariska looks at her meekly and tries to stand, but Vicky has her sit back down. "She isn''t in any shape to continue. Vicky, take her over there to sit out and rest. We''ll have to make do without her for the rest of the session. Christina doesn''t seem happy, but doesn''t stop Vicky from carrying Lariska over to the benches to rest her injured foot. Albina beckons you over and reluctantly has you take her place for the remainder of the practice session. When you finish, Lariska seems well enough to walk to the changing room with a slight limp, which annoys Christina and causes her to again accuse her of faking it.'
 						act 'Go take a shower': gt 'gschool_cheerleading', 'shower'
@@ -375,8 +390,10 @@ if $ARGS[0] = 'practice':
 
 					random_event_probability = rand(0,8)
 					if random_event_probability = 0:
-						*nl
-						'As you are practicing, Lariska goes over on her ankle and falls to the ground. Albina has the group stop and she and Vicky go to check on her. She meekly insists that she is fine, but Albina disagrees and has her stay on the ground as Vicky checks her over. Christina then walks over and chimes in, a worried looking Lina silently standing behind her. "She said she''s fine, so stop fussing and get back to bossing us around!" Albina narrows her gaze. "Does she look fine to you? No, she''s going to sit this one out and we''ll see how ''fine'' she is later!" In response, Lariska tries to get back on her feet, but whimpers slightly in pain. "Stop faking it and get off your lazy ass!" Christina shouts. Lariska looks at her meekly and tries to stand, but Vicky has her sit back down. "She isn''t in any shape to continue. <<$pcs_nickname>>, help Vicky take her over there to sit out and rest. We''ll have to make do without her for the rest of the session. Christina doesn''t seem happy, but doesn''t stop you and Vicky from carrying Lariska over to the benches to rest her injured foot. Albina then has the group finish the practice session without her. When you finish, Lariska seems well enough to walk to the changing room with a slight limp, which annoys Christina and causes her to again accuse her of faking it.'
+						if npc_grupTipe['A18'] ! 5:
+							*nl
+							'As you are practicing, Lariska goes over on her ankle and falls to the ground. Albina has the group stop and she and Vicky go to check on her. She meekly insists that she is fine, but Albina disagrees and has her stay on the ground as Vicky checks her over. Christina then walks over and chimes in, a worried looking Lina silently standing behind her. "She said she''s fine, so stop fussing and get back to bossing us around!" Albina narrows her gaze. "Does she look fine to you? No, she''s going to sit this one out and we''ll see how ''fine'' she is later!" In response, Lariska tries to get back on her feet, but whimpers slightly in pain. "Stop faking it and get off your lazy ass!" Christina shouts. Lariska looks at her meekly and tries to stand, but Vicky has her sit back down. "She isn''t in any shape to continue. <<$pcs_nickname>>, help Vicky take her over there to sit out and rest. We''ll have to make do without her for the rest of the session. Christina doesn''t seem happy, but doesn''t stop you and Vicky from carrying Lariska over to the benches to rest her injured foot. Albina then has the group finish the practice session without her. When you finish, Lariska seems well enough to walk to the changing room with a slight limp, which annoys Christina and causes her to again accuse her of faking it.'
+						end if
 					elseif random_event_probability = 1:
 						!! Petia and a group of perverts watching you
 						*nl
@@ -395,8 +412,10 @@ if $ARGS[0] = 'practice':
 						*nl
 						'As you practice, Lazar comes into the hall. He watches you and the others for a while before he decides to do some teasing of his own. He takes his shirt off and flexes a bit before he starts jogging laps of the hall, flexing and smiling at you and the others each time he passes you. The girls get a bit flustered and distracted- even Albina bites her lip a few times. You spend the rest of the session distracted by Lazar''s antics, but nobody is complaining about said distraction and a few girls are struggling to hide their arousal.'
 					elseif random_event_probability = 6:
-						*nl
-						'As Lina practices a move that involves holding another girl, Christina decides to amuse herself and pulls Lina''s skirt up, causing her to squeal as her panties are exposed to everyone. She is blushing heavily, forced to endure the humilation since she can''t let go of the girl. Christina eventually lets her skirt go and Albina chews her out for being so reckless and childish while praising Lina for not losing her focus. Christina just laughs and calls her for being a bossy spoilsport while giving a mocking smirk to Lina.'
+						if npc_grupTipe['A18'] ! 5:
+							*nl
+							'As Lina practices a move that involves holding another girl, Christina decides to amuse herself and pulls Lina''s skirt up, causing her to squeal as her panties are exposed to everyone. She is blushing heavily, forced to endure the humilation since she can''t let go of the girl. Christina eventually lets her skirt go and Albina chews her out for being so reckless and childish while praising Lina for not losing her focus. Christina just laughs and calls her for being a bossy spoilsport while giving a mocking smirk to Lina.'
+						end if
 					end if
 				end if
 			end if
@@ -490,128 +509,130 @@ if $ARGS[0] = 'shower':
 
 	random_shower_events = rand(0,5)
 	if random_shower_event < 1:
-		*clr & cla
-		'As you step out of the stall, you can hear the faint moaning of a girl coming from the locker area. You decide to check it out and peek around the corner to see Lina sitting on a bench masturbating. Thankfully, she can''t see you.'
-		gs 'stat'
-
-		act 'Leave alone':
+		if npc_grupTipe['A18'] ! 5:
 			*clr & cla
-			'Although it is pretty hot to watch, you don''t want to push your luck and slowly walk away, leaving her to it. You quietly get dressed and are leaving when you hear her scream loudly in pleasure as she orgasms.'
-			minut += 5
+			'As you step out of the stall, you can hear the faint moaning of a girl coming from the locker area. You decide to check it out and peek around the corner to see Lina sitting on a bench masturbating. Thankfully, she can''t see you.'
 			gs 'stat'
 
-			act 'Leave school': gt 'gschool_grounds', 'main'
-		end
-		act 'Watch':
-			*clr & cla
-			'She''s putting on a show that''s too good to resist. You continue to watch her but she suddenly arches her back and catches you spying.
-			"<<$pcs_nickname>>!!" she exclaims in surprise as she snaps her legs shut. "I didn''t think anyone else was here." She looks down in embarassment. "Christina asked me eat her out earlier and it left me feeling super horny. I just needed a little relief of my own was all. Can... Can you just pretend that you didn''t see me please?'
-			minut += 5
-			gs 'stat'
-
-			act 'Leave':
+			act 'Leave alone':
 				*clr & cla
-				'You agree to keep quiet about what you saw and you both get dressed and leave.'
+				'Although it is pretty hot to watch, you don''t want to push your luck and slowly walk away, leaving her to it. You quietly get dressed and are leaving when you hear her scream loudly in pleasure as she orgasms.'
 				minut += 5
 				gs 'stat'
 
 				act 'Leave school': gt 'gschool_grounds', 'main'
 			end
-			act 'Help out':
+			act 'Watch':
 				*clr & cla
-				'You''ve been feeling rather horny yourself and what you just saw has aroused you even more.
-				"How about we help each other out here? I think we both need a release right now..." you ask as you look at her seductively. She bites her lip as you move over and give her a passionate kiss before you both drop to the floor. You continue making out as you fondle her wet pussy.'
-
-				'You lay her down on her back and move between her legs. You lick her anus before running your tongue over her pussy lips and onto her clit. She moans in delight as you start lapping at her engorged bean.'
-
-				'"Oh that''s good <<$pcs_nickname>> but you need some too!" she says as she has you lie down beside her. She then climbs on top of you and buries her face in your crotch, her glistening pussy sitting before you. She pulls your labia aside to expose your clit and gently starts circling her tongue over it. You moan in immense pleasure and get back to eating out her pussy.'
-
-				'While flicking your tongue over her clit, you decide to add to the pleasure by sliding a few fingers inside her. She moans at the sensasation as you feel her pussy tightly clench around your fingers. You continue to both lick her and finger her in tandem when she says that she is reaching climax. You pull your fingers out and flick your tongue faster and she soon screams in pleasure, her squirt splashing across your face.'
-
-				'Her legs almost buckle as she rides through her orgasm, but she soon turns around and starts licking up her pussy juice as it runs down your face before finishing with a final kiss.
-				"That was just what I fucking needed <<$pcs_nickname>>! You eat pussy like a pro!"
-				With that, she moves to her locker to get dressed. You wash your face at the sink before getting dressed yourself and heading out.'
-  				minut += 15
-				npc_rel['A19'] += 1
-				npc_sex['A19'] += 1 & if npc_sex['A19'] = 1: girl += 1
-				gs 'arousal', 'cuni_give', 15
-				gs 'arousal', 'cuni', -10
-				gs 'arousal', 'end'
-
+				'She''s putting on a show that''s too good to resist. You continue to watch her but she suddenly arches her back and catches you spying.
+				"<<$pcs_nickname>>!!" she exclaims in surprise as she snaps her legs shut. "I didn''t think anyone else was here." She looks down in embarassment. "Christina asked me eat her out earlier and it left me feeling super horny. I just needed a little relief of my own was all. Can... Can you just pretend that you didn''t see me please?'
+				minut += 5
 				gs 'stat'
 
-				act 'Leave school': gt 'gschool_grounds', 'main'
-			end
-		end
+				act 'Leave':
+					*clr & cla
+					'You agree to keep quiet about what you saw and you both get dressed and leave.'
+					minut += 5
+					gs 'stat'
 
+					act 'Leave school': gt 'gschool_grounds', 'main'
+				end
+				act 'Help out':
+					*clr & cla
+					'You''ve been feeling rather horny yourself and what you just saw has aroused you even more.
+					"How about we help each other out here? I think we both need a release right now..." you ask as you look at her seductively. She bites her lip as you move over and give her a passionate kiss before you both drop to the floor. You continue making out as you fondle her wet pussy.'
+
+					'You lay her down on her back and move between her legs. You lick her anus before running your tongue over her pussy lips and onto her clit. She moans in delight as you start lapping at her engorged bean.'
+
+					'"Oh that''s good <<$pcs_nickname>> but you need some too!" she says as she has you lie down beside her. She then climbs on top of you and buries her face in your crotch, her glistening pussy sitting before you. She pulls your labia aside to expose your clit and gently starts circling her tongue over it. You moan in immense pleasure and get back to eating out her pussy.'
+
+					'While flicking your tongue over her clit, you decide to add to the pleasure by sliding a few fingers inside her. She moans at the sensasation as you feel her pussy tightly clench around your fingers. You continue to both lick her and finger her in tandem when she says that she is reaching climax. You pull your fingers out and flick your tongue faster and she soon screams in pleasure, her squirt splashing across your face.'
+
+					'Her legs almost buckle as she rides through her orgasm, but she soon turns around and starts licking up her pussy juice as it runs down your face before finishing with a final kiss.
+					"That was just what I fucking needed <<$pcs_nickname>>! You eat pussy like a pro!"
+					With that, she moves to her locker to get dressed. You wash your face at the sink before getting dressed yourself and heading out.'
+					minut += 15
+					npc_rel['A19'] += 1
+					npc_sex['A19'] += 1 & if npc_sex['A19'] = 1: girl += 1
+					gs 'arousal', 'cuni_give', 15
+					gs 'arousal', 'cuni', -10
+					gs 'arousal', 'end'
+
+					gs 'stat'
+
+					act 'Leave school': gt 'gschool_grounds', 'main'
+				end
+			end
+		end if
 	elseif random_shower_event < 2:
-		'You stay in the shower a little longer than normal and the locker room is quiet as you step out of the stall and wrap yourself in a towel. As you enter the locker room, you head to your locker, but panic when you can''t find your cheerleading outfit inside. "Looking for this?"
-		Before you can react to the voice, your towel is ripped away from you. You turn to see a naked Christina sitting on the bench with your cheerleading outfit in her hands, smiling at you mockingly.
-		"Like I said, you need to earn the right to wear this. Just do as I want and you get it back. You wouldn''t want to anger Albina by losing it would you?"'
-
-		gs 'stat'
-		act 'Submit':
-			*clr & cla
-			'You grit your teeth, but realise that it''s pointless to try and wrestle the outfit from her grasp. It would most likely be ripped to shreds in the struggle. "What do you want Christina?"
-			She looks at you, almost offended. "What do I want? I want you to get on your knees and put that tongue to better use eating my fucking pussy!" she scorns and spreads her legs wide, throwing your outfit across the room. Noticing your reluctance, Christina narrows her gaze at you. "Now <<$pcs_firstname>>!" she screams before forcing you to your knees in front of her.'
-			gs 'arousal', 'cuni_give', 5
-			if rand(0,2) < 2:
-				'She decides to change position, turning around and kneeling on the bench. "I like this position better. Then you can eat my ass as well!" You squirm as she grabs your head and forces your face into her crotch. Unable to move, you reluctantly start running your tongue up and down her labia before drifting down to her clit and flicking your tongue over it. She moans in pleasure. "Oh fuck yeah, just like that bitch!" Confident you''re submissive to her, she lets go of your head and you continue to reluctantly please her for a few minutes before her knees give out to the pleasure and she ends up laying flat on the bench, her legs split wide. "Oh fuck! Yes, yes, yes! Lick my asshole bitch! Taste my fucking ass!" she screams. You gaze up at her puckered rim.
-				Having no other choice, you start licking her anus. She moans in pleasure and reaches round to fondle her wet pussy. "Oh fuck yes, keep going! I''m going to cum!" After a few seconds, she screams out and you are drenched by the flood of pussy juice that gushes from her as her orgasm washes over her. She rides through the waves of pleasure as you stay kneeling on the floor. Once she recovers, she stands and gets dressed before throwing your outfit at you. You quickly stuff it in your bag before getting up and running to wash your face. Thankfully, Christina is gone when you return and you get dressed in peace.'
-				gs 'arousal', 'rimming_give', 5
-				gs 'stat'
-
-				act 'Leave school': gt 'gschool_grounds', 'main'
-			else
-				'You are kneeling between Christina''s legs, desperately looking for a way out. "Nobody is coming to help you bitch, so you might as well just get this over with!" Christina barks when she notices your reluctance. Growing impatient, she grabs you by the hair and is about to force your head into her crotch when the door slams open and Albina storms in.
-				"Just what the FUCK do you think you''re doing!!!?" she screams. "I thought I told you this little game of yours was supposed to stop?" Christina just laughs. "What? Am I not allowed to have a little fun? What''s the harm in initiating the new girl?" '
-
-				'Albina scoffs. "A LITTLE FUN?! I was late to practice when Karine joined and you convinced her she needed to tit fuck the coach to be allowed on the squad! Now you''re wanting <<$pcs_nickanme>> to go down on you?!" She kneels down next to you and stares straight at Christina. "I know why you volunteered to go with Karine. You wouldn''t want to lose your chance at the championships if the principal were to find out now would you?"
-				Christina laughs back in Albina''s face. "Nobody would believe you. Why are you even here anyway? Shouldn''t you be at home helping daddy?" she says with a wide grin.
-				Albina clenches her fists hard. "GET THE FUCK OUT OF MY FACE!!"
-				Christina again just laughs as she gets up and starts getting dressed. The two girls stare each other down and you think things might actually get violent between them. Thankfully, Christina finishes dressing, but mocks you before she leaves. "Welcome to the squad <<$pcs_firstname>>." she says with more than a hint of contempt in her voice. Once she''s gone, Albina turns to you.
-
-				"Are you okay <<$pcs_nickname>>? That girl goes way too far in the name of amusing herself. I think she just does it to act tough in front of her obidient little lapdogs."
-				She grabs your outfit off the floor and places it in your bag as you get dressed. Once you''re done, she insists on walking you home, despite you assuring her that you''re fine, and you both leave together.'
-				minut += 5
-				gs 'stat'
-
-				act 'Leave school': gt 'gschool_grounds', 'main'
-			end if
-		end
-
-		act 'Refuse':
-			*clr & cla
-			'"Yeah, I''m not going to do that. Don''t you have to go and teach your little lapdogs some tricks? Where are they anyway?" you ask, warey of them hiding in wait to ambush you.
-			"I sent them home. It''s nice having people just do as you tell them to, like you will right now. Albina isn''t here to save you now and you won''t be telling her a thing if you want to keep your place on the squad. Right now, your place is between my legs eating my pussy!"
-			Her arrogance gets the better of you and you lunge forward to grab your outfit from her clutches. Just as you reach her however, she throws your outfit behind her and jumps to her feet, grabbing your hair. "Come now <<$pcs_firstname>>. You didn''t think it would be that easy did you?" she says mockingly as she drags you to the bench and forces you to your knees in front of her.'
-			minut += 5
+		if (cheerleadingQW['practice_count'] > 2) and (npc_grupTipe['A18'] ! 5):
+			'You stay in the shower a little longer than normal and the locker room is quiet as you step out of the stall and wrap yourself in a towel. As you enter the locker room, you head to your locker, but panic when you can''t find your cheerleading outfit inside. "Looking for this?"
+			Before you can react to the voice, your towel is ripped away from you. You turn to see a naked Christina sitting on the bench with your cheerleading outfit in her hands, smiling at you mockingly.
+			"Like I said, you need to earn the right to wear this. Just do as I want and you get it back. You wouldn''t want to anger Albina by losing it would you?"'
 			gs 'stat'
-			if rand(0,2) < 2:
-				'She decides to change position, turning around and kneeling on the bench. "I like this position better. Then you can eat my ass as well!" You squirm as she grabs your head and forces your face into her crotch. Unable to move, you reluctantly start running your tongue up and down her labia before drifting down to her clit and flicking your tongue over it. She moans in pleasure. "Oh fuck yeah, just like that bitch!" Confident you''re submissive to her, she lets go of your head and you continue to reluctantly please her for a few minutes before her knees give out to the pleasure and she ends up laying flat on the bench, her legs split wide. "Oh fuck! Yes, yes, yes! Lick my asshole bitch! Taste my fucking ass!" she screams. You gaze up at her puckered rim.
-				Having no other choice, you start licking her anus. She moans in pleasure and reaches round to fondle her wet pussy. "Oh fuck yes, keep going! I''m going to cum!" After a few seconds, she screams out and you are drenched by the flood of pussy juice that gushes from her as her orgasm washes over her. She rides through the waves of pleasure as you stay kneeling on the floor. Once she recovers, she stands and gets dressed before throwing your outfit at you. You quickly stuff it in your bag before getting up and running to wash your face. Thankfully, Christina is gone when you return and you get dressed in peace.'
-				gs 'arousal', 'rimming_give', 5
-				gs 'stat'
+			
+			act 'Submit':
+				*clr & cla
+				'You grit your teeth, but realise that it''s pointless to try and wrestle the outfit from her grasp. It would most likely be ripped to shreds in the struggle. "What do you want Christina?"
+				She looks at you, almost offended. "What do I want? I want you to get on your knees and put that tongue to better use eating my fucking pussy!" she scorns and spreads her legs wide, throwing your outfit across the room. Noticing your reluctance, Christina narrows her gaze at you. "Now <<$pcs_firstname>>!" she screams before forcing you to your knees in front of her.'
+				gs 'arousal', 'cuni_give', 5
+				if rand(0,2) < 2:
+					'She decides to change position, turning around and kneeling on the bench. "I like this position better. Then you can eat my ass as well!" You squirm as she grabs your head and forces your face into her crotch. Unable to move, you reluctantly start running your tongue up and down her labia before drifting down to her clit and flicking your tongue over it. She moans in pleasure. "Oh fuck yeah, just like that bitch!" Confident you''re submissive to her, she lets go of your head and you continue to reluctantly please her for a few minutes before her knees give out to the pleasure and she ends up laying flat on the bench, her legs split wide. "Oh fuck! Yes, yes, yes! Lick my asshole bitch! Taste my fucking ass!" she screams. You gaze up at her puckered rim.
+					Having no other choice, you start licking her anus. She moans in pleasure and reaches round to fondle her wet pussy. "Oh fuck yes, keep going! I''m going to cum!" After a few seconds, she screams out and you are drenched by the flood of pussy juice that gushes from her as her orgasm washes over her. She rides through the waves of pleasure as you stay kneeling on the floor. Once she recovers, she stands and gets dressed before throwing your outfit at you. You quickly stuff it in your bag before getting up and running to wash your face. Thankfully, Christina is gone when you return and you get dressed in peace.'
+					gs 'arousal', 'rimming_give', 5
+					gs 'stat'
 
-				act 'Leave school': gt 'gschool_grounds', 'main'
-			else
-				'You are kneeling between Christina''s legs, desperately looking for a way out. "Nobody is coming to help you bitch, so you might as well just get this over with!" Christina barks when she notices your reluctance. Growing impatient, she grabs you by the hair and is about to force your head into her crotch when the door slams open and Albina storms in.
-				"Just what the FUCK do you think you''re doing!!!?" she screams. "I thought I told you this little game of yours was supposed to stop?" Christina just laughs. "What? Am I not allowed to have a little fun? What''s the harm in initiating the new girl?" '
+					act 'Leave school': gt 'gschool_grounds', 'main'
+				else
+					'You are kneeling between Christina''s legs, desperately looking for a way out. "Nobody is coming to help you bitch, so you might as well just get this over with!" Christina barks when she notices your reluctance. Growing impatient, she grabs you by the hair and is about to force your head into her crotch when the door slams open and Albina storms in.
+					"Just what the FUCK do you think you''re doing!!!?" she screams. "I thought I told you this little game of yours was supposed to stop?" Christina just laughs. "What? Am I not allowed to have a little fun? What''s the harm in initiating the new girl?" '
 
-				'Albina scoffs. "A LITTLE FUN?! I was late to practice when Karine joined and you convinced her she needed to tit fuck the coach to be allowed on the squad! Now you''re wanting <<$pcs_nickanme>> to go down on you?!" She kneels down next to you and stares straight at Christina. "I know why you volunteered to go with Karine. You wouldn''t want to lose your chance at the championships if the principal were to find out now would you?"
-				Christina laughs back in Albina''s face. "Nobody would believe you. Why are you even here anyway? Shouldn''t you be at home helping daddy?" she says with a wide grin.
-				Albina clenches her fists hard. "GET THE FUCK OUT OF MY FACE!!"
-				Christina again just laughs as she gets up and starts getting dressed. The two girls stare each other down and you think things might actually get violent between them. Thankfully, Christina finishes dressing, but mocks you before she leaves. "Welcome to the squad <<$pcs_firstname>>." she says with more than a hint of contempt in her voice. Once she''s gone, Albina turns to you.
+					'Albina scoffs. "A LITTLE FUN?! I was late to practice when Karine joined and you convinced her she needed to tit fuck the coach to be allowed on the squad! Now you''re wanting <<$pcs_nickanme>> to go down on you?!" She kneels down next to you and stares straight at Christina. "I know why you volunteered to go with Karine. You wouldn''t want to lose your chance at the championships if the principal were to find out now would you?"
+					Christina laughs back in Albina''s face. "Nobody would believe you. Why are you even here anyway? Shouldn''t you be at home helping daddy?" she says with a wide grin.
+					Albina clenches her fists hard. "GET THE FUCK OUT OF MY FACE!!"
+					Christina again just laughs as she gets up and starts getting dressed. The two girls stare each other down and you think things might actually get violent between them. Thankfully, Christina finishes dressing, but mocks you before she leaves. "Welcome to the squad <<$pcs_firstname>>." she says with more than a hint of contempt in her voice. Once she''s gone, Albina turns to you.
 
-				"Are you okay <<$pcs_nickname>>? That girl goes way too far in the name of amusing herself. I think she just does it to act tough in front of her obidient little lapdogs."
-				She grabs your outfit off the floor and places it in your bag as you get dressed. Once you''re done, she insists on walking you home, despite you assuring her that you''re fine, and you both leave together.'
+					"Are you okay <<$pcs_nickname>>? That girl goes way too far in the name of amusing herself. I think she just does it to act tough in front of her obidient little lapdogs."
+					She grabs your outfit off the floor and places it in your bag as you get dressed. Once you''re done, she insists on walking you home, despite you assuring her that you''re fine, and you both leave together.'
+					minut += 5
+					gs 'stat'
+
+					act 'Leave school': gt 'gschool_grounds', 'main'		
+				end if
+			end
+
+			act 'Refuse':
+				*clr & cla
+				'"Yeah, I''m not going to do that. Don''t you have to go and teach your little lapdogs some tricks? Where are they anyway?" you ask, warey of them hiding in wait to ambush you.
+				"I sent them home. It''s nice having people just do as you tell them to, like you will right now. Albina isn''t here to save you now and you won''t be telling her a thing if you want to keep your place on the squad. Right now, your place is between my legs eating my pussy!"
+				Her arrogance gets the better of you and you lunge forward to grab your outfit from her clutches. Just as you reach her however, she throws your outfit behind her and jumps to her feet, grabbing your hair. "Come now <<$pcs_firstname>>. You didn''t think it would be that easy did you?" she says mockingly as she drags you to the bench and forces you to your knees in front of her.'
 				minut += 5
 				gs 'stat'
+				if rand(0,2) < 2:
+					'She decides to change position, turning around and kneeling on the bench. "I like this position better. Then you can eat my ass as well!" You squirm as she grabs your head and forces your face into her crotch. Unable to move, you reluctantly start running your tongue up and down her labia before drifting down to her clit and flicking your tongue over it. She moans in pleasure. "Oh fuck yeah, just like that bitch!" Confident you''re submissive to her, she lets go of your head and you continue to reluctantly please her for a few minutes before her knees give out to the pleasure and she ends up laying flat on the bench, her legs split wide. "Oh fuck! Yes, yes, yes! Lick my asshole bitch! Taste my fucking ass!" she screams. You gaze up at her puckered rim.
+					Having no other choice, you start licking her anus. She moans in pleasure and reaches round to fondle her wet pussy. "Oh fuck yes, keep going! I''m going to cum!" After a few seconds, she screams out and you are drenched by the flood of pussy juice that gushes from her as her orgasm washes over her. She rides through the waves of pleasure as you stay kneeling on the floor. Once she recovers, she stands and gets dressed before throwing your outfit at you. You quickly stuff it in your bag before getting up and running to wash your face. Thankfully, Christina is gone when you return and you get dressed in peace.'
+					gs 'arousal', 'rimming_give', 5
+					gs 'stat'
 
-				act 'Leave school': gt 'gschool_grounds', 'main'
-			end if
-		end
+					act 'Leave school': gt 'gschool_grounds', 'main'
+				else
+					'You are kneeling between Christina''s legs, desperately looking for a way out. "Nobody is coming to help you bitch, so you might as well just get this over with!" Christina barks when she notices your reluctance. Growing impatient, she grabs you by the hair and is about to force your head into her crotch when the door slams open and Albina storms in.
+					"Just what the FUCK do you think you''re doing!!!?" she screams. "I thought I told you this little game of yours was supposed to stop?" Christina just laughs. "What? Am I not allowed to have a little fun? What''s the harm in initiating the new girl?" '
 
+					'Albina scoffs. "A LITTLE FUN?! I was late to practice when Karine joined and you convinced her she needed to tit fuck the coach to be allowed on the squad! Now you''re wanting <<$pcs_nickanme>> to go down on you?!" She kneels down next to you and stares straight at Christina. "I know why you volunteered to go with Karine. You wouldn''t want to lose your chance at the championships if the principal were to find out now would you?"
+					Christina laughs back in Albina''s face. "Nobody would believe you. Why are you even here anyway? Shouldn''t you be at home helping daddy?" she says with a wide grin.
+					Albina clenches her fists hard. "GET THE FUCK OUT OF MY FACE!!"
+					Christina again just laughs as she gets up and starts getting dressed. The two girls stare each other down and you think things might actually get violent between them. Thankfully, Christina finishes dressing, but mocks you before she leaves. "Welcome to the squad <<$pcs_firstname>>." she says with more than a hint of contempt in her voice. Once she''s gone, Albina turns to you.
+
+					"Are you okay <<$pcs_nickname>>? That girl goes way too far in the name of amusing herself. I think she just does it to act tough in front of her obidient little lapdogs."
+					She grabs your outfit off the floor and places it in your bag as you get dressed. Once you''re done, she insists on walking you home, despite you assuring her that you''re fine, and you both leave together.'
+					minut += 5
+					gs 'stat'
+
+					act 'Leave school': gt 'gschool_grounds', 'main'
+				end if
+			end
+		end if
 	elseif random_shower_event < 3 and cheerleadingQW['backup_game'] = 1 :
 		if First_time_3some_with_Lazar = 0:
 			*clr & cla
@@ -720,6 +741,7 @@ if $ARGS[0] = 'shower':
 
 					act 'Get your pussies fucked':
 						*clr & cla
+						npc_sex['$boy'] += 1
 						'Lazar then stands. "Time to get fucked girls." he says. Albina gets on all fours on the bench. "Get up there beside her <<pcs_nickname>>! I want to see both those asses high in the air!" Lazar orders. You obidiently climb onto the bench next to Albina, who playfully wiggles her ass at Lazar. He gives her large, firm cheek a good slap in response before pushing his cock into her awaiting pussy. He fucks her for a few minutes before he pulls out and moves in behind you. You feel the tip of his cock push against your pussy and it slides into your hole. He grabs your hips and starts thrusting in and out of you as Albina leans over and starts kissing you. You spend the next few minutes having Lazar alternate between fucking the two of you while your tongues remain locked together.'
 						gs 'arousal', 'vaginal', 5
 						minut += 5
@@ -1030,13 +1052,45 @@ if $ARGS[0] = 'skipped_ev':
 	gs 'stat'
 end
 
- if $ARGS[0] = 'Cheerleadersreact':
+if $ARGS[0] = 'Cheerleadersreact':
 	cla
 	menu_off = 1
 	'As you enter the locker room, Albina motions you aside. "What the hell <<$pcs_nickname>>!? Who knocked you up? You can''t do this if you''re pregnant! I''m sorry, but I''m going to have to cut you loose." she says while placing a hand on your shoulder.'
 	'You nod in understanding and say your goodbyes and Albina walks back to the group, telling them to hurry up and finish getting changed.'
+	minut += 5
+	gs 'stat'
+	
 	act 'Leave school':npc_pregtalk['A23'] = 1 & gt 'gschool_grounds', 'main'
 end
+
+if $ARGS[0] = 'CheerleaderEnd':
+	cla
+	'You see the disapproving looks on the girls faces as you enter the locker room. Albina walks over to you and, looking severly disappointed, shakes her head. "Why <<$pcs_nickname>>? You used to be cool, but now you''ve gone and done this to yourself. I''m sorry, but I just can''t have someone like you being associated with us anymore." She motions to the door and you walk out in shame, tears welling up in your eyes.' 
+	minut += 3
+	gs 'stat'
+	
+	act 'Leave school':cheerleadingQW['quest_stage'] = 0 & gt 'gschool_grounds', 'main'
+end
+
+if $ARGS[0] = 'Disjoin':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/afterschool/cheerleading/changing.jpg"></center>'
+	'You enter the locker room and look around for Albina, spotting her as she finishes getting ready. You walk over to her and she gives you a puzzled stare. "Hurry up and get dressed <<$pcs_nickname>>, we haven''t got all day to wait for you!" she barks. You meekly smile at her in response. "Well? Hurry up and spit it out." she says while motioning for you to hurry up.
+	"I...I don''t want to be a part of this anymore. I''ve thought it over and this just isn''t for me."' 
+	*nl
+	if cheerleadingQW['quest_stage'] = 2:
+		!!IF back up- 
+		'Albina just rolls her eyes at you. "Whatever <<$pcs_firstname>>. I don''t really care if you want to be here or not. I have <i>actual</i> cheerleaders to lead, so if you want to go, then fuck off and don''t come back." She then pushes you aside and walks out of the room. The other girls then follow her out, leaving you alone.'
+	else
+		!!IF cheerleader- 
+		'Albina gives you an even bigger puzzled stare. "What? Why? Never mind. If you want to leave, then I won''t stop you. Just know that I thought you had some real potential here <<$pcs_nickname>>. And thanks for telling me and not just disappearing like <i>some other people</i> have." she adds. You breathe a sigh of relief as she gathers the girls and leaves, letting you go on your way.'
+	end if
+	minut += 2
+	gs 'stat'
+
+    act 'Leave school':cheerleadingQW['quest_stage'] = 0 & gt 'gschool_grounds', 'main'
+end
+
 
 --- gschool_cheerleading ---------------------------------
 
