@@ -46,29 +46,26 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 	'Beside the stove, there''s a stack of old <a href="exec: gs ''swamphouse'', ''stackmagazines''">magazines</a>, most likely used for ignition.'
 	!TODO: fix this showing after dare, Sveta accepting Igors request or with hessian
     if clothesAtLocation = 1:'Your clothes are laying on the shelf.'
-	if hunters_inside = 1 and hunters_were_met = 0:
+	
+	
+	if hunters_inside = 1 and hunters_were_met = 1:
 		if hunters_drink = 1:
 			*nl
 			'You see the <a href="exec: gs ''swamphouse'', ''huntersrelax''">hunters</a> hanging out in the hut.'
 		elseif hunters_sleep = 1:
 			*nl
 			'The hunters are sleeping on the couch.'
-		elseif hunters_available = 1 or hunters_breakfast = 1 or hunters_lunch = 1 or hunters_evening = 1:
+		elseif hunters_breakfast = 1 or hunters_lunch = 1 or hunters_evening = 1:
 			*nl
 			'The <a href="exec: gs ''swamphouse'', ''hunterstable''">hunters</a> are sitting around the table talking.'
-		elseif hunters_hunting = 1 and hunters_outside = 1:
-			*nl
-			'The Hunters said they will be out hunting for a couple hours. You have the camp to yourself!'
-		end
-	else
-		if hunters_were_met = 0:
-			*nl
-			'The camp is quiet. There''s nobody here right now, where could they be.'
-		else
-			*nl
-			'The camp is quiet. The hunters aren''t here right now, where could they be.'
 		end
 	end
+
+	if hunters_were_met = 0 and hunters_hunting = 1:
+		*nl
+		'The camp is quiet. There''s nobody here right now, where could they be.'
+	end
+
 	*nl
 
 	act 'Go outside':
@@ -859,8 +856,17 @@ if $ARGS[0] = 'hunterstableBJ':
 
 end
 
+if $ARGS[0] = 'hunterstable_end':
+!! it is an empty event, however here it should be some action when hunters finished their meal and left the table
+	gt 'swamphouse','start'
+end
+
 if $ARGS[0] = 'hunterstable':
 	*clr & cla
+	gs 'hunter_ambient', 'schedule'
+	if (hunters_available = 0 and hunters_breakfast = 0 and hunters_lunch = 0 and hunters_evening = 0): gt 'swamphouse', 'hunterstable_end'
+	
+	
 	menu_off = 1
 	minut += 1
 	smokertemp = rand(1,3)
