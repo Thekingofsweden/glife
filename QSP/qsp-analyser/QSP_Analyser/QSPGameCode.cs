@@ -1249,7 +1249,7 @@ namespace Analyser
             }
             count = args.Count;
 
-            if ((count == 1) && types[0])
+            if ((count >= 1) && types[0])
             {
                 //Отмечаем в списке явные ссылки на локации
                 if ((code == (int)QspStatementType.GoSub) || (code == (int)QspStatementType.GoTo) ||
