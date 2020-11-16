@@ -5,8 +5,8 @@
 :: set CP_TO=..\GL_ECV
 
 :: This is the program used to open the QSPFILE. If you comment this line windows will launch the default app for the ".qsp" extension.
-set QSPGUI=QSP\Player-video\qspgui.exe
-set QGEN=QSP\QGen5\QGen.exe
+set QSPGUI=tools\Player-video\qspgui.exe
+set QGEN=tools\QGen5\QGen.exe
 
 :: The file that will be generated or open
 set QSPFILE=glife.qsp
@@ -75,8 +75,8 @@ echo.
 echo Building ...
 
 @ECHO ON
-python txtmerge.py locations glife.txt
-txt2gam.exe glife.txt %QSPFILE% > nul
+python tools\txtmerge.py locations glife.txt
+tools\txt2gam.exe glife.txt %QSPFILE% > nul
 @ECHO OFF
 
 echo.
