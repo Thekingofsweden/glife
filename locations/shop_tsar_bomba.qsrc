@@ -12,19 +12,68 @@ if $ARGS[0] = 'start':
 	gs 'stat'
 	gs 'themes', 'indoors'
 	'<center><b><font color="maroon">Tsar Bomba</font></b></center>'
-	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/bomba/butik.jpg"></center>'
+	'<center><img <<$set_imgh>> src="images/locations/oldtown/bomba/shop.jpg"></center>'
 	*nl
 	'Tsar Bomba is one of the older clothing shops in the Old Town. All the shops here are small and unique but it still stands out simply because it has always catered to rebels both young and old. It used to be a punk rock specialist store and still caters to bikers but it constantly reinvents itself following trends and movements and innovating while never going mainstream.'
 	'Simply put this place is very cool and most of the clothes are black.'
 
-	act 'Leave the bomba': minut += 3 & gt 'torgcentr'
+	act 'Leave the bomba': minut += 3 & gt 'liames'
 	
-	act 'View clothing': minut += 5 & gt 'shop_tsar_bomba', 'clothes'
+	act 'View dresses': minut += 5 & gt 'shop_tsar_bomba', 'dresses'
 
-	act 'View shoes': minut += 5 & gt 'shop_tsar_bomba', 'shoes'
+	act 'View other outfits': minut += 5 & gt 'shop_tsar_bomba', 'clothes'
 
-	act 'View purses': minut += 5 & gt 'shop_tsar_bomba', 'purses'
+!!	act 'View purses': minut += 5 & gt 'shop_tsar_bomba', 'purses'
 
+end
+
+if $ARGS[0] = 'dresses':
+	$loc_arg = 'dresses'
+	$loc = 'shop_tsar_bomba'
+	$menu_loc = 'shop_tsar_bomba'
+	$menu_arg = 'dresses'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing Tsar Bomba dresses</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return': minut += 1 & gt 'shop_tsar_bomba', 'start'
+
+	clothingfilter['qualitycheck'] = 7
+	:loopquality_dresses
+		if Clothingstock > 11:
+			i = 1
+		else
+			i = 2
+		end
+
+		:loopbomba_dresses
+			if dresses[i] = 0:
+				gs 'clothing_attributes', 'bomba_dresses', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+				
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''shop_tsar_bomba'', ''bomba_dresses''"><img src="images/pc/clothing/bomba_dresses/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 2
+		if i <= 185:jump 'loopbomba_dresses'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality_dresses'
+end
+
+if $ARGS[0] = 'bomba_dresses':
+	cla
+	menu_off = 1
+	if bomba_dresses[i] ! 0:
+		msg 'You already own these clothes.'
+		gt 'shop_tsar_bomba', 'clothes'
+	end
+
+	gt 'clothing', 'view_clothing_item', 'shop', 'bomba_dresses',i, 20000
 end
 
 if $ARGS[0] = 'clothes':
@@ -51,13 +100,13 @@ if $ARGS[0] = 'clothes':
 		end
 
 		:loopbomba
-			if bomba[i] = 0:
-				gs 'clothing_attributes', 'bomba', i
+			if bomba_outift[i] = 0:
+				gs 'clothing_attributes', 'bomba_outift', i
 				gs 'clothing_QV', 'shop_filter'
 
 				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
 				
-					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''shop_tsar_bomba'', ''bomba''"><img src="images/pc/clothing/bomba/<<i>>.jpg" 	height="250" /></a>'
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''shop_tsar_bomba'', ''bomba_outift''"><img src="images/pc/clothing/bomba_outfit/<<i>>.jpg" 	height="250" /></a>'
 				end
 			end
 			i += 2
@@ -65,42 +114,16 @@ if $ARGS[0] = 'clothes':
 	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
-if $ARGS[0] = 'bomba':
+if $ARGS[0] = 'bomba_outift':
 	cla
 	menu_off = 1
-	if bomba[i] ! 0:
+	if bomba_outift[i] ! 0:
 		msg 'You already own these clothes.'
 		gt 'shop_tsar_bomba', 'clothes'
 	end
 
-	gt 'clothing', 'view_clothing_item', 'shop', 'bomba',i, 20000
-
+	gt 'clothing', 'view_clothing_item', 'shop', 'bomba_outfit',i, 20000
 end
-
-if $ARGS[0] = 'shoes':
-	$loc_arg = $ARGS[0]
-	$loc = 'shop_tsar_bomba'
-	$menu_loc = 'shop_tsar_bomba'
-	$menu_arg = 'shoes'
-	menu_off = 0
-	*clr & cla
-	gs'stat'
-
-	act 'Return': minut += 1 & gt 'shop_tsar_bomba', 'start'
-
-	if Clothingstock > 11:
-		i = 1
-	else
-		i = 2
-	end
-
-	:loopbomba_shoes
-		if sbomba[i] = 0:*p '<a href="exec: i = <<i>> & gt ''shop_tsar_bomba'', ''bomba_shoes''"><img src="images/pc/shoes/bomba/<<i>>.jpg" height="250" /></a>'
-		i += 2
-	if i <= 37:jump 'loopbomba_shoes'
-end
-
-if $ARGS[0] = 'bomba_shoes':	gt 'shoes', 'view_shoe_item', 'shop', 'bomba',i, 5000
 
 if $ARGS[0] = 'purses':
 	$loc_arg = 'purses'
