@@ -18,7 +18,60 @@ if $ARGS[0] = 'start':
 	
 	if bankAccount = 0:
 		'Do you want to open an account?'
+		if money > 50:
+			act 'Open account':
+				bankAccount = 1
+				bankDebtLimit = 5000
+				'You are led to on open office and a member of the bank staff goes through your details and ID, then takes 50 <b>₽</b> from you before setting up your account'
+				'"Your account is now open with your 50 <b>₽</b> and an overdraft of 5,000 <b>₽</b>"'
+				act 'Continue': gt 'bank'
+			end
+		else
+			'You require 50 <b>₽</b> in cash to be able to open an account.'
+		end
 	else
+		if money > 0:
+			act 'Deposit money':
+				cla
+				menu_off = 1
+				kartaIN = input ("How much money you want to deposit into the account?")
+
+				if kartaIN <= 0 or kartaIN > money:
+					'That is not a valid operation.'
+				else
+					karta += kartaIN
+					money -= kartaIN
+					
+					'<br>You deposited <<kartaIN>> <b>₽</b>, your account balance is now ' + iif(karta >= 0,'<<karta>>','<font color="red"><<karta>></font>') + ' <b>₽</b>.'
+				end
+				killvar 'kartaIN'
+				act 'Walk away':gt 'bank', 'start'
+			end
+		end
+
+		if karta + bankDebtLimit > 0:
+			act 'Withdraw money':
+				cla
+				menu_off = 1
+				kartaOUT = input ("How much do you want to withdraw from account?")
+
+				if kartaOUT <= 0 or kartaOUT > karta + bankDebtLimit:
+					'That is not a valid operation.'
+				else
+					karta -= kartaOUT
+					money += kartaOUT
+					if karta > 0:
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have <<karta>> <b>₽</b> left in your bank account.'
+					elseif karta = 0:
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have no money left in your bank account.'
+					else
+						'<br>You withdraw <<kartaOUT>> <b>₽</b>. <font color="red">Your bank account is overdrawn by <b><<karta>> ₽</b>.</font>'
+					end
+				end
+				killvar 'kartaOUT'
+				act 'Walk away':gt 'bank', 'start'
+			end
+		end
 		if karta >= 0:
 			'You have <<karta>> <b>₽</b> in your account.'
 			'You can take out a loan of <font color="blue"><<bankDebtLimit>></font>!'
@@ -54,54 +107,6 @@ if $ARGS[0] = 'start':
 					gt 'pav_commercial'
 				end
 			end
-		end
-	end
-
-	if money > 0:
-		act 'Deposit money':
-			cla
-			menu_off = 1
-			kartaIN = input ("How much money you want to deposit into the account?")
-
-			if kartaIN <= 0 or kartaIN > money:
-				'That is not a valid operation.'
-			else
-				karta += kartaIN
-				money -= kartaIN
-				
-				if bankAccount = 0: 
-					bankAccount = 1
-					bankDebtLimit = 5000
-				end
-				
-				'<br>You deposited <<kartaIN>> <b>₽</b>, your account balance is now ' + iif(karta >= 0,'<<karta>>','<font color="red"><<karta>></font>') + ' <b>₽</b>.'
-			end
-			killvar 'kartaIN'
-			act 'Walk away':gt 'bank', 'start'
-		end
-	end
-
-	if karta + bankDebtLimit > 0:
-		act 'Withdraw money':
-			cla
-			menu_off = 1
-			kartaOUT = input ("How much do you want to withdraw from account?")
-
-			if kartaOUT <= 0 or kartaOUT > karta + bankDebtLimit:
-				'That is not a valid operation.'
-			else
-				karta -= kartaOUT
-				money += kartaOUT
-				if karta > 0:
-					'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have <<karta>> <b>₽</b> left in your bank account.'
-				elseif karta = 0:
-					'<br>You withdraw <<kartaOUT>> <b>₽</b>. You have no money left in your bank account.'
-				else
-					'<br>You withdraw <<kartaOUT>> <b>₽</b>. <font color="red">Your bank account is overdrawn by <b><<karta>> ₽</b>.</font>'
-				end
-			end
-			killvar 'kartaOUT'
-			act 'Walk away':gt 'bank', 'start'
 		end
 	end
 end
