@@ -7,8 +7,6 @@ if $ARGS[0] = 'nude_model_convo':
 	hunter_sexual_comfort += 5
 	hunter_collective_opinion += 3
 
-	gs 'stat'
-
 	'"I''m telling you, I''ve seen her pictures in a men''s magazine." you overhear Igor.'
 	'As soon as they noticed you the men stop talking and changed the subject to another topic.'
 end
@@ -18,8 +16,6 @@ if $ARGS[0] = 'stripper_convo':
 
 	hunter_sexual_comfort += 5
 	hunter_collective_opinion -= 3
-
-	gs 'stat'
 
 	'"I promise you, it was her, I swear!" you overhear Sergei. "She was on the stage, stripping and dancing."'
 	'As soon as they noticed you the men stop talking and changed the subject to another topic.'
@@ -31,14 +27,12 @@ if $ARGS[0] = 'pornstar_convo':
 	hunter_sexual_comfort += 7
 	hunter_collective_opinion -= 5
 
-	gs 'stat'
 	'"I recently downloaded some porn, and guess who was getting fucked in the video. Trust me, it was <<$pfname>>." you overhear Andrei.'
 	'As soon as they noticed you the men stop talking and changed the subject to another topic.'
 end
 
 if $ARGS[0] = 'river_rape_convo':
 	huntersRape = 1
-	gs 'stat'
 
 	hunter_sexual_comfort += 7
 	hunter_collective_opinion -= 10
@@ -208,8 +202,6 @@ end
 !Branch conversation events (events that call the actual conversations)
 
 if $ARGS[0] = 'yard_convo':
-	minut += 5
-
 	*clr & cla
 	'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanterstalk.jpg"></center>'
 	'While walking around the yard you overhear the hunters'' conversation'
@@ -219,20 +211,19 @@ if $ARGS[0] = 'yard_convo':
 	!Keep specific conversations on stuff Sveta has been doing near the top so that they fire before generic conversation
 
 	!TODO: They do not just shut up when they notice Sveta, there is an opinion or comfort check for them saying something
-	if fame_sexind > 10 and city_modelling > 30 and huntersknowfoto = 0 and convo_rng_roll = 1:
-		gs 'hunter_ambient', 'nude_model_convo'
-
-	elseif stripdancesum > 0 and huntersknowstrip = 0 and convo_rng_roll = 2:
-		gs 'hunter_ambient', 'stripper_convo'
-
-	elseif film > 0 and huntersknowfilm = 0 and convo_rng_roll = 3:
-		gs 'hunter_ambient', 'pornstar_convo'
-
-	elseif gadriver_gang > 0 and huntersRape = 0 and convo_rng_roll = 4:
-		gs 'hunter_ambient', 'river_rape_convo'
+	if convo_rng_roll = 1:
+		if fame_sexind > 10 and city_modelling > 30 and huntersknowfoto = 0 : gs 'hunter_ambient', 'nude_model_convo'
+	elseif convo_rng_roll = 2:
+		if stripdancesum > 0 and huntersknowstrip = 0: gs 'hunter_ambient', 'stripper_convo'
+	elseif convo_rng_roll = 3:
+		if film > 0 and huntersknowfilm = 0: gs 'hunter_ambient', 'pornstar_convo'
+	elseif convo_rng_roll = 4:
+		if gadriver_gang > 0 and huntersRape = 0: gs 'hunter_ambient', 'river_rape_convo'
 	else
 		gs 'hunter_ambient', 'generic_convo'
 	end
+	minut += 5
+	gs 'stat'
 
 	act 'Further':gt 'swamp_yard', 'start'
 end
@@ -249,27 +240,32 @@ if $ARGS[0] = 'schedule':
 	killvar 'hunters_sleep'
 	killvar 'hunters_available'
 	killvar 'hunters_hunting'
+	killvar 'hunters_chattime'
+
 
 	if hunters_were_met > 0:
 		if hour = 7:
 			hunters_breakfast = 1
 			hunters_available = 1
-			if campfire = 0: hunters_inside  = 1
+			if (sunWeather = 0 or temper <  15) or (campfire = 0): hunters_inside  = 1
 		elseif hour = 8:
 			hunters_available = 1
-			if (sunWeather = 0 or temper <  15) and (campfire = 0): hunters_inside  = 1 
+			hunters_chattime = 1
+			if (sunWeather = 0 or temper <  15): hunters_inside  = 1
 		elseif hour > 8 and hour < 12:
 			hunters_hunting = 1
-		elseif hour >=12 and hour < 14:
+		elseif hour = 12 or hour = 13:
 			hunters_lunch = 1
 			hunters_available = 1
-			if campfire = 0: hunters_inside  = 1
-		elseif hour >= 14 and hour < 18:
+			if hour = 13: hunters_chattime = 1
+			if (sunWeather = 0 or temper <  15) or (campfire = 0): hunters_inside  = 1
+		elseif hour >= 14 and hour <= 17:
 			hunters_hunting = 1
 		elseif hour = 18 or hour = 19:
 			hunters_evening = 1
 			hunters_available = 1
-			if (sunWeather = 0 or temper <  15) and (campfire = 0): hunters_inside  = 1 
+			if hour = 19: hunters_chattime = 1
+			if (sunWeather = 0 or temper <  15) or (campfire = 0): hunters_inside  = 1
 		elseif hour = 20:
 			hunters_dinner = 1
 			hunters_available = 1
@@ -277,7 +273,7 @@ if $ARGS[0] = 'schedule':
 		elseif hour > 20 and hour < 23:
 			hunters_drink = 1
 			hunters_available = 1
-			if (sunWeather = 0 or temper <  15) and (campfire = 0): hunters_inside  = 1 
+			if (sunWeather = 0 or temper <  15) or (campfire = 0): hunters_inside  = 1
 		elseif hour >= 23 or hour < 7:
 			hunters_sleep = 1
 			hunters_inside  = 1
