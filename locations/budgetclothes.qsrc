@@ -9,6 +9,7 @@ if $ARGS[0] = 'start':
 	$location_type = 'event'
 	'<center><b><font color="maroon">Welcome to G & M - Clothes for all your needs</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/gandm/shop.jpg"</center>'
+	'G&M is not fancy, it''s certainly not high fashion but it''s cheap and has specific work and school wear.'
 	clr
 
 	gs 'stat'
@@ -24,18 +25,23 @@ if $ARGS[0] = 'start':
 			gt 'pav_industrial'
 		end
 	end
-	
+
 	act 'Visit clothing department':
 		cla
 		menu_off = 1
-		
+
 		act 'Return':gt 'budgetclothes', 'start'
-		
-		act 'View cheap clothing':
+
+		act 'View clothing':
 			minut += 5
 			gt 'budgetclothes', 'clothes'
 		end
-		
+
+		act 'View dresses':
+			minut += 5
+			gt 'budgetclothes', 'dresses'
+		end
+
 		act 'View office wear':
 			minut += 5
 			gt 'budgetclothes', 'office'
@@ -55,9 +61,9 @@ if $ARGS[0] = 'start':
 	act 'Visit shoe department':
 		cla
 		menu_off = 1
-		
+
 		act 'Return':gt 'budgetclothes', 'start'
-		
+
 		act 'View regular shoes':
 			minut += 5
 			gt 'budgetclothes', 'shoes'
@@ -98,7 +104,7 @@ if $ARGS[0] = 'clothes':
 	menu_off = 0
 	*clr & cla
 	gs'stat'
-	'<center><b><font color="maroon">Viewing G&M cheap clothing</font></b></center>'
+	'<center><b><font color="maroon">Viewing G&M outfits</font></b></center>'
 	*nl
 
 	gs 'clothing_QV', 'shop_header'
@@ -111,45 +117,97 @@ if $ARGS[0] = 'clothes':
 
 	clothingfilter['qualitycheck'] = 7
 	:loopquality
-		i = Clothingstock + 1
 
-		if Clothingstock - 18 > 0:
-			i -= 18
-		elseif Clothingstock - 12 > 0:
-			i -= 12
-		elseif Clothingstock - 6 > 0:
-			i -= 6
+		if Clothingstock - 16 > 0:
+			i = 1
+		elseif Clothingstock - 8 > 0:
+			i = 2
+		else
+			i = 3
 		end
-		
-		:loopcheap
-			if cheap[i] = 0:
-				gs 'clothing_attributes', 'cheap', i
+
+		:loopgm_outfits
+			if gm_outfits[i] = 0:
+				gs 'clothing_attributes', 'gm_outfits', i
 				gs 'clothing_QV', 'shop_filter'
 
 				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
 
-					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''cheapclo''"><img src="images/pc/clothing/1cheap/<<i>>.jpg" 	height="250" /></a>'
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''gm_outfits''"><img src="images/pc/items/gm/outfits/<<i>>.jpg" 	height="250" /></a>'
 				end
 			end
-			i += 6
-			if i = 3: i = 9
-			if i = 10: i = 16
-			if i = 45: i = 57
-			if i = 80:i = 86
+			i += 3
+
 			if i = 414:i = 415
-		if i <= 419:jump 'loopcheap'
+		if i <= 150:jump 'loopgm_outfits'
 	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
-if $ARGS[0] = 'cheapclo':
+if $ARGS[0] = 'gm_outfits':
 	cla
 	menu_off = 1
-	if cheap[i] ! 0:
+	if gm_outfits[i] ! 0:
 		msg 'You already own these clothes.'
 		gt 'budgetclothes', 'clothes'
 	end
 
-	gt 'clothing', 'view_clothing_item', 'shop', 'cheap',i, 1000
+	gt 'clothing', 'view_clothing_item', 'shop', 'gm_outfits',i, 1000
+end
+
+if $ARGS[0] = 'dresses':
+	$loc_arg = 'dresses'
+	$loc = 'budgetclothes'
+	$menu_loc = 'budgetclothes'
+	$menu_arg = 'dresses'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing G&M dresses</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return':
+		cla
+		minut += 1
+		gt 'budgetclothes', 'start'
+	end
+
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+
+		if Clothingstock - 16 > 0:
+			i = 1
+		elseif Clothingstock - 8 > 0:
+			i = 2
+		else
+			i = 3
+		end
+
+		:loopgm_dress
+			if gm_dress[i] = 0:
+				gs 'clothing_attributes', 'gm_dress', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''gm_dress''"><img src="images/pc/clothing/gm/dress/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+		if i <= 150:jump 'loopgm_dress'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
+end
+
+if $ARGS[0] = 'gm_dress':
+	cla
+	menu_off = 1
+	if gm_dress[i] ! 0:
+		msg 'You already own this dress.'
+		gt 'budgetclothes', 'dresses'
+	end
+
+	gt 'clothing', 'view_clothing_item', 'shop', 'gm_dress',i, 1000
 end
 
 if $ARGS[0] = 'office':
@@ -187,7 +245,7 @@ if $ARGS[0] = 'office':
 				gs 'clothing_QV', 'shop_filter'
 
 				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
-					
+
 					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''officeclo''"><img src="images/pc/clothing/5office/<<i>>.jpg" 	height="250" /></a>'
 				end
 			end
@@ -242,7 +300,7 @@ if $ARGS[0] = 'uniform':
 				gs 'clothing_QV', 'shop_filter'
 
 				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
-	
+
 					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''budgetclothes'', ''uniformclo''"><img src="images/pc/clothing/10uniform/<<i>>.jpg" 	height="250" /></a>'
 				end
 			end
