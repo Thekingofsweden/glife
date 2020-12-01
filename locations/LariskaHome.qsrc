@@ -1,150 +1,530 @@
 # LariskaHome
-!2020/10/16/Gwen
-!! below controls when Lariska is available. This needs to be set up so her new schedule can be followed
-!! Currently if you are there after hour 19 you are booted to the door and her mother tells you she is not home, Mom is not supposed to be there during the week and Lariska is not brave enough to throw you out, so would be nice if that system could disappear entirely
-!! I do not know the variables for cheerleading season
-!! Monday; available at home 14:00-16:00 and 18:00-23:00 (at community center 16:00-18:00)
-!! Tuesday; available at home 14:00-16:00 and 18:00-23:00 until cheerleading starts, then should be available only 16:30-23:00 (no community center after practice)
-!! Wednesday; available at home 14:00-16:00 and 18:00-23:00(at community center 16:00-18:00)
-!! Thursday; available at home 14:00-16:00 and 18:00-23:00 until cheerleading starts, then should be available only 16:30-23:00 (no community center after practice)
-!! Friday; available at home 14:00-16:00 and 18:00-23:00 - Once cheerleading starts every second Friday from the day school starts only available 16:30-23:00 (no community center after sports event)
-!! Saturday; available at home 09:00-23:00, Once she joins the volleyball team she should only be available 09:00-17:30, Flag for her being on volleyball team is LariskaProfi = 1
-!! Sunday; available at home 09:00-23:00
 
-$menu_loc = 'LariskaHome'
-$menu_arg = ''
-menu_off = 0
-$location_type = 'indoors'
-CLOSE ALL
-gs'stat'
+if $ARGS[0] = 'front_door':
+	menu_off = 1
+	$loc_arg = 'front_door'
+	$loc = 'LariskaHome'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'front_door'
+	$location_type = 'indoors'
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
 
-if (hour >= 14 and hour < 19 and week < 6) or (hour >= 9 and hour < 19 and (week >= 6 or kanikuli > 0)):
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_1.jpg"></center>'
-	if beInLariskaHome = 0:
-		'Entering the apartment, you see that it is decorated in a Japanese style.'
-		'"You have a nice apartment, Lariska." you say while looking around with interest.'
-		'"Thank you, Mother makes a good living, although she is usually only home on the weekends." Lariska says in a sad voice.'
-		'You go into Lariska''s room.'
-		beInLariskaHome = 1
-	else
-		lariskaRand = rand(1,10)
-		if lariskaRand < 3 and week >= 6 and lariskaMotherKnown = 0:
-			cls
-			minut += 5
-			gs'stat'
+	if frost > 0: frost = 0
+	if lariloc['athome'] = 1:
+		if week <= 5:
+			'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
+			'You knock on Lariska''s apartment door.'
+			*nl
+			'Lariska answers the door. "Come in, <<$pcs_nickname>>."'
+			act 'Enter the apartment':gt 'LariskaHome', 'hallway'
+		else
 			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariskamother.jpg"></center>'
-			'You knock on Lariska''s apartment door and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
-			'"Hello, are you looking for Lariska?" the woman asks with a smile.'
-			'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
-			'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately, I am so glad she has found such a good friend! She needed someone to help get her back on her feet. Well, go on through to her room, I will not bother you."'
-			lariskaMotherKnown = 1
+			if lariloc = 2 or lariloc = 8 or lariloc = 15 or lariloc = 22:
+				$text_home = 'Lariska is in her room.'
+			elseif lariloc = 3 or lariloc = 19 or lariloc = 12:
+				$text_home = 'Lariska is in the kitchen.'
+			elseif lariloc = 13:
+				$text_home = 'Lariska is in the shower. She should be out soon.'
+			elseif lariloc = 8:
+				$text_home = 'Lariska is cleaning in the bathroom.'
+			elseif lariloc = 14 or lariloc = 16 or lariloc = 18:
+				$text_home = 'Lariska is in the living room.'
+			else
+				$text_home = 'Lariska is around here somewhere.'
+			end
+			'You knock on Lariska''s apartment door.'
+			*nl
+			if lariskaMotherKnown = 0:
+				'You knock on Lariska''s apartment door and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
+				'"Hello, are you looking for Lariska?" the woman asks with a smile.'
+				'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
+				'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately, I am so glad she has found such a good friend! She needed someone to help get her back on her feet."'
+				'"<<$text_home>>"'
+				lariskaMotherKnown = 1
+			else
+				'Lariska''s mother opens the door. "Hello, <<$pcs_nickname>>. Come inside, <<$text_home>>"'
+			end
+			act 'Enter the apartment':gt 'LariskaHome', 'hallway'
 		end
-		'You go to Lariska''s room.'
-	end
-	minut += 5
-	act 'Continue':gt 'LariskaHome','in'
-else
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariskamother.jpg"></center>'
-	if lariskaMotherKnown = 0:
-		minut += 5
-		gs'stat'
-		if hour >= 9:$text_home = 'I''m sorry, <<$pcs_nickname>>, Lariska is not home.'
-		if hour < 9:$text_home = 'I''m sorry, <<$pcs_nickname>>, but Lariska is still in bed. She doesn''t get up before nine.'
-		'You knock on Lariska''s apartment door and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
-		'"Hello, are you looking for Lariska?" the woman asks you with a smile.'
-		'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
-		'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately, I am glad so she has found such a good friend! She needed someone to help get her back on her feet. <<$text_home>>"'
-		lariskaMotherKnown = 1
+	else
+		if lariloc = 9:
+			$text_home = 'Lariska is at the Community Center around this time.'
+		elseif lariloc = 6:
+			$text_home = 'Lariska is at cheerleading practice right now.'
+		elseif lariloc = 7:
+			$text_home = 'Lariska is a cheerleader, so she is at the friday game.'
+		elseif lariloc = 5 or lariloc = 4:
+			$text_home = 'Lariska is at school right now.'
+		elseif lariloc = 21:
+			$text_home = 'Lariska is at the volleyball game.'
+		elseif lariloc = 1:
+			$text_home = 'Lariska is asleep right now. She should be up around 9am.'
+		elseif lariloc = 13:
+			$text_home = 'Lariska is unable to answer the door right now.'
+		elseif lariloc = 15:
+			$text_home = 'Lariska is in bed about this time.'
+		else
+			$text_home = 'I am not sure where Lariska is right now.'
+		end
+		if week >= 6:
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariskamother.jpg"></center>'
+			if lariskaMotherKnown = 0:
+				'You knock on Lariska''s apartment door and a smart looking brunette opens the door. You look helplessly into her impressive cleavage and let out an involuntary sigh.'
+				'"Hello, are you looking for Lariska?" the woman asks with a smile.'
+				'"Yes, I''m <<$pcs_nickname>>." you reply tearing your eyes away from her nearly exposed breasts.'
+				'"Ah, <<$pcs_nickname>>, Lariska has told me all about you. I''m Anna, Lariska''s mother. My bunny has been so joyous lately, I am so glad she has found such a good friend! She needed someone to help get her back on her feet."'
+				'"<<$text_home>>"'
+				lariskaMotherKnown = 1
+			else
+				'Lariska''s mother opens the door. "Hello, <<$pcs_nickname>>. <<$text_home>>"'
+			end
+		else
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_door.jpg"></center>'
+			'You knock on Lariska''s door, but nobody answers.'
+			*nl
+			'<<$text_home>>'
+		end
 		act 'Go back to town':gt'pav_residential'
-		exit
 	end
-	if hour >= 9:'Lariska''s mother opens the door. "Hello, <<$pcs_nickname>>. I''m sorry, but Lariska isn''t home."'
-	if hour < 9:'Lariska''s mother opens the door. "Good morning , <<$pcs_nickname>>. I''m sorry but Lariska is still in bed. She doesn''t get up before nine."'
-
-	act 'Return to town':gt'pav_residential'
 end
 
-if $ARGS[0] = 'in':
-	cls
-	gs'stat'
-	'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
-	if frost > 0: frost = 0
-	if lernHome ! 0:
-		act 'Do homework':
-			cla
-			lernHome = 0
-			minut += 30
-			gs'stat'
-			if pcs_grades >= 90:
-				'You did your homework with Lariska and figured out the hard parts together.'
+if $ARGS[0] = 'hallway':
+	$loc = 'LariskaHome'
+	$loc_arg = 'hallway'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'hallway'
+	$location_type = 'private'
+	menu_off = 0
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	'<center><b><font color="DeepSkyBlue">Hallway</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_1.jpg"></center>'
+	'You stand in the main hallway of the japanese styled apartment. Everything looks clean, and the air smells nice.'
+	if lariloc = 1 or lariloc = 2 or lariloc = 8 or lariloc = 15 or lariloc = 22:
+		$text_home = 'is in her bedroom'
+	elseif lariloc = 3 or lariloc = 19 or lariloc = 12 or lariloc = 11:
+		$text_home = 'is in the kitchen'
+	elseif lariloc = 13:
+		$text_home = 'is in the shower'
+	elseif lariloc = 8:
+		$text_home = 'is in the bathroom, cleaning'
+	elseif lariloc = 14 or lariloc = 16 or lariloc = 18:
+		$text_home = 'should be in the living room'
+	else
+		$text_home = 'is no longer home.'
+	end
+	*nl
+	'Lariska <<$text_home>>.'
+	act 'Go back to town':gt'pav_residential'
+	act 'Living Room':gt 'LariskaHome', 'livingroom'
+	act 'Kitchen':gt 'LariskaHome', 'kitchen'
+	act 'Bathroom':gt 'LariskaHome', 'bathroom'
+	act 'Lariska''s Bedroom':gt 'LariskaHome', 'lariska_bedroom'
+	if lariskaMotherKnown >= 1: act 'Anna''s Bedroom':gt 'LariskaHome', 'anna_bedroom'
+end
+
+if $ARGS[0] = 'livingroom':
+	$loc_arg = 'livingroom'
+	$loc = 'LariskaHome'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'livingroom'
+	menu_off = 0
+	$location_type = 'private'
+	$locclass = 'livingr'
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	'<center><b><font color="DeepSkyBlue">Living Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_livingroom.jpg"></center>'
+	'A spacious room with a comfy looking couch and a nice tv hanging on the wall. Various plants adorn the room.'
+	*nl
+	if lariloc = 14:'<a href="exec: gt ''LariskaHome'', ''livingroom_tv_1''">Lariska</a> is curled up on the couch, watching tv.'
+	if lariloc = 16:'<a href="exec: gt ''LariskaHome'', ''livingroom_exercise_1''">Lariska</a> is here working out.'
+	if lariloc = 18:'You see <a href="exec: gt ''LariskaHome'', ''livingroom_clean_1''">Lariska</a> cleaning.'
+	act 'Return to the hallway':gt 'LariskaHome', 'hallway'
+end
+
+if $ARGS[0] = 'livingroom_tv_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_tv_1.jpg"></center>'
+	'You decide to join Lariska on the couch, and watch some tv with her.'
+	minut += 30
+	npc_rel['A13'] += 2
+	pcs_mood += 20
+	gs 'stat'
+	act 'Continue':gt 'LariskaHome', 'livingroom'
+end
+
+if $ARGS[0] = 'livingroom_exercise_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_exercise_1.jpg"></center>'
+	'You find Lariska stretching in front of her tv. Since you don''t feel like working out right now, you simply keep her company for awhile.'
+	minut += 20
+	npc_rel['A13'] += 2
+	pcs_mood += 5
+	gs 'stat'
+	act 'Continue':gt 'LariskaHome', 'livingroom'
+end
+
+if $ARGS[0] = 'livingroom_clean_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_cleaning_3.jpg"></center>'
+	'You find Lariska dusting and doing some general cleaning. Sitting nearby, you strike up a conversation.'
+	minut += 15
+	npc_rel['A13'] += 1
+	pcs_mood += 5
+	gs 'stat'
+	act 'Continue':gt 'LariskaHome', 'livingroom'
+end
+
+if $ARGS[0] = 'kitchen':
+	$loc_arg = 'kitchen'
+	$loc = 'LariskaHome'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'kitchen'
+	menu_off = 0
+	$location_type = 'private'
+	$locclass = 'kitr'
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	'<center><b><font color="DeepSkyBlue">Kitchen</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_kitchen.jpg"></center>'
+	'The kitchen in Lariska''s apartment is impressive, there are several small machines meant for cooking laid out, though you have no idea what most of them do.'
+	if lariskalove >= 6:
+		'Like your <<$npc_nickname[''A29'']>> does at home, somebody living here makes large batches of food, ready to eat anytime. You know you are welcome to anything in here though, so you look around, trying to decide what sounds good.'
+	else
+		'Like your <<$npc_nickname[''A29'']>> does at home, somebody living here makes large batches of food, ready to eat anytime. You don''t feel comfortable eating a full meal uninvited, but you know nobody will mind if you just have a snack.'
+	end
+	if lariloc = 3:'Have <a href="exec: gt ''LariskaHome'', ''kitchen_meal_1''">breakfast</a> with Lariska.'
+	if lariloc = 11:'<a href="exec: gt ''LariskaHome'', ''kitchen_cooking_1''">Lariska</a> is cooking dinner.'
+	if lariloc = 12:'Have <a href="exec: gt ''LariskaHome'', ''kitchen_meal_1''">dinner</a> with Lariska.'
+	if lariloc = 19:'<a href="exec: gt ''LariskaHome'', ''kitchen_cleaning_1''">Lariska</a> is here cleaning.'
+	act 'Return to the hallway':gt 'LariskaHome', 'hallway'
+	if lariskalove >= 6:
+		act 'Eat a precooked meal (0:20)':
+			minut += 20
+			pcs_health += 20
+			pcs_mood += 20
+			fat += 6
+			if pcs_energy >= 70:
+				pcs_energy += 25
 			else
-				'You did your homework together and Lariska explained the hard parts to you.'
+				pcs_energy += 70
 			end
-			act 'Take a break': gt 'LariskaHome','in'
+			if pcs_hydra >= 50:
+				pcs_hydra += 50
+			else
+				pcs_hydra += 80
+			end
+			cumspclnt = 2
+			gs 'cum_cleanup'
+			pcs_breath = 0
+			gs 'stat'
 		end
 	end
-	act 'Chat':
-		cls
+	act 'Have a snack (0:10)':
 		minut += 10
-		gs'stat'
-		'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
-		'You talk with Lariska about whatever comes to mind.'
-		act 'Continue':gt 'LariskaHome','in'
-	end
-	! below needs to be between 16:00 and 18:00 weekdays only, she should be available before and after that
-	if hour = 17 and minut <= 40:
-		cla
-		'Lariska looks at her watch and says, "It''s time to go to the sports club."'
-		act 'Go with Lariska':lariskaTrain += 1 & minut += 10 & gt 'gdksport', 'start'
-		act 'Say goodbye and go home':gt'pav_residential'
-		exit
-	end
-	! above needs to be between 16:00 and 18:00 weekdays only, she should be available before and after that
-	act 'Ask for a drink':
-		cls
-		'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
-		'Lariska casually waves towards the door, "You know where the kitchen is, help yourself."'
-		act 'Go and get a drink':
-			cls
-			minut += 5
-			pcs_energy += 40
-			pcs_hydra += 60
-			gs'stat'
-
-			if week < 6 and doorpeek = 0:
-				doorlocked = 1
-				'On your way back from the kitchen, you notice that the room next to the toilet is closed, curiosity takes over and you try to open it but it is locked.'
-				act 'Return to Lariska''s room':gt 'LariskaHome','in'
-			elseif week < 6 and doorpeek ! 0:
-				'On your way back from the kitchen, you notice that the room with the BDSM stuff is closed, you try to open it but it is locked again.'
-				act 'Return to Lariska''s room':gt 'LariskaHome','in'
-			elseif week >= 6:
-				lariskaRand = rand(1,100)
-				doorpeek = 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_2.jpg"></center>'
-				if doorlocked = 1 or lariskaBDSM > 0:
-					doorlocked = 0
-					'On your way back from the kitchen, you notice that the room next to the toilet is closed, curiosity takes over and you try to open it. You open the door and you see a room full of what appears to be BDSM accessories and toys.'
-				elseif lariskaRand <= 10 and lariskaBDSM < 10:
-					'You open the door and you see that the room is full of what appears to be BDSM accessories and toys. In the center of the room stands Lariska''s mother, Anna, in a suit of leather, doing something with a rope. You quietly close the door, hoping she didn''t notice you.'
-					lariskaBDSM += 1
-				elseif lariskaRand >= 90 and lariskaBDSM < 10:
-					'You open the door and you see that the room is full of what appears to be BDSM accessories and toys. In the center of the room stands Lariska''s mother, Anna, in a suit of leather. She is doing something with a rope. She obviously notices you and smiles. You quickly shut the door.'
-					lariskaBDSM += 1
-				elseif lariskaRand <= 10 and lariskaBDSM >= 10:
-					'You open the door to the room full of BDSM accessories and toys. In the center of the room stands Lariska''s mother, Anna, in a suit of leather, and doing something with a rope. She invites you to have fun, but you say no thanks.'
-					lariskaBDSM += 1
-				else
-					'You open the door to the room full of BDSM accessories and toys. Lariska''s mother, Anna, is not there so you close the door.'
-				end
-
-				act 'Return to Lariska''s room':gt 'LariskaHome','in'
-			end
+		pcs_health += 10
+		pcs_mood += 10
+		fat += 3
+		if pcs_energy >= 70:
+			pcs_energy += 25
+		else
+			pcs_energy += 35
 		end
-
-		act 'Change Your mind':gt 'LariskaHome','in'
+		if pcs_hydra >= 50:
+			pcs_hydra += 25
+		else
+			pcs_hydra += 40
+		end
+		cumspclnt = 2
+		gs 'cum_cleanup'
+		pcs_breath = 0
+		gs 'stat'
 	end
-	if lariskaTrain > 5 and LariskaProfi = 0 and hour >= 14:
+	dynamic $sandwich
+	dynamic $driwater
+	dynamic $dritea
+	dynamic $fill_bottle
+	dynamic $edaD
+	dynamic $pranik
+	dynamic $fatdel
+	dynamic $lekarstvo
+	dynamic $vitamin
+end
+
+if $ARGS[0] = 'kitchen_meal_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_meal.jpg"></center>'
+	'You grab a plate of food and join Lariska at the table. The two of you chat about random things as you eat. When you''re done you place the dishes in the sink.'
+	npc_rel['A13'] += 2
+	minut += 30
+	pcs_health += 25
+	pcs_mood += 25
+	fat += 9
+	if pcs_energy >= 70:
+		pcs_energy += 30
+	else
+		pcs_energy += 80
+	end
+	if pcs_hydra >= 60:
+		pcs_hydra += 50
+	else
+		pcs_hydra += 100
+	end
+	cumspclnt = 2
+	gs 'cum_cleanup'
+	pcs_breath = 0
+	gs 'stat'
+	act 'Finish eating':gt 'LariskaHome', 'kitchen'
+end
+
+if $ARGS[0] = 'kitchen_cooking_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_cooking_1.jpg"></center>'
+	'You find Lariska in the kitchen, cooking dinner. Leaning up against the counter, you start chatting with her about random things, just passing the time.'
+	minut += 10
+	npc_rel['A13'] += 1
+	pcs_mood += 5
+	gs 'stat'
+	act 'Finish the conversation':gt 'LariskaHome', 'kitchen'
+end
+
+if $ARGS[0] = 'kitchen_cleaning_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_cleaning_2.jpg"></center>'
+	'You find Lariska in the kitchen, cleaning. You keep her company while she wipes down counters and mops the floor.'
+	minut += 15
+	npc_rel['A13'] += 1
+	pcs_mood += 5
+	gs 'stat'
+	act 'Continue':gt 'LariskaHome', 'kitchen'
+end
+
+if $ARGS[0] = 'bathroom':
+	$loc_arg = 'bathroom'
+	$loc = 'LariskaHome'
+	$locM = 'LariskaHome'
+	$locM_arg ='bathroom'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'bathroom'
+	menu_off = 0
+	$location_type = 'bathroom'
+	$bathtype = 'bathtub shower'
+	*clr & cla
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	'<center><b><font color="DeepSkyBlue">Bathroom</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_bathroom.jpg"></center>'
+	'The room is clean, and even smells like sage.'
+	*nl
+	'There is a shower, toilet, sink, <a href="exec:gt ''mirror'',''start''">mirror</a>, where you can ' + iif(pcs_hairbsh = 0,'<a href="exec:gt ''mirror'',''brush''">brush</a>','brush') + ' your hair, and even a separate bath tub.'
+	if lariloc = 13:'Since <a href="exec: gt ''LariskaHome'', ''bathroom_join_1''">Lariska</a> didn''t lock the door, you are able to enter unnoticed. Maybe you can join her....'
+	if lariloc = 20:'<a href="exec: gt ''LariskaHome'', ''bathroom_cleaning_1''">Lariska</a> is here, cleaning the bathroom.'
+	act 'Return to the hallway':gt 'LariskaHome', 'hallway'
+	if lariloc ! 13:
+		gs 'din_van', 'private'
+		gs 'din_van', 'prvt_pee'
+	end
+end
+
+if $ARGS[0] = 'bathroom_cleaning_1':
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_cleaning_1.jpg"></center>'
+	'Leaning up against wall, you have short conversation with Lariska while she cleans.'
+	minut += 15
+	npc_rel['A13'] += 1
+	pcs_mood += 5
+	gs 'stat'
+	act 'Continue':gt 'LariskaHome', 'bathroom'
+end
+
+if $ARGS[0] = 'bathroom_join_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/school/gym/watch4.jpg"></center>'
+	if lariskalove >= 6:
+		'You take a minute to watch Lariska. She still hasn''t seen you yet, so you could leave without her knowing you were even there.'
+		'Where would the fun be in that though.'
+		gs 'arousal', 'voyeur', 3, 'lesbian'
+		gs 'stat'
+		act 'Tear yourself away and leave the room':
+			gs 'arousal', 'end'
+			gt 'LariskaHome', 'hallway'
+		end
+		act 'Join her':gt 'LariskaHome', 'bathroom_join_2'
+	else
+		'You take a minute to watch Lariska, but know you need to break down a few more barriers between you two before you attempt to join her.'
+		gs 'arousal', 'voyeur', 3, 'lesbian'
+		gs 'stat'
+		act 'Tear yourself away and leave the room':
+			gs 'arousal', 'end'
+			gt 'LariskaHome', 'hallway'
+		end
+	end
+end
+
+if $ARGS[0] = 'bathroom_join_2':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_shower_2.jpg"></center>'
+	'You quickly strip your clothing off, and gently tap on the shower door. Startled, she turns to see you standing there, before smiling shyly and opening the door for you.'
+	
+	act 'Finish the shower':
+		noShampoo = 1
+		dynamic $showerdin
+		minut += 15
+		pcs_horny += 10
+		pcs_hairbsh = 1
+		pcs_makeup = 1
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+		gs 'arousal', 'erotic_nudity', -8, 'lesbian'
+		gs 'stat'
+		gs 'arousal', 'end'
+		gt 'LariskaHome', 'bathroom'
+	end
+	if lariskalove >= 9:
+		act 'Offer to wash her back':
+			gs 'arousal', 'massage_give', -8, 'lesbian'
+			gt 'LariskaHome', 'bathroom_join_3'
+		end
+	end
+end
+
+if $ARGS[0] = 'bathroom_join_3':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_shower_3.jpg"></center>'
+	'Doesn''t take long before long before washing her back leads to kissing her neck. She turns and wraps her arms around you, and kisses your lips. You tease each other for awhile, taking your time.'
+	'Pulling back she smiles sweetly at you and goes to her knees in front of you. She starts by kissing your feet softly, keeping her eyes locked on yours as she slowly works her way up your legs.'
+	minut += 10
+	pcs_horny += 10
+	gs 'arousal', 'kiss', -8, 'lesbian'
+	gs 'stat'
+	act 'Spread your legs':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_shower_4.jpg"></center>'
+		'She kisses and licks her way up your thighs until she reaches your honeypot. Still going slowly, she licks your outer lips for a bit, before spreading them with her fingers and starts licking your inner lips.'
+		'Throwing your head back, you thrust your hips against her face, as she works her way in until she is fucking you with her tongue. Waves of pleasure are flowing through you, an orgasm is not far away.'
+		minut += 10
+		pcs_horny += 10
+		$orgasm_or = 'yes'
+		gs 'arousal', 'cuni', -8, 'lesbian'
+		gs 'stat'
+		gs 'arousal', 'end'
+		'As your body comes down from its high, she stands back up and kisses you some more. You taste yourself on her lips, you taste great! Eventually you break away to continue the shower.'
+		act 'Finish your shower':
+			noShampoo = 1
+			dynamic $showerdin
+			minut += 5
+			pcs_horny += 10
+			pcs_hairbsh = 1
+			pcs_makeup = 1
+			if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+			gs 'stat'
+			gt 'LariskaHome', 'bathroom'
+		end
+	end
+end
+
+if $ARGS[0] = 'anna_bedroom':
+	$loc = 'LariskaHome'
+	$loc_arg = 'anna_bedroom'
+	$location_type = 'private'
+	$locclass = 'bedr'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'anna_bedroom'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	*clr & cla
+	'<center><b><font color="DeepSkyBlue">Anna''s Bedroom</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_mom_bedroom.jpg"></center>'
+	'The japanese styled bedroom is clean and orderly. You see an extra door off to one side.'
+	'There is not much for you to do here at this time.'
+	act 'Return to the hallway':gt 'LariskaHome', 'hallway'
+	act 'Go into the side room':gt 'LariskaHome', 'anna_bedroom'
+end
+
+if $ARGS[0] = 'bdsm_room':
+	$loc = 'LariskaHome'
+	$loc_arg = 'bdsm_room'
+	$location_type = 'private'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'bdsm_room'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	*clr & cla
+	'<center><b><font color="DeepSkyBlue">BDSM Room</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/home_2.jpg"></center>'
+	'This room is full of all kinds of scary looking equipment.'
+	'Until you get to know Anna better, you shouldn''t mess with anything here.'
+	act 'Leave the room':gt 'LariskaHome', 'anna_bedroom'
+end
+
+if $ARGS[0] = 'lariska_bedroom':
+	$loc = 'LariskaHome'
+	$loc_arg = 'lariska_bedroom'
+	$location_type = 'private'
+	$locclass = 'bedr'
+	$menu_loc = 'LariskaHome'
+	$menu_arg = 'lariska_bedroom'
+	menu_off = 0
+	minut += 1
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'lariska_schedule'
+	*clr & cla
+	'<center><b><font color="DeepSkyBlue">Lariska''s Bedroom</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_bedroom.jpg"></center>'
+	'The bedroom has hints of japanese style, although not as overwhelming as the rest of the apartment. Against the wall is a <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> where you can choose outfits and organise your clothing.'
+	if lariskalove >= 12:
+		'Her <a href="exec:gt ''bed2''">bed</a> sits directly on the floor, without space underneath.'
+	else
+		'Her bed sits directly on the floor, without space underneath.'
+	end
+	'You can access some <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+	'<table><tr><td valign="top">Your <a href="exec:gt ''budilnik'', ''start''">phone alarm</a> is set to <b>'+iif(timer < 10,'0<<timer>>','<<timer>>')+':'+iif(timerM < 10,'0<<timerM>>','<<timerM>>')+'</b> during the week and <b>'+iif(timerEnd < 10,'0<<timerEnd>>','<<timerEnd>>')+':'+iif(timerEndM < 10,'0<<timerEndM>>','<<timerEndM>>')+'</b> during the weekend. It is currently turned '+iif(budilnikOn = 0, '<a href="exec: budilnikOn = 1 & gt $loc">OFF</a>.', '<a href="exec: budilnikOn = 0 & gt $loc">ON</a>.')
+	*nl
+	if lariloc = 1:'<a href="exec:gt ''LariskaHome'', ''lariska_asleep_1''">Lariska</a> is sound asleep, curled up and wrapped in blankets.'
+	if lariloc = 2:'<a href="exec:gt ''LariskaHome'', ''lariska_dressing_1''">Lariska</a> is getting dressed right now.'
+	if lariloc = 8:'Lariska is doing on her school work.'
+	if lariloc = 15:'<a href="exec:gt ''LariskaHome'', ''lariska_reading_1''">Lariska</a> is reading in bed.'
+	if lariloc = 17:'<a href="exec:gt ''LariskaHome'', ''lariska_cleaning_1''">Lariska</a> is here cleaning.'
+	if lariloc = 22:'Lariska is here, doing various things.'
+	if lariloc = 9:gt 'LariskaHome', 'community_center_invite'
+	act 'Return to the hallway':gt 'LariskaHome', 'hallway'
+	if lariloc = 2 or lariloc = 8 or lariloc = 22 or lariloc = 15 or lariloc = 17:
+		act 'Chat with Lariska':gt 'LariskaHome', 'chat'
+	end
+	if lernHome ! 0:
+		act 'Do homework':gt 'LariskaHome','homework'
+	end
+	if lariskaTrain > 5 and LariskaProfi = 0 and (lariloc = 8 or (lariloc = 22 and hour < 16 and week <= 5)):
 		act 'Talk to Lariska about becoming a pro volleyball player':
 			cls
 			minut += 5
@@ -154,23 +534,23 @@ if $ARGS[0] = 'in':
 			'"Lariska, you are an excellent volleyball player. Coach Mikheil Nikolayevich has a professional team, why don''t you ask to join it?" you ask your friend.'
 			'"Well, I guess I''m afraid he''ll tell me I''m not good enough. I''ve seen him tell other good players they aren''t good enough to play for him."'
 			if pcs_vball < 100 and volleysostav < 2:
-				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Drop the subject':gt 'LariskaHome','lariska_bedroom'
 				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 1 & minut += 15 & gt 'Voltrener', 'start'
 			elseif pcs_vball >= 100 and volleysostav = 1:
-				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Drop the subject':gt 'LariskaHome','lariska_bedroom'
 				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 2 & minut += 15 & gt 'Voltrener', 'start'
 			elseif pcs_vball >= 100 and volleysostav = 0:
 				act 'Tell her that you should both go together and ask to be on the team.':lariskaTrenerTalk = 3 & minut += 15 & gt 'Voltrener', 'start'
 			elseif volleysostav >= 2:
-				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Drop the subject':gt 'LariskaHome','lariska_bedroom'
 				act 'Tell her you''ll go with her and since you''re already on the team, you can help convince the coach.':lariskaTrenerTalk = 4 & minut += 15 & gt 'Voltrener', 'start'
 			else
-				act 'Drop the subject':gt 'LariskaHome','in'
+				act 'Drop the subject':gt 'LariskaHome','lariska_bedroom'
 				act 'Tell her you''ll go with her for support.':lariskaTrenerTalk = 1 & minut += 15 & gt 'Voltrener', 'start'
 			end
 		end
 	end
-	if lariskaroomfun ! daystart and npc_rel['A13'] >= 80:
+	if lariskaroomfun ! daystart and npc_rel['A13'] >= 80 and (lariloc = 2 or lariloc = 8 or lariloc = 22 or lariloc = 15 or lariloc = 17):
 		act 'Flirt with her':
 			*clr & cla
 			menu_off = 1
@@ -204,11 +584,145 @@ if $ARGS[0] = 'in':
 			end
 			act 'Stop for now':
 				gs 'arousal', 'end'
-				gt 'LariskaHome','in'
+				gt 'LariskaHome','lariska_bedroom'
 			end
 		end
 	end
-	act 'Say goodbye and go home':gt'pav_residential'
+end
+
+if $ARGS[0] = 'lariska_asleep_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_sleeping_1.jpg"></center>'
+	'She is fast asleep in her bed, uncovered and nude. You cannot stop yourself from staring at her for a few minutes, before ripping your eyes away and deciding what you should do next.'
+	npc_rel['A13'] += 2
+	minut += 10
+	gs'stat'
+	act 'Move away from the bed':gt 'LariskaHome', 'lariska_bedroom'
+end
+
+if $ARGS[0] = 'lariska_dressing_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_dressing_1.jpg"></center>'
+	'She blushes a bit when she realizes you are looking at her, but does not stop. You just sit and watch, while chatting with her.'
+	npc_rel['A13'] += 2
+	minut += 10
+	gs'stat'
+	act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+end
+
+if $ARGS[0] = 'lariska_cleaning_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_cleaning_1.jpg"></center>'
+	'Sitting on the bed, you have short conversation with Lariska while she cleans.'
+	npc_rel['A13'] += 2
+	minut += 15
+	gs'stat'
+	act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+end
+
+if $ARGS[0] = 'lariska_reading_1':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/lariska/lariska_reading_1.jpg"></center>'
+	'You lay next to her, your bodies pressed together, and chat aimlessly with her while she keeps reading.'
+	npc_rel['A13'] += 2
+	minut += 20
+	gs'stat'
+	act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+end
+
+if $ARGS[0] = 'homework':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
+	lernHome = 0
+	lern += 1
+	minut += 30
+	gs'stat'
+	if pcs_grades >= 80:
+		'You did your homework with Lariska and figured out the hard parts together.'
+	else
+		'You did your homework together and Lariska explained the hard parts to you.'
+	end
+	act 'Finish up': gt 'LariskaHome','lariska_bedroom'
+end
+
+!! This section is still a work in progress - not implemented
+!!if $ARGS[0] = 'chat':
+!!	*clr & cla
+!!	'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
+!!	if LariQW['QWstage'] = 0 and larichats ! daystart and lariskalove >= 6:
+!!		'Talk about boys'
+!!		LariQW['QWstage'] = 1
+!!		larichats = daystart
+!!		minut += 10
+!!		gs'stat'
+!!		act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+!!	elseif LariQW['QWstage'] = 1 and larichats ! daystart and lariskalove >= 6:
+!!		'Talk about boys again'
+!!		LariQW['QWstage'] = 2
+!!		larichats = daystart
+!!		minut += 10
+!!		gs'stat'
+!!		act 'Agree':
+!!			lariskalove += 2
+!!			gt 'LariskaHome', 'lariska_bedroom'
+!!		end
+!!		act 'Disagree':
+!!			lariskalove -= 2
+!!			gt 'LariskaHome', 'lariska_bedroom' 
+!!		end
+!!	elseif LariQW['QWstage'] = 2 and larichats ! daystart and lariskalove >= 6:
+!!		''
+!!		LariQW['QWstage'] = 3
+!!		larichats = daystart
+!!		minut += 10
+!!		gs'stat'
+!!		act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+!!	elseif LariQW['QWstage'] = 3 and larichats ! daystart and lariskalove >= 6:
+!!		''
+!!		LariQW['QWstage'] = 4
+!!		larichats = daystart
+!!		minut += 10
+!!		gs'stat'
+!!		act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+!!	elseif LariQW['QWstage'] = 4 and larichats ! daystart and lariskalove >= 6:
+!!		''
+!!		LariQW['QWstage'] = 5
+!!		larichats = daystart
+!!		minut += 10
+!!		gs'stat'
+!!		act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+!!	else
+!!		'You spend some time chatting with Lariska about whatever comes to mind.'
+!!		npc_rel['A13'] += 2
+!!		minut += 10
+!1		gs'stat'
+!!		act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+!!	end
+!!end
+
+!! This is just a placeholder for chats until the above is implemented
+if $ARGS[0] = 'chat':
+	menu_off = 1
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
+	'You spend some time chatting with Lariska about whatever comes to mind.'
+	npc_rel['A13'] += 2
+	minut += 10
+	gs'stat'
+	act 'Finish this conversation':gt 'LariskaHome', 'lariska_bedroom'
+end
+
+if $ARGS[0] = 'community_center_invite':
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/shared/photos/big13.jpg"></center>'
+	'Lariska looks at her watch and says, "It''s time to go to the sports club."'
+	act 'Go with Lariska':lariskaTrain += 1 & minut += 10 & gt 'gdksport', 'start'
+	act 'Say goodbye and leave':gt'pav_residential'
 end
 
 if $ARGS[0] = 'undressed1':
@@ -260,7 +774,7 @@ if $ARGS[0] = 'undressed2':
 			'You spread your legs and slowly push the vibrator back into your pussy, feeling full again.'
 		end
 		gs 'arousal', 'end'
-		gt 'LariskaHome','in'
+		gt 'LariskaHome','lariska_bedroom'
 	end
 end
 
