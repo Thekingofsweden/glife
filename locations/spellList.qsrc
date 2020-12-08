@@ -2,6 +2,7 @@
 ! Information pertaining to PC for each spell
 !	spellKnown['spellname'] = 1 if the spell is known by the player
 !	spellLearn['spellname'] = 0-100, percentage of study that has occured to learn this spell. 100+ will learn it.
+!	spellListAvail['spellListArrayName'] = Number of spells that teacher will teach in the list
 !
 ! MetaData for Each Spell
 !	spellMana['spellname'] = Mana cost to cast this spell
@@ -593,17 +594,18 @@ if $ARGS[0] = 'teacherActions':
 	! Example:
 	!	gs 'spellList', 'teacherActions', '$fireSpells', 'kakuzu', 'mansion1'
 
-	$ThisArrayName = $ARGS[1]
+	$ThisArrayName = $replace($ARGS[1],'$')
 	$ExitLocation = $ARGS[2]
 	$ExitLocation2 = $ARGS[3]
 
-	ThisArraySize = dyneval("result=arrsize('<<$ThisArrayName>>')")
+	ThisArraySize = dyneval("result=arrsize('$<<$ThisArrayName>>')")
+	MaxAvailable = spellListAvail[$ThisArrayName]
 	i = 0
 	:LearnSpellLoop
-	$ThisSpellName = dyneval("$result = <<$ThisArrayName>>[<<i>>]")
+	$ThisSpellName = dyneval("$result = $<<$ThisArrayName>>[<<i>>]")
 	spellDifficulty = $spellDiff[$ThisSpellName]
 	if spellDifficulty = 0: spellDifficulty = 1
-	if i < ThisArraySize:
+	if i < ThisArraySize and i < MaxAvailable:
 		if pcs_magik >= spellDifficulty and spellKnown[$ThisSpellName] = 0 and ($spellReq[$ThisSpellName] = '' or spellKnown[$spellReq[$ThisSpellName]]):
 			dynamic "act 'Learn <<$spellName[$ThisSpellName]>> (1:00)':
 				cla
@@ -634,11 +636,59 @@ if $ARGS[0] = 'teacherActions':
 	killvar 'i'
 	killvar '$ThisSpellName'
 	killvar 'ThisArraySize'
+	killvar 'MaxAvailable'
 	killvar '$ThisArrayName'
 	killvar '$ExitLocation'
 	killvar '$ExitLocation2'
 	killvar 'spellDifficulty'
 end
 
+
+if $ARGS[0] = 'numAvailableSpells':
+	! Function that returns if the number of spells left to learn from this spell list
+	!	$ARGS[1] = spelllist arrayname
+	! Example:
+	!	if func('spellList','numAvailableSpells','librarySpells') > 0: !do stuff to earn next spell
+
+	$ThisArrayName = $replace($ARGS[1],'$')
+
+	ThisArraySize = dyneval("result=arrsize('$<<$ThisArrayName>>') - spellListAvail['<<$ThisArrayName>>']")
+
+	result = ThisArraySize
+
+	killvar 'ThisArraySize'
+	killvar '$ThisArrayName'
+end
+
+if $ARGS[0] = 'addAvailableSpells':
+	! Increases Spell Available to be taught by this instructor by a given amount, default 1
+	!	$ARGS[1] = spelllist arrayname
+	!	 ARGS[2] = number of spells to add to avaiable list for learning
+	! Example:
+	!	!This adds one more spell to the list of library spells
+	!	gs 'spellList','addAvailableSpells','librarySpells'
+	!	!This adds 3 more spells
+	!	gs 'spellList','addAvailableSpells','librarySpells', 3
+
+	$ThisArrayName = $replace($ARGS[1],'$')
+	ThisNumToAdd = ARGS[2]
+	if ThisNumToAdd = 0:
+		ThisNumToAdd = 1
+	end
+
+	ThisArraySize = dyneval("result=arrsize('$<<$ThisArrayName>>')")
+
+	if ThisArraySize - ThisNumToAdd - spellListAvail[$ThisArrayName] < 0:
+		! This mean that we are trying to add more spells than are avaiable in the list
+		spellListAvail[$ThisArrayName] = ThisArraySize
+	else
+		! Else we just add the requested number
+		spellListAvail[$ThisArrayName] += ThisNumToAdd
+	end
+
+	killvar 'ThisNumToAdd'
+	killvar 'ThisArraySize'
+	killvar '$ThisArrayName'
+end
 
 --- spellList ---------------------------------
