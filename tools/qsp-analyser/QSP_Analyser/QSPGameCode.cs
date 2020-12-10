@@ -1102,6 +1102,9 @@ namespace Analyser
         bool CheckBlockGroup(List<string> blockGroup, List<bool> blockInGroupIsText)
         {
             //Разбор аргументов для операторов ACT, IF, прочих операторов и функций.
+            string pomvarstr1;
+            string pomvarstr2;
+            bool iifpresent;
             int blockCode = qspGetStatCode(blockGroup.ToArray()[0]);
             if (blockInGroupIsText[0])
                 blockCode = (int)QspStatementType.Unknown;
@@ -1169,9 +1172,39 @@ namespace Analyser
                         return false;
 
                     //Разбираем код в ссылках <a href="EXEC:GOTO 'loc1'">
-                    if ((blockGroup.Count == 1) && (blockInGroupIsText[0]))
+                    if ((blockGroup.Count >= 1) && (blockInGroupIsText[0]))
                     {
-                        ParseExecInOutputText(blockGroup[0]);
+                        pomvarstr1 = "";
+                        pomvarstr2 = "";
+                        iifpresent = false;
+                        for (int ibc = 0; ibc < blockGroup.Count; ibc++)
+                        {
+                            if (blockGroup[Math.Min(ibc + 1, blockGroup.Count-1)] != "iif")
+                            {
+                                pomvarstr1 = pomvarstr1 + blockGroup[ibc];
+                                pomvarstr2 = pomvarstr2 + blockGroup[ibc];
+                            }
+                            else
+                            {
+                                iifpresent = true;
+                                while (blockGroup[ibc] != ",")
+                                {
+                                    ibc++;
+                                }
+                                ibc++;
+                                pomvarstr1 = pomvarstr1 + blockGroup[ibc];
+                                ibc++;
+                                ibc++;
+                                pomvarstr2 = pomvarstr2 + blockGroup[ibc];
+                                ibc++;
+                                ibc++;
+                            }
+                        }
+                        Console.WriteLine(pomvarstr1);
+                        
+                        ParseExecInOutputText(pomvarstr1);
+                        if (iifpresent)
+                            ParseExecInOutputText(pomvarstr2);
                     }
                 }
             }
@@ -1765,7 +1798,7 @@ namespace Analyser
 
             while (pos < text.Length)
             {
-                pos = text.IndexOf('<', pos);
+                pos = text.IndexOf("<a", pos);
                 if (pos == INVALID_INDEX)
                     break;
 
@@ -1832,6 +1865,7 @@ namespace Analyser
                                 //Экранированный апостроф либо кавычка
                                 if (!quotedTextCompleted)
                                     quotedText = quotedText.Substring(0, quotedText.Length - 1) + c2;
+
                             }
                             else
                             {
@@ -1851,6 +1885,10 @@ namespace Analyser
                     else if ((block.Length == 0) && (c2 == '\''))
                     {
                         tagQuote = (int)QuoteType.Single;
+                        if (text[pos + 1] == '\'')
+                        {
+                            pos++;
+                        }
                     }
                     else if ((block.Length == 0) && (c2 == '"'))
                     {
@@ -2145,6 +2183,7 @@ namespace Analyser
                     if (!AddLocation(locName, line_counter))
                     {
                         fi.Close();
+                        rTl.Close();
                         return false;
                     }
                     currentLocation = locName;
@@ -2174,6 +2213,7 @@ namespace Analyser
                 }
             }
             fi.Close();
+            rTl.Close();
             return true;
         }
 
