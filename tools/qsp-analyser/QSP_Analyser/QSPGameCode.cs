@@ -137,7 +137,7 @@ namespace Analyser
             string extraLine = "";
             while (curLine < linesCount)
             {
-                string line = code.ToArray()[curLine];
+                string line = code.ToArray()[curLine].Trim(WhiteSpace);
                 int pos = 0;
                 while (pos < line.Length)
                 {
@@ -1200,8 +1200,6 @@ namespace Analyser
                                 ibc++;
                             }
                         }
-                        Console.WriteLine(pomvarstr1);
-                        
                         ParseExecInOutputText(pomvarstr1);
                         if (iifpresent)
                             ParseExecInOutputText(pomvarstr2);
@@ -1503,6 +1501,15 @@ namespace Analyser
 				            break;
 				        waitForOperator = true;
 			        }
+//                  I added this piece of code (next 7 lines) so the program could detect function call and the first argument -name of the function / location
+//                  I do not assure that I did it in a proper place, but it seems that it works.
+                    else if ((opStack[1] == (int)QspFunctionType.Func) && (argIndex == 2))
+                    {
+                        AddLocationLink(s, false, true);
+                    }
+                    else if ((opStack[1] == (int)QspFunctionType.Func) && (argIndex == 3) && (s == ","))
+                    {
+                    }
                     else if ((argIndex < args.Count) && types[argIndex])
 			        {
 				        if (!qspAppendToCompiled(ref itemsCount))
@@ -1539,7 +1546,7 @@ namespace Analyser
                             SubmitError("Syntax error", currentLine);
 					        break;
 				        }
-				        if (qspOps[opCode].MinArgsCount > 0)
+				        if (qspOps[opCode].MinArgsCount > argSp)
 				        {
                             SubmitError("Invalid number of arguments", currentLine);
 					        break;
@@ -1889,6 +1896,7 @@ namespace Analyser
                         {
                             pos++;
                         }
+
                     }
                     else if ((block.Length == 0) && (c2 == '"'))
                     {
