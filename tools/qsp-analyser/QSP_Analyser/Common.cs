@@ -1504,7 +1504,7 @@ namespace Analyser
                 fi = new StreamReader(file, Encoding.Default);
                 result = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 SubmitError("File \"" + file + "\" cannot be opened for reading (it can be opened by another program).", INVALID_INDEX);
                 result = false;
@@ -1520,7 +1520,7 @@ namespace Analyser
                 fo = new StreamWriter(file, false, Encoding.Default);
                 result = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 SubmitError("File \"" + file + "\" cannot be opened for writing (it can be opened by another program).", INVALID_INDEX);
                 result = false;
