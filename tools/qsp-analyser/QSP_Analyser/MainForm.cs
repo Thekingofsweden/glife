@@ -459,7 +459,7 @@ namespace Analyser
 
 
                 game = new QSPGameCode();
-                ParseFile();
+//                ParseFile();
 
 
                 ObjectsDeleted = new ArrayList();
