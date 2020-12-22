@@ -12,8 +12,8 @@ if $ARGS[0] = 'start':
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
 	'"Hello, welcome to the Aurora Female Talent Agency! How may I help you?"'
 	if casting = 3 and hour <= 11 and SMTV_commercial = daystart:
-		'"Oh? Are you here for the SMTV commercial? Please go to interview room 3, they''re waiting for you inside.'
 		room = 3
+		'"Oh? Are you here for the SMTV commercial? Please go to interview room <<room>>, they''re waiting for you inside.'
 	elseif casting = 3 and ((hour > 11 and SMTV_commercial = daystart) or SMTV_commercial < daystart):
 		'"You''re here for the SMTV commercial? Sorry, you''re late, and you''ve just cost the production tons of money. You''ve been fired. First rule of showbiz honey: show up on time.'
 		casting = 0
@@ -52,37 +52,17 @@ if $ARGS[0] = 'hallway':
 	*clr & cla
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/hallway.jpg"></center>'
 	act 'Leave':gt 'talent_agency','start'
-	act 'Room 1':gt 'talent_agency','room1'
-	act 'Room 2':gt 'talent_agency','room2'
-	act 'Room 3':gt 'talent_agency','room3'
-	act 'Room 4':gt 'talent_agency','room4'
-	act 'Room 5':gt 'talent_agency','room5'
+	act 'Room 1':gt 'talent_agency','room', 1
+	act 'Room 2':gt 'talent_agency','room', 2
+	act 'Room 3':gt 'talent_agency','room', 3
+	act 'Room 4':gt 'talent_agency','room', 4
+	act 'Room 5':gt 'talent_agency','room', 5
 end
 
-if $ARGS[0] = 'room1':
+if $ARGS[0] = 'room':
 	*clr & cla
-	if room ! 1: gt'talent_agency','wrong_room'
-end
-
-if $ARGS[0] = 'room2':
-	*clr & cla
-	if room ! 2:gt'talent_agency','wrong_room'
-end
-
-if $ARGS[0] = 'room3':
-	*clr & cla
-	if room ! 3: gt'talent_agency','wrong_room'
-	if casting = 3: gt'talent_agency','SMTV'
-end
-
-if $ARGS[0] = 'room4':
-	*clr & cla
-	if room ! 4:gt'talent_agency','wrong_room'
-end
-
-if $ARGS[0] = 'room5':
-	*clr & cla
-	if room ! 5:gt'talent_agency','wrong_room'
+	if room ! ARGS[1]: gt'talent_agency','wrong_room'
+	if casting = 3: gt'talent_agency','SMTV_intro'
 end
 
 if $ARGS[0] = 'end':
@@ -91,7 +71,7 @@ if $ARGS[0] = 'end':
 end
 
 
-if $ARGS[0] = 'SMTV':
+if $ARGS[0] = 'SMTV_intro':
 	*clr & cla
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
 	'You enter the interview room, and someone is there waiting for you.'
@@ -110,339 +90,178 @@ if $ARGS[0] = 'SMTV':
 				gs 'stat'
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
 				'He frowns, seemingly puzzled. "I thought you were told what this shoot is about. You need to get naked. Unless you wanted to do it in the street?"'
-				act'"Oh... Right..."':
-					minut += 5
+				act'"Oh... Right..."':gt 'talent_agency', iif(pcs_inhib < 50, 'SMTV_shy', 'SMTV_confident')
+			end
+		else
+			act '"Wait, what?" (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+		end	
+
+		act '"Okay"':gt 'talent_agency', iif(pcs_inhib < 50, 'SMTV_shy', 'SMTV_confident')
+	end
+end
+
+if $ARGS[0] = 'SMTV_shy':
+	minut += 5
+	*clr & cla
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	'<center><video autoplay loop src="images/locations/city/citycenter/photo/fullstrip.mp4"></video></center>'
+	'Mr. Yanovich makes no move to leave the room as you shyly take off all your clothes and awkwardly stand naked before him.'
+	'He stares appreciatively at your nude body.'
+	if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
+	*nl
+	'"You have a beautiful body Miss <<$pcs_lastname>>..."'
+	'"Uhm... ah... Thank you Mr. Yanovich..." you stammer.'
+	'"Right then, let''s go!"'
+	act '"Wait! What are you-!"':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
+		'He suddenly grabs you by the arm and leads you out of the room, leaving your clothes behind. He walks you straight through the populated lobby of the talent agency. You do your best to cover your face in embarrassment, but it''s hard with only one hand, and you blush furiously as Mr. Yanovich pulls you right out the front door and into the back seat of a car.'
+		'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
+		act'"Move out?"':
+			minut += 30
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
+			'"Move out?" you ask, trying to stay away from the windows as much as possible. "Where are we going?"'
+			'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
+			act'Continue':
+				minut += 45
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
+				'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
+				*nl
+				'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. His professional demeanor is actually quite calming to you, helping you to settle down and get ready for what''s about to come next.'
+				*nl
+				'"Alright <<$pcs_lastname>>. It''s time."'
+				'Your heart starts to pound inside your chest as nervousness takes hold again. You''re going to have to walk down the street naked after all!'
+				act'Do it':
+					minut += 1
 					*clr & cla
-					gs 'clothing', 'strip'
-					gs 'underwear', 'remove'
-					'<center><video autoplay loop src="images/locations/city/citycenter/photo/fullstrip.mp4"></video></center>'
-					if pcs_inhib < 50:
-						'Mr. Yanovich makes no move to leave the room as you shyly take off all your clothes and awkwardly stand naked before him.'
-						'He stares appreciatively at your nude body.'
-						if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
-						*nl
-						'"You have a beautiful body Miss <<$pcs_lastname>>..."'
-						'"Uhm... ah... Thank you Mr. Yanovich..." you stammer.'
-						'"Right then, let''s go!"'
-						act '"Wait! What are you-!"':
+					'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
+					'With a deep breath, you open the car door and step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
+					*nl
+					'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
+					'<i>Whew... Just like normal modelling. No different. Calm... Calm... You can do this...</i>'
+					act'Action!':
+						*clr & cla
+						'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
+						'Mr. Yanovich points at you and says "Action!"'
+						'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
+						'Just in time, you remember to glance at the secondary camera parked across the street like it says in the script.'
+						'It seems to take forever to walk down this short road but you can do nothing except try your best to maintain composure.'
+						act'Cut!':
 							*clr & cla
-							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-							'He suddenly grabs you by the arm and leads you out of the room, leaving your clothes behind. He walks you straight through the populated lobby of the talent agency. You do your best to cover your face in embarrassment, but it''s hard with only one hand, and you blush furiously as Mr. Yanovich pulls you right out the front door and into the back seat of a car.'
-							'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
-							act'"Move out?"':
+							'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
+							'At last, you take the final step and make it past the checkpoint. Another aide is there, and you gratefully rush into the gloriously warm blanket she holds and wraps your naked body in.'
+							'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
+							'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora and you can get changed back into your clothes.'
+							act 'Continue':
 								minut += 30
 								*clr & cla
-								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
-								'"Move out?" you ask, trying to stay away from the windows as much as possible. "Where are we going?"'
-								'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
-								act'Continue':
-									minut += 45
+								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
+								'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. On the way there, you don''t feel as embarrassed as you did before. In fact, you feel quite confident and strong. You just walked down a busy street completely nude! You should be proud of yourself! What''s walking through a lobby with other actresses?'
+								act'Dress':
+									minut += 5
 									*clr & cla
-									'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
-									'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
+									gs 'underwear', 'wear'
+									gs 'stat'
+									'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
+									gs 'clothing', 'wear_last_worn'
+									actpayfin = ((4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 3)) * 3)
+									'You change back into your clothes while Mr. Yanovich does something at the desk.'
+									'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
 									*nl
-									'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. His professional demeanor is actually quite calming to you, helping you to settle down and get ready for what''s about to come next.'
-									*nl
-									'"Alright <<$pcs_lastname>>. It''s time."'
-									'Your heart starts to pound inside your chest as nervousness takes hold again. You''re going to have to walk down the street naked after all!'
-									act'Do it':
-										minut += 1
-										*clr & cla
-										'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
-										'With a deep breath, you open the car door and step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
-										*nl
-										'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
-										'<i>Whew... Just like normal modelling. No different. Calm... Calm... You can do this...</i>'
-										act'Action!':
-											*clr & cla
-											'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
-											'Mr. Yanovich points at you and says "Action!"'
-											'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
-											'Just in time, you remember to glance at the secondary camera parked across the street like it says in the script.'
-											'It seems to take forever to walk down this short road but you can do nothing except try your best to maintain composure.'
-											act'Cut!':
-												*clr & cla
-												'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
-												'At last, you take the final step and make it past the checkpoint. Another aide is there, and you gratefully rush into the gloriously warm blanket she holds and wraps your naked body in.'
-												'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
-												'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora and you can get changed back into your clothes.'
-												act 'Continue':
-													minut += 30
-													*clr & cla
-													'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-													'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. On the way there, you don''t feel as embarrassed as you did before. In fact, you feel quite confident and strong. You just walked down a busy street completely nude! You should be proud of yourself! What''s walking through a lobby with other actresses?'
-													act'Dress':
-														minut += 5
-														*clr & cla
-														gs 'underwear', 'wear'
-														gs 'stat'
-														'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
-														gs 'clothing', 'wear_last_worn'
-														actpayfin = ((4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 3)) * 3)
-														'You change back into your clothes while Mr. Yanovich does something at the desk.'
-														'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
-														*nl
-														'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
-														'<i>Holy crap! Acting is some serious money!</i>'
-														inhib_exp += 20
-														casting = 1
-														room = 0
-														act'Leave':gt'talent_agency','end'
-													end
-												end
-											end
-										end
-									end
-								end
-							end
-						end
-					else
-						'You confidently strip down in front of Mr. Yanovich, not bothered in the slightest by his presence.'
-						'He stares appreciatively at your nude body.'
-						if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
-						*nl
-						'"You have a beautiful body Miss <<$pcs_lastname>>..."'
-						'"Thank you very much Mr. Yanovich," you say unabashedly.'
-						'"Right then, let''s go!"'
-						act '"Leave"':
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-							'He opens the door and you follow him back through the lobby, leaving your clothes behind in the interview room. A few people whisper and glance at you as you walk past, but you don''t mind too much. Mr. Yanovich leads you right out the front door and into the back seat of a car.'
-							'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
-							act'"Move out?"':
-								minut += 30
-								*clr & cla
-								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
-								'"Move out?" you ask. "Where are we going?"'
-								'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
-								act'Continue':
-									minut += 45
-									*clr & cla
-									'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
-									'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
-									*nl
-									'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. You listen diligently and get ready for what''s about to come next.'
-									*nl
-									'"Alright <<$pcs_lastname>>. It''s time."'
-									act'Do it':
-										minut += 1
-										*clr & cla
-										'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
-										'With a deep breath, you open the car door and calmly step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
-										*nl
-										'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
-										'<i>Calm... Professional... Do this right, and your actress career is going to take off!</i>'
-										act'Action!':
-											*clr & cla
-											'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
-											'Mr. Yanovich points at you and says "Action!"'
-											'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
-											'You glance at the secondary camera parked across the street like you were directed to.'
-											'The walk itself doesn''t feel very long. You''re very confident in yourself and your body, and this type of thing isn''t anything you haven''t done before, so you aren''t particularly bothered by the glances and stares.'
-											act'Cut!':
-												*clr & cla
-												'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
-												'At last, you take the final step and make it past the checkpoint. Another aide is there, and you step into the gloriously warm blanket she holds and wraps your naked body in.'
-												'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
-												'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora, and you can get changed back into your clothes."'
-												act 'Continue':
-													minut += 30
-													*clr & cla
-													'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-													'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. You feel quite proud of yourself, having done the shoot in a single take. Maybe you''re cut out to be an actress after all!'
-													act'Dress':
-														minut += 5
-														*clr & cla
-														gs 'underwear', 'wear'
-														gs 'stat'
-														'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
-														gs 'clothing', 'wear_last_worn'
-														actpayfin = (4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 5)) * 3
-														'You change back into your clothes while Mr. Yanovich does something at the desk.'
-														'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
-														*nl
-														'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
-														'<i>Holy crap! Acting is some serious money!</i>'
-														casting = 1
-														room = 0
-														act'Leave':gt'talent_agency','end'
-													end
-												end
-											end
-										end
-									end
+									'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
+									'<i>Holy crap! Acting is some serious money!</i>'
+									inhib_exp += 20
+									casting = 1
+									room = 0
+									act'Leave':gt'talent_agency','end'
 								end
 							end
 						end
 					end
 				end
 			end
-		else
-			act '"Wait, what?" (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end	
+		end
+	end
+end
 
-		act '"Okay."':
-			minut += 5
-			*clr
-			cla
-			'<center><video autoplay loop src="images/locations/city/citycenter/photo/fullstrip.mp4"></video></center>'
-			'Remembering that the shoot requires you to be fully naked, you start to strip down'
-			gs 'clothing', 'strip'
-			gs 'underwear', 'remove'
-			if pcs_inhib < 50:
-				'Mr. Yanovich makes no move to leave the room as you shyly take off all your clothes and awkwardly stand naked before him.'
-				'He stares appreciatively at your nude body.'
-				if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
+if $ARGS[0] = 'SMTV_confident':
+	minut += 5
+	*clr & cla
+	gs 'clothing', 'strip'
+	gs 'underwear', 'remove'
+	'<center><video autoplay loop src="images/locations/city/citycenter/photo/fullstrip.mp4"></video></center>'
+	'You confidently strip down in front of Mr. Yanovich, not bothered in the slightest by his presence.'
+	'He stares appreciatively at your nude body.'
+	if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
+	*nl
+	'"You have a beautiful body Miss <<$pcs_lastname>>..."'
+	'"Thank you very much Mr. Yanovich," you say unabashedly.'
+	'"Right then, let''s go!"'
+	act '"Leave"':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
+		'He opens the door, and you follow him back through the lobby, leaving your clothes behind in the interview room. A few people whisper and glance at you as you walk past, but you don''t mind too much. Mr. Yanovich leads you right out the front door and into the back seat of a car.'
+		'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
+		act'"Move out?"':
+			minut += 30
+			*clr & cla
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
+			'"Move out?" you ask. "Where are we going?"'
+			'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
+			act'Continue':
+				minut += 45
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
+				'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
 				*nl
-				'"You have a beautiful body Miss <<$pcs_lastname>>..."'
-				'"Uhm... ah... Thank you Mr. Yanovich..." you stammer.'
-				'"Right then, let''s go!"'
-				act '"Wait! What are you-!"':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-					'He suddenly grabs you by the arm and leads you out of the room, leaving your clothes behind. He walks you straight through the populated lobby of the talent agency. You do your best to cover your face in embarrassment, but it''s hard with only one hand, and you blush furiously as Mr. Yanovich pulls you right out the front door and into the back seat of a car.'
-					'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
-					act'"Move out?"':
-						minut += 30
-						*clr & cla
-						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
-						'"Move out?" you ask, trying to stay away from the windows as much as possible. "Where are we going?"'
-						'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
-						act'Continue':
-							minut += 45
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
-							'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
-							*nl
-							'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. His professional demeanor is actually quite calming to you, helping you to settle down and get ready for what''s about to come next.'
-							*nl
-							'"Alright <<$pcs_lastname>>. It''s time."'
-							'Your heart starts to pound inside your chest as nervousness takes hold again. You''re going to have to walk down the street naked after all!'
-							act'Do it':
-								minut += 1
-								*clr & cla
-								'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
-								'With a deep breath, you open the car door and step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
-								*nl
-								'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
-								'<i>Whew... Just like normal modelling. No different. Calm... Calm... You can do this...</i>'
-								act'Action!':
-									*clr & cla
-									'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
-									'Mr. Yanovich points at you and says "Action!"'
-									'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
-									'Just in time, you remember to glance at the secondary camera parked across the street like it says in the script.'
-									'It seems to take forever to walk down this short road, but you can do nothing except try your best to maintain composure.'
-									act'Cut!':
-										*clr & cla
-										'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
-										'At last, you take the final step and make it past the checkpoint. Another aide is there, and you gratefully rush into the gloriously warm blanket she holds and wraps your naked body in.'
-										'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
-										'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora, and you can get changed back into your clothes.'
-										act 'Continue':
-											minut += 30
-											*clr & cla
-											'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
-											'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. On the way there, you don''t feel as embarrassed as you did before. In fact, you feel quite confident and strong. You just walked down a busy street completely nude! You should be proud of yourself! What''s walking through a lobby with other actresses?'
-											act'Dress':
-												minut += 5
-												*clr & cla
-												gs 'underwear', 'wear'
-												gs 'stat'
-												'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
-												gs 'clothing', 'wear_last_worn'
-												actpayfin = (4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 3)) * 3
-												'You change back into your clothes while Mr. Yanovich does something at the desk.'
-												'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
-												*nl
-												'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
-												'<i>Holy crap! Acting is some serious money!</i>'
-												inhib_exp += 20
-												casting = 1
-												room = 0
-												act'Leave':gt'talent_agency','end'
-											end
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			else
-				'You confidently strip down in front of Mr. Yanovich, not bothered in the slightest by his presence.'
-				'He stares appreciatively at your nude body.'
-				if prcptn_lvl >= 30:'A hard bulge starts to form in the crotch of his trousers.'
+				'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. You listen diligently and get ready for what''s about to come next.'
 				*nl
-				'"You have a beautiful body Miss <<$pcs_lastname>>..."'
-				'"Thank you very much Mr. Yanovich," you say unabashedly.'
-				'"Right then, let''s go!"'
-				act '"Leave"':
+				'"Alright <<$pcs_lastname>>. It''s time."'
+				act'Do it':
+					minut += 1
 					*clr & cla
-					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
-					'He opens the door, and you follow him back through the lobby, leaving your clothes behind in the interview room. A few people whisper and glance at you as you walk past, but you don''t mind too much. Mr. Yanovich leads you right out the front door and into the back seat of a car.'
-					'Once inside the car, he gets on a radio and says, "Alright, we''ve got Miss <<$pcs_lastname>> here, naked and ready in the car. Let''s move out."'
-					act'"Move out?"':
-						minut += 30
+					'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
+					'With a deep breath, you open the car door and calmly step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
+					*nl
+					'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
+					'<i>Calm... Professional... Do this right, and your acting career is going to take off!</i>'
+					act'Action!':
 						*clr & cla
-						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/down.jpg"></center>'
-						'"Move out?" you ask. "Where are we going?"'
-						'Mr. Yanovich starts the car and says to you, "This is not an ideal location to shoot. We have a particular street in mind, so we''re going to go there."'
-						act'Continue':
-							minut += 45
+						'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
+						'Mr. Yanovich points at you and says "Action!"'
+						'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
+						'You glance at the secondary camera parked across the street like you were directed to.'
+						'The walk itself doesn''t feel very long. You''re very confident in yourself and your body, and this type of thing isn''t anything you haven''t done before, so you aren''t particularly bothered by the glances and stares.'
+						act'Cut!':
 							*clr & cla
-							'<center><img <<$set_imgh>> src="images/locations/city/island/island.jpg"></center>'
-							'After some driving, they park on a side street, and you see the camera crew get out of a van behind your car and begin to set up.'
-							*nl
-							'Mr. Yanovich stays in the car with you and very professionally and efficiently directs you on where the cameras will be, what pace you should walk at, where you should look, and when. You listen diligently and get ready for what''s about to come next.'
-							*nl
-							'"Alright <<$pcs_lastname>>. It''s time."'
-							act'Do it':
-								minut += 1
+							'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
+							'At last, you take the final step and make it past the checkpoint. Another aide is there, and you step into the gloriously warm blanket she holds and wraps your naked body in.'
+							'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
+							'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora, and you can get changed back into your clothes."'
+							act 'Continue':
+								minut += 30
 								*clr & cla
-								'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts1.mp4"></video></center>'
-								'With a deep breath, you open the car door and calmly step out. Gusts of wind blow, chilling your naked body. An aide quickly directs you to the marked spot, shuts the car door, and rushes to get out of frame.'
-								*nl
-								'The camera is directly in front of you. You focus with all your might, concentrating on getting it right in one go.'
-								'<i>Calm... Professional... Do this right, and your actress career is going to take off!</i>'
-								act'Action!':
+								'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/front.jpg"></center>'
+								'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. You feel quite proud of yourself, having done the shoot in a single take. Maybe you''re cut out to be an actress after all!'
+								act'Dress':
+									minut += 5
 									*clr & cla
-									'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts2.mp4"></video></center>'
-									'Mr. Yanovich points at you and says "Action!"'
-									'You start to stride forward, and the cameraman moves backwards in sync. People turn their heads and stare at your nudity as you step past.'
-									'You glance at the secondary camera parked across the street like you were directed to.'
-									'The walk itself doesn''t feel very long. You''re very confident in yourself and your body, and this type of thing isn''t anything you haven''t done before, so you aren''t particularly bothered by the glances and stares.'
-									act'Cut!':
-										*clr & cla
-										'<center><video autoplay loop src="images/locations/city/citycenter/aurora/commercial_bts3.mp4"></video></center>'
-										'At last, you take the final step and make it past the checkpoint. Another aide is there, and you step into the gloriously warm blanket she holds and wraps your naked body in.'
-										'Mr. Yanovich and others are huddled around a monitor, examining the footage.'
-										'"Amazing!" he exclaims. "A true one-take-wonder! Excellent work here Miss <<$pcs_lastname>>! Excellent work! That''s all we need from you today, we''ll take you back to Aurora, and you can get changed back into your clothes."'
-										act 'Continue':
-											minut += 30
-											*clr & cla
-											'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
-											'You get in the car and head back to Aurora. When you get there, Mr. Yanovich leads you back through the doors and into the same interview room you met him in. You feel quite proud of yourself, having done the shoot in a single take. Maybe you''re cut out to be an actress after all!'
-											act'Dress':
-												minut += 5
-												*clr & cla
-												gs 'underwear', 'wear'
-												gs 'stat'
-												'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
-												gs 'clothing', 'wear_last_worn'
-												actpayfin = (4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 5)) * 3
-												'You change back into your clothes while Mr. Yanovich does something at the desk.'
-												'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
-												*nl
-												'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
-												'<i>Holy crap! Acting is some serious money!</i>'
-												casting = 1
-												room = 0
-
-												act'Leave':gt'talent_agency','end'
-											end
-										end
-									end
+									gs 'underwear', 'wear'
+									gs 'stat'
+									'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
+									gs 'clothing', 'wear_last_worn'
+									actpayfin = (4000 + (pcs_mdlng * 25) + (pcs_apprnc * 2) + (pcs_inhib * 5)) * 3
+									'You change back into your clothes while Mr. Yanovich does something at the desk.'
+									'Just before you finish dressing, Mr. Yanovich says, "It was a pleasure working with you Miss <<$pcs_lastname>>. I hope I get another chance to do it again in the future!" He smiles warmly and leaves the room.'
+									*nl
+									'Looking over at the desk, you see a wad of cash lying there. You rush over, and when you finish counting, you realize that it''s <<actpayfin>> <b>₽</b>!'
+									'<i>Holy crap! Acting is some serious money!</i>'
+									casting = 1
+									room = 0
+									act'Leave':gt'talent_agency','end'
 								end
 							end
 						end
