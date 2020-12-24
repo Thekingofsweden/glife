@@ -761,7 +761,7 @@ if $ARGS[0] = 'sister_chat':
 					act 'Keep talking': gt 'sister_chat', 'sister_chat'
 				end
 			
-				if sisterLesb => 7 and $loc = 'bedrPar':
+				if sisterLesb >= 7 and $loc = 'bedrPar':
 					act 'Tell her you want to have sex':
 						*clr & cla
 						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/home/sister_chat.jpg"></center>'
@@ -1066,6 +1066,69 @@ if $ARGS[0] = 'sister_chat':
 						end
 					end
 				end
+				!! talk about the twin sex request
+				if npc_rel['A33'] >= 80 and sisterknowslut > 0 and TwinQW >= 1 and TwinQW <= 5:
+					!! Note: the original code had "and sisterdialog < 2" but that var seems depricated
+					if TwinQW < 5:
+						if tmp_TwinQW_AskedToday < daystart:
+							tmp_TwinQW_AskedToday = daystart
+							act 'Talk about the twin request':
+								*clr & cla
+								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/sister2.jpg"></center>'
+								if TwinQW < 3:
+									if TwinQW = 1:
+										'"Sis, I have a confession to make.... I have been selling my body in the Pavlovsk hotel." You wince inwardly as the admission leaves your mouth, worried what your sister will think.'
+										'Your sister''s face turns to shock and she shakes her head. "<<$pcs_nickname>>, really? Why would you do something like that? If people find out you''ll be ruined! I know I sleep around, but there''s a big difference between being a slut and being a whore."'
+										'You roll your eyes at her. "Please. That''s just <<$npc_nickname[''A29'']>> talking. If you''re going to sleep around, you might as well get paid for it while you''re still hot! Besides, nobody will find out, there is a guy there who takes care of everything. And look at all the money I have been making!"'
+										'You open your wallet and show your sister all the cash you have on you, <<money>> <b>₽</b>.'
+									else
+										'You bring up your prostitution job again to your sister and show off your wallet.'
+									end
+									if money < 5000:
+										'Your sister furrows her brow, looking at your meager amount of money. "Wait, how many times have you prostituted yourself so far?"'
+										'You think for a second before responding. "I don''t know. About <<pavproscount>> times?"'
+										'You sister gives you a concerned look. "<<pavproscount>> times and this is all you have to show for it?"'
+										'Your sister approaches you and gives you a hug, squeezing you tightly. "I really hope you can stop what you are doing, it is not worth it <<$pcs_nickname>>! Not for this pittance! Can''t you see that this asshole is taking advantage of you?"'
+										'<br>'
+										'You lower your head in shame and walk away from your sibling. You didn''t even get the chance to bring up the twin request. It looks like you''ll have to convince your sister that the work you do is worth the risks.'
+										TwinQW = 2
+									else
+										'"Ok, I must admit, that looks like a lot. Do you know how many hours I''d have to work in the supermarket to earn this kind of money? Still, it seems very risky to me." Your sister says.' 
+										'She''s still trying to sound responsible, but you can practically see her salivating at the sight of cold, hard, cash.'
+										'"How would you like to earn some of this and spend some time with your favorite sister at the same time?" You ask, raising your eyebrows playfully while waving the money back and forth.'
+										'"What do you mean, <<$pcs_nickname>>?" Anya asks, finally dropping any act of disapproval.'
+										'You explain the twins request to your sister.'
+										if sisboyparty = 0:
+											'"Sorry, <<$pcs_nickname>>. You know I love you, but my boyfriend would never allow this. And I could never do something like this behind his back. Anyway, thanks for confiding in me. Please stay safe and tell me if you get in over your head. Can''t have my little sis in danger." Anya gives you a little smile and a warm hug.'
+											'You''re happy that Anya has a boyfriend she loves, but right now you would give anything to be rid of him.'
+											TwinQW = 3
+										else
+											'"Ha! That actually sounds like a lot of fun." Your sister seems to consider everything for a moment before continuing. "Ok, I''ll do it! When do we leave?"'
+											'"Well, first I have to make myself look more like you so we''ll pass as twins. I''ll come and get you when I am ready."'
+											TwinQW = 5
+										end
+									end
+								elseif TwinQW = 3:
+									if sisboyparty = 0:
+										'You bring up the twins request again but Anya still refuses, claiming Roma would be heartbroken if he found out.'
+									else
+										'You bring up the twins request again. Since her relationship with Roma is a little different now, she seems a lot more receptive.'
+										'"Ha, that actually sounds like a lot of fun. Ok, I''ll do it! When do we leave?"'
+										'"Well, first I have to make myself look more like you so we''ll pass as twins. I''ll come and get you when I am ready."'
+										TwinQW = 5
+									end
+								end
+								act 'Finish': gt 'sister_chat', 'sister_chat'
+								if TwinQW = 5: killvar 'tmp_TwinQW_AskedToday' & delact 'Talk about the twin request'
+							end
+						end
+					end
+					if TwinQW = 5:
+						act 'Compare yourself with your sister':
+							gt 'sister_chat', 'twincompare'
+						end
+					end
+				end
 			end
 		end
 	else
@@ -1073,6 +1136,73 @@ if $ARGS[0] = 'sister_chat':
 		'OK <<$pcs_nickname>>, it''s time for bed.'
 		act 'Move away': gt $loc, $loc_arg
 	end
+end
+
+if $ARGS[0] = 'twincompare':
+	!!! <summary>compare yourself with your sister</summary>
+	!!! <continues>
+	!!! gt 'HotelHole','Twins' if you are similar enough and Pavlin is at the hotel
+	!!! otherwise: gt 'sister_chat', 'sister_chat'
+	!!! </continues>
+	*clr & cla
+	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/resident/anya/sister2.jpg"></center>'
+	'Your sister has straight blonde hair. Her hair reaches her shoulders with several strands going just beyond.'
+	'She has good looks. Men and women check her out when they think she isn''t looking.'
+	'<br>'
+	'<<$hair>>'
+	'<<$pcs_apprnc>>'
+	'<<$pcs_makeup>>'
+	'<br>'
+	tmp_twinsiscompare = 0
+	if pcs_hairlng > 160 and pcs_hairlng <= 260:
+		'<font color=#008000>Your hair is the correct length</font>'
+		tmp_twinsiscompare +=1
+	elseif pcs_hairlng <= 160:
+		'<font color=#FF0000>Your hair is to short.</font>'
+	else
+		'<font color=#FF0000>Your hair is to long.</font>'
+	end
+	if pcs_hairbsh = 0:
+		'<font color=#FF0000>You need to brush your hair.</font>'
+	else
+		tmp_twinsiscompare +=1
+	end
+	if pcs_haircol = 3:
+		'<font color=#008000>Your hair is the correct color.</font>'
+		tmp_twinsiscompare +=1
+	else
+		'<font color=#FF0000>Your hair is not the correct color.</font>'
+	end
+	if curly = 0:
+		'<font color=#008000>Your hair is straight, which is a match for your sister''s.</font>'
+		tmp_twinsiscompare +=1
+	else
+		'<font color=#FF0000>Your hair is too curly</font>'
+	end
+	if pcs_apprnc >= 60 and pcs_apprnc <= 120:
+		'<font color=#008000>Your looks matches your sister''s.</font>'
+		tmp_twinsiscompare +=1
+	else
+		'<font color=#FF0000>Your looks are too different from your sister''s. You are at <<pcs_apprnc>>. You need a score between 60 and 120 </font>'
+	end
+	if pcs_makeup = 4:
+		'<font color=#008000>Your make up hides the last differences between you and your sister.</font>'
+		tmp_twinsiscompare +=1
+	else
+		'<font color=#FF0000>You need some more make up to make you look more like your sister.</font>'
+	end
+	act 'Finish': gt 'sister_chat', 'sister_chat'
+	if tmp_twinsiscompare >= 6:
+		act 'Go to the hotel and have some twin fun':
+			if hour >= 12 and hour < 20:
+				gt 'HotelHole','Twins'
+			else
+				delact 'Go to the hotel and have some twin fun'
+				'Pavlin is usually in the hotel lobby between 12:00 and 20:00, No reason to go now.'
+			end
+		end
+	end
+	killvar 'tmp_twinsiscompare'
 end
 
 if $ARGS[0] = 'pargone':
