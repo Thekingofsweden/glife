@@ -739,14 +739,14 @@ namespace Analyser
             {
                 for (int j = 0; j < qspOpsNamesCounts[i]; j++)
                 {
-                    if ((name.Equals(qspOpsNames[i, j].Name)) && 
+                    if ((name.Equals(qspOpsNames[i, j].Name)) &&
                         (!functionsOnly || (qspOpsNames[i, j].Code >= (int)QspFunctionType.First_Function)))
                         return qspOpsNames[i, j].Code;
                 }
             }
             return (int)QspFunctionType.Unknown;
         }
-        
+
         static public QspVariable GetVar(string name)
         {
             foreach (QspVariable var in vars)
@@ -1436,7 +1436,7 @@ namespace Analyser
                                     }
                                 }
 
-                                if ((csv_line == null) || (csvLineCompleted && 
+                                if ((csv_line == null) || (csvLineCompleted &&
                                     ((csvLocName != locName) || (quoted_line_counter != csvLineIndex) || (csvOriginalLine != quotedText))))
                                 {
                                     SubmitError("CSV-file does not match the original! Generate it again.", INVALID_INDEX);
