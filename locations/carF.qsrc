@@ -23,6 +23,7 @@ $enddrive = {
 	if cardrive = 24:gt 'pav_commercial'
 	if cardrive = 25:gt 'city_island'
 	if cardrive = 26:gt 'pav_industrial'
+	if cardrive = 27:gt 'city_industrial', 'redlight'
 }
 
 if $ARGS[0] = 'start':
@@ -42,7 +43,7 @@ if $ARGS[0] = 'start':
 	act 'Move away from the car':dynamic $enddrive
 
 	if kanistra > 0:
-		'In the trunk there is <<kanistra>> canister/s of gasoline. Each canister contains 5 liters of gasoline.'
+		'In the trunk there ' + iif(kanistra = 1, 'is 1 cannister', 'are <<kanistra>> canisters') + ' of gasoline. Each canister contains 5 liters of gasoline.'
 
 		if benz <= 45:
 			act 'Pour gasoline into the tank':
@@ -50,7 +51,7 @@ if $ARGS[0] = 'start':
 				menu_off = 1
 				benz += 5
 				kanistra -= 1
-				'You emptied the canister of gasoline into the tank.'
+				'You empty the canister of gasoline into the tank.'
 
 				act 'Move away':gt 'carF', 'start'
 			end
@@ -69,12 +70,12 @@ if $ARGS[0] = 'salon':
 	gs 'stat'
 	'<center><b><<$car>></b></center>'
 	'<center><img <<$set_imgh>> src="images/shared/accessories/car/salon<<car>>.jpg"></center>'
-	'Gasoline - <<benz>> liters, the fuel tank has a capacity of 40 liters.'
+	'Gasoline - <<benz>> ' + iif(benz = 1, 'liter', 'liters') + ', the fuel tank has a capacity of 40 liters.'
 
 	if teh <= 0:teh = 0 & wrek = 1
 	if teh <= 0 or wrek = 1:$teh = 'The car is in need of repairs and won''t start.'
 	if teh >= tehcar * 75 / 100 and wrek = 0:$teh = 'The car is in excellent condition.'
-	if teh < tehcar * 75 / 100 and teh >= tehcar * 50 / 100 and wrek = 0:$teh = 'While driving, you occasionally hear some troubling noises'
+	if teh < tehcar * 75 / 100 and teh >= tehcar * 50 / 100 and wrek = 0:$teh = 'While driving, you occasionally hear some troubling noises.'
 	if teh < tehcar * 50 / 100 and teh >= tehcar * 25 / 100 and wrek = 0:$teh = 'The car seems broken and barely drives.'
 	if teh < tehcar * 25 / 100 and wrek = 0:$teh = 'How this car still runs is a mystery, even to its designers.'
 
@@ -102,47 +103,38 @@ if $ARGS[0] = 'salon':
 	if cardrive = 24:'Through the windshield, you can see Pavlovsk''s commercial region.'
 	if cardrive = 25:'You cross one of the bridges that leads to the island.'
 	if cardrive = 26:'Through the windshield, you can see Pavlovsk''s industrial region.'
+	if cardrive = 27:'Through the windshield, you see St. Petersburg''s red light district.'
 
 	if prava = 0:'You don''t have a driver''s license.'
 
 	act 'Get out of the car':dynamic $enddrive
 
 	if benz > 0 and wrek = 0 and prava > 0:
-		if teh >= tehcar * 75 / 100 and wrek = 0:
-			wrekrand = rand(0, 1000)
+		if teh >= tehcar * 75 / 100:
+			if rand(0, 1000) = 1000:wrek = 1
+		elseif teh >= tehcar * 50 / 100:
+			if rand(0, 100) = 100:wrek = 1
+		elseif teh >= tehcar * 25 / 100:
+			if rand(0, 100) >= 80:wrek = 1
+		else
+			if rand(0, 100) >= 40:wrek = 1
+		end
 
-			if wrekrand = 1000:wrek = 1
-		elseif teh < tehcar * 75 / 100 and teh >= tehcar * 50/100 and wrek = 0:
-			wrekrand = rand(0, 100)
-
-			if wrekrand = 100:wrek = 1
-		elseif teh < tehcar * 50 / 100 and teh >= tehcar * 25 / 100 and wrek = 0:
-			wrekrand = rand(0, 100)
-
-			if wrekrand >= 80:wrek = 1
-		elseif teh < tehcar * 25 / 100 and wrek = 0:
-			wrekrand = rand(0, 100)
-
-			if wrekrand >= 40:wrek = 1
-		elseif wrek = 1:
+		if wrek = 1:
 			'Something clatters loudly, and the engine stalls.'
 
 			act 'Fuck':gt 'carF', 'salon'
-		end
-
-		if alko > 0:
-			dpsrand = rand(0, 100)
-
-			if dpsrand <= alko:
-				'A policeman stops you, he looks at your condition and requests you breathe into a tube. You breathe and a red light brightens up on the instrument panel.'
-				'The officer snorts, and writes something down. He hands you a slip of paper with the number 50,000 on it'
+		else
+			if alko > 0 and rand(0, 100) <= alko:
+				'A policeman stops you. He looks at your condition and requests you breathe into a tube. You breathe, and a red light brightens up on the instrument panel.'
+				'The officer snorts and writes something down. He hands you a slip of paper with the number 50,000 on it'
 				'"Or I can write a report. But you will get a permanent record for driving drunk."'
 
 				if money >= 50000:
 					act 'Bribe him (50,000 <b>₽</b>)':
 						cla
 						money = money - 50000
-						'You pay and the policeman warns you that you can not keep driving in your drunken state.'
+						'You pay, and the policeman warns you that you can not keep driving in your drunken state.'
 
 						act 'In the salon':gt 'carF', 'salon'
 					end
@@ -151,74 +143,63 @@ if $ARGS[0] = 'salon':
 				act 'Come on, this is within the law':
 					cla
 					prava = 0
-					'"I can take your license, for not driving sober."'
+					'"I can take your license for not driving sober."'
 
 					act 'In the salon':gt 'carF', 'salon'
 				end
-
-				exit
-			end
-		elseif alko >= 10:
-			avarand = rand(0, 100)
-
-			if avarand >= 50:
+			elseif alko >= 10 and rand(0, 100) >= 50:
 				teh = teh/2
 				wrek = 1
-				'Driving drunken, you crash into a tree and wreck your car.'
+				'Driving drunk, you crash into a tree and wreck your car.'
 
 				act 'In the salon':gt 'carF', 'salon'
-
-				exit
-			end
-		end
-
-		if wrek = 0:
-
-			if (cardrive = 22 and nroad >= 18) or cardrive = 14 or cardrive = 20 or cardrive = 21 or cardrive = 24 or cardrive = 26:
-				car_town = 0
-				act 'Go to local destination': gs 'carF', 'pav'
-				act 'Go to the city':
-					minut += 65
-					*nl
-					'You drive for more than an hour on the highway before you get to the city.'
-					gs 'carF', 'city'
-				end
-				act 'Go to another destination':
-					minut += 30
-					*nl
-					'You drive out of Pavlovsk.'
-					gs 'carF', 'other'
-				end
-			elseif cardrive <= 11 or cardrive = 25:
-				car_town = 1
-				act 'Go to another city destination': gs 'carF', 'city'
-				act 'Go to Pavlosvsk':
-					minut += 65
-					*nl
-					'You drive for more than an hour on the highway before you get to the town of Pavlovsk.'
-					gs 'carF', 'pav'
-				end
-				act 'Go to another destination':
-					minut += 30
-					*nl
-					'You drive out of the city.'
-					gs 'carF', 'other'
-				end
 			else
-				car_town = 2
-				act 'Go to a city destination':
-					minut += 30
-					*nl
-					'You drive for half an hour on the highway before you get to the city.'
-					gs 'carF', 'city'
+				if (cardrive = 22 and nroad >= 18) or cardrive = 14 or cardrive = 20 or cardrive = 21 or cardrive = 24 or cardrive = 26:
+					car_town = 0
+					act 'Go to local destination': gs 'carF', 'pav'
+					act 'Go to the city':
+						minut += 65
+						*nl
+						'You drive for more than an hour on the highway before you get to the city.'
+						gs 'carF', 'city'
+					end
+					act 'Go to another destination':
+						minut += 30
+						*nl
+						'You drive out of Pavlovsk.'
+						gs 'carF', 'other'
+					end
+				elseif cardrive <= 11 or cardrive = 19 or cardrive = 25 or cardrive = 27:
+					car_town = 1
+					act 'Go to another city destination': gs 'carF', 'city'
+					act 'Go to Pavlovsk':
+						minut += 65
+						*nl
+						'You drive for more than an hour on the highway before you get to the town of Pavlovsk.'
+						gs 'carF', 'pav'
+					end
+					act 'Go to another destination':
+						minut += 30
+						*nl
+						'You drive out of the city.'
+						gs 'carF', 'other'
+					end
+				else
+					car_town = 2
+					act 'Go to a city destination':
+						minut += 30
+						*nl
+						'You drive for half an hour on the highway before you get to the city.'
+						gs 'carF', 'city'
+					end
+					act 'Go to a Pavlovsk destination':
+						minut += 30
+						*nl
+						'You drive for half an hour on the highway before you get to the town of Pavlovsk.'
+						gs 'carF', 'pav'
+					end
+					act 'Go to another destination': gs 'carF', 'other'
 				end
-				act 'Go to a Pavlosvsk destination':
-					minut += 30
-					*nl
-					'You drive for half an hour on the highway before you get to the town of Pavlovsk.'
-					gs 'carF', 'pav'
-				end
-				act 'Go to another destination': gs 'carF', 'other'
 			end
 		end
 	end
@@ -317,195 +298,36 @@ end
 
 if $ARGS[0] = 'pav':
 	cla
-	if cardrive ! 26:
-		act 'Go to Pavlovsk''s Industrial Region':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 26
-			'5 minutes later, you reach your destination.'
-
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 20:
-		act 'Go to Pavlovsk''s Residential Area':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 20
-			'5 minutes later, you reach your destination.'
-
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 24:
-		act 'Go to Pavlovsk''s Commercial Region':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 24
-			'5 minutes later, you reach your destination.'
-
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 14:
-		act 'Go to Old Town district of Pavlovsk':
-			cla
-			benz -= 1
-			teh -= rand(2, 5)
-			cardrive = 14
-			minut += 5
-			'5 minutes later, you reach Old Town district of Pavlovsk.'
-
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 21:
-		act 'Go to the gas station':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 21
-			'5 minutes later, you reach your destination.'
-
-			dynamic $enddrive
-		end
-	end
+	if cardrive ! 26:act 'Go to Pavlovsk''s Industrial Region':gs 'carF', 'nearby', 26
+	if cardrive ! 20:act 'Go to Pavlovsk''s Residential Area':gs 'carF', 'nearby', 20
+	if cardrive ! 24:act 'Go to Pavlovsk''s Commercial Region':gs 'carF', 'nearby', 24
+	if cardrive ! 14:act 'Go to Old Town district of Pavlovsk':gs 'carF', 'nearby', 14
+	if cardrive ! 21:act 'Go to the gas station':gs 'carF', 'nearby', 21
 end
 
 if $ARGS[0] = 'city':
 	cla
-	if cardrive ! 3:
-		act 'Go to St. Petersburg''s Industrial Region':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 3
-			'You drive for more than an hour on the highway before you get to the city.'
-			dynamic $enddrive
-		end
-	end
+	if cardrive ! 3:act 'Go to St. Petersburg''s Industrial Region':gs 'carF', 'nearby', 3
+	if cardrive ! 1:act 'Go to St. Petersburg''s residential area':gs 'carF', 'nearby', 1
+	if cardrive ! 2:act 'Go to St. Petersburg city center':gs 'carF', 'nearby', 2
+	if cardrive ! 19:act 'Go to the city train station':gs 'carF', 'nearby', 19
+	if cardrive ! 4:act 'Go to the city lake':gs 'carF', 'nearby', 4
+	if cardrive ! 5:act 'Go to the city park':gs 'carF', 'nearby', 5
+	if cardrive ! 6:act 'Go to the gas station':gs 'carF', 'nearby', 6
+	if cardrive ! 7 and func('autoservisF', 'is_open'):act 'Go to the auto repair shop':gs 'carF', 'nearby', 7
+	if cardrive ! 9 and func('autotraidF', 'is_open'):act 'Go to the car dealership':gs 'carF', 'nearby', 9
+	if cardrive ! 25:act 'Go to the island':gs 'carF', 'nearby', 25
+	if cardrive ! 27:act 'Go to the red light district':gs 'carF', 'nearby', 27
+end
 
-	if cardrive ! 1:
-		act 'Go to St. Petersburg''s residential area':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 1
-			'You drive for more than an hour on the highway before you get to St. Petersburg''s residential area.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 2:
-		act 'Go to St. Petersburg city center':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 2
-			'You drive for more than an hour on the highway before you get to St. Petersburg city center.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 19 and cardrive < 20:
-		act 'Go to the city train station':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 19
-
-			'5 minutes later, you arrive at your destination.'
-
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 4 and cardrive < 20:
-		act 'Go to the city lake':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 4
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 5 and cardrive < 20:
-		act 'Go to the city park':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 5
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 6 and cardrive < 20:
-		act 'Go to the gas station':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 6
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 7 and cardrive < 20:
-		act 'Go to the auto repair shop':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 7
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 8 and cardrive < 20:
-		act 'Go to the car dealership':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 8
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
-
-	if cardrive ! 25 and cardrive < 20:
-		act 'Go to the island':
-			cla
-			minut += 5
-			benz -= 1
-			teh -= rand(1, 3)
-			cardrive = 25
-			'5 minutes later, you arrive at your destination.'
-			dynamic $enddrive
-		end
-	end
+if $ARGS[0] = 'nearby':
+	cla
+	minut += 5
+	benz -= 1
+	teh -= rand(1, 3)
+	cardrive = ARGS[1]
+	'5 minutes later, you arrive at your destination.'
+	dynamic $enddrive
 end
 
 --- carF ---------------------------------

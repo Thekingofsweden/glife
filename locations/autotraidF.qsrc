@@ -15,14 +15,20 @@ if $ARGS[0] = 'start':
 	'- We only sell to people with valid driver''s licenses.'
 	'- New State law: No sale if you already own a car.'
 
+	if car > 0 and cardrive = 9:'Your <a href="exec:gs ''carF'', ''start''"><<$car>></a> is parked just inside.'
+
 	act 'Leave': minut += 5 & gt 'city_industrial'
 	
-	if hour <= 17:
+	if func('autotraidF', 'is_open'):
 		if car > 0:act 'Ask about selling your car':gt 'autotraidF', 'manager1'
 
 		act 'Look at the new cars for sale': gt 'autosalonF', 'start'
 		act 'Look at the used cars for sale':gt 'autotraidF', 'car'
 	end
+end
+
+if $ARGS[0] = 'is_open':
+	RESULT = hour >= 9 and hour < 18 and week > 1
 end
 
 if $ARGS[0] = 'manager1':
@@ -40,7 +46,7 @@ if $ARGS[0] = 'manager1':
 	act 'Leave': killvar 'bupay' & minut += 5 & gt 'city_industrial'
 	
 	if cardrive = 9 and car > 0:
-		'The shifty-looking salesman circles around your car a couple of times, making exaggerated displeased noises all the while and pointing out practically every speck of dust as if it was a huge damage. When he turns to you, he states that the best he can do is <<bupay>> <b>₽</b> - while he claims that he''s taking a risk with that price, you''re pretty sure he''s ripping you off.'
+		'The shifty-looking salesman circles around your car a couple of times, making exaggerated displeased noises all the while and pointing out practically every speck of dust as if it is major damage. When he turns to you, he states that the best he can do is <<bupay>> <b>₽</b> - while he claims that he''s taking a risk with that price, you''re pretty sure he''s ripping you off.'
 
 		act 'No way, not at that price - Leave': killvar 'bupay' & minut += 5 & gt 'city_industrial'
 		
@@ -50,7 +56,7 @@ if $ARGS[0] = 'manager1':
 			minut += 60
 			money += bupay
 			car = 0
-			'While you are almost certain that he''s offering less than the car is actually worth, you doubt that you''re going find somebody who''s going to offer you more for it and your attempts at haggling with the fence fall flat - he''s just too experienced at this.'
+			'While you are almost certain that he''s offering less than the car is actually worth, you doubt that you''re going to find somebody who''s going to offer you more for it, and your attempts at haggling with the fence fall flat - he''s just too experienced at this.'
 			'So, as much as you hate it, you give your car one last look before you shake hands with him and follow him into the tiny shed he calls his "office" to sign the papers. He hands you the money in cash and, with a nasty grin, suggests that you look around the yard.' 
 			'"Maybe you''ll see something you like?"'
 
@@ -86,44 +92,14 @@ if $ARGS[0] = 'car':
 	gs 'stat'
 	'<center><b>Used Car Dealership</b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/industrial/usedcar/autotraid.jpg"></center>'
-	'There are so many cars on the parking lot that you could spend a lifetime looking around without ever seeing all of them. According to the salesman, several cars are currently being test-driven or maintained. You doubt that there''s actually any maintenance going on though: Several of the cars are visibly damaged or make awful sounds when they are started.' 
+	'There are so many cars on the parking lot that you could spend a lifetime looking around without ever seeing all of them. According to the salesman, several cars are currently being test-driven or maintained. You doubt that there''s actually any maintenance going on though: several of the cars are visibly damaged or make awful sounds when they are started.' 
 	*nl
 	'It''s obvious that most, if not all of them have sustained some visible or invisible damage. Buying a car here could be a fantastic bargain... or a complete waste of money. If you are to buy any of them, you know that the first place to visit should be a service center.'
 
 	act 'Return': killvar 'carT' & killvar 'bupay' & gt 'autotraidF', 'start'
 	
 	if hour <= 17:
-		act 'Inspect a 2107':
-			cla
-			*clr
-			menu_off = 1
-			'<center><b>2107</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car.jpg"></center>'
-			tehNT = 200
-			carT = 1
-			gs 'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt 'autotraidF', 'car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy the car (<<bupay>> <b>₽</b>)':
-					cla
-					money -= bupay
-					$car = '2107'
-					car = 1
-					benz = 3
-					cardrive = 9
-					teh = tehT
-					tehcar = 200
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt 'city_industrial'
-				end
-			end
-		end
+		act 'Inspect a 2107':gt 'autotraidF', 'inspect', '2107', 1, 200, 1, 3
 
 		act 'Inspect another 2107 (Broken Engine)':
 			cla
@@ -147,7 +123,7 @@ if $ARGS[0] = 'car':
 					tehcar = 200
 					teh = rand(10, tehcar)
 					wrek = 1
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
+					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash, and the car is yours.' 
 					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you... and that''s it.' 
 					'If you want to get the car to a garage, you''ll have to go there and have it towed.'
 					killvar 'bupay'
@@ -155,193 +131,62 @@ if $ARGS[0] = 'car':
 				end
 			end
 		end
-		act 'Inspect a VAZ 2115':
+
+		act 'Inspect a VAZ 2115':gt 'autotraidF', 'inspect', 'VAZ 2115', 2, 300, 1, 3
+		act 'Inspect a VAZ 2113':gt 'autotraidF', 'inspect', 'VAZ 2113', 3, 290, 1, 3
+		act 'Inspect a VAZ 2114':gt 'autotraidF', 'inspect', 'VAZ 2114', 4, 300, 1, 3
+		act 'Inspect a VAZ 2110':gt 'autotraidF', 'inspect', 'VAZ 2110', 5, 350, 1, 3
+		act 'Inspect a GAZ 3102':gt 'autotraidF', 'inspect', '3102 GAS', 11, 1000, 2, 5
+		act 'Inspect a 3110':gt 'autotraidF', 'inspect', '3110', 12, 800, 2, 5
+	end
+end
+
+if $ARGS[0] = 'inspect':
+	cla
+	*clr
+	menu_off = 1
+	$autotraidF_carname = $ARGS[1]
+	autotraidF_carnum = ARGS[2]
+	tehNT = ARGS[3]
+	carT = ARGS[4]
+	autotraidF_benz = ARGS[5]
+
+	'<center><b><<$autotraidF_carname>></b></center>'
+	'<center><img <<$set_imgh>> src="images/shared/accessories/car/car<<iif(autotraidF_carnum = 1, '''', autotraidF_carnum)>>.jpg"></center>'
+
+	gs 'avt'
+	'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
+
+	act 'Look around some more':
+		killvar 'bupay'
+		killvar 'tehT'
+		killvar 'tehNT'
+		killvar '$autotraidF_carname'
+		killvar 'autotraidF_carnum'
+		killvar 'autotraidF_benz'
+		gt 'autotraidF', 'car'
+	end
+
+	if car = 0 and prava = 1 and money >= bupay:
+		act 'Buy (<<bupay>> <b>₽</b>)':
 			cla
-			*clr
-			menu_off = 1
-			tehNT = 300
-			carT = 1
-			'<center><b>VAZ 2115</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car2.jpg"></center>'
-			gs'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt'autotraidF','car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy for <<bupay>> <b>₽</b>':
-					cla
-					money = money - bupay
-					$car = 'VAZ 2115'
-					car = 2
-					benz = 3
-					cardrive = 9
-					teh = tehT
-					tehcar = 300
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt'city_industrial'
-				end
-			end
-		end
-		act 'Inspect a VAZ 2113':
-			cla
-			*clr
-			menu_off = 1
-			tehNT = 290
-			carT = 1
-			'<center><b>VAZ 2113</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car3.jpg"></center>'
-			gs'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt'autotraidF','car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy for <<bupay>> <b>₽</b>':
-					cla
-					money = money - bupay
-					$car = 'VAZ 2113'
-					car = 3
-					benz = 3
-					cardrive = 9
-					teh = tehT
-					tehcar = 290
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt'city_industrial'
-				end
-			end
-		end
-		act 'Inspect a VAZ 2114':
-			cla
-			*clr
-			menu_off = 1
-			tehNT = 300
-			carT = 1
-			'<center><b>VAZ 2114</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car4.jpg"></center>'
-			gs'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt'autotraidF','car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy for <<bupay>> <b>₽</b>':
-					cla
-					money = money - bupay
-					$car = 'VAZ 2114'
-					car = 4
-					benz = 3
-					cardrive = 9
-					teh = tehT
-					tehcar = 300
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt'city_industrial'
-				end
-			end
-		end
-		act 'Inspect a VAZ 2110':
-			cla
-			*clr
-			menu_off = 1
-			tehNT = 350
-			carT = 1
-			'<center><b>VAZ 2110</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car5.jpg"></center>'
-			gs'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt'autotraidF','car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy for <<bupay>> <b>₽</b>':
-					cla
-					money = money - bupay
-					$car = 'VAZ 2110'
-					car = 5
-					benz = 3
-					cardrive = 9
-					teh = tehT
-					tehcar = 350
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt'city_industrial'
-				end
-			end
-		end
-
-		act 'Inspect a GAZ 3102':
-			cla
-			*clr
-			menu_off = 1
-			'<center><b>3102 GAS</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car11.jpg"></center>'
-			tehNT = 1000
-			carT = 2
-			gs 'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt 'autotraidf', 'car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy <<bupay>><b>₽</b>':
-					cla
-					money -= bupay
-					$car = 'GAZ 3102'
-					car = 11
-					benz = 5
-					cardrive = 9
-					teh = tehT
-					tehcar = 1000
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt 'city_industrial'
-				end
-			end
-		end
-
-		act 'Inspect a 3110':
-			cla
-			*clr
-			menu_off = 1
-			'<center><b>3110</b></center>'
-			'<center><img <<$set_imgh>> src="images/shared/accessories/car/car12.jpg"></center>'
-			tehNT = 800
-			carT = 2
-			gs 'avt'
-			'<<$tehT>> The car salesman wants <<bupay>> <b>₽</b> for it.'
-
-			act 'Look around some more':gt 'autotraidF', 'car'
-
-			if car = 0 and prava = 1 and money >= bupay:
-				act 'Buy (<<bupay>> <b>₽</b>)':
-					cla
-					money -= bupay
-					$car = '3110'
-					car = 12
-					benz = 5
-					cardrive = 9
-					teh = tehT
-					tehcar = 800
-					wrek = 0
-					'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash and the car is yours.' 
-					'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
-					killvar 'bupay' & killvar 'tehT'
-					act 'Leave': minut += 5 & gt 'city_industrial'
-				end
-			end
+			money -= bupay
+			$car = $autotraidF_carname
+			car = autotraidF_carnum
+			benz = autotraidF_benz
+			cardrive = 9
+			teh = tehT
+			tehcar = tehNT
+			wrek = 0
+			'You agree and before you know it, the car salesman and you have signed all the necessary documents. You hand over the <<bupay>> <b>₽</b> in cash, and the car is yours.' 
+			'Since it''s crammed in between about a million other vehicles, the car salesman moves it outside near the yard''s entrance for you and warns you that there is very little gas in the tank.'
+			killvar 'bupay'
+			killvar 'tehT'
+			killvar 'tehNT'
+			killvar '$autotraidF_carname'
+			killvar 'autotraidF_carnum'
+			killvar 'autotraidF_benz'
+			act 'Leave': minut += 5 & gt 'city_industrial'
 		end
 	end
 end

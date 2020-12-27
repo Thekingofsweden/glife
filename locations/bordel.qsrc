@@ -7,6 +7,8 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 	'<center><b>Brothel</b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/bordel.jpg"></center>'
 
+	'The brothel madam looks you over as you enter.'
+
 	if pcs_apprnc < 0:
 		'"You look half dead, get yourself treated."'
 
@@ -16,7 +18,9 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 
 		act 'Leave':gt 'city_industrial', 'redlight'
 	else
-		act 'In the room':gt 'bordel', 'brothel'
+		'"You can work tonight, head to your room and get ready."'
+
+		act 'Go to your room':gt 'bordel', 'brothel'
 	end
 end
 
@@ -34,9 +38,9 @@ if $ARGS[0] = 'brothel':
 	gs 'stat'
 	'<center><b>Your room in a brothel</b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/borroom.jpg"></center>'
-	'This is your room in the brothel. In the middle is a huge bed and not much else, there is a small side door to the <a href="exec:gt ''bordel'', ''dysh''">bathroom</a>.'
+	'This is your room in the brothel. In the middle is a huge bed and not much else. There is a small side door to the <a href="exec:gt ''bordel'', ''dysh''">bathroom</a>.'
 	*nl
-	'In a brothel there is a lot of competition, in order to avoid a massacre they introduced a rule - no more than two clients per day'
+	'In a brothel there is a lot of competition. In order to avoid a massacre, they introduced a rule - no more than two clients per day.'
 
 	act 'Leave':
 		if $clothingworntype ! 'nude':
@@ -49,21 +53,23 @@ if $ARGS[0] = 'brothel':
 		end
 	end
 
-	act 'Go to the reception room and wait for customers':
+	if func('bordel', 'is_open'):
+		act 'Go to the reception room and wait for customers':
 
-		if (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or pcs_makeup < 2 or pcs_leghair > 3 or pcs_pubes > 3 or sweat > 25 or pcs_hairbsh = 0:
-			cla
-			'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and with your hair looking nice. Go and sort yourself out, now!"'
+			if (cumloc[6] = 1 or cumloc[7] = 1) or cumloc[11] = 1 or pcs_makeup < 2 or pcs_leghair > 3 or pcs_pubes > 3 or sweat > 25 or pcs_hairbsh = 0:
+				cla
+				'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and with your hair looking nice. Go and sort yourself out, now!"'
 
-			act 'Go to the bathroom':gt 'bordel', 'dysh'
-		elseif $clothingworntype ! 'fancy_burlesque' and PCloStyle ! 4 and $clothingworntype ! 'nude':
-			cla
-			'You need to wear an outfit that can be used for prostitution. If you haven''t got anything suitable and you are desperate, you could work naked but you will get paid less and might get treated badly.'
-			'You can change your clothes in the bathroom.'
+				act 'Go to the bathroom':gt 'bordel', 'dysh'
+			elseif $clothingworntype ! 'fancy_burlesque' and PCloStyle ! 4 and $clothingworntype ! 'nude':
+				cla
+				'You need to wear an outfit that can be used for prostitution. If you haven''t got anything suitable and you are desperate, you could work naked, but you will get paid less and might get treated badly.'
+				'You can change your clothes in the bathroom.'
 
-			act 'Go to the bathroom':gt 'bordel', 'dysh'
-		else
-			gt 'bordel', 'var'
+				act 'Go to the bathroom':gt 'bordel', 'dysh'
+			else
+				gt 'bordel', 'var'
+			end
 		end
 	end
 end
@@ -84,7 +90,7 @@ if $ARGS[0] = 'dysh':
 
 	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/bordysh.jpg"></center>'
 	'The bathroom is well fitted and clean as customers can access it and hygiene is very important in a brothel.'
-	'Your room is so dedicated to it purpose that your clothes are stored in here.'
+	'Your room is so dedicated to its purpose that your clothes are stored in here.'
 	*nl
 	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.' 
 	
@@ -118,7 +124,8 @@ if $ARGS[0] = 'var':
 	borrand = rand(0, 10)
 
 	if borrand = 0:
-		'Customer orders one girl (1,000 <b>₽</b>).'
+		bordelpay *= 100
+		'A customer orders you (<<bordelpay>> <b>₽</b>).'
 		
 		gs 'willpower', 'sex', 'resist'
 		if will_cost <= pcs_willpwr:
@@ -134,7 +141,7 @@ if $ARGS[0] = 'var':
 
 		act 'Agree':
 			borsexkol += 1
-			money += 100 * bordelpay
+			money += bordelpay
 			slutty += 1
 			bordelslutty += 1
 			minut += 10
@@ -146,7 +153,8 @@ if $ARGS[0] = 'var':
 			gt 'sex', 'start'
 		end
 	elseif borrand = 1:
-		'Customer orders two girls (1,000 <b>₽</b>).'
+		bordelpay *= 100
+		'A customer orders you and another girl (<<bordelpay>> <b>₽</b>).'
 
 		gs 'willpower', 'sex', 'resist', 'hard'
 		if will_cost <= pcs_willpwr:
@@ -162,7 +170,7 @@ if $ARGS[0] = 'var':
 
 		act 'Agree':
 			borsexkol += 1
-			money += 100 * bordelpay
+			money += bordelpay
 			slutty += 1
 			bordelslutty += 1
 			minut += 10
@@ -173,7 +181,8 @@ if $ARGS[0] = 'var':
 			gt 'podrsex', 'start'
 		end
 	elseif borrand = 2:
-		'Two clients book one girl (1,500 <b>₽</b>).'
+		bordelpay *= 150
+		'Two clients book you (<<bordelpay>> <b>₽</b>).'
 
 		gs 'willpower', 'sex', 'resist', 'hard'
 		if will_cost <= pcs_willpwr:
@@ -189,7 +198,7 @@ if $ARGS[0] = 'var':
 
 		act 'Agree':
 			borsexkol += 1
-			money += 150 * bordelpay
+			money += bordelpay
 			slutty += 1
 			bordelslutty += 1
 			minut += 10
@@ -202,7 +211,8 @@ if $ARGS[0] = 'var':
 			gt 'sexdvoe', 'start'
 		end
 	elseif borrand = 3:
-		'Two clients book two girls (1,500 <b>₽</b>).'
+		bordelpay *= 150
+		'Two clients book you and another girl (<<bordelpay>> <b>₽</b>).'
 
 		gs 'willpower', 'sex', 'resist'
 		if will_cost <= pcs_willpwr:
@@ -218,7 +228,7 @@ if $ARGS[0] = 'var':
 
 		act 'Agree':
 			borsexkol += 1
-			money += 150 * bordelpay
+			money += bordelpay
 			slutty += 1
 			bordelslutty += 1
 			minut += 10
@@ -231,7 +241,8 @@ if $ARGS[0] = 'var':
 			gt 'sexdvanadva', 'start'
 		end
 	elseif borrand = 4:
-		'Group of customers order one girl, price 2,000 <b>₽</b>.'
+		bordelpay *= 200
+		'A group of customers order you (<<bordelpay>> <b>₽</b>).'
 
 		gs 'willpower', 'sex', 'resist', 'hard'
 		if will_cost <= pcs_willpwr:
@@ -247,7 +258,7 @@ if $ARGS[0] = 'var':
 
 		act 'Agree':
 			borsexkol += 1
-			money += 200 * bordelpay
+			money += bordelpay
 			slutty += 1
 			bordelslutty += 1
 			minut += 10
@@ -271,6 +282,18 @@ if $ARGS[0] = 'var':
 		act 'Go to your room':gt 'bordel', 'brothel'
 		act 'Wait for another':gt 'bordel', 'var'
 	end
+end
+
+if $ARGS[0] = 'is_open':
+	RESULT = hour >= func('bordel', 'open_hour') or hour <= func('bordel', 'close_hour')
+end
+
+if $ARGS[0] = 'open_hour':
+	RESULT = 20
+end
+
+if $ARGS[0] = 'close_hour':
+	RESULT = 3
 end
 
 --- bordel ---------------------------------
