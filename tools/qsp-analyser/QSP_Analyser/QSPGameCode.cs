@@ -636,6 +636,16 @@ namespace Analyser
                         }
                         else if (c.ToString().IndexOfAny(Delimiters) == 0)
                         {
+                            //Особый учет для последовательностей >=, => и т.д.
+                            bool comparer = pos + 1 < line.Length;
+                            String cmp = "";
+                            if (comparer)
+                            {
+                                cmp = line.Substring(pos, 2);
+                                comparer = cmp.Equals("<=") || cmp.Equals(">=") || cmp.Equals("=>") || cmp.Equals("=<") || cmp.Equals("<>") ||
+                                           cmp.Equals("+=") || cmp.Equals("-=") || cmp.Equals("*=") || cmp.Equals("/=");
+                            }
+
                             if ((c == '&') && (bracketLevel == 0))
                             {
                                 if (controlBlock == (int)ControlBlockType.IfCondition)
@@ -671,7 +681,7 @@ namespace Analyser
                                 //CLOSE ALL
                                 block += c;
                             }
-                            else if (!blockStarted && (c == '*'))
+                            else if (!comparer && !blockStarted && (c == '*'))
                             {
                                 //Возможно, *PL, *P, *NL
                                 blockStarted = true;
@@ -703,15 +713,6 @@ namespace Analyser
                                 }
                                 bool whiteSpace = c.ToString().IndexOfAny(WhiteSpace) == 0;
 
-                                //Особый учет для последовательностей >=, => и т.д.
-                                bool comparer = pos + 1 < line.Length;
-                                String cmp = "";
-                                if (comparer)
-                                {
-                                    cmp = line.Substring(pos, 2);
-                                    comparer = cmp.Equals("<=") || cmp.Equals(">=") || cmp.Equals("=>") || cmp.Equals("=<") || cmp.Equals("<>") ||
-                                               cmp.Equals("+=") || cmp.Equals("-=");
-                                }
                                 if (comparer)
                                 {
                                     //<= >= => =< <> += -=
@@ -956,7 +957,8 @@ namespace Analyser
                                 {
                                     //Обрабатываем попытки "склеить" некоторые последовательности символов
                                     string first = block.Substring(0, 1);
-                                    if (first.Equals("*"))
+                                    string second = block.Substring(1, 1);
+                                    if (!second.Equals("=") && first.Equals("*"))
                                     {
                                         //Если была неудачная попытка прочесть *NL, *P, и т.д., "разделяем" блок на части
                                         blockGroup.Add(first);
@@ -1120,6 +1122,10 @@ namespace Analyser
                 int setpos = FindInTopBracketLevel(blockGroup, blockInGroupIsText, "=");
                 if (setpos == INVALID_INDEX)
                     setpos = FindInTopBracketLevel(blockGroup, blockInGroupIsText, "+=");
+                if (setpos == INVALID_INDEX)
+                    setpos = FindInTopBracketLevel(blockGroup, blockInGroupIsText, "*=");
+                if (setpos == INVALID_INDEX)
+                    setpos = FindInTopBracketLevel(blockGroup, blockInGroupIsText, "/=");
                 if (setpos == INVALID_INDEX)
                     setpos = FindInTopBracketLevel(blockGroup, blockInGroupIsText, "-=");
                 if (isSetOp && (setpos == INVALID_INDEX))
