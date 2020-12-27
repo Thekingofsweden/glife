@@ -587,6 +587,11 @@ namespace Analyser
                                 return false;
                             }
                         }
+                        else if ((c == ':') && (block == "else"))
+                        {
+                            SubmitError("ELSE with :", lineNum);
+                            return false;
+                        }
                         else if ((c == ':') && (controlBlock == (int)ControlBlockType.ActCondition))
                         {
                             //Разбор аргумента
@@ -1896,7 +1901,6 @@ namespace Analyser
                         {
                             pos++;
                         }
-
                     }
                     else if ((block.Length == 0) && (c2 == '"'))
                     {
