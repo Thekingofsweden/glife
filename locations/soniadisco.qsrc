@@ -4,22 +4,12 @@
 
 !!Which arg it goes to depends on level of soniafall
 if $ARGS[0] = 'start':
-	if daystart => soniafallDay + 6:
+	if daystart >= soniafallDay + 6:
 		soniafallDay = daystart
-		if soniafall = 0:
+		if soniafall <= 0:
 			gt 'soniadisco', 'disco0'
-		elseif soniafall = 1:
-			gt 'soniadisco', 'disco1'
-		elseif soniafall = 2:
-			gt 'soniadisco', 'disco2'
-		elseif soniafall = 3:
-			gt 'soniadisco', 'disco3'
-		elseif soniafall = 4:
-			gt 'soniadisco', 'disco4'
-		elseif soniafall = 5:
-			gt 'soniadisco', 'disco5'
-		elseif soniafall = 6:
-			gt 'soniadisco', 'disco6'
+		else
+			gt 'soniadisco', 'disco'
 		end
 	else
 		gt 'soniadisco', 'disco0'
@@ -163,28 +153,41 @@ if $ARGS[0] = 'soniashowsboobs':
 	end
 end
 	
-if $ARGS[0] = 'disco1':
+if $ARGS[0] = 'disco':
 	menu_off = 0
 	*clr & cla
-	soniafall = 2
+	soniafall += 1
 	gs 'stat'
 	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'Vitek and some of his friends are on their way out of the disco, together with Sonia. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you staring at the bottle. He watches you a moment and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
+
+	if soniafall <= 2:
+		'Vitek and some of his friends are on their way out of the disco, together with Sonia. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
+	elseif soniafall = 3:
+		'You see Vitek and some of the gopniks hanging out together watching Sonia starting to get drunk and dancing wildly like before. They seem to be discussing something and maybe daring each other, you can''t tell. After a bit, Vitek says something that shuts them all up, then he walks up to Sonia. Instead of dancing with her though, he whispers something to her. After a few moments, she looks at him, smiles and nods her head. With that, Vitek starts leading Sonia off the dance floor out of the disco. As he does, several of the other gopniks scramble to catch up to the two of them at a wave from him. You notice Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
+	else
+		'You see Sonia hanging out by Vitek and some of his friends. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
+	end
+
+	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
+
+	if soniarushout = 1:
+		killvar 'soniarushout'
+		'You join them in the part of the room they have been using as you consider the offer. Finding yourself next to Sonia, you turn to her and whisper, "I am surprised you came back to party with them after last time."'
+		'She blushes a little and replies, "I won''t get that drunk again."'
+	end
+
 	gs 'willpower', 'drink', 'resist'
 	if will_cost <= pcs_willpwr:
 		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
 			gs 'willpower', 'pay', 'resist'
 			minut += 30
 			grupvalue[4] -= 1
 			grupvalue[1] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
-			'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever she jumps.'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
+			if soniafall <= 6:
+				gt 'soniadisco', 'dance', 'declineinvite'
+			else
+				gt 'soniadisco', 'dance1', 'declineinvite'
+			end
 		end
 	else
 		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
@@ -201,34 +204,25 @@ if $ARGS[0] = 'disco1':
 		gs 'willpower', 'drink', 'resist'
 		if will_cost <= pcs_willpwr:
 			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
 				gs 'willpower', 'pay', 'resist'
 				minut += 10
 				grupvalue[4] -= 1
 				gs 'stat'
-				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Sonia does have more, a lot more, and it doesn''t take too long until she is totally wasted. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-				act 'Encourage her': gt 'soniadisco', 'soniadrinkmore1'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
+				$soniadisco_peerpressuretrigger = 'declinedrink'
+				gs 'soniadisco', 'peerpressure'
 			end
 		else
 			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
 		end
 		act 'Take another drink':
-			*clr & cla
 			minut += 10
 			gs 'drugs', 'alcohol', 'vodka', 1
 			grupvalue[4] += 1
 			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Sonia does have more, but she starts to slow down a little. She obviously knows she is starting to get pretty drunk. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-			act 'Encourage her': gt 'soniadisco', 'soniadrinkmore1'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
+			$soniadisco_peerpressuretrigger = 'takedrink'
+			gs 'soniadisco', 'peerpressure'
 		end
 		act 'Caution Sonia':
-			*clr & cla
 			soniahelp += 1
 			minut += 10
 			grupvalue[4] -= 2
@@ -237,19 +231,16 @@ if $ARGS[0] = 'disco1':
 			npc_rel['A11'] -= 1
 			npc_rel['A25'] += 1
 			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/soniadrink.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"We''ve already been through this <<$pcs_nickname>>! You aren''t my mother, how about you chill out and enjoy the drinks like the rest of us?" With that, she grabs the bottle and chugs down a quarter of it. The gopniks all whoop and holler, encouraging her to keep going.'
-			'Sonia does have more, a lot more, and it doesn''t take too long until she is totally wasted. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
+			$soniadisco_peerpressuretrigger = 'cautionsonia'
+			gs 'soniadisco', 'peerpressure'
 		end
-		act 'Encourage her': gt 'soniadisco', 'soniadrinkmore1'
+		if soniafall <= 6:act 'Encourage her': gt 'soniadisco', 'soniadrinkmore'
 	end
 end
 
-if $ARGS[0] = 'soniadrinkmore1':
+if $ARGS[0] = 'soniadrinkmore':
 	*clr & cla
-	soniafall = 3
+	soniafall += 1
 	soniaencourage += 1
 	npc_rel['A9'] += 1
 	npc_rel['A10'] += 1
@@ -262,32 +253,23 @@ if $ARGS[0] = 'soniadrinkmore1':
 	'You smile and take hold of her hand holding the cup while encouraging her to sit back down. "What''s the rush Sonia? We''re having a good time here right?" you ask her as you extend her arm and cup towards Vasily who happily refills it.'
 	'Sonia grins at you. "You''re right!" Then she downs about half the cup in one gulp, coughing a bit. You all sit, talk and drink some more. Sonia finishes the cup finally, but as the boys start passing out more, Sonia lets her cup be filled again.'
 	act 'Take another drink':
-		*clr & cla
-		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties1.jpg"></center>'
-		'You smile and hold up your cup for a refill. Everyone is laughing and having a good time. When it comes time for a third refill, Vasily refuses to refill your cup and instead whispers to you, "Good girls shouldn''t get drunk around bad boys."'
-		'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia what color are your panties?"'
-		'She looks at him a little confused. "What?"'
-		'"You were going to show us what color your panties are," Dan says as if it were a fact.'
-		'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Go on, don''t be a tease." With the encouragement, Sonia stands up, turns around and pulls up her dress, showing off the back of her panties.'
-		gs 'arousal', 'erotic', 5
-		gs 'stat'
-		act 'Continue':
-			*clr & cla
-			minut += 5
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties2.jpg"></center>'
-			'The boys hoot and holler, and Vasily adds in, "Now show us the front of your panties." With a huge grin, she turns facing everyone and pulls up her dress to show off her panties for all to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-			gs 'arousal', 'erotic', 5
-			gs 'arousal', 'end'
-			gs 'stat'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
+		$soniadisco_peerpressuretrigger = 'soniadrinkmore'
+		gs 'soniadisco', 'peerpressure'
 	end
 end
 
 if $ARGS[0] = 'dance':
 	*clr & cla
 	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-	'You go back to the disco with the rest of the group, where Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever Sonia jumps.'
+	if $ARGS[1] = 'declineinvite':
+		'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
+		'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
+	elseif $ARGS[1] = 'staytoend':
+		*p 'You go back to the disco with the rest of the group, where '
+	else
+		*p 'Not wanting to stick around, you return to the dance. A while later, the rest of the group returns, and '
+	end
+	'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever Sonia jumps.'
 	gs 'arousal', 'erotic_nudity', 5
 	gs 'stat'
 	act 'Just watch':
@@ -340,894 +322,206 @@ if $ARGS[0] = 'dance':
 	end
 end
 
-if $ARGS[0] = 'disco2':
-	menu_off = 0
+if $ARGS[0] = 'peerpressure':
 	*clr & cla
-	soniafall = 3
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'You see Vitek and some of the gopniks hanging out together watching Sonia starting to get drunk and dancing wildly like before. They seem to be discussing something and maybe daring each other, you can''t tell. After a bit, Vitek says something that shuts them all up, then he walks up to Sonia. Instead of dancing with her though, he whispers something to her. After a few moments, she looks at him, smiles and nods her head. With that, Vitek starts leading Sonia off the dance floor out of the disco. As he does, several of the other gopniks scramble to catch up to the two of them at a wave from him. You notice Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
-	gs 'willpower', 'drink', 'resist'
-	if will_cost <= pcs_willpwr:
-		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'resist'
-			minut += 30
-			grupvalue[4] -= 1
-			grupvalue[1] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
-			'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever she jumps.'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	else
-		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end
-	act 'Have a drink with them':
-		*clr & cla
-		gs 'drugs', 'alcohol', 'vodka', 1
-		minut += 15
-		grupvalue[4] += 1
-		gs 'stat'
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-		'You''re not sure whether he invited you along because he wants you to come, or just because he''s afraid you would rat them out. Either way, it could be fun? You follow the guys outside, and after a few minutes, you sit down in a quiet place where several of the other gopniks already are. Vasily pours the booze, vodka as it turns out, into plastic cups and hands everyone one. Dan, Vasily and Paulina are here along with a couple of older guys you don''t know.'
-		'For the next 15 minutes, you enjoy their company, only slowly sipping the vodka and alternating it with lemonade. Sonia is not quite as careful as you and just slams down shot after shot. When the cups are empty, Vasily offers everyone a refill.'
-		gs 'willpower', 'drink', 'resist'
-		if will_cost <= pcs_willpwr:
-			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
-				gs 'willpower', 'pay', 'resist'
-				grupvalue[4] -= 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties1.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia what color are your panties?"'
-				'She looks at him a little confused. "What?"'
-				'"You were going to show us what color your panties are," Dan says as if it were a fact.'
-				'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you and you nod. While Paulina offers more helpful advice. "Go on don''t be a tease." With the encouragement Sonia stands up and turns around and pulls up her dress showing off the back of her panties.'
-				gs 'arousal', 'erotic', 5
-				gs 'stat'
-				act 'Continue':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties2.jpg"></center>'
-					'The boys hoot and holler and Vasily adds in, "Now show us the front of your panties." With a huge grin, she turns facing everyone and pulls up her dress to show off her panties for all to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-					gs 'arousal', 'erotic', 5
-					gs 'arousal', 'end'
-					gs 'stat'
-					act 'Encourage her': gt 'soniadisco', 'soniadrinkmore2'
-					act 'Go back to the disco': gt 'soniadisco', 'dance'
-				end
-			end
-		else
-			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-		act 'Take another drink':
-			*clr & cla
-			gs 'drugs', 'alcohol', 'vodka', 1
-			grupvalue[4] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties1.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia what color are your panties?"'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us what color your panties are," Dan says as if it was a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Go on, don''t be a tease." With the encouragement, Sonia stands up, turns around and pulls up her dress, showing off the back of her panties.'
-			gs 'arousal', 'erotic', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties2.jpg"></center>'
-				'The boys hoot and holler and Vasily adds in, "Now show us the front of your panties." With a huge grin, she turns facing everyone and pulls up her dress to show off her panties for all to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-				gs 'arousal', 'erotic', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Encourage her': gt 'soniadisco', 'soniadrinkmore2'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-		act 'Caution Sonia':
-			*clr & cla
-			soniahelp += 1
-			grupvalue[4] -= 2
-			npc_rel['A9'] -= 1
-			npc_rel['A10'] -= 1
-			npc_rel['A11'] -= 1
-			npc_rel['A25'] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties1.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"What are you my mother? God I am tired of having to always be the good girl, I just want to cut loose and party for once." With that, the gopniks all whoop and holler, encouraging her.'
-			'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia what color are your panties?"'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us what color your panties are," Dan says as if it were a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Go on, don''t be a tease." With the encouragement, Sonia stands up, turns around and pulls up her dress, showing off the back of her panties.'
-			gs 'arousal', 'erotic', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties2.jpg"></center>'
-				'The boys hoot and holler and Vasily adds in, "Now show us the front of your panties." With a huge grin, she turns facing everyone and pulls up her dress to show off her panties for all to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-				gs 'arousal', 'erotic', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-		act 'Encourage her': gt 'soniadisco', 'soniadrinkmore2'
-	end
-end
 
-if $ARGS[0] = 'soniadrinkmore2':
-	*clr & cla
-	soniafall = 4
-	soniaencourage += 1
-	npc_rel['A9'] += 1
-	npc_rel['A10'] += 1
-	npc_rel['A11'] += 1
-	npc_rel['A25'] -= 1
-	minut += 10
-	grupvalue[4] += 1
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/soniadrink.jpg"></center>'
-	'You smile and take hold of her hand holding the cup while encouraging her to sit back down. "What''s the rush Sonia? We''re having a good time here right?" you ask her as you extend her arm and cup towards Vasily who happily refills it.'
-	'Sonia grins at you. "You''re right!" Then she downs about half the cup in one gulp, coughing a bit. You all sit, talk and drink some more. Sonia finishes the cup finally, but as the boys start passing out more, Sonia lets her cup be filled again.'
-	act 'Take another drink':
-		*clr & cla
+	if soniafall <= 2:
+		if $ARGS[1] = 'cautionsonia':
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/soniadrink.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
+		end
+	elseif soniafall = 3:
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties1.jpg"></center>'
+	elseif soniafall = 4:
 		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/boobs.jpg"></center>'
-		'You smile and hold up your cup for a refill. Everyone is laughing and having a good time. When it comes time for a third refill, Vasily refuses to refill your cup and instead whispers to you, "Good girls shouldn''t get drunk around bad boys."'
-		'Sonia is really starting to get wasted now. As she does, several of the gopniks whisper among themselves while keeping Sonia''s cup topped off. Finally, Dan speaks up. "Hey Sonia show us your tits."'
-		'She looks at him a little confused. "What?"'
-		'"You were going to show us your tits," Dan says as if it were a fact.'
-		'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had really perky ones, so go on and prove it."'
-		'With the encouragement, Sonia pulls down her top, showing off her perky boobs. Then she stands up, a little unsteady on her feet. "Show us your butt now," Vasily says.'
-		gs 'arousal', 'erotic_nudity', 5
-		gs 'stat'
-		act 'Continue':
-			*clr & cla
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/butt.jpg"></center>'
-			'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'arousal', 'end'
-			gs 'stat'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	end
-end
-
-if $ARGS[0] = 'disco3':
-	menu_off = 0
-	*clr & cla
-	soniafall = 4
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'You see Sonia hanging out by Vitek and some of his friends. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
-	gs 'willpower', 'drink', 'resist', 'medium'
-	if will_cost <= pcs_willpwr:
-		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'resist'
-			gs 'stat'
-			minut += 30
-			grupvalue[4] -= 1
-			grupvalue[1] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
-			'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever she jumps.'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	else
-		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end
-	act 'Have a drink with them':
-		*clr & cla
-		gs 'drugs', 'alcohol', 'vodka', 1
-		minut += 15
-		grupvalue[4] += 1
-		gs 'stat'
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-		'You''re not sure whether he invited you along because he wants you to come, or just because he''s afraid you would rat them out. Either way, it could be fun? You follow the guys outside, and after a few minutes, you sit down in a quiet place where several of the other gopniks already are. Vasily pours the booze, vodka as it turns out, into plastic cups and hands everyone one. Dan, Vasily and Paulina are here along with a couple of older guys you don''t know.'
-		'For the next 15 minutes, you enjoy their company, only slowly sipping the vodka and alternating it with lemonade. Sonia is not quite as careful as you and just slams down shot after shot. When the cups are empty, Vasily offers everyone a refill.'
-		gs 'willpower', 'drink', 'resist'
-		if will_cost <= pcs_willpwr:
-			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
-				gs 'willpower', 'pay', 'resist'
-				grupvalue[4] -= 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/boobs.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Sonia is really starting to get wasted now. As she does, several of the gopniks whisper among themselves while keeping Sonia''s cup topped off. Finally, Dan speaks up. "Hey Sonia show us your tits."'
-				'She looks at him a little confused. "What?"'
-				'"You were going to show us your tits," Dan says as if it were a fact.'
-				'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had really perky ones, so go on and prove it."'
-				'With the encouragement, Sonia pulls down her top, showing off her perky boobs. Then she stands up, a little unsteady on her feet. "Show us your butt now," Vasily says.'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'stat'
-				act 'Continue':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/butt.jpg"></center>'
-					'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-					gs 'arousal', 'erotic_nudity', 5
-					gs 'arousal', 'end'
-					gs 'stat'
-					act 'Encourage her': gt 'soniadisco', 'soniadrinkmore3'
-					act 'Go back to the disco': gt 'soniadisco', 'dance'
-				end
-			end
-		else
-			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-		act 'Take another drink':
-			*clr & cla
-			gs 'drugs', 'alcohol', 'vodka', 1
-			grupvalue[4] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/boobs.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Sonia is really starting to get wasted now. As she does, several of the gopniks whisper among themselves while keeping Sonia''s cup topped off. Finally, Dan speaks up. "Hey Sonia show us your tits."'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us your tits," Dan says as if it were a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had really perky ones, so go on and prove it."'
-			'With the encouragement, Sonia pulls down her top, showing off her perky boobs. Then she stands up, a little unsteady on her feet. "Show us your butt now," Vasily says.'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/butt.jpg"></center>'
-				'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Encourage her': gt 'soniadisco', 'soniadrinkmore3'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-		act 'Caution Sonia':
-			*clr & cla
-			soniahelp += 1
-			grupvalue[4] -= 2
-			npc_rel['A9'] -= 1
-			npc_rel['A10'] -= 1
-			npc_rel['A11'] -= 1
-			npc_rel['A25'] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/boobs.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"What are you my mother? God I am tired of having to always be the good girl, I just want to cut loose and party for once." With that, the gopniks all whoop and holler, encouraging her.'
-			'Sonia is really starting to get wasted now. As she does, several of the gopniks whisper among themselves while keeping Sonia''s cup topped off. Finally, Dan speaks up. "Hey Sonia show us your tits."'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us your tits," Dan says as if it were a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had really perky ones, so go on and prove it."'
-			'With the encouragement, Sonia pulls down her top, showing off her perky boobs. Then she stands up, a little unsteady on her feet. "Show us your butt now," Vasily says.'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/butt.jpg"></center>'
-				'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-		act 'Encourage her': gt 'soniadisco', 'soniadrinkmore3'
-	end
-end
-
-
-if $ARGS[0] = 'soniadrinkmore3':
-	*clr & cla
-	soniafall = 5
-	soniaencourage += 1
-	npc_rel['A9'] += 1
-	npc_rel['A10'] += 1
-	npc_rel['A11'] += 1
-	npc_rel['A25'] -= 1
-	minut += 10
-	grupvalue[4] += 1
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/soniadrink.jpg"></center>'
-	'You smile and take hold of her hand holding the cup, while encouraging her to sit back down. "What''s the rush Sonia? We''re having a good time here right?" you ask her as you extend her arm and cup towards Vasily who happily refills it.'
-	'Sonia grins at you. "Your right!" Then she downs about half the cup in one gulp, coughing a bit. You all sit, talk and drink some more. Sonia finishes the cup finally, but as the boys start passing out more, Sonia lets her cup be filled again.'
-	act 'Take another drink':
-		*clr & cla
+	elseif soniafall = 5:
 		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-		'You smile and hold up your cup for a refill. Everyone is laughing and having a good time. When it comes time for a third refill, Vasily refuses to refill your cup and instead whispers to you, "Good girls shouldn''t get drunk around bad boys."'
-		'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia show us your pussy."'
-		'She looks at him a little confused. "What?"'
-		'"You were going to show us your pussy," Dan says as if it were a fact.'
-		'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had a pretty pussy, so go on and prove it."'
-		'With the encouragement, Sonia pulls her dress up and pulls her panties aside, showing off her pussy. She has a huge grin on her face at all the attention she is getting. "Show us everything," Vasily says.'
-		gs 'arousal', 'erotic_nudity', 5
-		gs 'stat'
-		act 'Continue':
-			*clr & cla
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/fullfront.jpg"></center>'
-			'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'arousal', 'end'
-			gs 'stat'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	end
-end
-
-if $ARGS[0] = 'disco4':
-	menu_off = 0
-	*clr & cla
-	soniafall = 5
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'You see Sonia hanging out by Vitek and some of his friends. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
-	gs 'willpower', 'drink', 'resist'
-	if will_cost <= pcs_willpwr:
-		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'resist'
-			minut += 30
-			grupvalue[4] -= 1
-			grupvalue[1] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
-			'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever she jumps.'
-			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	else
-		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end	
-	act 'Have a drink with them':
-		*clr & cla
-		gs 'drugs', 'alcohol', 'vodka', 1
-		minut += 15
-		grupvalue[4] += 1
-		gs 'stat'
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-		'You''re not sure whether he invited you along because he wants you to come, or just because he''s afraid you would rat them out. Either way, it could be fun? You follow the guys outside, and after a few minutes, you sit down in a quiet place where several of the other gopniks already are. Vasily pours the booze, vodka as it turns out, into plastic cups and hands everyone one. Dan, Vasily and Paulina are here along with a couple of older guys you don''t know.'
-		'For the next 15 minutes, you enjoy their company, only slowly sipping the vodka and alternating it with lemonade. Sonia is not quite as careful as you and just slams down shot after shot. When the cups are empty, Vasily offers everyone a refill.'
-		gs 'willpower', 'drink', 'resist'
-		if will_cost <= pcs_willpwr:
-			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
-				gs 'willpower', 'pay', 'resist'
-				grupvalue[4] -= 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia show us your pussy."'
-				'She looks at him a little confused. "What?"'
-				'"You were going to show us your pussy," Dan says as if it were a fact.'
-				'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had a pretty pussy, so go on and prove it."'
-				'With the encouragement, Sonia pulls her dress up and pulls her panties aside, showing off her pussy. She has a huge grin on her face at all the attention she is getting. "Show us everything," Vasily says.'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'stat'
-				act 'Continue':
-					*clr & cla
-					soniarushout = 1
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/fullfront.jpg"></center>'
-					'With a huge grin, Sonia pulls her panties aside with one hand, showing off her pussy, while with the other she pulls down her dress to expose her tits, putting everything on full display for all to see. Then she blushes and seems to realize maybe she is going too far. With a panic in her eyes, she looks around at everybody that is focused on her. She quickly covers up her bare pussy and holds her dress over her tits in dismay, as if she just realized what she has done, and stammers, "I... I need to go!" She quickly pulls her dress back into place and then takes off before anyone can stop her.'
-       				gs 'arousal', 'erotic_nudity', 5
-					gs 'arousal', 'end'
-					gs 'stat'
-					act 'Go after her': gt 'soniadisco', 'chasesonia'
-					act 'Go back to the disco': gt 'soniadisco', 'dance'
-				end
-			end
-		else
-			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-		act 'Take another drink':
-			*clr & cla
-			gs 'drugs', 'alcohol', 'vodka', 1
-			grupvalue[4] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia show us your pussy."'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us your pussy," Dan says as if it were a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had a pretty pussy, so go on and prove it."'
-			'With the encouragement, Sonia pulls her dress up and pulls her panties aside, showing off her pussy. She has a huge grin on her face at all the attention she is getting. "Show us everything," Vasily says.'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				minut += 5
-				soniarushout = 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/fullfront.jpg"></center>'
-				'With a huge grin, Sonia pulls her panties aside with one hand, showing off her pussy, while with the other she pulls down her dress to expose her tits, putting everything on full display for all to see. Then she blushes and seems to realize maybe she is going too far and with a panic in her eyes, she gazes around at everybody that is focused on her, she quickly covers up her bare pussy and holds her dress over her tits in dismay, as if she just realized what she has done, and stammers, "I... I need to go!" She quickly pulls her dress back in place and then takes off before anyone can stop her.'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Go after her': gt 'soniadisco', 'chasesonia'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-		act 'Encourage her': gt 'soniadisco', 'soniadrinkmore4'
-		act 'Caution Sonia':
-			*clr & cla
-			soniahelp += 1
-			grupvalue[4] -= 2
-			npc_rel['A9'] -= 1
-			npc_rel['A10'] -= 1
-			npc_rel['A11'] -= 1
-			npc_rel['A25'] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"What are you my mother? God I am tired of having to always be the good girl, I just want to cut loose and party for once." With that, the gopniks all whoop and holler, encouraging her.'
-			'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia show us your pussy."'
-			'She looks at him a little confused. "What?"'
-			'"You were going to show us your pussy," Dan says as if it were a fact.'
-			'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had a pretty pussy, so go on and prove it."'
-			'With the encouragement, Sonia pulls her dress up and pulls her panties aside, showing off her pussy. She has a huge grin on her face at all the attention she is getting. "Show us everything," Vasily says.'
-			gs 'arousal', 'erotic_nudity', 5
-			gs 'stat'
-			act 'Continue':
-				*clr & cla
-				soniarushout = 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/fullfront.jpg"></center>'
-				'With a huge grin, Sonia pulls her panties aside with one hand, showing off her pussy, while with the other she pulls down her dress to expose her tits, putting everything on full display for all to see. Then she blushes and seems to realize maybe she is going too far and with a panic in her eyes, she looks around at everybody that is focused on her, she quickly covers up her bare pussy and holds the dress over her tits in dismay, as if she just realized what she has done, and stammers, "I... I need to go!" She quickly pulls her clothes back in place and then takes off before anyone can stop her.'
-				gs 'arousal', 'erotic_nudity', 5
-				gs 'arousal', 'end'
-				gs 'stat'
-				act 'Go after her': gt 'soniadisco', 'chasesonia'
-				act 'Go back to the disco': gt 'soniadisco', 'dance'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'soniadrinkmore4':
-	*clr & cla
-	soniaencourage += 1
-	npc_rel['A9'] += 1
-	npc_rel['A10'] += 1
-	npc_rel['A11'] += 1
-	npc_rel['A25'] -= 1
-	minut += 10
-	grupvalue[4] += 1
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/soniadrink.jpg"></center>'
-	'You smile and take hold of her hand holding the cup, while encouraging her to sit back down. "What''s the rush Sonia? We''re having a good time here right?" you ask her as you extend her arm and cup towards Vasily who happily refills it.'
-	'Sonia grins at you. "You''re right!" Then she downs about half the cup in one gulp, coughing a bit. You all sit, talk and drink some more. Sonia finishes the cup finally, but as the boys start passing out more, Sonia lets her cup be filled again.'
-	act 'Take another drink':
-		*clr & cla
-		minut += 5
+	elseif soniafall = 6:
 		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle1.jpg"></center>'
-		'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-		'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-		'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... I bet you like to suck on things."'
-		*nl
-		'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-		'Vitek raises his hands in defense and smirks, "Whoa, calm down! I was talking about popsicles! What did you think I meant?"'
-		'Sonia turns beet red and mutters, "Whatever. There''s no way you have a popsicle on you anyway..."'
-		'"Oh, really?" Vitek smirks. "If I did, would you suck it?"'
-		'Sonia smiles at him and confesses, "Of course! I love popsicles! Bu-"'
-		'Vitek reaches for his pocket and actually pulls out a popsicle. Sonia looks at him in awe for a moment, as if he is a magician that just made a bunny appear out of thin air. Then she tries to reach out for it, but Vitek pulls it away from her and says, "No, no hands. I''ll hold it, you only use your mouth."'
+	else
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
+	end
+
+	if $soniadisco_peerpressuretrigger = 'declinedrink':
+		'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
+	elseif $soniadisco_peerpressuretrigger = 'takedrink':
+		'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
+	elseif $soniadisco_peerpressuretrigger = 'cautionsonia':
+		'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
+		'"We''ve already been through this <<$pcs_nickname>>! You aren''t my mother, how about you chill out and enjoy the drinks like the rest of us?" With that, she grabs the bottle and chugs down a quarter of it. The gopniks all whoop and holler, encouraging her to keep going.'
+	elseif $soniadisco_peerpressuretrigger = 'soniadrinkmore':
+		'You smile and hold up your cup for a refill. Everyone is laughing and having a good time. When it comes time for a third refill, Vasily refuses to refill your cup and instead whispers to you, "Good girls shouldn''t get drunk around bad boys."'
+	end
+
+	if soniafall <= 2:
+		gs 'soniadisco', 'notpressured'
+	elseif soniafall = 3:
+		gs 'soniadisco', 'pressuredforpanties'
+	elseif soniafall = 4:
+		gs 'soniadisco', 'pressuredfortits'
+	elseif soniafall = 5:
+		gs 'soniadisco', 'pressuredforpussy'
+	elseif soniafall = 6:
+		gs 'soniadisco', 'pressuredforblowjob'
+	else
+		gs 'soniadisco', 'pressuredforgangbang'
+	end
+end
+
+if $ARGS[0] = 'notpressured':
+	'Sonia does have more, a lot more, and it doesn''t take too long until she is totally wasted. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
+	if $soniadisco_peerpressuretrigger ! 'cautionsonia' and $soniadisco_peerpressuretrigger ! 'soniadrinkmore':
+		act 'Encourage her': gt 'soniadisco', 'soniadrinkmore'
+	end
+	killvar '$soniadisco_peerpressuretrigger'
+	act 'Go back to the disco': gt 'soniadisco', 'dance', 'staytoend'
+end
+
+if $ARGS[0] = 'pressuredforpanties':
+	'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia what color are your panties?"'
+	'She looks at him a little confused. "What?"'
+	'"You were going to show us what color your panties are," Dan says as if it were a fact.'
+	'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod. While Paulina offers more helpful advice. "Go on don''t be a tease." With the encouragement Sonia stands up and turns around and pulls up her dress showing off the back of her panties.'
+	gs 'arousal', 'erotic', 5
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/panties2.jpg"></center>'
+		'The boys hoot and holler and Vasily adds in, "Now show us the front of your panties." With a huge grin, she turns facing everyone and pulls up her dress to show off her panties for all to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
+		gs 'arousal', 'erotic', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		if $soniadisco_peerpressuretrigger ! 'cautionsonia' and $soniadisco_peerpressuretrigger ! 'soniadrinkmore':
+			act 'Encourage her': gt 'soniadisco', 'soniadrinkmore'
+		end
+		killvar '$soniadisco_peerpressuretrigger'
+		act 'Go back to the disco': gt 'soniadisco', 'dance', 'staytoend'
+	end
+end
+
+if $ARGS[0] = 'pressuredfortits':
+	'Sonia is really starting to get wasted now. As she does, several of the gopniks whisper among themselves while keeping Sonia''s cup topped off. Finally, Dan speaks up. "Hey Sonia show us your tits."'
+	'She looks at him a little confused. "What?"'
+	'"You were going to show us your tits," Dan says as if it were a fact.'
+	'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had really perky ones, so go on and prove it."'
+	'With the encouragement, Sonia pulls down her top, showing off her perky boobs. Then she stands up, a little unsteady on her feet. "Show us your butt now," Vasily says.'
+	gs 'arousal', 'erotic_nudity', 5
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/butt.jpg"></center>'
+		'With a huge grin, Sonia stands up and turns around. She pulls up the back of her dress and pulls down her panties, showing off her bare ass for everyone to see. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
+		gs 'arousal', 'erotic_nudity', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		if $soniadisco_peerpressuretrigger ! 'cautionsonia' and $soniadisco_peerpressuretrigger ! 'soniadrinkmore':
+			act 'Encourage her': gt 'soniadisco', 'soniadrinkmore'
+		end
+		killvar '$soniadisco_peerpressuretrigger'
+		act 'Go back to the disco': gt 'soniadisco', 'dance', 'staytoend'
+	end
+end
+
+if $ARGS[0] = 'pressuredforpussy':
+	'Sonia is really starting to get wasted now. As she does, Dan speaks up. "Hey Sonia show us your pussy."'
+	'She looks at him a little confused. "What?"'
+	'"You were going to show us your pussy," Dan says as if it were a fact.'
+	'Sonia blinks. "I was?" she asks, which gets all the guys agreeing. She glances at you, and you nod, while Paulina offers more helpful advice. "Yeah you said you had a pretty pussy, so go on and prove it."'
+	'With the encouragement, Sonia pulls her dress up and pulls her panties aside, showing off her pussy. She has a huge grin on her face at all the attention she is getting. "Show us everything," Vasily says.'
+	gs 'arousal', 'erotic_nudity', 5
+	gs 'stat'
+	act 'Continue':
+		*clr & cla
+		soniarushout = 1
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/fullfront.jpg"></center>'
+		'With a huge grin, Sonia pulls her panties aside with one hand, showing off her pussy, while with the other she pulls down her dress to expose her tits, putting everything on full display for all to see. Then she blushes and seems to realize maybe she is going too far and with a panic in her eyes, she looks around at everybody that is focused on her, she quickly covers up her bare pussy and holds the dress over her tits in dismay, as if she just realized what she has done, and stammers, "I... I need to go!" She quickly pulls her clothes back in place and then takes off before anyone can stop her.'
+		gs 'arousal', 'erotic_nudity', 5
+		gs 'arousal', 'end'
+		gs 'stat'
+		act 'Go after her': gt 'soniadisco', 'chasesonia'
+		act 'Go back to the disco': gt 'soniadisco', 'dance', 'staytoend'
+	end
+end
+
+if $ARGS[0] = 'pressuredforblowjob':
+	'Vitek gets up and walks over to Sonia and says, "Nice tits."'
+	'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
+	'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... I bet you like to suck on things."'
+	*nl
+	'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
+	'Vitek raises his hands in defense and smirks, "Whoa, calm down! I was talking about popsicles! What did you think I meant?"'
+	'Sonia turns beet red and mutters, "Whatever. There''s no way you have a popsicle on you anyway..."'
+	'"Oh, really?" Vitek smirks. "If I did, would you suck it?"'
+	'Sonia smiles at him and confesses, "Of course! I love popsicles! Bu-"'
+	'Vitek reaches for his pocket and actually pulls out a popsicle. Sonia looks at him in awe for a moment, as if he is a magician that just made a bunny appear out of thin air. Then she tries to reach out for it, but Vitek pulls it away from her and says, "No, no hands. I''ll hold it, you only use your mouth."'
+	gs 'arousal', 'erotic', 5
+	gs 'stat'
+	act 'Watch':
+		*clr & cla
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
+		'Sonia obediently pulls her hands away and opens her mouth, and Vitek slowly puts the popsicle against her lips and tongue. Then she closes her lips around it and sucks on it, while looking at Vitek seductively.'
+		'Vitek grins and lowers the popsicle further and further, until it is at the same level as his groin. All this time, Sonia has never taken her mouth off it, and eventually, she gets down on her knees after bending over awkwardly and nearly falling over once or twice. The way she''s sucking and licking the popsicle definitely gets Vitek aroused, and you see his cock straining against the fabric of his pants. Meanwhile, Dan and Vasily are looking at the two of them with their mouths open, somewhat awkwardly hiding their erections.'
+		'Once the popsicle is mostly gone, Dan clears his throat and suggests, "Open your mouth and shows us your tongue." She opens her mouth, showing off her red stained tongue.'
 		gs 'arousal', 'erotic', 5
 		gs 'stat'
-		act 'Watch':
+		act 'Keep watching':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-			'Sonia obediently pulls her hands away and opens her mouth, and Vitek slowly puts the popsicle against her lips and tongue. Then she closes her lips around it and sucks on it, while looking at Vitek seductively.'
-			'Vitek grins and lowers the popsicle further and further, until it is at the same level as his groin. All this time, Sonia has never taken her mouth off it, and eventually, she gets down on her knees after bending over awkwardly and nearly falling over once or twice. The way she''s sucking and licking the popsicle definitely gets Vitek aroused, and you see his cock straining against the fabric of his pants. Meanwhile, Dan and Vasily are looking at the two of them with their mouths open, somewhat awkwardly hiding their erections.'
-			'Once the popsicle is mostly gone, Dan clears his throat and suggests, "Open your mouth and shows us your tongue." She opens her mouth, showing off her red stained tongue.'
-			gs 'arousal', 'erotic', 5
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj1.jpg"></center>'
+			'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hard cock in her open mouth before she can close it. "I gave you a treat, now give me one." The other guys offer encouragement, saying it is only fair. Paulina puts her hand on the back of Sonia head to keep her from pulling away.'
+			'Sonia seems unsure for a moment but then starts to suck on Vitek''s cock. Paulina steps back and starts filming the whole thing.'
+			gs 'arousal', 'voyeur_sex', 5
 			gs 'stat'
 			act 'Keep watching':
 				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj1.jpg"></center>'
-				'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hard cock in her open mouth before she can close it. "I gave you a treat, now give me one." The other guys offer encouragement, saying it is only fair. Paulina puts her hand on the back of Sonia head to keep her from pulling away.'
-				'Sonia seems unsure for a moment but then starts to suck on Vitek''s cock. Paulina steps back and starts filming the whole thing.'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj2.jpg"></center>'
+				'Sonia bobs her head up and down on Vitek''s cock, working her mouth down until she starts to gag. She has her lips tightly wrapped around the shaft, and just like the popsicle, she sucks on his dick with no hands. Paulina keeps recording, while the guys all offer encouragement. You can tell they want to join in, but one look from Vitek and they remain seated.'
 				gs 'arousal', 'voyeur_sex', 5
 				gs 'stat'
 				act 'Keep watching':
 					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj2.jpg"></center>'
-					'Sonia bobs her head up and down on Vitek''s cock, working her mouth down until she starts to gag. She has her lips tightly wrapped around the shaft, and just like the popsicle, she sucks on his dick with no hands. Paulina keeps recording, while the guys all offer encouragement. You can tell they want to join in, but one look from Vitek and they remain seated.'
+					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj3.jpg"></center>'
+					'Sonia is really starting to get into a rhythm. It seems she has a knack for this, and Vitek seems content to let her work at her own pace other than offering words of encouragement. Paulina offers her a few pointers, which Sonia listens to and does her best to follow, making Vitek moan even louder.'
 					gs 'arousal', 'voyeur_sex', 5
 					gs 'stat'
 					act 'Keep watching':
 						*clr & cla
-						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj3.jpg"></center>'
-						'Sonia is really starting to get into a rhythm. It seems she has a knack for this, and Vitek seems content to let her work at her own pace other than offering words of encouragement. Paulina offers her a few pointers, which Sonia listens to and does her best to follow, making Vitek moan even louder.'
+						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj4.jpg"></center>'
+						'Suddenly, Vitek lets out a loud moan, and Sonia makes a slight gagging noise. It is obvious he is cumming in her mouth. For the first time, she takes ahold of his dick and strokes the shaft, milking every drop of his cum into her mouth. Once he finishes, he looks down at her and says, "Show me." She knows what he wants and opens her mouth to show her cum coated tongue. Her mouth is so full of his cum a little leaks out of the corner onto her cheek.'
+						*nl
+						'He grins at her. "That''s a good girl, now swallow." She does as he commands and swallows all his cum down. As she stands up, Paulina motions towards her cheek where the cum leaked out. Sonia reaches up and blushes a little when she feels the cum. She wipes it up with her finger and sucks her finger clean. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
 						gs 'arousal', 'voyeur_sex', 5
+						gs 'arousal', 'end'
 						gs 'stat'
-						act 'Keep watching':
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj4.jpg"></center>'
-							'Suddenly, Vitek lets out a loud moan, and Sonia makes a slight gagging noise. It is obvious he is cumming in her mouth. For the first time, she takes ahold of his dick and strokes the shaft, milking every drop of his cum into her mouth. Once he finishes, he looks down at her and says, "Show me." She knows what he wants and opens her mouth to show her cum coated tongue. Her mouth is so full of his cum a little leaks out of the corner onto her cheek.'
-							*nl
-							'He grins at her. "That''s a good girl, now swallow." She does as he commands and swallows all his cum down. As she stands up, Paulina motions towards her cheek where the cum leaked out. Sonia reaches up and blushes a little when she feels the cum. She wipes it up with her finger and sucks her finger clean. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-							gs 'arousal', 'voyeur_sex', 5
-							gs 'arousal', 'end'
-							gs 'stat'
-							act 'Go back to the disco': gt 'soniadisco', 'dance'
-						end
-						act 'Go back to the disco': gt 'soniadisco', 'dance'
+						act 'Go back to the disco': gt 'soniadisco', 'dance', 'staytoend'
 					end
 					act 'Go back to the disco': gt 'soniadisco', 'dance'
 				end
 				act 'Go back to the disco': gt 'soniadisco', 'dance'
 			end
-		end
-	end
-end
- 
-if $ARGS[0] = 'disco5':
-	menu_off = 0
-	*clr & cla
-	soniafall = 6
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'You see Sonia hanging out by Vitek and some of his friends. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
-	if soniarushout = 1:
-		'You join them in the part of the room they have been using as you consider the offer. Finding yourself next to Sonia, you turn to her and whisper, "I am surprised you came back to party with them after last time."'
-		'She blushes a little and replies, "I won''t get that drunk again."'
-	end
-	gs 'willpower', 'drink', 'resist'
-	if will_cost <= pcs_willpwr:
-		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'resist'
-			minut += 30
-			grupvalue[4] -= 1
-			grupvalue[1] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see them coming back to the disco. Vitek occasionally steadies Sonia when she nearly falls over; you can tell she''s totally hammered.'
-			'Sonia immediately runs to the dance floor. Her drunken stumbling doesn''t look too much like dancing, but she looks like she''s having fun. In her enthusiasm to pull off some experimental dance moves, she doesn''t notice that one of her shirt straps slides down. Because she''s not wearing a bra, one of her boobs is fully exposed, and it merrily bounces up and down whenever she jumps.'
 			act 'Go back to the disco': gt 'soniadisco', 'dance'
-		end
-	else
-		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end
-	act 'Have a drink with them':
-		*clr & cla
-		gs 'drugs', 'alcohol', 'vodka', 1
-		minut += 15
-		grupvalue[4] += 1
-		gs 'stat'
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-		'You''re not sure whether he invited you along because he wants you to come, or just because he''s afraid you would rat them out. Either way, it could be fun? You follow the guys outside, and after a few minutes, you sit down in a quiet place where several of the other gopniks already are. Vasily pours the booze, vodka as it turns out, into plastic cups and hands everyone one. Dan, Vasily and Paulina are here along with a couple of older guys you don''t know.'
-		'For the next 15 minutes, you enjoy their company, only slowly sipping the vodka and alternating it with lemonade. Sonia is not quite as careful as you and just slams down shot after shot. When the cups are empty, Vasily offers everyone a refill.'
-		gs 'willpower', 'drink', 'resist'
-		if will_cost <= pcs_willpwr:
-			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
-				gs 'willpower', 'pay', 'resist'
-				grupvalue[4] -= 1
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-				'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-				'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... I bet you like to suck on things."'
-				*nl
-				'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-				'Vitek raises his hands in defense and smirks, "Whoa, calm down! I was talking about popsicles! What did you think I meant?"'
-				'Sonia turns beet red and mutters, "Whatever. There''s no way you have a popsicle on you anyway..."'
-				'"Oh, really?" Vitek smirks. "If I did, would you suck it?"'
-				'Sonia smiles at him and confesses, "Of course! I love popsicles! Bu-"'
-				'Vitek reaches for his pocket and actually pulls out a popsicle. Sonia looks at him in awe for a moment, as if he is a magician that just made a bunny appear out of thin air. Then she tries to reach out for it, but Vitek pulls it away from her and says, "No, no hands. I''ll hold it, you only use your mouth."'
-				gs 'arousal', 'erotic', 5
-				gs 'stat'
-				act 'Watch':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-					'Sonia obediently pulls her hands away and opens her mouth, and Vitek slowly puts the popsicle against her lips and tongue. Then she closes her lips around it and sucks on it, while looking at Vitek seductively.'
-					'Vitek grins and lowers the popsicle further and further, until it is at the same level as his groin. All this time, Sonia has never taken her mouth off it, and eventually, she gets down on her knees after bending over awkwardly and nearly falling over once or twice. The way she''s sucking and licking the popsicle definitely gets Vitek aroused, and you see his cock straining against the fabric of his pants. Meanwhile, Dan and Vasily are looking at the two of them with their mouths open, somewhat awkwardly hiding their erections.'
-					'Once the popsicle is mostly gone, Dan clears his throat and suggests, "Open your mouth and shows us your tongue." She opens her mouth, showing off her red stained tongue.'
-					gs 'arousal', 'erotic', 5
-					gs 'stat'
-					act 'Keep watching':
-						*clr & cla
-						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj1.jpg"></center>'
-						'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hard cock in her open mouth before she can close it. "I gave you a treat, now give me one." The other guys offer encouragement, saying it is only fair. Paulina puts her hand on the back of Sonia head to keep her from pulling away.'
-						'Sonia seems unsure for a moment but then starts to suck on Vitek''s cock. Paulina steps back and starts filming the whole thing.'
-						gs 'arousal', 'voyeur_sex', 5
-						gs 'stat'
-						act 'Keep watching':
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj2.jpg"></center>'
-							'Sonia bobs her head up and down on Vitek''s cock, working her mouth down until she starts to gag. She has her lips tightly wrapped around the shaft, and just like the popsicle, she sucks on his dick with no hands. Paulina keeps recording, while the guys all offer encouragement. You can tell they want to join in, but one look from Vitek and they remain seated.'
-							gs 'arousal', 'voyeur_sex', 5
-							gs 'stat'
-							act 'Keep watching':
-								*clr & cla
-								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj3.jpg"></center>'
-								'Sonia is really starting to get into a rhythm. It seems she has a knack for this, and Vitek seems content to let her work at her own pace other than offering words of encouragement. Paulina offers her a few pointers, which Sonia listens to and does her best to follow, making Vitek moan even louder.'
-								gs 'arousal', 'voyeur_sex', 5
-								gs 'stat'
-								act 'Keep watching':
-									*clr & cla
-									'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj4.jpg"></center>'
-									'Suddenly, Vitek lets out a loud moan, and Sonia makes a slight gagging noise. It is obvious he is cumming in her mouth. For the first time, she takes ahold of his dick and strokes the shaft, milking every drop of his cum into her mouth. Once he finishes, he looks down at her and says, "Show me." She knows what he wants and opens her mouth to show her cum coated tongue. Her mouth is so full of his cum a little leaks out of the corner onto her cheek.'
-									*nl
-									'He grins at her. "That''s a good girl, now swallow." She does as he commands and swallows all his cum down. As she stands up, Paulina motions towards her cheek where the cum leaked out. Sonia reaches up and blushes a little when she feels the cum. She wipes it up with her finger and sucks her finger clean. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-									gs 'arousal', 'voyeur_sex', 5
-									gs 'arousal', 'end'
-									gs 'stat'
-									act 'Go back to the disco': gt 'soniadisco', 'dance'
-								end
-								act 'Go back to the disco': gt 'soniadisco', 'dance'
-							end
-							act 'Go back to the disco': gt 'soniadisco', 'dance'
-						end
-						act 'Go back to the disco': gt 'soniadisco', 'dance'
-					end
-				end
-			end
-		else
-			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-		act 'Take another drink':
-			*clr & cla
-			minut += 5
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle1.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-			'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-			'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... I bet you like to suck on things."'
-			*nl
-			'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-			'Vitek raises his hands in defense and smirks, "Whoa, calm down! I was talking about popsicles! What did you think I meant?"'
-			'Sonia turns beet red and mutters, "Whatever. There''s no way you have a popsicle on you anyway..."'
-			'"Oh, really?" Vitek smirks. "If I did, would you suck it?"'
-			'Sonia smiles at him and confesses, "Of course! I love popsicles! Bu-"'
-			'Vitek reaches for his pocket and actually pulls out a popsicle. Sonia looks at him in awe for a moment, as if he is a magician that just made a bunny appear out of thin air. Then she tries to reach out for it, but Vitek pulls it away from her and says, "No, no hands. I''ll hold it, you only use your mouth."'
-			gs 'arousal', 'erotic', 5
-			gs 'stat'
-			act 'Watch':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-				'Sonia obediently pulls her hands away and opens her mouth, and Vitek slowly puts the popsicle against her lips and tongue. Then she closes her lips around it and sucks on it, while looking at Vitek seductively.'
-				'Vitek grins and lowers the popsicle further and further, until it is at the same level as his groin. All this time, Sonia has never taken her mouth off it, and eventually, she gets down on her knees after bending over awkwardly and nearly falling over once or twice. The way she''s sucking and licking the popsicle definitely gets Vitek aroused, and you see his cock straining against the fabric of his pants. Meanwhile, Dan and Vasily are looking at the two of them with their mouths open, somewhat awkwardly hiding their erections.'
-				'Once the popsicle is mostly gone, Dan clears his throat and suggests, "Open your mouth and shows us your tongue." She opens her mouth, showing off her red stained tongue.'
-				gs 'arousal', 'erotic', 5
-				gs 'stat'
-				act 'Keep watching':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj1.jpg"></center>'
-					'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hard cock in her open mouth before she can close it. "I gave you a treat, now give me one." The other guys offer encouragement, saying it is only fair. Paulina puts her hand on the back of Sonia head to keep her from pulling away.'
-					'Sonia seems unsure for a moment but then starts to suck on Vitek''s cock. Paulina steps back and starts filming the whole thing.'
-					gs 'arousal', 'voyeur_sex', 5
-					gs 'stat'
-					act 'Keep watching':
-						*clr & cla
-						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj2.jpg"></center>'
-						'Sonia bobs her head up and down on Vitek''s cock, working her mouth down until she starts to gag. She has her lips tightly wrapped around the shaft, and just like the popsicle, she sucks on his dick with no hands. Paulina keeps recording, while the guys all offer encouragement. You can tell they want to join in, but one look from Vitek and they remain seated.'
-						gs 'arousal', 'voyeur_sex', 5
-						gs 'stat'
-						act 'Keep watching':
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj3.jpg"></center>'
-							'Sonia is really starting to get into a rhythm. It seems she has a knack for this, and Vitek seems content to let her work at her own pace other than offering words of encouragement. Paulina offers her a few pointers, which Sonia listens to and does her best to follow, making Vitek moan even louder.'
-							gs 'arousal', 'voyeur_sex', 5
-							gs 'stat'
-							act 'Keep watching':
-								*clr & cla
-								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj4.jpg"></center>'
-								'Suddenly, Vitek lets out a loud moan, and Sonia makes a slight gagging noise. It is obvious he is cumming in her mouth. For the first time, she takes ahold of his dick and strokes the shaft, milking every drop of his cum into her mouth. Once he finishes, he looks down at her and says, "Show me." She knows what he wants and opens her mouth to show her cum coated tongue. Her mouth is so full of his cum a little leaks out of the corner onto her cheek.'
-								*nl
-								'He grins at her. "That''s a good girl, now swallow." She does as he commands and swallows all his cum down. As she stands up, Paulina motions towards her cheek where the cum leaked out. Sonia reaches up and blushes a little when she feels the cum. She wipes it up with her finger and sucks her finger clean. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-								gs 'arousal', 'voyeur_sex', 5
-								gs 'arousal', 'end'
-								gs 'stat'
-								act 'Go back to the disco': gt 'soniadisco', 'dance'
-							end
-							act 'Go back to the disco': gt 'soniadisco', 'dance'
-						end
-						act 'Go back to the disco': gt 'soniadisco', 'dance'
-					end
-					act 'Go back to the disco': gt 'soniadisco', 'dance'
-				end
-			end
-		end
-		act 'Caution Sonia':
-			*clr & cla
-			soniahelp += 1
-			grupvalue[4] -= 2
-			npc_rel['A9'] -= 1
-			npc_rel['A10'] -= 1
-			npc_rel['A11'] -= 1
-			npc_rel['A25'] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/pussy.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"What are you my mother? God I am tired of having to always be the good girl, I just want to cut loose and party for once." With that, the gopniks all whoop and holler, encouraging her.'
-			'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-			'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-			'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... I bet you like to suck on things."'
-			*nl
-			'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-			'Vitek raises his hands in defense and smirks, "Whoa, calm down! I was talking about popsicles! What did you think I meant?"'
-			'Sonia turns beet red and mutters, "Whatever. There''s no way you have a popsicle on you anyway..."'
-			'"Oh, really?" Vitek smirks. "If I did, would you suck it?"'
-			'Sonia smiles at him and confesses, "Of course! I love popsicles! Bu-"'
-			'Vitek reaches for his pocket and actually pulls out a popsicle. Sonia looks at him in awe for a moment, as if he is a magician that just made a bunny appear out of thin air. Then she tries to reach out for it, but Vitek pulls it away from her and says, "No, no hands. I''ll hold it, you only use your mouth."'
-			gs 'arousal', 'erotic', 5
-			gs 'stat'
-			act 'Watch':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-				'Sonia obediently pulls her hands away and opens her mouth, and Vitek slowly puts the popsicle against her lips and tongue. Then she closes her lips around it and sucks on it, while looking at Vitek seductively.'
-				'Vitek grins and lowers the popsicle further and further, until it is at the same level as his groin. All this time, Sonia has never taken her mouth off it, and eventually, she gets down on her knees after bending over awkwardly and nearly falling over once or twice. The way she''s sucking and licking the popsicle definitely gets Vitek aroused, and you see his cock straining against the fabric of his pants. Meanwhile, Dan and Vasily are looking at the two of them with their mouths open, somewhat awkwardly hiding their erections.'
-				'Once the popsicle is mostly gone, Dan clears his throat and suggests, "Open your mouth and shows us your tongue." She opens her mouth, showing off her red stained tongue.'
-				gs 'arousal', 'erotic', 5
-				gs 'stat'
-				act 'Keep watching':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj1.jpg"></center>'
-					'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hard cock in her open mouth before she can close it. "I gave you a treat, now give me one." The other guys offer encouragement, saying it is only fair. Paulina puts her hand on the back of Sonia head to keep her from pulling away.'
-					'Sonia seems unsure for a moment but then starts to suck on Vitek''s cock. Paulina steps back and starts filming the whole thing.'
-					gs 'arousal', 'voyeur_sex', 5
-					gs 'stat'
-					act 'Keep watching':
-						*clr & cla
-						'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj2.jpg"></center>'
-						'Sonia bobs her head up and down on Vitek''s cock, working her mouth down until she starts to gag. She has her lips tightly wrapped around the shaft, and just like the popsicle, she sucks on his dick with no hands. Paulina keeps recording, while the guys all offer encouragement. You can tell they want to join in, but one look from Vitek and they remain seated.'
-						gs 'arousal', 'voyeur_sex', 5
-						gs 'stat'
-						act 'Keep watching':
-							*clr & cla
-							'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj3.jpg"></center>'
-							'Sonia is really starting to get into a rhythm. It seems she has a knack for this, and Vitek seems content to let her work at her own pace other than offering words of encouragement. Paulina offers her a few pointers, which Sonia listens to and does her best to follow, making Vitek moan even louder.'
-							gs 'arousal', 'voyeur_sex', 5
-							gs 'stat'
-							act 'Keep watching':
-								*clr & cla
-								'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/bj4.jpg"></center>'
-								'Suddenly, Vitek lets out a loud moan, and Sonia makes a slight gagging noise. It is obvious he is cumming in her mouth. For the first time, she takes ahold of his dick and strokes the shaft, milking every drop of his cum into her mouth. Once he finishes, he looks down at her and says, "Show me." She knows what he wants and opens her mouth to show her cum coated tongue. Her mouth is so full of his cum a little leaks out of the corner onto her cheek.'
-								*nl
-								'He grins at her. "That''s a good girl, now swallow." She does as he commands and swallows all his cum down. As she stands up, Paulina motions towards her cheek where the cum leaked out. Sonia reaches up and blushes a little when she feels the cum. She wipes it up with her finger and sucks her finger clean. Then she blushes and seems to realize maybe she is going too far. With a slight slur in her voice and a cheeky grin on her face, she says, "I want to go dancing! Let''s go back to the disco!"'
-								gs 'arousal', 'voyeur_sex', 5
-								gs 'arousal', 'end'
-								gs 'stat'
-								act 'Go back to the disco': gt 'soniadisco', 'dance'
-							end
-							act 'Go back to the disco': gt 'soniadisco', 'dance'
-						end
-						act 'Go back to the disco': gt 'soniadisco', 'dance'
-					end
-					act 'Go back to the disco': gt 'soniadisco', 'dance'
-				end
-			end
 		end
 	end
 end
 
-if $ARGS[0] = 'disco6':
-	menu_off = 0
-	*clr & cla
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/0.jpg"></center>'
-	'You see Sonia hanging out by Vitek and some of his friends. Vasily is carrying a paper bag with the neck of a bottle sticking out of the top of it.'
-	'Vitek notices you watching them and then grins, waving you over to come with them. "Hey, <<$pcs_nickname>>. We''re going out for a drink... come join us."'
-	gs 'willpower', 'drink', 'resist'
-	if will_cost <= pcs_willpwr:
-		act 'Decline (<<will_cost>> Willpower)':
-			*clr & cla
-			gs 'willpower', 'pay', 'resist'
-			minut += 30
-			grupvalue[4] -= 1
-			grupvalue[1] += 1
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/1.jpg"></center>'
-			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
-			'About 30 minutes after they leave, you see the boys return, quite rowdy and obviously pleased with themselves. Vitek is dragging a drunken Sonia around as if she''s a trophy to be put on display. She is all smiles and seems pretty happy and even more drunk than when you last saw her.'
-			*nl
-			'When you look closer, you see her face is entirely covered in sperm! You don''t know if she is too drunk to notice or what. Vitek leads her around the disco, and several people take photos of Sonia''s cum covered face. She seems to be catching on that something isn''t right but hasn''t yet figured it out. As they near the entrance again, one of the guys with her loudly proclaims, "Sonia just let all six of us fuck her in every hole she has at the same time, like some wanton whore."'
-			*nl
-			'Sonia looks shocked then looks at Vitek who laughs at her. She reaches up to touch her face and apparently just now realizes it is covered in cum. The boys at the disco all laugh and make lewd remarks towards her, while the girls look at her with contempt or turn their backs on her. Even her friends want nothing to do with her now and ignore her completely.'
-			'She immediately bursts into tears and runs out of the disco, trying to cover up her face. The atmosphere in the disco slowly returns to normal, but everyone keeps talking about Sonia and what she did tonight, how everyones always knew she was a total slut.'
-			gs 'arousal', 'voyeur_sex', 5
-			gs 'arousal', 'end'
-			gs 'stat'
-			act 'Ignore Sonia': gt 'gdkin'
-			act 'Follow Sonia': gt 'soniadisco', 'followsonia'
-		end
-	else
-		act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-	end
-	act 'Have a drink with them':
+if $ARGS[0] = 'pressuredforgangbang':
+	'Vitek gets up and walks over to Sonia and says, "Nice tits."'
+	'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
+	'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... how about you suck me off again."'
+	*nl
+	'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
+	'Vitek raises his hands in defense and smirks, "Whoa, calm down! You liked doing it last time, come on now, no one will know, we didn''t tell anyone last time."'
+	'Sonia bites her lower lip, and you can tell she wants to. "Ok. You guys won''t tell anyone right?"'
+	'Vitek smiles. "Of course not." Then he unbuttons his pants and pulls out his semi hard dick. "Now open wide." She does as he says and opens her mouth, sticking out her tongue.'
+	act 'Keep watching':
 		*clr & cla
-		gs 'drugs', 'alcohol', 'vodka', 1
-		minut += 15
-		grupvalue[4] += 1
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/gangbang1.jpg"></center>'
+		'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hardening cock in her open mouth before she can close it. The other guys offer encouragement.'
+		'Sonia starts to suck on Vitek''s cock enthusiastically. Paulina steps back as the other guys get up and crowd around Sonia, pulling their dicks out as well. Quickly surrounded by hard dicks, Sonia starts jerking off the other guys. Eventually, she switches which dick she is sucking and jerking off, trying to give them all attention.'
+		gs 'arousal', 'voyeur_sex', 5
 		gs 'stat'
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/event/gopnik/gopdrinking.jpg"></center>'
-		'You''re not sure whether he invited you along because he wants you to come, or just because he''s afraid you would rat them out. Either way, it could be fun? You follow the guys outside, and after a few minutes, you sit down in a quiet place where several of the other gopniks already are. Vasily pours the booze, vodka as it turns out, into plastic cups and hands everyone one. Dan, Vasily and Paulina are here along with a couple of older guys you don''t know.'
-		'For the next 15 minutes, you enjoy their company, only slowly sipping the vodka and alternating it with lemonade. Sonia is not quite as careful as you and just slams down shot after shot. When the cups are empty, Vasily offers everyone a refill.'
-		gs 'willpower', 'drink', 'resist', 'medium'
-		if will_cost <= pcs_willpwr:
-			act 'Decline (<<will_cost>> Willpower)':
-				*clr & cla
-				gs 'willpower', 'pay', 'resist'
-				grupvalue[4] -= 1
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-				'You shake your head no and decline. You don''t want to get too drunk and settle for just watching.'
-				'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-				'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-				'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... how about you suck me off again."'
-				*nl
-				'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-				'Vitek raises his hands in defense and smirks, "Whoa, calm down! You liked doing it last time, come on now, no one will know, we didn''t tell anyone last time."'
-				'Sonia bites her lower lip, and you can tell she wants to. "Ok. You guys won''t tell anyone right?"'
-				'Vitek smiles. "Of course not." Then he unbuttons his pants and pulls out his semi hard dick. "Now open wide." She does as he says and opens her mouth, sticking out her tongue.'
-				act 'Keep watching':
-					*clr & cla
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/gangbang1.jpg"></center>'
-					'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hardening cock in her open mouth before she can close it. The other guys offer encouragement.'
-					'Sonia starts to suck on Vitek''s cock enthusiastically. Paulina steps back as the other guys get up and crowd around Sonia, pulling their dicks out as well. Quickly surrounded by hard dicks, Sonia starts jerking off the other guys. Eventually, she switches which dick she is sucking and jerking off, trying to give them all attention.'
-					gs 'arousal', 'voyeur_sex', 5
-					gs 'stat'
-					act 'Keep watching': gt 'soniadisco', 'soniabang'
-					act 'Go back to the disco': gt 'soniadisco', 'dance1'
-				end
-			end
-		else
-			act 'Decline (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-		act 'Take another drink':
-			*clr & cla
-			gs 'drugs', 'alcohol', 'vodka', 1
-			grupvalue[4] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-			'You smile and hold up your cup for a refill. Everyone is laughing and having a good time.'
-			'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-			'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-			'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... how about you suck me off again."'
-			*nl
-			'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-			'Vitek raises his hands in defense and smirks, "Whoa, calm down! You liked doing it last time, come on now, no one will know, we didn''t tell anyone last time."'
-			'Sonia bites her lower lip, and you can tell she wants to. "Ok. You guys won''t tell anyone right?"'
-			'Vitek smiles. "Of course not." Then he unbuttons his pants and pulls out his semi hard dick. "Now open wide." She does as he says and opens her mouth, sticking out her tongue.'
-			act 'Keep watching':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/gangbang1.jpg"></center>'
-				'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hardening cock in her open mouth before she can close it. The other guys offer encouragement.'
-				'Sonia starts to suck on Vitek''s cock enthusiastically. Paulina steps back as the other guys get up and crowd around Sonia, pulling their dicks out as well. Quickly surrounded by hard dicks, Sonia starts jerking off the other guys. Eventually, she switches which dick she is sucking and jerking off, trying to give them all attention.'
-				gs 'arousal', 'voyeur_sex', 5
-				gs 'stat'
-				act 'Keep watching': gt 'soniadisco', 'soniabang'
-				act 'Go back to the disco': gt 'soniadisco', 'dance1'
-			end
-		end
-		act 'Caution Sonia':
-			*clr & cla
-			soniahelp += 1
-			grupvalue[4] -= 2
-			npc_rel['A9'] -= 1
-			npc_rel['A10'] -= 1
-			npc_rel['A11'] -= 1
-			npc_rel['A25'] += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/disco/popsicle2.jpg"></center>'
-			'You move over to sit next to Sonia, turning down the drink as you say to her, "Slow down Sonia, you don''t want to get wasted." She turns and gives you a sour look.'
-			'"What are you my mother? God I am tired of having to always be the good girl, I just want to cut loose and party for once." With that, the gopniks all whoop and holler, encouraging her.'
-			'Vitek gets up and walks over to Sonia and says, "Nice tits."'
-			'Sonia grins at him and sounds rather slurred when she asks, "Really? Do you like them?"'
-			'She teasingly runs a finger over her nipple, which is quite visible through the thin fabric of her top. He nods appreciatively. "Absolutely! Your lips are gorgeous too... how about you suck me again."'
-			*nl
-			'She slaps his chest indignantly and shouts, "Vitek! Have you lost your mind!?"'
-			'Vitek raises his hands in defense and smirks, "Whoa, calm down! You liked doing it last time, come on now, no one will know, we didn''t tell anyone last time."'
-			'Sonia bites her lower lip, and you can tell she wants to. "Ok. You guys won''t tell anyone right?"'
-			'Vitek smiles. "Of course not." Then he unbuttons his pants and pulls out his semi hard dick. "Now open wide." She does as he says and opens her mouth, sticking out her tongue.'
-			act 'Keep watching':
-				*clr & cla
-				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/gangbang1.jpg"></center>'
-				'As she looks around grinning with her tongue sticking out, Vitek pulls his dick out of his pants and shoves his hardening cock in her open mouth before she can close it. The other guys offer encouragement.'
-				'Sonia starts to suck on Vitek''s cock enthusiastically. Paulina steps back as the other guys get up and crowd around Sonia, pulling their dicks out as well. Quickly surrounded by hard dicks, Sonia starts jerking off the other guys. Eventually, she switches which dick she is sucking and jerking off, trying to give them all attention.'
-				gs 'arousal', 'voyeur_sex', 5
-				gs 'stat'
-				act 'Keep watching': gt 'soniadisco', 'soniabang'
-				act 'Go back to the disco': gt 'soniadisco', 'dance1'
-			end
-		end
+		act 'Keep watching': gt 'soniadisco', 'soniabang'
+		act 'Go back to the disco': gt 'soniadisco', 'dance1'
 	end
 end
 
@@ -1351,8 +645,19 @@ if $ARGS[0] = 'dance1':
 	npc_grupTipe['A25'] = 5
 	$npc_notes['A25'] = 'Ever since Sonia inadvertently got way too drunk and gave five guys including Vitek and his friends a simultaneous blowjob near the disco, her reputation in Pavlovsk has been in shambles. The girls in her class all give her the silent treatment, pretending she does not exist. Meanwhile, the guys all treat her like a cheap whore and regularly ask (or sometimes even demand) sex from her, knowing she doesn''t have the strength to say no.'
 	'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/cumwalk.jpg"></center>'
-	'Not wanting to stick around and see what all happens to Sonia, you return to the dance. A while, later the boys return, quite rowdy and obviously pleased with themselves. Vitek is dragging a drunken Sonia around as if she''s a trophy to be put on display. She is all smiles and seems pretty happy and even more drunk than when you last saw her.'
-	'When you look closer, you see her face is entirely covered in sperm! You don''t know if she is too drunk to notice or what. Vitek leads her around the disco, and several people take photos of Sonia''s cum covered face. She seems to be catching on that something isn''t right but hasn''t yet figured it out. As they near the entrance again, one of the guys with her loudly proclaims, "Sonia just let all six of us fuck her in every hole she has at the same time, like some wanton whore."'
+	if $ARGS[1] = 'staytoend':
+		'Vitek is dragging a drunken Sonia around as if she''s a trophy to be put on display. She is all smiles and seems pretty happy and completely wasted. You follow them just inside the dance and then stop near the door.'
+	else
+		if $ARGS[1] = 'declineinvite':
+			'You don''t really want to drink alcohol right now, so you just shake your head and say, "Thanks for the invite, but I think I''d rather stay here right now. You guys have fun!"'
+			*p 'About 30 minutes after they leave, you see the boys return, quite rowdy and obviously pleased with themselves. '
+		else
+			*p 'Not wanting to stick around and see what all happens to Sonia, you return to the dance. A while later, the boys return, quite rowdy and obviously pleased with themselves. '
+		end
+		'Vitek is dragging a drunken Sonia around as if she''s a trophy to be put on display. She is all smiles and seems pretty happy and even more drunk than when you last saw her. When you look closer, you see her face is entirely covered in sperm! You don''t know if she is too drunk to notice or what. '
+	end
+	*nl
+	'Vitek leads her around the disco, and several people take photos of Sonia''s cum covered face. She seems to be catching on that something isn''t right but hasn''t yet figured it out. As they near the entrance again, one of the guys with her loudly proclaims, "Sonia just let all six of us fuck her in every hole she has at the same time, like some wanton whore."'
 	*nl
 	'Sonia looks shocked then looks at Vitek who laughs at her. She reaches up to touch her face and apparently just now realizes it is covered in cum. The boys at the disco all laugh and make lewd remarks towards her, while the girls look at her with contempt or turn their backs on her. Even her friends want nothing to do with her now and ignore her completely.'
 	'She immediately bursts into tears and runs out of the disco, trying to cover up her face. The atmosphere in the disco slowly returns to normal, but everyone keeps talking about Sonia and what she did tonight, how everyones always knew she was a total slut.'
@@ -1421,22 +726,7 @@ if $ARGS[0] = 'soniafall':
 				'As they stop to change positions, Vitek has Sonia get on her knees, and the guys surround her, jerking their dicks. Before long, they are cumming on her. Some of it ends up her tits, but the vast majority of the cum from the five guys left ends up coating her face and hair, leaving her a complete mess. After the last one finishes, Vitek says, "Suck us clean." Sonia does as she''s told. When she is done, the guys help her up, then pull her dress over the top of her head and start leading her back to the dance. "Come on Sonia, let''s go dance," Dan says with a laugh. Sonia gets all excited, apparently too drunk to notice her hair and face covered in cum.'
 				gs 'arousal', 'voyeur_sex', 5
 				gs 'stat'
-				act 'Follow them':
-					*clr & cla
-					minut += 15
-					soniaPS = 1
-					npc_grupTipe['A25'] = 5
-					'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/girl/sonia/sex/disco/cumwalk.jpg"></center>'
-					'Vitek is dragging a drunken Sonia around as if she''s a trophy to be put on display. She is all smiles and seems pretty happy and completely wasted. You follow them just inside the dance and then stop near the door.'
-					'Vitek leads her around the disco, several people take photo''s of Sonia''s cum covered face. She seems to be catching on that something isn''t right, but hasn''t yet figured it out. As they near the entrance again, one of the guys with her loudly proclaims. "Sonia just let us all six of us fuck her in every hole she has at the same time, like some wanton whore."'
-					'Sonia looks shocked then looks at Vitek who laughs at her. She reaches up to touch her face and apparently just now realizes it is covered in cum. The boys at the disco all laugh and make lewd remarks towards her, while the girls look at her with contempt or turn their backs on her. Even her friends want nothing to do with her now and ignore her completely.'
-					'She immediately bursts into tears and runs out of the disco, trying to cover up her face. The atmosphere in the disco slowly returns to normal, but everyone keeps talking about Sonia and what she did tonight, how everyones always knew she was a total slut.'
-					gs 'arousal', 'voyeur_sex', 5
-					gs 'arousal', 'end'
-					gs 'stat'
-					act 'Ignore Sonia': gt 'gdkin'
-					act 'Follow Sonia': gt 'soniadisco', 'followsonia'
-				end
+				act 'Follow them':gt 'soniadisco', 'dance1', 'staytoend'
 			end
 		end
 		act 'Go back to the disco': gt 'soniadisco', 'dance1'
