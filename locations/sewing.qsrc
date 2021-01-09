@@ -12,8 +12,8 @@ if $ARGS[0] = 'start':
 	else
 		'You have no fabric left to use as material.'
 	end
-	act'Leave':gt $loc, $loc_arg
-	act'Practice sewing (0:30)':
+	act 'Leave':gt $loc, $loc_arg
+	act 'Practice sewing (0:30)':
 		minut += 30
 		gs 'stat'
 		cla & *clr
@@ -21,23 +21,22 @@ if $ARGS[0] = 'start':
 		if pcs_sewng < 40:
 			sewng_exp += 2
 			'You practice your sewing skills.'
-			act'Finish':gt 'sewing','start'
 		else
 			'You spend some time practicing stitches and other sewing techniques, but you don''t feel like you''re getting any better.'
 			*nl
 			'You think you need real projects to work on to increase your skill, either in a class or on your own.'
-			act'Finish':gt 'sewing','start'
 		end
-	end
-		
+		act'Finish':gt 'sewing', 'start'
+	end		
+
 	
-	act'Sew trinkets (0:30)':
+	act 'Sew trinkets (0:30)':
 		minut += 30
 		gs 'stat'
 		cla & *clr
+		act 'Finish':gt 'sewing', 'start'
 		if tkan < 1:
 			'You do not have any material to sew anything. You should buy some from the supermarket.'
-			act'Continue':gt 'sewing','start'
 		else
 			sew_trinket_success = rand(1,240)
 			tkan -= 1
@@ -47,50 +46,40 @@ if $ARGS[0] = 'start':
 			if sew_trinket_success > pcs_sewng*4:
 				'<center><img <<$set_imgh>> src="images/pc/activities/sewing/practice.jpg"></center>'
 				'You do your best trying to sew together a trinket at a quality you can sell, but somewhere along the way, you mess it up. The material is ruined, and you''re frustrated as hell, but at least you feel like you learned something.'
-				act'Finish':gt 'sewing','start'
-			
-			elseif tovarL = 30 and YouCanGar = 0:
-				'<center><img <<$set_imgh>> src="images/pc/activities/sewing/kit.jpg"></center>'
-				'You put together another trinket but then realize you have too many trinkets already. With a deep sense of regret, you throw it away, having no place to store it. At least you learned more about sewing...'
-				act'Finish':gt 'sewing','start'
-				
-			elseif tovarL = 30 and GarTorgItem = 100:
-				'<center><img <<$set_imgh>> src="images/pc/activities/sewing/kit.jpg"></center>'
-				'You put together another trinket but then realize you have too many trinkets already. Even the space in your father''s garage is full. With a deep sense of regret, you throw it away, having no place to store it. At least you learned more about sewing...'
-				act'Finish':gt 'sewing','start'
-			
-			elseif tovarL < 30:
-				tovarL += 1
-				'<center><img <<$set_imgh>> src="images/pc/activities/sewing/trinket.jpg"></center>'
-				'You spend some time trying to sew something together. After a half hour, you find yourself rewarded for your effort with a small trinket that''s actually of decently high quality.'
-				*nl
-				'You wonder if you can sell it somewhere?'
-				act'Finish':gt 'sewing','start'
-				
-			elseif tovarL = 30 and GarTorgItem < 100:
-				GarTorgItem += 1
-				'<center><img <<$set_imgh>> src="images/pc/activities/sewing/trinket.jpg"></center>'
-				'You spend some time trying to sew something together. After a half hour, you find yourself rewarded for your effort with a small trinket that''s actually of decently high quality. The storage space in your room is full, but you can still store at least <<100 - GarTorgItem>> in your father''s garage.'
-				*nl
-				'You wonder how many you can sell at the train station?'
-				act'Finish':gt 'sewing','start'
+			else
+				if tovarL >= 30 and (YouCanGar = 0 or GarTorgItem >= 100):
+					'<center><img <<$set_imgh>> src="images/pc/activities/sewing/kit.jpg"></center>'
+					'You put together another trinket but then realize you have too many trinkets already. ' + iif(YouCanGar > 0, 'Even the space in your stepfather''s garage is full. ', '') + 'With a deep sense of regret, you throw it away, having no place to store it. At least you learned more about sewing...'
+				else
+					'<center><img <<$set_imgh>> src="images/pc/activities/sewing/trinket.jpg"></center>'
+					*p 'You spend some time trying to sew something together. After a half hour, you find yourself rewarded for your effort with a small trinket that''s actually of decently high quality. '
+					if tovarL < 30:
+						tovarL += 1
+						'Storing it away, you figure you ' + iif(tovarL < 30, 'still have space for about <<30 - tovarL>>', 'probably don''t have room for any') + ' more of these in your room.' + iif(tovarL >= 30 and YouCanGar > 0, ' If you make any more of these, you''ll need to start storing them in your stepfather''s garage.', '')
+						*nl
+						'You wonder if you can sell them somewhere.'
+					else
+						GarTorgItem += 1
+						'The storage space in your room is full, but you can still store it in your stepfather''s garage, ' + iif(GarTorgItem < 100, 'along with probably another <<100 - GarTorgItem>>.', 'though it doesn''t look like there''s space for any more beyond that there either.')
+						*nl
+						'You wonder how many you can sell at the train station.'
+					end
+				end
 			end
 		end
 	end
-	if pcs_sewng >= 50:
-		act'Resize some of your clothes':gt 'clothing', 'view_clothing_list', 'resize'
-	elseif pcs_sewng < 50:
-		act'Resize some of your clothes':msg'You aren''t good enough at sewing to do this.'
-	elseif tkan < 1:
-		act'Resize some of your clothes':msg'You don''t have any sewing materials left to do this. Maybe you should buy some more.'
+	act 'Resize some of your clothes':
+		if tkan < 1:
+			msg'You don''t have any sewing materials left to do this. Maybe you should buy some more.'
+		else
+			if pcs_sewng < 50:
+				msg 'You aren''t good enough at sewing to do this.'
+			else
+				gt 'clothing', 'view_clothing_list', 'resize'
+			end
+		end
 	end
 end
 			
-
-!!gt $loc, $loc_arg
-
-!!tovarL
-!!sewng_exp += rand(pcs_intel/20, pcs_intel/10)
-
 --- sewing ---------------------------------
 
