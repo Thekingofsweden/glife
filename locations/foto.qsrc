@@ -16,21 +16,22 @@ if $ARGS[0] = 'start':
 
 	close all
 	$location_type = 'indoors'
-	if model = 0:gt'foto','studio'
+	if model['status'] = 0:gt'foto','studio'
 	*clr & cla
 
 	$menu_loc = 'foto'
 	$menu_arg = 'start'
 	menu_off = 0
-	
+
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
 	if studio_strip = 0:
 		'Apparently there''s a "dress code" here and all models are required to be naked in the studio, even if they never do nude shoots. Supposedly, it''s primarily to save time when dressing up and the wardrobe department has an easier time fitting the clothing properly if you''re already naked. And if it''s a nude shoot, it saves even more time because then you can walk right on set. Makes sense you suppose... Kinda...'
 	else
 		'Entering the studio, you head to the back room to strip down.'
 	end
-	special_model = rand(30,1400)
-	special_skill_model = rand(30,500)
+	special_model['status'] = rand(30,1400)
+	special_skill_model['status'] = rand(1,500)
+	foto['documentary'] = rand(1,100)
 	act'Strip down':
 		cla & *clr
 		menu_off = 1
@@ -145,33 +146,33 @@ if $ARGS[0] = 'studio':
 	*clr & cla
 	killvar '$modelopt'
 
-	if special_model < min(city_modelling, 700) and modelfoto_topless > 0 and hour < 15 and fame_model_event < daystart:gt 'foto_events','fame'
-	if special_skill_model < pcs_mdlng and modelfoto_nip > 0 and hour < 15 and skill_model_event < daystart:gt 'foto_events','skill'
-
+	if special_model['status'] < min(city_modelling, 700) and modelfoto_topless > 0 and hour < 15 and fame_model_event ! daystart:gt 'foto_events','fame'
+	if special_skill_model['status'] < pcs_mdlng and modelfoto_nip > 0 and skill_model_event ! daystart:gt 'foto_events','skill'
+	if foto['documentary'] >= 95 and $pantyworntype = 'none' and modelfoto >= foto['documentary_timer']:gt'foto_model_documentary','1st_documentary'
 	minut += 5
 	gs 'stat'
 	gs 'themes', 'indoors'
 
 	if city_modelling >= 200 and city_modelling < 240:
-		rank = 1
+		model['rank'] = 1
 	elseif city_modelling >= 240 and city_modelling < 280:
-		rank = 2
+		model['rank'] = 2
 	elseif city_modelling >= 280 and city_modelling < 320:
-		rank = 3
+		model['rank'] = 3
 	elseif city_modelling >= 320 and city_modelling < 360:
-		rank = 4
+		model['rank'] = 4
 	elseif city_modelling >= 360 and city_modelling < 400:
-		rank = 5
+		model['rank'] = 5
 	elseif city_modelling >= 400 and city_modelling < 440:
-		rank = 6
+		model['rank'] = 6
 	elseif city_modelling >= 440 and city_modelling < 560:
-		rank = 7
+		model['rank'] = 7
 	elseif city_modelling >= 560 and city_modelling < 620:
-		rank = 8
+		model['rank'] = 8
 	elseif city_modelling >= 620 and city_modelling < 700:
-		rank = 9
+		model['rank'] = 9
 	elseif city_modelling >= 700:
-		rank = 10
+		model['rank'] = 10
 	end
 
 	anastasia_in = rand(0,1)
@@ -182,12 +183,12 @@ if $ARGS[0] = 'studio':
 
 	'<center><b><font color="maroon">Photography studio</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
-	if model = 0:
+	if model['status'] = 0:
 		'You step into a large warehouse. Scattered throughout, you see large lights brightening a myriad of sets designed to look like different rooms or locations. As you look farther inside, you spot people move between or on the sets. Among them are beautiful women, some wearing fancy dresses or expensive underwear, and shockingly, some of them are nude. Those that stand on sets are surrounded by crews of people wearing black with cameras and other equipment. Strangely, every single woman you see who is not on a set is completely naked.'
 		'It appears you are in some kind of photography studio. Just near the door you came in is a reception desk, out of place due to the fact that it simply sits in the middle of the room. A man sits behind it in the light of a desk lamp, doing something on a computer.'
 		*nl
 		'Farther along, you can see what appear to be <a href="exec:gt ''foto_albums'',''model_portraits''">photo albums</a> that sit on a shelf.'
-	elseif model = 1:
+	elseif model['status'] = 1:
 		'You step onto the main floor of the studio, standing amongst the various sets and photographers who are working those sets. Sitting by the door is a <a href="exec:gs ''shortgs'',''img msg'',''images/locations/city/citycenter/photo/dress_code.jpg''">sign</a> to remind models of the dress code.'
 		*nl
 		'Farther along are the studio''s collection of <a href="exec:gt ''foto_albums'',''model_portraits''">photo albums</a> of their top 10 models. '
@@ -216,9 +217,9 @@ if $ARGS[0] = 'studio':
 		else
 			if krystal_in = 1:'<a href="exec:gt ''foto_models'',''krystal1''">unknown model</a>'
 		end
-		
+
 		if day < 8 and week = 6 and hour >= 9 and hour < 16:'<a href="exec:gt ''foto_models2'',''anushka_1''">Anushka</a>'
-		
+
 		if mari >= 2:
 			if mari_in = 1:'<a href="exec:gt ''foto_models'',''mari_1''">Mari</a>'
 		else
@@ -254,14 +255,7 @@ if $ARGS[0] = 'studio':
 		end
 	end
 
-	if pfilmNO = 1:
-		menu_off = 1
-		gs 'stat'
-		'"You''re blacklisted, no decent studio will deal with you, goodbye."'
-		act 'Leave': minut += 1 & gt 'city_center'
-	end
-
-	if model = 1:
+	if model['status'] = 1:
 		act 'Leave':
 			*clr & cla
 			menu_off = 1
@@ -280,19 +274,19 @@ if $ARGS[0] = 'studio':
 				act 'Leave': minut += 1 & gt 'city_center'
 			end
 		end
-	elseif model = 0:
+	elseif model['status'] = 0:
 		act 'Leave': minut += 1 & gt 'city_center'
 	end
 
 	if parkblackmail = 2: act 'Look around for the blackmailer':gt 'foto', 'blackm'
-	
-	if model = 0:
+
+	if model['status'] = 0:
 		act 'Ask about working as a glamor model':
 			cla & *clr
 			menu_off = 1
 			minut += 5
 			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'	
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
 			if vidage >= 40:
 				'You ask about working as a model, but the photographer says to you, "I''m sorry, but you look like a pretty mature woman, we need models with a more youthful appearance." This is his way of telling you that you look too old for this business.'
 			elseif pcs_skin < 40:
@@ -340,8 +334,13 @@ if $ARGS[0] = 'studio':
 					'He hands you back your fake passport, smiling.'
 					*nl
 					'"Welcome to Aphrodite."'
-					model = 1
-					modelyear = year
+					model['status'] = 1
+					if age < 18:
+						model['age'] = 18
+					else
+						model['age'] = age
+					end
+					model['start_year'] = year
 					act'Leave the studio':gt'city_center'
 					act'Head to the back':gt'foto','start'
 				end
@@ -410,8 +409,13 @@ if $ARGS[0] = 'studio':
 		*nl
 		'There is no way anyone is going to want to see pictures of you while your std is so obvious, you should see a doctor.'
 	end
-	if model = 1:act 'Go to the showers':gt'foto','showers'
-	if model = 1:act 'Go to your makeup station':gt'foto','makeup'
+	if model['status'] = 1:act 'Go to the showers':gt'foto','showers'
+	if model['status'] = 1:act 'Go to your makeup station':gt'foto','makeup'
+end
+
+if $ARGS[0] = 'model_profile':
+
+
 end
 
 if $ARGS[0] = 'gave_passport':
@@ -424,8 +428,13 @@ if $ARGS[0] = 'gave_passport':
 	'He hands you back your fake passport, smiling.'
 	*nl
 	'"Welcome to Aphrodite."'
-	model = 1
-	modelyear = year
+	model['status'] = 1
+	if age < 18:
+		model['age'] = 18
+	else
+		model['age'] = age
+	end
+	model['start_year'] = year
 	act'Leave the studio':gt'city_center'
 	act'Head to the back':gt'foto','start'
 end
@@ -434,7 +443,7 @@ if $ARGS[0] = 'interview':
 	cla & *clr
 	menu_off = 1
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
-	if foto_anush_referral = 1:	'You walk up to the front desk and say Anushka send you. You only have to wait a few minutes before somebody arrives to interview you.' 
+	if foto_anush_referral = 1:	'You walk up to the front desk and say Anushka sent you. You only have to wait a few minutes before somebody arrives to interview you.'
 	'"You want to work here? How old are you?"'
 	if age >= 18:
 		act'I''m <<age>>':
@@ -447,15 +456,15 @@ if $ARGS[0] = 'interview':
 		howoldareyou = 2
 		act 'Tell the truth':
 			age_truth = 1
-			gt'foto','interview2' 
+			gt'foto','interview2'
 		end
-		act 'Lie': 
+		act 'Lie':
 			age_lie = 1
 			gt'foto','interview2'
 		end
 	end
 end
-	
+
 if $ARGS[0] = 'interview2':
 	cla & *clr
 	menu_off = 1
@@ -481,14 +490,14 @@ if $ARGS[0] = 'interview2':
 		'"I''m <<age>>."'
 		'"I see. Alright, undress. Let me take a look at you."'
 	end
-	
+
 	act'I can''t do it':
 		*clr & cla
 		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
 		'Even if it''s just this one time, you can''t do it after all. It''s simply too embarrassing to get naked in front of a total stranger. You blush, apologize, and leave the studio.'
 		act 'Leave': minut += 1 & gt 'city_center'
 	end
-	
+
 	if undress_ask = 0:
 		act'What? Why?':
 			undress_ask = 1
@@ -614,7 +623,7 @@ if $ARGS[0] = 'job_decline':
 			gs 'stat'
 			act 'Leave': minut += 1 & gt 'city_center'
 		end
-		
+
 		act'React determinedly':
 			cla & *clr
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/foto.jpg"></center>'
@@ -651,6 +660,12 @@ if $ARGS[0] = 'job_offer':
 		act'Show him your passport':
 			cla
 			*nl
+			if age < 18:
+				model['age'] = 18
+			else
+				model['age'] = age
+			end
+			model['age'] = age
 			'He takes it and studies it for a moment, looking back and forth between you and the document. "Okay, that confirms you''re <<age>> and we''ll put you into the database later."'
 			'"When you''re ready, speak to a photographer about work. We work on freelance basis. For our lower level models or new hires like you, we can really only afford to pay you for two shoots a week, but you can still come in any time if you want to get some practice to work on your modelling skills. Those photos will be ours to keep and use, but it will help you to build your portfolio. If your popularity increases, we might have some special work and extra jobs for you so it''s not just twice a week."'
 			'He hands you back your passport, smiling.'
@@ -662,6 +677,7 @@ if $ARGS[0] = 'job_offer':
 		act'Show him your fake passport':
 			cla
 			*nl
+			model['age'] = 18
 			'He takes it and studies it for a moment, looking back and forth between you and the document and types your info onto a computer.'
 			'"When you''re ready, speak to a photographer about work. We work on freelance basis. For our lower level models or new hires like you, we can really only afford to pay you for two shoots a week, but you can still come in any time if you want to get some practice to work on your modelling skills. Those photos will be ours to keep and use, but it will help you to build your portfolio. If your popularity increases, we might have some special work and extra jobs for you so it''s not just twice a week."'
 			'He hands you back your fake passport, smiling.'
@@ -863,6 +879,8 @@ if $ARGS[0] = 'bathroom':
 	$loc_arg = 'bathroom'
 	$menu_loc = 'foto'
 	$menu_arg = 'bathroom'
+	$locM = 'foto'
+	$locM_arg = 'bathroom'
 	menu_off = 0
 	gs'stat'
 	cla & *clr
@@ -885,7 +903,28 @@ if $ARGS[0] = 'bathroom':
 			act 'Continue': menu_off = 0 & gt $loc, $loc_arg
 		end
 	end
-	act'Listen to the gossip':gt'foto_models','model_chatter'
+	if AlexandriaQW = 1:
+	    act'Listen to the gossip':
+	        *clr & cla
+			AlexandriaQW = 2
+			gs 'stat'
+           	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/models.jpg"></center>'
+            'You are trying to find the "McGuffin" that Tatiana told you was somewhere in the agency and that was cursing the place, but you haven''t had much luck... until now. You feel a magic tingle and snoop on an interesting titbit.'
+            '"Oh my god! You need to meet this girl! She is an incredible mass... massa... masse... Damn! She is good with her hands!"'
+            '"Sorry, I don''t swing that way. Well... except on my boyfriend''s birthday."'
+            '"Huh?! No! Well... maybe? I mean that she can help you with your boob pains!"'
+            '"You mean my BACK pains? Are you feeling alright? You sound a little off today."'
+            '"What? Yes! I''m feeling great! You <i>must</i> meet her! She''s a redhead named Tatiana! She hangs out back there, in the room where we store the... umm... the things that we use for the shoots!"'
+            '"You mean the props room?"'
+            'Okay, that''s a clue! Maybe you should search the props room?'
+            act'Continue':gt'foto','bathroom'
+        end
+    else
+	    act'Listen to the gossip':gt'foto_models','model_chatter'
+	end
+	if AlexandriaQW = 2:
+	    act'Search the props'' room':gt'tatiana_missions','mission2A'
+	end
 end
 
 if $ARGS[0] = 'showers':
@@ -902,7 +941,7 @@ if $ARGS[0] = 'showers':
 	'A little bit aways are bathroom stalls with a line of sinks and mirrors on the wall opposite as well as several tampon dispensers.'
 
 	act 'Go to the studio floor':gt'foto','studio'
-	
+
 	if shampoo > 0:
 		act 'Take a shower (0:15)':
 			cla
@@ -1108,6 +1147,7 @@ if $ARGS[0] = 'makeup':
 	*clr & cla
 	$locM = 'foto'
 	$locM_arg = 'makeup'
+	$loc_arg = 'makeup'
 	$menu_loc = 'foto'
 	$menu_arg = 'makeup'
 	menu_off = 0
@@ -1170,7 +1210,7 @@ if $ARGS[0] = 'practicemodel':
 	gs'stat'
 	*clr & cla
 	minut += 5
-	if model = 0:model = 1
+	if model['status'] = 0:model['status'] = 1
 	gs 'stat'
 	'<center><b><font color="maroon">Photographer</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/photo/fotograph.jpg"></center>'
@@ -1704,7 +1744,7 @@ if $ARGS[0] = 'practicemodel':
 					end
 				end
 			end
-			
+
 			act 'Transparent Lingerie':
 				cla
 				act 'Not for me':gt 'foto','studio'
@@ -1937,7 +1977,7 @@ if $ARGS[0] = 'practicemodel':
 								end
 							end
 						end
-					end	
+					end
 				else
 					act 'Practice (2:00)':
 						*clr & cla
@@ -2018,7 +2058,7 @@ if $ARGS[0] = 'blackm':
 					'On the back of a chair hangs sexy lingerie and white shirt. Apparently, all of this is meant to you. You dress up and sit on the edge of the bed. Almost immediately two men enter the room - one blond and buff the other slim and brunette.'
 					'"OK, a simple scenario." Directs Victor, following them with his camera. "Girl undressing. Sexy but quickly, then you get to know the boys. For the girl the actions will be a surprise." He winks at the guys and you suspect they know full well that you have no idea what to expect.'
 					'You start trying to undress but your hands won''t respond, but after the blond guy starts poking and probing your mental resistance fails. You take off your shirt and undo your bra, by then the guys are already taking matters into their own hands. The blond guy literally ripped the bra off you as the brunette pushes you back on to the bed and swiftly pulls your panties off.'
-					'Foreplay is clearly not part of the scene as the blond guy flips you over on to all fours and abruptly enters you, you have no time to get in the mood and are not ready for it. It hurts, but he seems to have used a little lube as he is able to fuck you deeply with little resistance. his hands roughly grope at your chest and you feel sore and violated.'
+					'Foreplay is clearly not part of the scene as the blond guy flips you over on to all fours and abruptly enters you, you have no time to get in the mood and are not ready for it. It hurts, but he seems to have used a little lube as he is able to fuck you deeply with little resistance. His hands roughly grope at your chest and you feel sore and violated.'
 					'The other guy having undress kneels in front of you and presents his erect cock to your mouth. You stare at it and your lack of action earns you a hard slap in the face, tears gush from your eyes with the pain.'
 					gs 'npcgeneratec', 0, 'Brunette', rand(19,45)
 					gs 'boyStat', $npclastgenerated, 'a'

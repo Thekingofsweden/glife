@@ -15,29 +15,32 @@ if $ARGS[0] = 'start':
 
 	!!act 'SunReview of the Dead':gt 'KGZstart'
 
-	if student > 0 and kursovik < 100:'You should probably do some of your <a href="exec:gt ''komp'',''kursak''">coursework</a>.'
+	gs 'unicoursework', 'start', 'komp', 'brows'
 
 	if $loc = 'shulga_room' or $loc = 'anushapt' or $loc = 'artemhome':
 		internet_store = internet
 		internet = 100000
 		act 'Browse the internet':gt 'komp', 'brows'
 	elseif $loc = 'dachain':
+		internet_store = internet
 		internet = 0
 	else	
 		'You have <<internet>> hours of prepaid internet access remaining.'
 		if internet > 0: act 'Browse the internet':gt 'komp', 'brows'
 	end
 
-	act 'Shut your computer down': gt 'komp', 'fin'
-
+	act 'Shut your computer down': 
+		gt 'komp', 'fin'
+	end
 end
 
 if $ARGS[0] = 'brows':
 	*clr & cla
 	gs 'stat'
+	menu_off = 0
 	
 	act 'Close the browser':
-		if $loc = 'shulga_room' or $loc = 'anushapt':
+		if $loc = 'shulga_room' or $loc = 'anushapt' or $loc = 'artemhome' or $loc = 'dachain':
 			internet = internet_store
 			killvar 'internet_store'
 		end
@@ -74,12 +77,12 @@ if $ARGS[0] = 'brows':
 		act 'Search for cable TV services (1:00)':gt 'komp', 'kabtv'
 		act 'Play an online game':gt 'KGstart'
 		if fuckornot = 3: act 'Visit ''Fuckable or not'' site': $view_location = 'komp' & gt 'komp', 'fuckornot'
-		if hotornot = 3: act 'Visit ''Hot or not'' site': $view_location = 'komp' & gt 'komp', 'hotornot'
+		if hotornot >= 2: act 'Visit ''Hot or not'' site': $view_location = 'komp' & gt 'komp', 'hotornot'
 		if bankAccount > 0: act 'Visit your bank, maybe to purchase more online time': gt 'komp', 'bank'
 		if shantfoto > 0:act 'Find the girl you took photos of in the park on "Assbook"':gt 'komp', 'foto'
 		if gor_dorm = 7:act 'Read letter from Eugene':gt 'etoexhib', 'pos91'
 		if camwhore = 1 and $loc ! 'shulga_room' and $loc ! 'anushapt':act 'Go to MyFreeCams.org':gt 'komp', 'mfc'
-		if (storyline = 1 and SchoolAtestat = 0) or student > 0:act 'Spend time studying':gt 'komp', 'study'
+		if (storyline = 1 and SchoolAtestat = 0) or func('uniutil', 'student', 'enrolled'):act 'Spend time studying':gt 'komp', 'study'
 		if sucpcinfo = 0 and succubxp > 0: act 'Research the strange feelings you''ve been having': gt 'succubus', 'kompresearch'
 	end
 end
@@ -237,7 +240,7 @@ if $ARGS[0] = 'znak':
 
 			act 'Leave this website':gt 'komp', 'brows'
 		end
-	elseif home_cur ! 1 and home_cur ! 2 and home_cur ! 3 and home_cur ! 4 and home_cur ! 5:
+	elseif curr_home ! 1 and curr_home ! 2 and curr_home ! 3 and curr_home ! 4 and curr_home ! 5:
 		pcs_mood += rand(5, 10)
 		'You spend time looking at the various profiles, but it won''t let you register unless you have your own home and it is set as your current home.'
 		'Still, some of the pictures were quite raunchy and the more desperate profiles were really funny.'
@@ -458,29 +461,33 @@ if $ARGS[0] = 'rabota':
 				'The website hides your stream for viewers from your region, so the chance of being recognized by someone you know in real life is very low.'
 				'If you''re interested in becoming a webcam girl, please fill in this questionnaire below.</i>'
 				
-				if pcs_inhib >= 40 or exhibitionist_lvl > 1 or (pcs_inhib >= 35 and exhibitionist_lvl > 0):
-					act 'Fill in the questionnaire':
-						*clr & cla
-						camwhore = 1
-						mfcclients = 0
-						camclients = 0
-						mfccum = 0
-						minut += 20
-						gs 'stat'
-						'<center><img <<$set_imgh>> src="images/shared/accessories/computer/camwhore2.jpg"></center>'
-						if $pcs_webcamname = '':
-							'You consider which name you''d like to register under.'
-								$pcs_webcamname = input("Which name would you like to use? (Leave blank for <<$pcs_nickname>>)")
-							if $pcs_webcamname = '':$pcs_webcamname = '<<$pcs_nickname>>'
-						end
-						'You fill out the questionnaire and register yourself as a webcam model. Ten minutes later, you have already been approved and you can now earn money as a webcam girl.'
-						'Of course, you will need a functioning webcam to do this! If you don''t have one yet, they are fairly cheap to buy at most local supermarket chains.'
-						act 'Leave this website':gt 'komp','brows'
-					end
-					act 'Leave this website':gt 'komp','brows'
+				if bankAccount = 0:
+					'You need a valid bank account to be able to register for this job.'
 				else
-					''
-					'You don''t feel comfortable showing of your body.'
+					if pcs_inhib >= 40 or exhibitionist_lvl > 1 or (pcs_inhib >= 35 and exhibitionist_lvl > 0):
+						act 'Fill in the questionnaire':
+							*clr & cla
+							camwhore = 1
+							mfcclients = 0
+							camclients = 0
+							mfccum = 0
+							minut += 20
+							gs 'stat'
+							'<center><img <<$set_imgh>> src="images/shared/accessories/computer/camwhore2.jpg"></center>'
+							if $pcs_webcamname = '':
+								'You consider which name you''d like to register under.'
+									$pcs_webcamname = input("Which name would you like to use? (Leave blank for <<$pcs_nickname>>)")
+								if $pcs_webcamname = '':$pcs_webcamname = '<<$pcs_nickname>>'
+							end
+							'You fill out the questionnaire and register yourself as a webcam model. Ten minutes later, you have already been approved and you can now earn money as a webcam girl.'
+							'Of course, you will need a functioning webcam to do this! If you don''t have one yet, they are fairly cheap to buy at most local supermarket chains.'
+							act 'Leave this website':gt 'komp','brows'
+						end
+						act 'Leave this website':gt 'komp','brows'
+					else
+						*nl
+						'You don''t feel comfortable showing off your body in this way.'
+					end
 				end
 
 				if hour < 20 and hour > 7:act 'Search for more jobs':gt 'komp','rabota'
@@ -507,22 +514,6 @@ if $ARGS[0] = 'study':
 	'You spend an hour on the IEM website, reading news articles and educational blogs. You feel a bit smarter afterwards.'
 
 	act 'Leave this website':gt'komp','brows'
-end
-
-if $ARGS[0] = 'kursak':
-	*clr & cla
-	minut += 60
-	elektro += 3
-	internet -= 1
-	pcs_mood -= 10
-	compskl_exp += 1
-	kursovik = kursovik + rand(pcs_intel/20,pcs_intel/10)
-	if kursovik > 100:kursovik = 100
-	'<center><b>Coursework</b></center>'
-	'<center><img <<$set_imgh>> src="images/shared/accessories/computer/kursak.jpg"></center>'
-	'It may be boring, but it still needs doing! You spend an hour doing coursework, and <<kursovik>>% of it is now finished.'
-
-	act 'Leave this website':gt 'komp','brows'
 end
 
 if $ARGS[0] = 'agent':
@@ -1846,7 +1837,10 @@ if $ARGS[0] = 'hotornot':
 end
 
 if $ARGS[0] = 'fin': 
-	if $loc = 'shulga_room' or $loc = 'anushapt' or $loc = 'dachain': internet = internetS
+	if $loc = 'shulga_room' or $loc = 'anushapt' or $loc = 'artemhome' or $loc = 'dachain': 
+		internet = internet_store
+		killvar 'internet_store'
+	end
 	gt $loc, $loc_arg
 end
 

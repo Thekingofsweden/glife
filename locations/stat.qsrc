@@ -161,7 +161,7 @@ if MagikDostup = 0:
 	if pcs_magik > magikhigh:
 		magikhigh += 1
 		rikudo += pcs_magik * 100
-		$stat_msg += '<BR><b>You feel like a strength has been revealed within you and you gush with magic, lifting you to a new energy level.</b>'
+		$stat_msg += '<BR><b>You feel like a strength has been revealed within you, and you gush with magic, lifting you to a new energy level.</b>'
 !!		This will be replaced when a more advanced physical system is made
 		if (pcs_magik mod 2 ! 0) and pcs_eyesize < 2: pcs_eyesize += 1
 		if (pcs_magik mod 2 = 0) and pcs_lashes < 2: pcs_lashes += 1
@@ -209,6 +209,16 @@ if pcs_willpwr > willpowermax: pcs_willpwr = willpowermax
 if pcs_stam > stammax: pcs_stam = stammax
 if pcs_mana > manamax: pcs_mana = manamax
 if pcs_mood > 100: pcs_mood = 100
+
+!!Add mood_trauma to events to lower max mood for a period of time
+if mood_trauma > 0:
+	mood_max_calc = 100 - (mood_trauma * 5)
+	mood_max = max(10, mood_max_calc)
+	if pcs_mood > mood_max: pcs_mood = mood_max
+	killvar 'mood_max_calc'
+elseif mood_trauma < 0:
+	mood_trauma = 0
+end
 
 if hypnoAddict = 1 and pcs_horny < 30:
 	pcs_horny = 30
@@ -469,26 +479,6 @@ if minut >= 60:
 	elseif alko < 0:
 		alko = 0
 	end
-
-	!!!!!!!!!!!!!
-	!!!Avtoboy!!!
-	!!!!!!!!!!!!!
-	if hour >= 8 and hour <= 23 and NPCnum > 10 and insleep = 0:
-		:markturnirotbort
-		xf = 0
-		:markturnirotbortt
-		xf += 1
-		turnirFighter[xf] = rand(2, NPCnum)
-
-		if xf < 2:jump 'markturnirotbortt'
-		if turnirFighter[1] = turnirFighter[2]:jump 'markturnirotbort'
-
-		a = turnirFighter[1]
-		i = turnirFighter[2]
-		NoView = 1
-		gs 'Autofight'
-	end
-	!!!!!!!!!!!!!
 
 	if shame > 0:shame -= 1 & pcs_mood -= 5
 	if smoker >= 20 and NarkImmune = 0: smokerNeed += 1
@@ -971,7 +961,7 @@ elseif pcs_willpwr >= willpowermax * 50 / 100:
 elseif pcs_willpwr >= willpowermax * 25 / 100:
 	$pcs_willpwr = '<font color="red">You will have to toe the line.</font>'
 else
-	$pcs_willpwr = '<font color="red">You are completely at our people''s mercy.</font>'
+	$pcs_willpwr = '<font color="red">You are completely at other people''s mercy.</font>'
 end
 
 !!stop auto birth control pill taking if the player believes they are pregnant or are pregnant
@@ -988,6 +978,7 @@ if cheatNoMood = 0:
 	end
 else
 	pcs_mood = 100
+	mood_trauma = 0
 end
 
 if pcs_mood >= 80:
@@ -1042,7 +1033,7 @@ end
 
 if hotelroom > 0:
 	if hotelroom1day = daystart: $stat_msg += '<BR>You have 1 night left on your hotel booking.'
-	if hotelroom1day < daystart and hour <= 11: $stat_msg += '<BR>Your hotel booking has expired and you cannot return to your room after 11:00'
+	if hotelroom1day < daystart and hour <= 11: $stat_msg += '<BR>Your hotel booking has expired, and you cannot return to your room after 11:00'
 	if hotelroom1day < daystart and hour > 11: hotelroom = 0
 end
 
@@ -1129,6 +1120,35 @@ if insleep = 0: gs 'stat_display'
 
 gs 'family_schedule'
 
+
+!!--------------------------Job Checks For Icons--------------------------------
+
+if (acting['shoot_day'] = daystart and actress_cast = 1) or (audition['day'] = daystart):
+	acting['icon'] = 1
+else
+	acting['icon'] = 0
+end
+
+if model_job_week < 2 and model['status'] = 1:
+	model['icon'] = 1
+else
+	model['icon'] = 0
+end
+
+if pfilmday[0] > 0:
+	pornstar['icon'] = 1
+else
+	pornstar['icon'] = 0
+end
+
+!!-------------------------School grades and other checks----------------------
+
+!! Having this for just the mornings means it is not always correct.
+gs '_difficulty','getmaxgrades'
+ 
+if pcs_grades > max_grades: pcs_grades = max_grades
+
+if pcs_grades < 0: pcs_grades = 0
 
 --- stat ---------------------------------
 

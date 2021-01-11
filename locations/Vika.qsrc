@@ -1,165 +1,226 @@
 # Vika
+!2020/10/16/Gwen
 
-vikaAge = age + 1
-gs'stat'
-'<center><B><font color=maroon>Vika Kirilova</font></B></center>'
-'<center><img <<$set_imgh>> src="images/pc/npc_headshots/vika.jpg" ></center>'
-'Your university roommate is Vika Kirilova. She is <<vikaAge>> years old. She came to from a town much further away than you did, like you Vika comes from a poor family. You don''t really know much more about her yet.'
-if vikaslut = 1: 'You know Vika works as a whore in a brothel in the city central area.'
-
-if npc_rel['A220'] < 20:
-	'You and Vika are strangers to each other.'
-elseif npc_rel['A220'] < 40:
-	'You and Vika are getting to know each other.'
-elseif npc_rel['A220'] < 60:
-	'You and Vika are on friendly terms.'
-elseif npc_rel['A220'] < 80:
-	'The two of you are friends.'
-else
-	'The two of you are best friends.'
-end
-''
-act '<B>Move away</B>':gt $loc, $loc_arg
-
-if vika_sleep = 1 and vikaslut = 0:
-	cls
-	minut += 5
-	'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika_sleep.jpg" ></center>'
-	'Vika is sleeping in her bed, after a night of adventures. While watching her, you wonder what all she got up to tonight.'
-	act '<B>Move away</B>':gt $loc, $loc_arg
-	exit
-end
-
-if vika_sleep = 1 and vikaslut = 1:
-	cls
-	minut += 5
-	'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika_sleep_b.jpg" ></center>'
-	'Vika is sleeping in her bed, naked. You wonder if she worked in the brothel tonight, to pay for her tuition.'
-	act '<B>Move away</B>':gt $loc, $loc_arg
-	exit
-end
-
-if hour < 20:
-	act 'Chatting with Vika (00:15)':
-		cla
-		minut += 15
-		if vikachatday ! daystart: npc_rel['A220'] += 3
-		vikachatday = daystart
-		talkrand = RAND(0,10)
-		if talkrand = 0:
-			'You started talking with Vika, she tells you about the boys she met, about parties, about cosmetics.'
-		elseif talkrand = 1:
-			'Vika says she was in this cafe and got invited to dance by a guy who then paid her bill.'
-		elseif talkrand = 2:
-			'Vika says that working as a stripper in the strip club, is a rather profitable job for students, although clients are very grabby.'
-		elseif talkrand = 3:
-			'Vika tells you that a few girls from the track team at the university go to the European level sports competitions and earn big money, though of course Vika admits that she is too lazy to put in the effort to make the team.'
-		elseif talkrand = 4:
-			'Vika says that one of her friends who''s guy did not pull out in time and came inside of her. But Vika is smarter than that, she buys birth control pills at the pharmacy control. Then it doesn''t matter if the guy pulls out or wears a condom.'
-		elseif talkrand = 5:
-			'Vika says in the park, she accidentally went to an area and was offered money for sex.'
-		elseif talkrand = 6:
-			'Vika tells did a nude photo shoot at the photography studio, but it is bad for your reputation to do.'
-		elseif talkrand = 7:
-			'Vika tells a horror story about how a nice girl did not wash or shave, then she began to smell so terrible and got a vaginal infection.'
-		elseif talkrand = 8:
-			'Vika says that she buys tampons and always keeps a reserve of them and even if she is on the birth control shot.'
-		elseif talkrand = 9:
-			'Vika tells how one of her guys like anal sex, but she didn''t have any lube, but let him fuck her anyways. She tells you how it hurt a lot at first but then she started to like it anyways.'
+if $ARGS[0] = '':
+	gs'stat'
+	if vika_sleep = 1:
+		gs 'Vika', 'text', 'asleep'
+		gs 'Vika', 'actions', 'asleep'
+	else
+		if npc_rel['A220'] >= 60 and birthday = day and birthmonth = month and vikaslut = 1 and b_vika_present_Day ! daystart:
+			b_vika_present_Day = daystart
+			gs 'Vika', 'text', 'awake', 'birthday'
+			gs 'Vika', 'actions', 'awake', 'birthday'
 		else
-			'Vika tells how she was sunbathing in the summer on the beach and that she needed to but a new swimsuit. Having one is useful in winter too, for using the pool, which is a great way to keep yourself in good shape.'
-		end
-
-		act 'Finish': gt 'Vika'
-	end
-	act 'Study with Vika (1:00)':
-		cla
-		minut += 60
-		intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
-		npc_rel['A220'] += 1
-		'You get out your text books and notes, while you and Vika sit down together on the bed to study. You help each other with your class work, making it much easier and more fun to study.'
-
-		act 'Finish':gt'Vika'
-	end
-
-	if vikasex > 0 and npc_rel['A220'] > 40:
-		gs 'willpower', 'cuni', 'self', 'easy'
-		if will_cost <= pcs_willpwr:
-			act 'Suggest you do something fun (<<will_cost>> Willpower)':
-				gs 'willpower', 'pay', 'self'
-				minut += 60
-				npc_rel['A220'] += 5
-				$sexloc = 'obroom'
-				gt'lezbsex','start'
-			end
-		else
-			act 'Suggest you do something fun (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
-		end
-	end
-
-	if npc_rel['A220'] > 80 and vikaslut = 0:
-		act 'Ask where she goes at night':
-			cla
-			minut += 30
-			vikaslut = 1
-
-			'Vika hesitates and blushes, "I''m just walking around the city..."'
-			'"So you just walk around the city all night long? You expect me to believe that? I thought we were friends, but if you don''t want to tell me that''s fine." You try not to be disappointed she won''t tell you, but you understand it is none of your business.'
-			'"I work at the local night club..." Vika mumbled hesitantly.'
-			'"I have been to that club many times and have not seen you there, ever." you feel hurt as she''s bluntly lying to your face. "If you don''t want me to know where you go, just so say. I was just hoping we could go together and hang out." You say and turn away, feeling rejected.'
-			'"Don''t be mad, I''ll show you. Just promise, you''ll still be my friend."'
-			'You are taken aback by these words, why would you not want to bed her friend? "Yes, Of course we''ll still be friends."'
-			'"I will show you then." she tells you'
-
-			act 'Follow Vika': gt 'bordelv', 'start'
-		end
-	elseif npc_rel['A220'] > 80 and vikaslut = 1 and bordel = 0:
-		act 'Ask about work':
-			cla
-			npc_rel['A220'] += 5
-			bordel = 1
-			odkomp = 0
-
-			'"Do you think you could get me a job at the brothel?" you ask.'
-			'"Well I can ask the manager, but I can''t guarantee anything. Come by after 20:00 and I''ll see what I can do."'
-
-			act 'Finish': gt 'Vika'
+			gs 'Vika', 'text', 'awake'
+			gs 'Vika', 'actions', 'awake'
 		end
 	end
 end
 
-if npc_rel['A220'] >= 60 and birthday = day and birthmonth = month and vikaslut = 1 and b_vika_present_Day ! daystart:
-	cls
-	gs 'stat'
-	b_vika_present_Day = daystart
+if $ARGS[0] = 'text':
+	*clr
+	gs'stat'
 	'<center><B><font color=maroon>Vika Kirilova</font></B></center>'
-	'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika1.jpg" ></center>'
-    'Your university roommate is Vika. She is <<vikaAge>> years old. She came to from a town much further away than you did, like you Vika comes from a poor family. You don''t really know much more about her yet.'
-    if vikaslut = 1: 'You know Vika works as a whore in a brothel in the city central area.'
+	if $ARGS[1] = 'asleep':
+		gs 'Vika', 'asleep_text'
+	elseif $ARGS[1] = 'awake':
+		gs 'Vika', 'awake_text', $ARGS[2]
+	end
+end
+
+if $ARGS[0] = 'actions':
+	cla
+	gs'stat'
+	if $ARGS[1] = 'asleep':
+		gs 'Vika', 'asleep_actions'
+	elseif $ARGS[1] = 'awake':
+		gs 'Vika', 'awake_actions', $ARGS[2]
+	end
+end
+
+if $ARGS[0] = 'asleep_text':
+	minut += 5
+	if vikaslut = 1:
+		'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika_sleep_b.jpg" ></center>'
+		'Vika is sleeping in her bed, naked. You wonder what she did in the brothel tonight to pay for her tuition.'
+	else
+		'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika_sleep.jpg" ></center>'
+		'Vika is sleeping in her bed after a night of adventures. While watching her, you wonder what all she got up to tonight.'
+	end
+end
+
+if $ARGS[0] = 'asleep_actions':
+	act '<B>Move away</B>':gt $loc, $loc_arg
+end
+
+if $ARGS[0] = 'awake_text':
+	!! Display different image during birthday event.
+	if $ARGS[1] = 'birthday':
+		'<center><img <<$set_imgh>> src="images/characters/city/university/girl/vika/vika1.jpg" ></center>'
+	else
+		'<center><img <<$set_imgh>> src="images/characters/shared/photos/big220.jpg" ></center>'
+	end
+	'Your university roommate is Vika Kirilova. She is <<age + 1>> years old. She comes from a town much further away than yours, and like you, she comes from a poor family.'
+	if vikaslut = 1:
+		'You know Vika works as a whore in a brothel in the red light district.'
+	else
+		'You don''t really know much more about her yet.'
+	end
 
 	if npc_rel['A220'] < 20:
-		'Vika and you have stiff and cold relationship.'
+		'You and Vika are strangers to each other.'
 	elseif npc_rel['A220'] < 40:
-		'Vika and you have casual relationship.'
+		'You and Vika are getting to know each other.'
 	elseif npc_rel['A220'] < 60:
-		'Vika and you have friendly relationship.'
+		'You and Vika are on friendly terms.'
 	elseif npc_rel['A220'] < 80:
-		'Vika and you are friends.'
+		'The two of you are friends.'
 	else
-		'Vika and you are close friends.'
+		'The two of you are best friends.'
 	end
 	''
-	'You don''t have time to say a word, before Vika practically pounces on you.'
-	'"There is my favorite birthday girl, Happy Birthday!" she screeches as she hugs and kisses you on the cheek.'
-	'"Wow. This is so unexpected." You reply.'
-	'"Here''s a present for you." Vika gives you a box, as you open it inside is a silk pale blue sheer teddy.'
-	'"Oh, Vika, this is too much. It''s way to expensive of a gift." You are flattered she would give you such a nice gift.'
-	'"Relax and put it on, come on. The least you could do is model it for me." Vika says in a commanding voice, winking at you.'
-	'You''re a little embarrassed, but you quickly strip off your clothes until you are naked and put the teddy on. It looks even more sheer on your body, it hides absolutely nothing, your nipples, even your pussy lips are clearly visible. You turn and model it for Vika, a nice gift but definitely not for everyday life gift.'
-	'"You look great, it fits nice, good! I was worried it wouldn''t fit as I had to guess your size. Here put this on, we need to go to your other present." Vika throws you a bathrobe and grabs you by the arm and drags you out of the room, as you struggle to get the robe on in time.'
 
-	act 'Where are we heading?': gt 'univer_din', 'b_vika_present_start'
-	exit
+	if $ARGS[1] = 'birthday':
+		'You don''t have time to say a word before Vika practically pounces on you.'
+		'"There is my favorite birthday girl, happy birthday!" she screeches as she hugs and kisses you on the cheek.'
+		'"Wow! This is so unexpected," you reply.'
+		'"Here''s a present for you." Vika gives you a box. Inside is a silk pale blue sheer teddy.'
+		'"Oh, Vika, this is too much. It''s way too expensive of a gift." You are flattered she would give you such a nice gift.'
+		'"Relax and put it on, come on. The least you could do is model it for me," Vika says in a commanding voice, winking at you.'
+		'You''re a little embarrassed, but you quickly strip off your clothes until you are naked and put the teddy on. It looks even more sheer on your body. It hides absolutely nothing, your nipples, even your pussy lips are clearly visible. You turn and model it for Vika, a nice gift but definitely not for everyday life gift.'
+		'"You look great, it fits nice, good! I was worried it wouldn''t fit as I had to guess your size. Here put this on. We need to go to your other present." Vika throws you a bathrobe and grabs you by the arm and drags you out of the room as you struggle to get the robe on in time.'
+	end
+
+	gs 'Vika', 'leave_for_night'
+end
+
+if $ARGS[0] = 'awake_actions':
+	if $ARGS[1] = 'birthday':
+		act 'Where are we heading?': gt 'univer_din', 'b_vika_present_start'
+	else
+		act '<B>Move away</B>':gt $loc, $loc_arg
+
+		if func('bordel', 'is_open') = 0:
+			if $ARGS[1] = 'chat':
+				act 'Continue chatting (0:15)':gs 'Vika', 'talk', 'chat'
+			else
+				act 'Chat with Vika (0:15)':gs 'Vika', 'talk', 'chat'
+			end
+
+			if $ARGS[1] = 'study':
+				act 'Continue studying (1:00)':gs 'Vika', 'talk', 'study', 'continue'
+			else
+				act 'Study with Vika (1:00)':gs 'Vika', 'talk', 'study'
+			end
+
+			if vikasex > 0 and npc_rel['A220'] > 40:
+				gs 'willpower', 'cuni', 'self', 'easy'
+				if will_cost <= pcs_willpwr:
+					act 'Suggest you do something fun (<<will_cost>> Willpower)':
+						gs 'willpower', 'pay', 'self'
+						minut += 60
+						npc_rel['A220'] += 5
+						$sexloc = 'obroom'
+						gt'lezbsex','start'
+					end
+				else
+					act 'Suggest you do something fun (<font color="red"><<will_cost>> Willpower</font>)': '<br><font color="red">You don''t have enough willpower to use this action.</font>'
+				end
+			end
+		end
+
+		gs 'Vika', 'brothel_questions'
+	end
+end
+
+if $ARGS[0] = 'talk':
+	gs 'Vika', 'text', 'awake', $ARGS[1]
+	if $ARGS[1] = 'chat':
+		gs 'Vika', 'chat', RAND(0,10)
+	elseif $ARGS[1] = 'study':
+		gs 'Vika', 'study', $ARGS[2]
+	end
+	gs 'Vika', 'actions', 'awake', $ARGS[1]
+	gs 'Vika', 'leave_for_night'
+end
+
+if $ARGS[0] = 'chat':
+	minut += 15
+	if vikachatday ! daystart: npc_rel['A220'] += 3
+	vikachatday = daystart
+	gs 'stat'
+
+	if ARGS[1] = 0:
+		'You start talking with Vika. She tells you about the boys she''s met, about parties, about cosmetics.'
+	elseif ARGS[1] = 1:
+		'Vika says she was in this cafe and got invited to dance by a guy who then paid her bill.'
+	elseif ARGS[1] = 2:
+		'Vika says that working as a stripper in the strip club is a rather profitable job for students, although clients are very grabby.'
+	elseif ARGS[1] = 3:
+		'Vika tells you that a few girls from the track team at the university go to the European level sports competitions and earn big money, though of course Vika admits that she is too lazy to put in the effort to make the team.'
+	elseif ARGS[1] = 4:
+		'Vika says that one of her friends who''s a guy did not pull out in time and came inside of her. But Vika is smarter than that. She buys birth control pills at the pharmacy control. Then it doesn''t matter if the guy pulls out or wears a condom.'
+	elseif ARGS[1] = 5:
+		'Vika says in the park, she accidentally went to an area and was offered money for sex.'
+	elseif ARGS[1] = 6:
+		'Vika tells how she did a nude photo shoot at the photography studio, but it is bad for your reputation to do.'
+	elseif ARGS[1] = 7:
+		'Vika tells a horror story about how a nice girl did not wash or shave, then she began to smell so terrible and got a vaginal infection.'
+	elseif ARGS[1] = 8:
+		'Vika says that she buys tampons and always keeps a reserve of them even if she is on the birth control shot.'
+	elseif ARGS[1] = 9:
+		'Vika tells how one of her guys likes anal sex, but she didn''t have any lube, but let him fuck her anyways. She tells you how it hurt a lot at first but then she started to like it anyways.'
+	else
+		'Vika tells how she was sunbathing in the summer on the beach and that she needed to buy a new swimsuit. Having one is useful in winter too for using the pool, which is a great way to keep yourself in good shape.'
+	end
+end
+
+if $ARGS[0] = 'study':
+	minut += 60
+	intel_exp += 1 + (mentats_dose - rand(0,mentats_dose))
+	npc_rel['A220'] += 1
+	gs 'stat'
+
+	iif($ARGS[1] = 'continue', 'You and Vika continue studying together.', 'You get out your textbooks and notes, while you and Vika sit down together on the bed to study.') + ' You help each other with your classwork, making it much easier and more fun to study.'
+end
+
+if $ARGS[0] = 'leave_for_night':
+	if func('bordel', 'is_open'):'Vika tells you she needs to ' + iif(vikaslut = 1, 'leave for work at the brothel.', 'get going.')
+end
+
+if $ARGS[0] = 'brothel_questions':
+	if npc_rel['A220'] > 80:
+		if vikaslut = 0:
+			act 'Ask where she goes at night':
+				cla
+				minut += 30
+				vikaslut = 1
+
+				'Vika hesitates and blushes, "I''m just walking around the city..."'
+				'"So you just walk around the city all night long? You expect me to believe that? I thought we were friends, but if you don''t want to tell me, that''s fine." You try not to be disappointed she won''t tell you, as you understand it is none of your business.'
+				'"I work at the local night club..." Vika mumbles hesitantly.'
+				'"I have been to that club many times and have not seen you there, ever." you feel hurt as she''s bluntly lying to your face. "If you don''t want me to know where you go, just say so. I was just hoping we could go together and hang out," you say and turn away, feeling rejected.'
+				'"Don''t be mad. I''ll show you. Just promise you''ll still be my friend."'
+				'You are taken aback by these words. Why would you not want to be her friend? "Yes, Of course we''ll still be friends."'
+				'"I will show you then," she tells you'
+
+				act 'Follow Vika': gt 'bordelv', 'start'
+			end
+		elseif vikaslut = 1:
+			if bordel = 0:
+				act 'Ask if she can get you a job at the brothel':
+					delact 'Ask if she can get you a job at the brothel'
+					npc_rel['A220'] += 5
+					bordel = 1
+					odkomp = 0
+
+					'"Do you think you could get me a job at the brothel?" you ask.'
+					'"Well I can ask the manager, but I can''t guarantee anything. Come by' + iif(hour < 20, ' after 20:00', '') + ', and I''ll see what I can do."'
+				end
+			end
+		end
+	end
 end
 
 --- Vika ---------------------------------

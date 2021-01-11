@@ -17,30 +17,30 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 	gs 'stat'
 	'<center><b>Your room</b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/island/university/dorm/obroom.jpg"></center>'
-	'This is your room which you share with another girl named Vika Zhurova.'
-	'At the right of the entrance you find an old <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> (where you can choose outfits and organize your clothing).'
+	'This is your room which you share with another girl named Vika Kirilova.'
+	'At the right of the entrance, you find an old <a href="exec:gt ''wardrobe'', ''start''">wardrobe</a> (where you can choose outfits and organize your clothing).'
 	'There''s a <a href="exec:gt ''mirror'',''start''">mirror</a> hanging on the wall.'
 	'Your <a href="exec:gt ''bed'',''start''">bed</a> is positioned in one of the corners of the room.'
-	if komp = 1:'There''s a <a href="exec:gt ''Komp'',''start''">laptop</a> laying on your bed.'
+	if komp = 1:'There''s a <a href="exec:gt ''Komp'',''start''">laptop</a> lying on your bed.'
 	*nl
 	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
 
 	gs 'exercise', 'start'
 	''
-	if hour > 14 and hour < 20 and npc_rel['A220']>=60 and birthday = day and birthmonth = month and vikaslut = 1 and bordel = 1 and slutty > 0 and b_vika_present_Day!day:
+	if hour > 14 and hour < func('bordel', 'open_hour'):
 		vika_sleep = 0
-		'<a href="exec:gt''Vika''">Vika</a> seems excited when she notices you, trying to hide a box behind her back.'
-	elseif hour > 14 and hour < 20:
-		vika_sleep = 0
-		'<a href="exec:gt''Vika''">Vika</a> is laying on her bed.'
-	end
-	if hour > 3 and hour < 8 and vikaslut = 0:
+		if npc_rel['A220'] >= 60 and birthday = day and birthmonth = month and vikaslut = 1 and b_vika_present_Day ! daystart:
+			'<a href="exec:gt''Vika''">Vika</a> seems excited when she notices you, trying to hide a box behind her back.'
+		else
+			'<a href="exec:gt''Vika''">Vika</a> is lying on her bed.'
+		end
+	elseif hour > func('bordel', 'close_hour') and hour < 8:
 		vika_sleep = 1
-		'<a href="exec:gt''Vika''">Vika</a> is sleeping in her bed after being out the whole night.'
-	end
-	if hour > 3 and hour < 8 and vikaslut = 1:
-		vika_sleep = 1
-		'<a href="exec:gt''Vika''">Vika</a> is sleeping in her bed after working hard in the brothel all night.'
+		if vikaslut = 0:
+			'<a href="exec:gt''Vika''">Vika</a> is sleeping in her bed after being out the whole night.'
+		elseif vikaslut = 1:
+			'<a href="exec:gt''Vika''">Vika</a> is sleeping in her bed after working hard in the brothel all night.'
+		end
 	end
 
 	act 'Walk out in the corridor':
@@ -64,24 +64,7 @@ if $ARGS[0] = 'start' or $ARGS[0] = '':
 		act 'Finish':gt 'obroom', 'start'
 	end
 
-	if student > 0 and kursovik < 100:
-		act 'Do some coursework (1:00)':
-			cla
-			*clr
-			menu_off = 1
-			minut += 60
-			pcs_mood -= 10
-			kursovik += rand(pcs_intel / 20, pcs_intel / 10)
-
-			if kursovik > 100:kursovik = 100
-			gs 'stat'
-
-			'<center><img <<$set_imgh>> src="images/pc/activities/study.jpg"></center>'
-			'You sit for an hour and prepare your work for the class. You''ve finish <<kursovik>> percent of the work.'
-
-			act 'Finish':gt 'obroom', 'start'
-		end
-	end
+	gs 'unicoursework', 'start', $loc, $loc_arg
 
 dynamic $wearpan
 dynamic $removepan

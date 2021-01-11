@@ -11,7 +11,7 @@ if $ARGS[0] = 'start':
 	if CloBra = 1: gs 'bras', 'remove'
 	if CloPanties = 1: gs 'panties','remove'
 	if $sports_clothing_name = '':$sports_clothing_name = 'default sports outfit'
-	if $clothingworntype = 'cheap' and clothingwornnumber = '414':
+	if $clothingworntype = 'misc_outfits' and clothingwornnumber = '1':
 		gs 'clothing', 'swamp_clothes', 0
 		gs 'clothing', 'strip'
 	end
@@ -53,9 +53,9 @@ if $ARGS[0] = 'start':
 	*p '<TR><TH>Panties worn</TH><TH>Shoes (Only worn outside)</TH><TH>Purse worn</TH>'
 	*P '<TR><TD><center><a href="exec:gt ''panties'', ''view_panty_list'', ''wardrobe''"><img Height = <<ward_img_hgt>> src="<<FUNC(''$body_image'',''panties'')>>"></a></center></TD><TD><center><a href="exec:gt ''shoes'', ''view_shoe_list'', ''wardrobe''"><img Height = <<ward_img_hgt>> src="<<FUNC(''$body_image'', ''shoes'')>>"></a></center></TD><TD><center>'
 	if bag = 1:
-		'<a href="exec:gt ''purses'', ''view_purse_list''"><img Height = <<ward_img_hgt>> src="<<FUNC(''$purse_image'', $currentpursetype, currentpursenumber)>>"></a>'
+		'<a href="exec:gt ''purses'', ''view_purse_list'',''wardrobe''"><img Height = <<ward_img_hgt>> src="<<FUNC(''$purse_image'', $currentpursetype, currentpursenumber)>>"></a>'
 	else
-		'<a href="exec:gt ''purses'', ''view_purse_list''">Search the wardrobe</a>'
+		'<a href="exec:gt ''purses'', ''view_purse_list'',''wardrobe''">Search the wardrobe</a>'
 	end
 	'</center></TD><TR><TD><center>'
 	if $pantyworntype ! 'none':
@@ -138,7 +138,7 @@ if $ARGS[0] = 'default':
 	if ARRSIZE('defclothingnumber') > 0:
 		i = 0
 		:loopdefclothing
-		'<b><<$def_clothing_name[i]>>:</b> <a href="exec:gs ''wardrobe'', ''default_entry_wear'', <<i>>">Wear</a> | <a href="exec:gs ''wardrobe'', ''default_entry_set'', <<i>>">Overwrite</a> | <a href="exec:$def_clothing_name[<<i>>] = ''Custom <<i>>'' & gt ''wardrobe'', ''default''">Reset name</a> | <a href="exec:gs ''wardrobe'', ''default_entry_delete'', <<i>>">Delete</a>'
+		'<b><<$def_clothing_name[i]>>:</b> <a href="exec:gs ''wardrobe'', ''default_entry_wear'', <<i>>">Wear</a> | <a href="exec:gs ''wardrobe'', ''default_entry_set'', <<i>>">Overwrite</a> | <a href="exec:gs ''wardrobe'', ''default_entry_rename'', <<i>>">Rename</a> | <a href="exec:gs ''wardrobe'', ''default_entry_delete'', <<i>>">Delete</a> | <a href="exec:gs ''wardrobe'', ''default_entry_up'', <<i>>">↑</a> | <a href="exec:gs ''wardrobe'', ''default_entry_down'', <<i>>">↓</a>'
 		i += 1
 		if i < ARRSIZE('defclothingnumber'):jump 'loopdefclothing'
 	end
@@ -192,7 +192,7 @@ if $ARGS[0] = 'default_entry_wear':
 	defaultcoat = defcoat[default_entry]
 
 	!! default school girl uniform is always allowed to be worn if still in school
-	if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $defclothingtype[default_entry] = 'school' and defclothingnumber[default_entry] = 6:
+	if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $defclothingtype[default_entry] = 'gm_school' and defclothingnumber[default_entry] = 6:
 		cls
 		'<center><video autoplay loop src="images/locations/city/citycenter/photo/dress.mp4"></video></center>'
 		'Your put on your <<$def_clothing_name[default_entry]>> outfit without any problems.'
@@ -213,7 +213,7 @@ if $ARGS[0] = 'default_entry_wear':
 			gt 'wardrobe', 'start'
 		end
 	!! strength of clothing is less than or equal to 0
-	elseif dyneval('RESULT = <<$defclothingtype[default_entry]>>H[<<defclothingnumber[default_entry]>>]') <= 0:
+	elseif dyneval('RESULT = <<$defclothingtype[default_entry]>>_h[<<defclothingnumber[default_entry]>>]') <= 0:
 		cls
 		'<center><video autoplay loop src="images/characters/pavlovsk/school/girl/vicky/event/vika_game_strip16.mp4"></video></center>'
 		'Your <<$def_clothing_name[default_entry]>> outfit has worn out and can''t be used anymore. Guess you will have to find something else to wear.'
@@ -237,7 +237,7 @@ if $ARGS[0] = 'default_entry_wear':
 	!! not exercise clothing, not coat, and not loose fitting
 	elseif $defclothingtype[default_entry] ! 'exercise' and $defclothingtype[default_entry] ! 'coat' and CloStyle ! 5:
 		!! check for if the hipsize is too far from your hipsize
-		dynamic 'RESULT = <<$defclothingtype[default_entry]>>B[<<defclothingnumber[default_entry]>>]'
+		dynamic 'RESULT = <<$defclothingtype[default_entry]>>_b[<<defclothingnumber[default_entry]>>]'
 		if RESULT < pcs_hips - 8 or RESULT > pcs_hips + 8:
 			cls
 			iif(RESULT < pcs_hips - 8,'<center><video autoplay loop src="images/locations/pavlovsk/clinic/therapist/dressup.mp4"></video></center>','<center><video autoplay loop src="images/locations/pavlovsk/clinic/therapist/stripping1.mp4"></video></center>')
@@ -298,6 +298,124 @@ if $ARGS[0] = 'default_entry_set':
 	elseif $def_clothing_name[i] = '':
 		$def_clothing_name[i] = '<<$def_clothing_temp>>'
 	end
+	gt 'wardrobe', 'default'
+end
+
+if $ARGS[0] = 'default_entry_rename':
+	gs 'stat'
+	i = ARGS[1]
+
+	$def_clothing_temp = '<<$def_clothing_name[i]>>'
+	$def_clothing_name[i] = input ('<center>Enter a name for this outfit set<br><font color="grey">Leaving blank will reuse current name.</font></center>')
+	if $def_clothing_name[i] = '' and $def_clothing_temp = '':
+		$def_clothing_name[i] = 'Custom <<i>>'
+	elseif $def_clothing_name[i] = '':
+		$def_clothing_name[i] = '<<$def_clothing_temp>>'
+	end
+	gt 'wardrobe', 'default'
+end
+
+if $ARGS[0] = 'default_entry_up':
+	gs 'stat'
+	i = ARGS[1]
+
+	if i = 0:
+		j = ARRSIZE('defclothingnumber') - 1
+	else
+		j = i - 1
+	end
+
+	$tempclothingworntype = $defclothingtype[i]
+	tempclothingwornnumber = defclothingnumber[i]
+	$tempbraworntype = $defbratype[i]
+	tempbrawornnumber = defbranumber[i]
+	$temppantyworntype = $defpantytype[i]
+	temppantywornnumber = defpantynumber[i]
+	$tempshoeworntype = $defshoetype[i]
+	tempshoewornnumber = defshoenumber[i]
+	$tempcurrentpursetype = $defpursetype[i]
+	tempcurrentpursenumber = defpursenumber[i]
+	tempdefaultcoat = defcoat[i]
+	$def_clothing_temp = '<<$def_clothing_name[i]>>'
+
+	$defclothingtype[i] = $defclothingtype[j]
+	defclothingnumber[i] = defclothingnumber[j]
+	$defbratype[i] = $defbratype[j]
+	defbranumber[i] = defbranumber[j]
+	$defpantytype[i] = $defpantytype[j]
+	defpantynumber[i] = defpantynumber[j]
+	$defshoetype[i] = $defshoetype[j]
+	defshoenumber[i] = defshoenumber[j]
+	$defpursetype[i] = $defpursetype[j]
+	defpursenumber[i] = defpursenumber[j]
+	defcoat[i] = defcoat[j]
+	$def_clothing_name[i] = '<<$def_clothing_name[j]>>'
+
+	$defclothingtype[j] = $tempclothingworntype
+	defclothingnumber[j] = tempclothingwornnumber
+	$defbratype[j] = $tempbraworntype
+	defbranumber[j] = tempbrawornnumber
+	$defpantytype[j] = $temppantyworntype
+	defpantynumber[j] = temppantywornnumber
+	$defshoetype[j] = $tempshoeworntype
+	defshoenumber[j] = tempshoewornnumber
+	$defpursetype[j] = $tempcurrentpursetype
+	defpursenumber[j] = tempcurrentpursenumber
+	defcoat[j] = tempdefaultcoat
+	$def_clothing_name[j] = '<<$def_clothing_temp>>'
+
+	gt 'wardrobe', 'default'
+end
+
+if $ARGS[0] = 'default_entry_down':
+	gs 'stat'
+	i = ARGS[1]
+
+	if i = ARRSIZE('defclothingnumber') - 1:
+		j = 0
+	else
+		j = i + 1
+	end
+
+	$tempclothingworntype = $defclothingtype[i]
+	tempclothingwornnumber = defclothingnumber[i]
+	$tempbraworntype = $defbratype[i]
+	tempbrawornnumber = defbranumber[i]
+	$temppantyworntype = $defpantytype[i]
+	temppantywornnumber = defpantynumber[i]
+	$tempshoeworntype = $defshoetype[i]
+	tempshoewornnumber = defshoenumber[i]
+	$tempcurrentpursetype = $defpursetype[i]
+	tempcurrentpursenumber = defpursenumber[i]
+	tempdefaultcoat = defcoat[i]
+	$def_clothing_temp = '<<$def_clothing_name[i]>>'
+
+	$defclothingtype[i] = $defclothingtype[j]
+	defclothingnumber[i] = defclothingnumber[j]
+	$defbratype[i] = $defbratype[j]
+	defbranumber[i] = defbranumber[j]
+	$defpantytype[i] = $defpantytype[j]
+	defpantynumber[i] = defpantynumber[j]
+	$defshoetype[i] = $defshoetype[j]
+	defshoenumber[i] = defshoenumber[j]
+	$defpursetype[i] = $defpursetype[j]
+	defpursenumber[i] = defpursenumber[j]
+	defcoat[i] = defcoat[j]
+	$def_clothing_name[i] = '<<$def_clothing_name[j]>>'
+
+	$defclothingtype[j] = $tempclothingworntype
+	defclothingnumber[j] = tempclothingwornnumber
+	$defbratype[j] = $tempbraworntype
+	defbranumber[j] = tempbrawornnumber
+	$defpantytype[j] = $temppantyworntype
+	defpantynumber[j] = temppantywornnumber
+	$defshoetype[j] = $tempshoeworntype
+	defshoenumber[j] = tempshoewornnumber
+	$defpursetype[j] = $tempcurrentpursetype
+	defpursenumber[j] = tempcurrentpursenumber
+	defcoat[j] = tempdefaultcoat
+	$def_clothing_name[j] = '<<$def_clothing_temp>>'
+
 	gt 'wardrobe', 'default'
 end
 
@@ -384,7 +502,7 @@ if $ARGS[0] = 'sports_entry_wear':
 		gs 'clothing', 'strip'
 		gs 'stat'
 	!! strength of clothing is less than or equal to 0
-	elseif dyneval('RESULT = exerciseH[<<sportsclothingnumber>>]') <= 0:
+	elseif dyneval('RESULT = exercise_h[<<sportsclothingnumber>>]') <= 0:
 		cls
 		'<center><video autoplay loop src="images/characters/pavlovsk/school/girl/vicky/event/vika_game_strip16.mp4"></video></center>'
 		'Your sports outfit has worn out and can''t be used anymore. Guess you will have to find something else to wear.'
@@ -457,9 +575,9 @@ if $ARGS[0] = 'school_outfit':
 	end
 
 	! if no uniform found or the one selected is worn out, use the default one
-	if schtype = 0 or dyneval('RESULT = <<$schbrand>>H[<<schtype>>]') <= 0:
+	if schtype = 0 or dyneval('RESULT = <<$schbrand>>_h[<<schtype>>]') <= 0:
 		schtype = 6
-		$schbrand = 'school'
+		$schbrand = 'gm_school'
 	end
 	gs 'clothing', 'wear', $schbrand, schtype
 end

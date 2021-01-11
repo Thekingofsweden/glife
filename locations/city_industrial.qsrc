@@ -48,9 +48,17 @@ if $ARGS[0] = '':
 
 	gs 'taxi'
 
-	if car > 0 and cardrive = 3 or (cardrive >= 6 and cardrive <= 9):'In the parking stands your <a href="exec:GS ''carF'', ''start''"><<$car>></a>.'
+	if car > 0:
+		if wrek = 0 and ((cardrive = 7 and func('autoservisF', 'is_open') = 0) or (cardrive = 9 and func('autotraidF', 'is_open') = 0)):
+			'It looks like the ' + iif(cardrive = 7, 'repair shop', 'car dealership') + ' moved your car outside before they closed.'
+			cardrive = 3
+		end
+		if cardrive = 3 or cardrive = 6 or (cardrive = 7 and func('autoservisF', 'is_open')) or (cardrive = 9 and func('autotraidF', 'is_open')) or cardrive = 27:
+			'In the parking stands your <a href="exec:' + iif(cardrive = 3, '', 'minut += 5 & ') + 'gs ''carF'', ''start''"><<$car>></a>.'
+		end
+	end
 
-	'The towns <a href="exec:minut += 60 & gt ''city_park'', ''start''">central park</a> is an hours walk from here.'
+	'The town''s <a href="exec:minut += 60 & gt ''city_park'', ''start''">central park</a> is a one hour walk from here.'
 
 	if hour > 7 and hour < 23:
 		'You can see the <a href="exec:$loc = ''city_industrial'' & minut += 1 & gt ''kiosk'', ''start''">kiosk</a> selling cigarettes and magazines.'
@@ -61,7 +69,7 @@ if $ARGS[0] = '':
 	'At the center of the industrial region is a <a href="exec:minut += 15 & gt ''city_industrial_train'', ''outside''">train station</a>.'
 
 	if week = 3 or hour < 16:
-		'The Bar "Rabotnik" is here, but it seems to be closed. A sign by the door tells you that it''s open every day (except Wednesday) between 16:00 and 24:00.'
+		'The "Rabotnik" bar is here, but it seems to be closed. A sign by the door tells you that it''s open every day (except Wednesday) between 16:00 and midnight...'
 	else
 		'The <a href="exec: minut += 5 & gt ''qwBarPolet''">Bar "Rabotnik"</a> seems to be open.'
 	end
@@ -75,15 +83,15 @@ if $ARGS[0] = '':
 	else
 		'The metro station is within a 5 minute walk from here. The metro system is closed between midnight and 05:00.'
 	end
-	if hour >= 9 and hour < 18 and week > 1:
+	if func('autotraidF', 'is_open'):
 		'A <a href="exec: minut += 5 & gt ''autotraidF'', ''start''">car dealership</a> is nearby.'
 	else
-		'A car dealership is nearby'+iif(week = 1, ', but it''s closed on mondays.', '. It''s currently closed and will open between 09:00 and 18:00.')
+		'A car dealership is nearby' + iif(week = 1, ', but it''s closed on Mondays.', '. It''s currently closed and will open between 09:00 and 18:00.') + iif(car > 0 and cardrive = 9, ' Your <<$car>> is currently locked inside.', '')
 	end
-	if hour >= 9 and hour <= 20 and week < 7:
+	if func('autoservisF', 'is_open'):
 		'Next to the car dealership is a <a href="exec: minut += 5 & gt ''autoservisF'', ''start''">repair shop</a>.'
 	else
-		'Next to the car dealership is a repair shop.'+ iif(week = 7, 'It''s closed on sundays.', 'It will be open between 09:00 and 20:00.')
+		'Next to the car dealership is a repair shop.' + iif(week = 7, 'It''s closed on Sundays.', 'It will be open between 09:00 and 20:00.') + iif(car > 0 and cardrive = 7, ' Your <<$car>> is currently locked inside.', '')
 	end
 	if hour >= 9 and hour < 17 and week < 6:
 		'The <a href="exec: minut += 5 & gt ''dk'', ''start''">community centre</a> is currently open.'
@@ -99,7 +107,7 @@ if $ARGS[0] = '':
 	if hour >= 8 and hour <= 20:
 		'The parking lot, which is engulfed in bright lights, belongs to a <a href="exec: minut += 2 & gt ''shop'', ''start''">supermarket</a>.'
 	else
-		'The empty parking lot, which is engulfed in bright lights, belongs to a supermarket that opens between 08:00 and 20:00'
+		'The empty parking lot, which is engulfed in bright lights, belongs to a supermarket that is open between 08:00 and 20:00'
 	end
 	if hour >= 12 and hour <= 19:
 		'Above the door to a basement room is a bright neon sign for the <a href="exec: minut += 5 & gt ''pirsingsalon'', ''start''">Tattoo & Piercing parlor</a>.'
@@ -149,22 +157,32 @@ if $ARGS[0] = 'redlight':
 		'The <a href="exec:msg ''The Strip Club is closed for the day and will reopen at 18:00''">Strip Clubs</a> red lights, attracting men from all over the city.'
 	end
 	if pornstudio >= 1 and hour >= 10 and hour < 22:
-		'At the <a href="exec:gt ''pornstudio'', ''start''">Porn Studio</a>, where a variety of naughty movies are created'
+		'At the <a href="exec:gt ''pornstudio'', ''start''">Porn Studio</a>, where a variety of adult movies are created.'
 	elseif pornstudio >= 1 and (hour < 10 or hour >= 22):
-		'At the <a href="exec:msg ''The Porn Studio is closed for the day and will reopen at 10:00''">Porn Studio</a>, where a variety of naughty movies are created'
+		'At the <a href="exec:msg ''The Porn Studio is closed for the day and will reopen at 10:00''">Porn Studio</a>, where a variety of adult movies are created.'
 	end
 	if hour < 3 or hour >= 11: 
-		'A shop for <a href="exec:minut += 5 & gt ''sexshop'', ''start''">Sex Toys</a> is open for perverts from all around the city.'
+		'A shop for <a href="exec:minut += 5 & gt ''sexshop'', ''start''">Sex Toys</a> is open for perverts from all around the city to browse its stock.'
 	else
-		'A shop for sex toys is closed and will open at 11:00.'
+		'A shop that sells sex toys. It is currently closed and will open at 11:00.'
 	end
-	if bordel > 0 and (hour >= 20 or hour <= 3):'Inside the courtyard is the entrance to the <a href="exec:gt ''bordel''">brothel</a>.'
+	if bordel > 0 and func('bordel', 'is_open'):'Inside the courtyard is the entrance to the <a href="exec:gt ''bordel''">brothel</a>.'
 
 	act 'Return to the Industrial Region (0:05)': minut += 5 & gt 'city_industrial'
 
 	act 'Wait':gs 'obj_din', 'wait'
 	
 	gs 'taxi'
+
+	if car > 0:
+		if wrek = 0 and ((cardrive = 7 and func('autoservisF', 'is_open') = 0) or (cardrive = 9 and func('autotraidF', 'is_open') = 0)):
+			'It looks like the ' + iif(cardrive = 7, 'repair shop', 'car dealership') + ' moved your car outside before they closed.'
+			cardrive = 3
+		end
+		if cardrive = 3 or cardrive = 6 or (cardrive = 7 and func('autoservisF', 'is_open')) or (cardrive = 9 and func('autotraidF', 'is_open')) or cardrive = 27:
+			'In the parking stands your <a href="exec:' + iif(cardrive = 27, '', 'minut += 5 & ') + 'gs ''carF'', ''start''"><<$car>></a>.'
+		end
+	end
 
 	if hour >= 20 or hour <= 4:
 		*nl

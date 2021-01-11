@@ -1,5 +1,6 @@
 # swamp_yard
 
+gs 'hunter_ambient', 'schedule'
 if $ARGS[0] = 'start':
 	$loc = 'swamp_yard'
 	$loc_arg = 'start'
@@ -10,60 +11,62 @@ if $ARGS[0] = 'start':
 	$location_type = 'secluded'
 	hunterscabin = 1
 
-   	util_rand = rand(1,2)
-
 	gs 'gadukino_event', 'sound'
-	gs 'hunter_ambient', 'schedule'
 	gs 'stat'
 
 	if lost_girl = 1:
-	    if daystart > forest_lostday + 1 and rand(forest_lostday - daystart, 30) >= 30 and hour >= 8 and hour < 20:
-	        gt 'gadforestlost','rescue','ranger','swamp_yard'
-	    end
-    end
+		if daystart > forest_lostday + 1 and rand(forest_lostday - daystart, 30) >= 30 and DayStage = 2:
+			gt 'gadforestlost','rescue','ranger','swamp_yard'
+		end
+	end
 
 	'<center><B>The yard in front of the hut</B></center>'
 	if month >= 5 and month <= 9:
-		if hour >= 6 and hour < 22:
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_yard.jpg"></center>'
-		else
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_yard_night.jpg"></center>'
-		end
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/'+iif(DayStage < 4,'swamp_yard.jpg','swamp_yard_night.jpg')+'"></center>'
 	else
-		if hour >= 8 and hour < 18:
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_yard_winter.jpg"></center>'
-		else
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/swamp_yard_winter_night.jpg"></center>'
-		end
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/'+iif(DayStage < 4,'swamp_yard_winter.jpg','swamp_yard_winter_night.jpg')+'"></center>'
 	end
 	*nl
-	'Behind the hut there is a <a href="exec: gt ''swampspring'' ">spring</a>, if you continue a little further down there is a small <a href="exec: gt ''backwater'' ">creek</a> with relatively clean water.'
 
-	if hunters_available = 1 and hunters_outside = 1 and hunters_were_met = 0:
-		*nl
-		'You spot some unfamiliar <a href="exec: gt ''hunters'', ''start'' ">people</a> standing in front of the hut.'
-	elseif hunters_available = 1 and hunters_outside = 1:
-		*nl
-		'You notice the <a href="exec: gt ''hunters'', ''start'' ">hunters</a> standing in the front yard.'
-	elseif hunters_evening = 1 and hunters_outside = 1:
-		*nl
-		'You hear some gunshots and see <a href="exec: gt ''swamp_woods'', ''shooting_practice'' ">Andrei</a> not too far in the distance shooting some bottles.'
-	elseif hunters_hunting = 1 and hunters_outside = 1:
-		*nl
-		'The hunters are most likely out hunting for a couple hours. You have the camp to yourself!'
-	elseif (hunters_breakfast = 1 or hunters_lunch = 1 or hunters_drink = 1) and hunters_outside = 1:
-		*nl
-		'You see hunters are sitting by the <a href="exec: gt ''swamp_yard'', ''campfire''">campfire</a>'
+
+	'Behind the hut, there is a <a href="exec: gt ''swampspring'' ">spring</a>. If you continue a little further down, there is a small <a href="exec: gt ''backwater'' ">creek</a> with relatively clean water.'
+
+	if hunters_available = 1:
+		if hunters_were_met = 0:
+			if hunters_outside = 1:
+				'You spot some unfamiliar <a href="exec: gt ''hunters'', ''start'' ">people</a> standing in front of the hut.'
+			end
+		else
+			if hunters_outside = 1:
+				if hunters_evening = 1:
+					'You hear some gunshots and see <a href="exec: gt ''swamp_woods'', ''shooting_practice'' ">Andrei</a> not too far in the distance shooting some bottles.'
+					'<a href="exec: gt ''hunters'', ''start'' ">Igor and Sergey</a> are standing in the front yard.'
+				else
+					if campfire = 1 and hunters_chattime = 0:
+						'You see the hunters are sitting by the <a href="exec: gt ''swamp_yard'', ''campfire''">campfire</a>'
+					else
+						'You notice the <a href="exec: gt ''hunters'', ''start'' ">hunters</a> standing in the front yard.'
+					end
+				end
+			else
+				'The camp is quiet, but you can hear the hunters'' voices from the hut.'
+			end
+		end
 	else
 		if hunters_were_met = 0:
-			*nl
 			'The camp is quiet. There''s nobody here right now, but the camp looks like it is likely in use and not abandoned.'
 		else
-			*nl
-			'The camp is quiet. The hunters aren''t here right now, where could they be.'
+			if hunters_hunting = 1:
+				'The hunters are most likely out hunting for a couple hours. You have the camp to yourself!'
+			else
+				'The camp is quiet. The hunters are asleep in the hut.'
+			end
 		end
 	end
-	
+
+
+
+
 	act '<b>Go to the swamp</b>': gt 'swamp_yard', 'swamp_escape'
 	gs 'bicycle', 'swamp_yard'
 	act 'Go into the house':gt 'swamphouse', 'start'
@@ -74,9 +77,9 @@ if $ARGS[0] = 'start':
 	act 'Explore the woods': minut += 10 & gt 'swamp_woods', 'start'
 
 
-	if hunters_outside = 1 and hunters_available = 1 and util_rand = 1:
-	    gs 'swamp_yard', 'daytime_flavor_events'
-    end
+	if hunters_outside = 1 and hunters_available = 1 and rand(1,2) = 1:
+		gs 'swamp_yard', 'daytime_flavor_events'
+	end
 end
 
 
@@ -92,30 +95,16 @@ if $ARGS[0] = 'campfire':
 	act 'Move away': gt 'swamp_yard', 'start'
 
 	if campfire = 1:
-		if hour >= 8 and hour < 20:
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_day.jpg"></center>'
-		else
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_night.jpg"></center>'
-		end
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/'+iif(DayStage = 2,'campfire_day.jpg','campfire_night.jpg')+'"></center>'
 		*nl
 		'A nice, warm campfire you can sit and relax by. You can use it to cook something or heat up some water to bathe.'
-		'You can also put it out with the bucket if there is enough water in it'
-	else
-		if hour >= 8 and hour < 20:
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_out_day.jpg"></center>'
-		else
-			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_out_night.jpg"></center>'
-		end
-		*nl
-		'You can use this firepit to light a fire, if you have some firewood available.'
-	end
+		'You can also put it out with the bucket if there is enough water in it.'
 
-	if campfire = 1:
 		if hunters_breakfast = 1 or hunters_lunch = 1:
 			*clr
 			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hanters1.jpg"></center>'
 			*nl
-			'Hunters are also sitting around the campfire, talking and joking about all kinds of stuff before heading out hunting'
+			'The hunters are also sitting around the campfire, talking and joking about all kinds of stuff before heading out hunting.'
 
 			act 'Chat (0:30)':
 				gt 'hunter_interactions', 'chat_with_hunters'
@@ -123,27 +112,25 @@ if $ARGS[0] = 'campfire':
 
 			!TODO: Flesh out the learning content here
 			act 'Ask for some survival tips (0:10)':
+				cla
 				hunter_lessons += 1
-				*clr & cla
-
 				if hunter_collective_opinion > 25:
 					hunter_collective_opinion -= 1
-					pcs_bushcraft += 1
-					gs 'stat'
-
+					bushcraft_exp += 1
 					minut += 10
-
 					*nl
-					'Hunters talk to you about some of their experiences when they first started out'
+					'The hunters talk to you about some of their experiences when they first started out.'
 				else
 					if hunter_lessons > 10 AND hunter_sexual_comfort > 25:
 						!TODO: Prototype implementation for the creekside event, to be revamped
 						'Sergei tells you to go by the creek for the next lesson about how to scope the area for a hunt.'
 						hunter_lessons -= 8
+						gs 'stat'
+
 						act 'Further': gt 'hunter_favors', 'creekside_gangbang_request'
 					else
 						minut += 20
-						'The hunters do not even bother to answer you. You simply sit in awkward silence for twenty minutes before getting to to other business'
+						'The hunters do not even bother to answer you. You simply sit in awkward silence for twenty minutes before getting on to other business.'
 					end
 				end
 
@@ -155,7 +142,7 @@ if $ARGS[0] = 'campfire':
 			*clr
 			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/fireside_drink.jpg"></center>'
 			*nl
-			'Hunters are drinking and chatting loudly. You can join them for a chat, or maybe a drink or two if you would like'
+			'The hunters are drinking and chatting loudly. You can join them for a chat, or maybe a drink or two if you would like.'
 			act 'Chat (0:30)':
 				gt 'hunter_interactions', 'chat_with_hunters'
 			end
@@ -170,8 +157,7 @@ if $ARGS[0] = 'campfire':
 				cla & *clr
 				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_put_out.jpg"></center>'
 				*nl
-				'You pour some water to extinguish the campfire'
-
+				'You pour some water to extinguish the campfire.'
 				campfire = 0
 				minut += 5
 				bucket -= 3
@@ -179,34 +165,26 @@ if $ARGS[0] = 'campfire':
 				act 'Further': gt 'swamp_yard', 'campfire'
 			end
 		end
-
-		if bucket > 0 and boletus > 0 and mushroom_soup = 0:
-			act 'Cook some mushroom soup (0:30)': gs 'hunter_favors', 'mushroom_soup'
-		end
-
-		if bucket > 0 and raw_meat > 0 and meat_stew = 0:
-			act 'Cook some meat stew (1:00)': gs 'hunter_favors', 'meat_stew'
+		if bucket > 0:
+			if boletus > 0 and mushroom_soup = 0: act 'Cook some mushroom soup (0:30)': gs 'hunter_favors', 'mushroom_soup'
+			if raw_meat > 0 and meat_stew = 0: act 'Cook some meat stew (1:00)': gs 'hunter_favors', 'meat_stew'
 		end
 
 		if bucket >= 5 and hotwater = 0:
 			act 'Heat up water (0:30)':
-				cla
-				*clr
+				*clr & cla
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hotwater.jpg"></center>'
 				minut += 30
 				bucket -= 5
 				hotwater = 1
-
 				water_heated += 1
-				gs 'stat'
-
-				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/hotwater.jpg"></center>'
 				*nl
-
-				if water_heated > 5 and (inhibition < 85 or hunter_sexual_comfort > 25):
-					'"It is too tedious to keep heatiing up water", you think to yourself.'
+				if water_heated > 5 and (pcs_inhib < 85 or hunter_sexual_comfort > 25):
+					'"It is too tedious to keep heating up water", you think to yourself.'
 				else
 					'With the now heated water, you can bathe yourself in the tub.'
 				end
+				gs 'stat'
 
 				act 'Continue': gt 'swamp_yard', 'campfire'
 			end
@@ -237,31 +215,25 @@ if $ARGS[0] = 'campfire':
 					else
 						'You have finished the last of the soup, the pot is empty.'
 					end
-					gs 'stat'
 				end
 			end
 			if bilberry > 0:
 				act 'Eat berries':gt 'food','bilberry'
 			end
 		end
-
 		if alko > 8:
 			gt 'hunter_interactions', 'drunken_blackout'
 		end
 	else
+		'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/'+iif(DayStage = 2,'campfire_out_day.jpg','campfire_out_night.jpg')+'"></center>'
+		*nl
+		'You can use this firepit to light a fire, if you have some firewood available.'
 		!TODO: Tie fire lighting to bushcraft, make hunters do it on their schedule or with Sveta asking
 		if firewood >= 10 and campfire = 0:
 			act 'Light fire':
 				cla & *clr
-
-				if $clothingworntype ! 'nude':
-					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_light.jpg"></center>'
-				else
-					'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/campfire_light_nude.jpg"></center>'
-				end
-
-				'You use some chopped wood, dry branches and twigs to light a campfire in the firepit'
-
+				'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/'+iif($clothingworntype ! 'nude','campfire_light.jpg','campfire_light_nude.jpg')+'"></center>'
+				'You use some chopped wood, dry branches and twigs to light a campfire in the firepit.'
 				firewood -= 10
 				campfire = 1
 				minut += 15
@@ -278,44 +250,29 @@ end
 if $ARGS[0] = 'swamp_escape':
 	!add chance to swamped by illume
 	if hunters_available = 1 and hunters_outside = 1:
-
 		if hour >= 6 and hour < 21:
 			minut += 5
-			if rand(1,10)>9:
-				gt 'swamp', 'start'
-			else
-				gt 'swamp','stuck'
-			end
+			if rand(0,9)>8: gt 'swamp', 'start' else gt 'swamp','stuck'
 		else
-			*clr & cla
-			gs 'stat'
 			'<center><img <<$set_imgh>> src="images/locations/gadukino/hunters/handshelp.jpg"></center>' & !! instead igorhanter.jpg
-			'As you start moving into the swamp Igor calls after you.'
+			'As you start moving into the swamp, Igor calls after you.'
 
 			!TODO: Different line depending on opinion and slut
 			'"<<$pcs_nickname>>, where are you going? You will get stuck in there!'
+			gs 'stat'
 
 			act 'Turn back':gt 'swamp_yard','start'
 			act 'Ignore him and keep going':
 				minut += 5
 
 				!TODO: Add skill clothing and temp check here instead of praying to RNGesus
-				if rand(1,10)>9:
-                	gt 'swamp', 'start'
-                else
-                	gt 'swamp','stuck'
-                end
+				if rand(0,9)>8: gt 'swamp', 'start' else gt 'swamp','stuck'
 			end
 		end
 	else
 		minut += 5
-
 		!TODO: Here too, also see how to avoid duplicating. Maybe create a child event node?
-		if (hour >= 6 and hour < 21) or rand(1,10)>7:
-			gt 'swamp', 'start'
-		else
-			gt 'swamp','stuck'
-		end
+		if (hour >= 6 and hour < 21) or rand(0,9)>6: gt 'swamp', 'start' else gt 'swamp','stuck'
 	end
 end
 

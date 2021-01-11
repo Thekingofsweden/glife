@@ -2,7 +2,6 @@
 
 CLOSE ALL
 $loc_arg = $ARGS[0]
-$prevloc = $loc
 $loc = $CURLOC
 $menu_loc = 'HotelHole'
 $menu_arg = ''
@@ -16,7 +15,7 @@ gs'stat'
 if $ARGS[0] = 'skip_resepevent': jump 'skipresepevent'
 
 if hour = 0 and hotresepQW_day ! daystart and (hotresepQW < 3 or (hotresepQW = 3 and rand(1,10) = 10)):
-	if $prevloc ! 'HotelRoom':
+	if hotelroom = 0:
 		*clr
 		'When you want to enter the hotel you notice the doors are closed.'
 		'You try knocking on the door but nobody comes to open them.'
@@ -43,7 +42,12 @@ if hour = 0 and hotresepQW_day ! daystart and (hotresepQW < 3 or (hotresepQW = 3
 			*clr & cla
 			observ_exp += 3
 			gs 'stat'
-			'You creep down to the lobby, and then around the corner, carefully, you sneak a glimpse.'
+			if $prevloc = 'HotelRoom': 
+				'You creep down to the lobby, and then around the corner, carefully, you sneak a glimpse.'
+			else 
+				'You find the door closed, and you realise that the receptionist and the manager are probably fooling around again. You carefully open the door with your key, and enter as quietly as you can.'
+				'Moving to the corner carefully, you sneak a glimpse.'
+			end
 			'You spy <<$receptionName>>. Yep, you nod, she''s already showing herself off to the cameras.'
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/resep_event1.jpg"></center>'
 			'She flashes her breasts beneath a devilish smile.'
@@ -101,22 +105,29 @@ if hour = 0 and hotresepQW_day ! daystart and (hotresepQW < 3 or (hotresepQW = 3
 			end
 			exit
 		elseif resepseen = 0:
+			temp = 1
 			observ_exp += rand(0,1)
+			'<center><H4>Pavlovsk hotel</H4></center>'
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/sex/resep_event2.jpg"></center>'
 			'You enter the lobby and you can see the desk girl and the manager talking to each other.'
 			'When they notice you they both give you a very disappointing look.'
 			'You get the feeling you interrupted something here.'
+			*nl
 		end
 	end
 end
 
 :skipresepevent
-'<center><H4>Pavlovsk hotel</H4></center>'
-'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/hotel.hole.jpg"></center>'
-if pavHotelMaid = 0:
-	'As you enter the Pavlovsk hotel you''re always surprised by how fancy it looks on the inside, given the shabby exterior. You can approach the <a href="exec:minut += 1 & gt ''hotel_resep''">reception desk</a> of the hotel where a cute brunette is currently manning the desk, she gives you a friendly nod when you get into her sight range.'
+if temp = 1:
+	killvar 'temp'
 else
-	'As you enter the Pavlovsk hotel you''re always surprised by how fancy it looks on the inside, given the shabby exterior. You can approach the <a href="exec:minut += 1 & gt ''hotel_resep''">reception desk</a> of the hotel where <<$receptionName>> is currently manning the desk, she gives you a friendly nod when you get into her sight range.'
+	'<center><H4>Pavlovsk hotel</H4></center>'
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/hotel/hotel.hole.jpg"></center>'
+	if pavHotelMaid = 0:
+		'As you enter the Pavlovsk hotel you''re always surprised by how fancy it looks on the inside, given the shabby exterior. You can approach the <a href="exec:minut += 1 & gt ''hotel_resep''">reception desk</a> of the hotel where a cute brunette is currently manning the desk, she gives you a friendly nod when you get into her sight range.'
+	else
+		'As you enter the Pavlovsk hotel you''re always surprised by how fancy it looks on the inside, given the shabby exterior. You can approach the <a href="exec:minut += 1 & gt ''hotel_resep''">reception desk</a> of the hotel where <<$receptionName>> is currently manning the desk, she gives you a friendly nod when you get into her sight range.'
+	end
 end
 
 if hour >= 12 and hour < 20 and proshotelopen = 1: '<a href="exec:gt ''HotelHole'',''Pavlin''">Pavlin</a> is sitting in the lobby looking around for fresh prey.'
@@ -125,7 +136,11 @@ if hour >= 12 and hour <= 13 and GermanQW > 0: 'Next to the reception desk, you 
 
 if hotwait = 1: 'You go sit in one of the comfortable chairs in the lobby and watch the guests checking in an out.' & hotwait = 0
 
-act 'Leave the hotel':minut += 3 & gt'pav_train'
+act 'Leave the hotel':
+	minut += 3
+	killvar 'prevloc'
+	gt'pav_train'
+end
 
 if maidqw >= 1 and hour >= 16 and hour < 17:
 	act'<b>Work as a maid</b>':
@@ -273,7 +288,7 @@ if $ARGS[0] = 'Pavlin' :
 					'It looks like <<$npc_nickname[''A217'']>> is drunk.'
 					'"You will never disobey me? right <<$pcs_firstname>> ? "'
 					'"Your face is so pretty, I really don''t want to mess that up"'
-					'"What are you saying <<$npc_nickname[''A217'']>>? stop that , you are scaring me."'
+					'"What are you saying <<$npc_nickname[''A217'']>>? stop that, you are scaring me."'
 					'"What ? I give you a compliment and you get scared. You don''t have to fear me, I wouldn''t hurt a fly."'
 					'<<$npc_nickname[''A217'']>> had too much to drink and he is only talking nonsense.'
 				end
@@ -299,7 +314,7 @@ if $ARGS[0] = 'Pavlin' :
 				pavldaystart2 = daystart
 			elseif pavtalk = 0:
 				PavlinQW = 6
-				'"<<$npc_nickname[''A217'']>> I ..." you start talking but he immediately interrupts you.'
+				'"<<$npc_nickname[''A217'']>> I..." you start talking but he immediately interrupts you.'
 				'"I hope you learned your lesson <<$pcs_firstname>>. I am sorry I had to do that but you need to understand the situation here."'
 				'You were hoping you could have an honest conversation with him about the incident but you understand now that that is not possible yet.'
 				pavtalk = 1
@@ -334,30 +349,35 @@ if $ARGS[0] = 'Pavlin' :
 			act 'Move away':gt'HotelHole','skip_resepevent'
 		end
 	end
-	if npc_rel['A217'] > 19 and proshotelday ! daystart and storyline = 1 and TwinQW ! 3:
-		act 'Fake Twins Request':
-			*clr & cla
-			minut += 1
-			gs 'stat'
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
-			'"<<$pcs_firstname>>, I got a guy who is willing to pay a LOT of money for a threesome with a set of twins. Do you happen to know a pair of twins who''d be down to make some quick cash?" <<$npc_nickname[''A217'']>> asks, looking hopeful.'
-			'You think for a moment before responding. "No I don''t. However, a lot of people say my sister and I look alike. Maybe if I wear my hair like hers and we put on enough make up we could pass as twins."'
-			'"That''s a great idea! Do you think she would be willing to do this?" <<$npc_nickname[''A217'']>> asks, suddenly very excited at the prospect.'
-			if sisterLesb < 5:
-				'"What? No, I was just saying we look alike, I wouldn''t dare propose an idea like this to her."'
-				'"THEN WHY BRING HER UP, YOU STUPID CUNT?" <<$npc_nickname[''A217'']>>''s excitement quickly dissolves to rage as he raises his hand up, ready to strike.'
-				'You brace for the hit, closing your eyes tightly. The slap never comes however, and you open your eyes to see <<$npc_nickname[''A217'']>> has backed off. You''re confused at first, but notice that the people in the lobby are looking at the two of your after his little outburst.'
-				'You quickly stand up and leave him be.'
-				*nl
-				'You probably shouldn''t bring up this topic anymore... unless you have a more positive response to this request.'
-				TwinJourQW = 1
-				act 'Back to lobby': gt 'HotelHole'
-			elseif sisterLesb => 5:
-				'You feel a tingling in your loins just thinking about your sister and, without thinking, you blurt out: "Of course she will!"'
-				'"That''s fantastic <<$pcs_firstname>>, Once you are ready bring her over and I''ll introduce you to the client."'
-				'Realizing the commitment you just made, worry begins to seep into you. You hope your sister is really up for it, because you fear how <<$npc_nickname[''A217'']>> will react if you can''t deliver.'
-				TwinQW = 1
-				TwinJourQW = 2
+	if npc_rel['A217'] > 19 and proshotelday ! daystart and storyline = 1 and TwinQW < 0:
+		!!! TwinQW: 0 quest not started; > 0: quest started; < 5: talking with sis; 5: sis agreed; 6: finished
+		!!! changing 'TwinQW < 0' in the above if statement to 'TwinQW < 1' reenables the quest line
+		!!! Kevin Smarts:
+		!!! The twin event is meant to be disabled as it doesn't fit Anya's personality. It is waiting to be redone with a more suitable "twin".
+		if tmp_TwinQW_AskedToday < daystart: 
+			act 'Fake Twins Request':
+				*clr & cla
+				tmp_TwinQW_AskedToday = daystart
+				minut += 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/characters/pavlovsk/pavlin/pavlin.jpg"></center>'
+				'"<<$pcs_firstname>>, I got a guy who is willing to pay a LOT of money for a threesome with a set of twins. Do you happen to know a pair of twins who''d be down to make some quick cash?" <<$npc_nickname[''A217'']>> asks, looking hopeful.'
+				'You think for a moment before responding. "No I don''t. However, a lot of people say my sister and I look alike. Maybe if I wear my hair like hers and we put on enough make up we could pass as twins."'
+				'"That''s a great idea! Do you think she would be willing to do this?" <<$npc_nickname[''A217'']>> asks, suddenly very excited at the prospect.'
+				if sisterLesb < 5:
+					'"What? No, I was just saying we look alike, I wouldn''t dare propose an idea like this to her."'
+					'"THEN WHY BRING HER UP, YOU STUPID CUNT?" <<$npc_nickname[''A217'']>>''s excitement quickly dissolves to rage as he raises his hand up, ready to strike.'
+					'You brace for the hit, closing your eyes tightly. The slap never comes however, and you open your eyes to see <<$npc_nickname[''A217'']>> has backed off. You''re confused at first, but notice that the people in the lobby are looking at the two of your after his little outburst.'
+					'You quickly stand up and leave him be.'
+					*nl
+					'You probably shouldn''t bring up this topic anymore... unless you have a more positive response to this request.'
+				else
+					'You feel a tingling in your loins just thinking about your sister and, without thinking, you blurt out: "Of course she will!"'
+					'"That''s fantastic <<$pcs_firstname>>, Once you are ready bring her over and I''ll introduce you to the client."'
+					'Realizing the commitment you just made, worry begins to seep into you. You hope your sister is really up for it, because you fear how <<$npc_nickname[''A217'']>> will react if you can''t deliver.'
+					TwinQW = 1
+					killvar 'tmp_TwinQW_AskedToday'
+				end
 				act 'Back to lobby': gt 'HotelHole'
 			end
 		end
@@ -423,7 +443,9 @@ if $ARGS[0] = 'Pavlin' :
 	end
 end
 
-if $ARGS[0] = 'Twins' :
+if $ARGS[0] = 'Twins':
+	!!! <summary>meet pavlin and have some twin fun with the client</summary>
+	!!! <continues>with 'twinhome'</continues>
 	*clr & cla
 	minut += 20
 	gs 'stat'
@@ -583,7 +605,7 @@ if $ARGS[0] = 'Twins' :
 								'Anya tries to protest but it''s too late; the dick enters her mouth before any words leave it. She resigns herself to the task and uses her tongue to thoroughly clean the cock, whimpering in disapproval. You can''t help but snicker at the idea of her being forced to taste your ass on this stranger''s rod. Anya shoots you an angry look from the side.'
 								'Suddenly you hear someone honking a horn outside. You look at the clock and realize the whole hour has passed and <<$npc_nickname[''A217'']>> has arrived.'
 								'Not wanting to keep <<$npc_nickname[''A217'']>> waiting, you and your sister quickly put on your clothes, say goodbye to <<$boydesc>>, and leave the house.'
-								act 'Pavlin drives you home':gt 'HotelHole','twinhome'
+								act 'Pavlin drives you home': gt 'HotelHole','twinhome'
 							end
 						end
 						gs 'willpower', 'anal', 'force', 'hard'
@@ -623,7 +645,7 @@ if $ARGS[0] = 'Twins' :
 									*nl
 									'Suddenly, you hear someone honking a horn outside. You look at the clock and realize the whole hour has passed and <<$npc_nickname[''A217'']>> has arrived.'
 									'Not wanting to keep <<$npc_nickname[''A217'']>> waiting, you and your sister quickly put on your clothes, say goodbye to <<$boydesc>>, and leave the house.'
-									act 'Pavlin drives you home':gt 'HotelHole','twinhome'
+									act 'Pavlin drives you home': gt 'HotelHole','twinhome'
 								end
 							end
 						else
@@ -637,6 +659,8 @@ if $ARGS[0] = 'Twins' :
 end
 
 if $ARGS[0] = 'twinhome':
+	!!! <summary>pavlin drives you and your sis home</summary>
+	!!! <continues>gt 'korrPar'</continues>
 	*clr & cla
 	gs 'cum_call','face', $npclastgenerated
 	'You both jump in the car and <<$npc_nickname[''A217'']>> drives away.'
@@ -649,14 +673,14 @@ if $ARGS[0] = 'twinhome':
 	'You leave the car, face burning red in embarrassment, and go inside to your room.'
 	'You were planning to divide the money evenly with your sister, but now that you know what she really thinks of you, you hand her 1,000 <b>₽</b>. "Well, since you''re not a whore, I guess you don''t deserve a whore''s pay." you say snidely. You head back out of the room quickly before Anya has a chance to respond.'
 	gs 'arousal','end'
-	TwinQW = 3
+	TwinQW = 6
 	guy += 1
 	slutty += 1
 	gs 'fame', 'pav', 'prostitute', rand(2,4)
 	npc_rel['A217'] += 10
 	money += 9000
 	gs 'stat'
-	act 'Back to the corridor':gt 'korrPar'
+	act 'Back to the corridor': gt 'korrPar'
 end
 
 if $ARGS[0] = 'clown':
@@ -685,7 +709,7 @@ if $ARGS[0] = 'clown':
 		*clr
 		'Again, you think you saw something at the other side of the room.'
 		'You are getting scared.'
-		'The buzzing sound gets louder....'
+		'The buzzing sound gets louder...'
 		wait 1000
 		*clr
 		gs 'stat'
@@ -851,21 +875,21 @@ if $ARGS[0] = 'PregBDSM' :
 		'Suddenly he takes your arms and attaches your leather bracelets to a chain hanging above your head.'
 		'"<<$pitfs>>Wait a minute, no one said anything about being tied up.<<$pitfe>>" You think as panic begins to creep into your mind.'
 		'Without warning you feel the whip lash across your back.'
-		'.....WHOOSH....'
+		'...WHOOSH...'
 		'"<<$pitfs>>AAARGH!<<$pitfe>>" Your mind reels.'
 		'You clench your teeth and take it.'
 		'Then another strike lands.'
-		'.....WHISHP....'
+		'...WHISHP...'
 		'"<<$pitfs>>Fuck this hurts, but I can''t let it show!<<$pitfe>>" Again you refuse to scream out, not wanting to give your torturer the satisfaction.'
 		'But then...'
-		'.....WHOOSH....'
-		'.....WHAP....'
+		'...WHOOSH...'
+		'...WHAP...'
 		'The whip snaps across each breast before you see it coming.'
 		'You finally scream out involuntarily, the unexpected spike in pain proving too much to ignore.'
 		'"<<$pitfs>>Damn it, I shouldn''t show any weakness! Who knows how far he will take this!<<$pitfe>>" You admonish yourself, but it is too late.'
 		'"Well, well, it looks like the little bitch can feel pain after all." The cruel pervert says, a smile plastered across his vile face.'
-		'.....WHIP....'
-		'.....SNAP....'
+		'...WHIP...'
+		'...SNAP...'
 		'Two more hits slice sharply across your sensitive nipples, eliciting one big scream after another.'
 		'The torment continues for what feels like an eternity. The client alternates randomly between striking yours breasts, back, and buttocks. But the worst by far is when he zeroes in on your quivering pussy. As the instrument slaps viciously across your labia you scream and beg, tears streaming down your tortured face, mascara straining your cheeks. When the whip lands directly on your clit you feel like passing out and vomiting at the same time, your stomach twisting in agony.'
 		*nl
@@ -985,7 +1009,7 @@ if $ARGS[0] = 'PregBDSM' :
 						fcolor = rgb(255, 255, 255)
 						bcolor = rgb(0, 0, 0)
 						lcolor = rgb(106, 90, 205)
-						'Darkness .........................'
+						'Darkness ...'
 						act 'What is this?':
 							cla
 							:faintbegin
@@ -993,7 +1017,7 @@ if $ARGS[0] = 'PregBDSM' :
 
 								minut += 180
 								wait 1000
-								'.....................................'
+								'...'
 								if faintcounter = 3:'"<<$pitfs>>Where am I?<<$pitfe>>"<br>'
 								if faintcounter = 5:'"<<$pitfs>>Am I dead?<<$pitfe>>"<br>'
 								if faintcounter = 7:'"<<$pitfs>>What happened?<<$pitfe>>"'
@@ -1009,9 +1033,8 @@ if $ARGS[0] = 'PregBDSM' :
 									'You slowly open your eyes'
 									'"<<$pitfs>>Where am I?<<$pitfe>>" Your vision is blurry and you have to blink several times to clear it.'
 									'You find yourself lying on a soft bed. You look around and see a sterile white room with a woman in light blue scrubs standing with her back to you. Your mind pieces together the clues and you realize this is the hospital.'
-									'"H..hello?" You choke out the word, trying to get the nurse''s attention.'
+									'"H-hello?" You choke out the word, trying to get the nurse''s attention.'
 									'The nurse turns around, slightly startled, and says, "Oh you are awake. Just one minute, I will get the doctor for you." The nurse quickly exits the room.'
-
 									gs 'medical_din', 'remove_preg'
 									abortionbirthdate = daystart
 									unintendedabort = 1

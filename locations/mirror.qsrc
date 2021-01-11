@@ -6,77 +6,215 @@ if $ARGS[0] = 'start':
 	*clr & cla
 	$mirrorloc = 'mirror'
 	gs 'stat' &! It should be here, because some of the strigs have to be initialized
-	if player_avatar = 1:
-		'<center><img <<$set_imgh>> src="images/avatar.jpg"></center>'
-	else
-		'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
-	end
-	
-	if autohairbrush = 1 and pcs_hairbsh = 0 : xgt 'mirror', 'brush'
-	
+	!! first of all we have to check whether we can use the mirror
 	if mirror_steam ! hour: mirror_steam = 100
 	if $loc = 'vanrPar' and mirror_steam = hour or $loc = 'vanr' and mirror_steam = hour or $loc = 'yvan'and mirror_steam = hour: gt'mirror','steam'
 
-	*nl
-	if daystart < 10 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror, you see a strange woman''s face looking back at you that exactly copies all your actions. You can hardly accept the idea that this is now you.'
-	if daystart >= 10 and daystart < 30 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror you see a woman''s face to which you have become accustomed to. But sometimes, you get the feel that this is not your face.'
-	'<<$hair>>'
-	'<<$pcs_makeup>>. Your<<$pcdesc_eyesizeinsertive>> eyes are <<$pcdesc_eyecolour>> <<$pcs_lashes>>, and you have <<$pcdesc_fulllipswordy>>.'
-	'<<$skin>>'
-	'<<$pcs_apprnc>>'
+	$makeupLight =   '<center><img <<$set_imgh>> src="images/pc/activities/routine/2.jpg"></center>&nbsp;<br>You subtly apply some neutral tones, with a light application of makeup to bring out your natural beauty.'
+	$makeupNatural = '<center><img <<$set_imgh>> src="images/pc/activities/routine/2.jpg"></center>&nbsp;<br>You apply some mildly vibrant tones and colors of makeup to cover your minor imperfections and enhance your best features.'
+	$makeupHeavy =   '<center><img <<$set_imgh>> src="images/pc/activities/routine/2.jpg"></center>&nbsp;<br>You apply some deeper, richer shades of makeup, thick enough to cover most imperfections, while drawing attention to your eyes and lips.'
 
-	if curly > 0 and defcurly = 0: '<br>Your curly hair will last for another <<curly>> days.'
-	if straight > 0 and defcurly = 1: '<br>Your straightened hair will last for another <<straight>> days.'
-	if hbraids > 0: '<br>Your braided hair will last for another <<hbraids>> days.'
-	if pcs_haircol ! nathcol:
-		if dyefade > 0 and dyefade < 7: '<br>Your hair dye is beginning to fade and your roots are showing.'
-		if dyefade = 0: '<br>Your hair dye has faded and looks terrible.'
-	end
-	
-	!!!!!!!! Maruda Hair Mod
-	if hscrunch < 1:hscrunchw = 0
-	if hpingrip < 1:hpingripw = 0
-	if hscrunch < 2:hpigtail = 0
-	
-	if pcs_hairlng > 41 and hscrunch >= 1 and hbraids = 0:
+	if newstylemirror = 1:
+		!########### buttons and desc ###########
+
+		! ----- avatar
+
+		if player_avatar = 1:
+			$serv['avatar']='<center><img <<$set_imgh>> src="images/avatar.jpg"></center>'
+		else
+			$serv['avatar']='<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		end
+		! ----- hair
+		if autohairbrush = 1 and pcs_hairbsh = 0 : xgt 'mirror', 'brush'
+
+		!!!!!!!! Maruda Hair Mod
+		if hscrunch < 1:hscrunchw = 0
+		if hpingrip < 1:hpingripw = 0
+		if hscrunch < 2:hpigtail = 0
+
+		if pcs_hairbsh = 0: $serv['hairbrush']='<a href="exec: xgt ''mirror'', ''brush''"><img src="images/system/icon/action_icons/hairbrush.png"></a>'
+		if pcs_hairlng > 41 and hscrunch >= 1 and hbraids = 0:
+			if hscrunchw = 0 and hpingripw = 0:
+				$serv['ponytail']='<a href="exec:hscrunchw = 1 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/scrunchy.png"></a>'
+				$serv['ponytail desc']='As you have a scrunchy, you can arrange your hair into a <a href="exec:hscrunchw = 1 & gs ''mirror'', ''start''">ponytail</a>. You have <b><<hscrunch>></b> scrunchies left.'
+			end
+			if hscrunchw = 1:
+				$serv['ponytail']='<a href="exec:hscrunchw = 0 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/ponytail.png"></a>'
+				$serv['ponytail desc']='Remove the <a href="exec:hscrunchw = 0 & gs ''mirror'', ''start''">scrunchie</a> to get rid of the ponytail.'
+			end
+		end
+		if pcs_hairlng > 41 and hpingrip >= 1 and hbraids = 0:
+			if hscrunchw = 0 and hpingripw = 0:
+				$serv['bun']='<a href="exec:hpingripw = 1 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/clips_pins_grips.png"></a>'
+				$serv['bun desc']='You have several clips, pins and grips for you hair. Hence, you can <a href="exec:hpingripw = 1 & gs ''mirror'', ''start''">updo your hair</a>. You have <b><<hpingrip>></b> hair accessories at your disposal.'
+			end
+			if hpingripw = 1:
+				$serv['bun']='<a href="exec:hpingripw = 0 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/bun.png"></a>'
+				$serv['bun desc']='Let your hair <a href="exec:hpingripw = 0 & gs ''mirror'', ''start''">flow free</a>.'
+			end
+		end
+		if pcs_hairlng > 80 and hscrunch >= 2 and hbraids = 0:
+			if hscrunchw = 0 and hpingripw = 0:
+				$serv['pigtails']='<a href="exec:hpigtail = 1 & hscrunchw = 2 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/hair_ties.png"></a>'
+				$serv['pigtails desc']='You can use two hair ties to make yourself some <a href="exec:hpigtail = 1 & hscrunchw = 2 & gs ''mirror'', ''start''">pigtails</a>.'
+			end
+			if hscrunchw = 2:
+				$serv['pigtails']='<a href="exec:hpigtail = 0 & hscrunchw = 0 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/pigtails.png"></a>'
+				$serv['pigtails desc']='<a href="exec:hpigtail = 0 & hscrunchw = 0 & gs ''mirror'', ''start''">Remove</a> your scrunchies and let your hair flow free again.'
+			end
+		end
+		if canBraidHair = 1 and hscrunch >= 1 and hBraids = 0 and (pcs_hairlng > 80 and pcs_hairlng <= 800) and hscrunchw = 0 and hpingripw = 0 and hscrunchw = 0:
+			$serv['braid']='<a href="exec:hbraids = 15 & minut += 30 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/braiding.png"></a>'
+			$serv['braid desc']='You can spend half an hour <a href="exec:hbraids = 15 & minut += 30 & gs ''mirror'', ''start''">braiding</a> your hair, just the way your sister taught you.'
+		elseif hbraids > 0:
+			$serv['braid']='<a href="exec:hbraids = 0 & minut += 30 & gs ''mirror'', ''start''"><img src="images/system/icon/action_icons/braid.png"></a>'
+			$serv['braid desc']='Take half an hour removing your <a href="exec:hbraids = 0 & minut += 30 & gs ''mirror'', ''start''">braid</a>.'
+		end
+		! ----- actions
+		$serv['back']='<a href="exec: gt ''mirror'',''fin''"><img src="images/system/icon/action_icons/back.png"></a>'
+		! ----- lip balm and false lashes
+		if lipbalm > 0 and pcs_lipbalm <= 0:
+			$serv['lipbalm']='<a href="exec: cla & gs ''mirror'',''applyLipbalm'' & act ''View results'':gt ''mirror'', ''start''"><img src="images/system/icon/action_icons/lipbalm.png"></a>'
+		end
+		if falselashesplain > 0 and pcs_lashes < 3 and lashextensionstyle <= 0:
+			$serv['falselashes']='<a href="exec: cla & gs ''mirror'',''applyLashesplain'' & act ''View results'':gt ''mirror'', ''start''"><img src="images/system/icon/action_icons/falselashes.png"></a>'
+		end
+		if falselashesmink > 0 and pcs_lashes < 4 and lashextensionstyle <= 0:
+			$serv['minklashes']='<a href="exec: cla & gs ''mirror'',''applyLashesmink'' & act ''View results'':gt ''mirror'', ''start''"><img src="images/system/icon/action_icons/minklashes.png"></a>'
+		end
+		! ----- make up
+		if pcs_makeup = 1 and kosmetica > 0:
+		$serv4="
+				*clr & cla
+				'<center><img <<$set_imgh>> src=""images/pc/activities/routine/1.jpg""></center>'
+				'You consider for a moment which look you want to go for.'
+				*nl
+				act 'Change your mind': gt 'mirror', 'start'
+
+				if kosmetica > 0:
+					act 'Light make-up':
+						*clr & cla
+						minut += 3
+						makupskl_exp += rand(1,3)
+						kosmetica -= 1
+						pcs_makeup = 2
+						'<<$makeupLight>>'
+						act 'Continue': gt 'mirror', 'start'
+					end
+				end
+
+				if kosmetica > 1:
+					act 'Vibrant make-up':
+						*clr & cla
+						minut += 5
+						makupskl_exp += rand(1,3)
+						kosmetica -= 2
+						pcs_makeup = 3
+						'<<$makeupNatural>>'
+						act 'Continue': gt 'mirror', 'start'
+					end
+				end
+
+				if kosmetica > 2:
+					act 'Thick make-up':
+						*clr & cla
+						minut += 10
+						makupskl_exp += rand(1,3)
+						kosmetica -= 3
+						vidageday -= 1
+						pcs_makeup = 4
+						'<<$makeupHeavy>>'
+						act 'Continue': gt 'mirror', 'start'
+					end
+				end"
+			$serv['makeup']='<a href="exec: dynamic $serv4"><img src="images/system/icon/action_icons/makeup.png"></a>'
+		end
+
+		'<center><table align=center cellspacing=0 cellpadding=0><tr><td align=center colspan=15><<$serv["avatar"]>></td></tr><tr><td colspan=15><hr></td></tr><tr><td align=center><<$serv["falselashes"]>></td>	<td align=center><<$serv["minklashes"]>></td><td align=center><<$serv["lipbalm"]>></td><td align=center><<$serv["makeup"]>></td><td align=center><<$serv["ponytail"]>></td><td align=center><<$serv["bun"]>></td><td align=center><<$serv["pigtails"]>></td><td align=center><<$serv["braid"]>></td><td align=center><<$serv["hairbrush"]>></td><td align=center><<$serv["back"]>></td></tr></table></center>'
+
+
+		!########## main desc ##########
+		if daystart < 10 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror, you see a strange woman''s face looking back at you that exactly copies all your actions. You can hardly accept the idea that this is now you.'
+		if daystart >= 10 and daystart < 30 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror you see a woman''s face to which you have become accustomed to. But sometimes, you get the feel that this is not your face.'
+		'<<$pcs_apprnc>>'
+		'<<$hair>>'
+		'<<$pcs_makeup>>. Your<<$pcdesc_eyesizeinsertive>> eyes are <<$pcdesc_eyecolour>> <<$pcs_lashes>>, and you have <<$pcdesc_fulllipswordy>>.'
+		'<<$skin>>'
+
+		!########## hair additional desc ##########
+		if curly > 0 and defcurly = 0: $serv['hhair']='Your curly hair will last for another <b><<curly>></b> days.'
+		if straight > 0 and defcurly = 1: $serv['hhair']='Your straightened hair will last for another <b><<straight>></b> days.'
+		if hbraids > 0: $serv['hbraids']='Your braided hair will last for another <b><<hbraids>></b> days.'
+		if pcs_haircol ! nathcol:
+			if dyefade > 0 and dyefade < 7: $serv['hdye']='Your hair dye is beginning to fade and your roots are showing.'
+			if dyefade = 0: $serv['hdye']='Your hair dye has faded and looks terrible.'
+		end
+		'<table cellspacing=0 cellpadding=0><tr><td><hr></td></tr><tr><td><<$serv["hhair"]>></td></tr><tr><td><<$serv["hbraids"]>></td></tr><tr><td><<$serv["hdye"]>></td></tr><tr><td><<$serv["ponytail desc"]>></td></tr><tr><td><<$serv["bun desc"]>></td></tr><tr><td><<$serv["pigtails desc"]>></td></tr><tr><td><<$serv["braid desc"]>></td></tr></table>'
+	else
+		if player_avatar = 1:
+			'<center><img <<$set_imgh>> src="images/avatar.jpg"></center>'
+		else
+			'<center><img <<$set_imgh>> src="<<FUNC(''$face_image'')>>"></center>'
+		end
 		*nl
-		if hscrunchw = 0 and hpingripw = 0: 'As you have a scrunchy, you can arrange your hair into a <a href="exec:hscrunchw = 1 & gs ''mirror'', ''start''">ponytail</a>. You have <<hscrunch>> scrunchies left.'
-		if hscrunchw = 1: 'Remove the <a href="exec:hscrunchw = 0 & gs ''mirror'', ''start''">scrunchie</a> to get rid of the ponytail.'
-	end
+		if daystart < 10 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror, you see a strange woman''s face looking back at you that exactly copies all your actions. You can hardly accept the idea that this is now you.'
+		if daystart >= 10 and daystart < 30 and (StoryLine = 0 or (StoryLine = 1 and csb_start = 1)) and ntstart = 0:'In the mirror you see a woman''s face to which you have become accustomed to. But sometimes, you get the feel that this is not your face.'
+		'<<$hair>>'
+		'<<$pcs_makeup>>. Your<<$pcdesc_eyesizeinsertive>> eyes are <<$pcdesc_eyecolour>> <<$pcs_lashes>>, and you have <<$pcdesc_fulllipswordy>>.'
+		'<<$skin>>'
+		'<<$pcs_apprnc>>'
 
-	if pcs_hairlng > 41 and hpingrip >= 1 and hbraids = 0:
-		if hscrunchw = 0 and hpingripw = 0: 'You have several clips, pins and grips for you hair. Hence, you can <a href="exec:hpingripw = 1 & gs ''mirror'', ''start''">updo your hair</a>. You have <<hpingrip>> hair accessories at your disposal.'
-		if hpingripw = 1: 'Let your hair <a href="exec:hpingripw = 0 & gs ''mirror'', ''start''">flow free</a>.'
-	end
+		if curly > 0 and defcurly = 0: '<br>Your curly hair will last for another <<curly>> days.'
+		if straight > 0 and defcurly = 1: '<br>Your straightened hair will last for another <<straight>> days.'
+		if hbraids > 0: '<br>Your braided hair will last for another <<hbraids>> days.'
+		if pcs_haircol ! nathcol:
+			if dyefade > 0 and dyefade < 7: '<br>Your hair dye is beginning to fade and your roots are showing.'
+			if dyefade = 0: '<br>Your hair dye has faded and looks terrible.'
+		end
+		if autohairbrush = 1 and pcs_hairbsh = 0 : xgt 'mirror', 'brush'
 
-	if pcs_hairlng > 80 and hscrunch >= 2 and hbraids = 0:
-		if hscrunchw = 0 and hpingripw = 0: 'You can use two hair ties to make yourself some <a href="exec:hpigtail = 1 & hscrunchw = 2 & gs ''mirror'', ''start''">pigtails</a>.'
-		if hscrunchw = 2: '<a href="exec:hpigtail = 0 & hscrunchw = 0 & gs ''mirror'', ''start''">Remove</a> your scrunchies and let your hair flow free again.'
-	end
-	
-	if canBraidHair = 1 and hscrunch >= 1 and hBraids = 0 and (pcs_hairlng > 80 and pcs_hairlng <= 800) and hscrunchw = 0 and hpingripw = 0 and hscrunchw = 0:
-		'You can spend half an hour <a href="exec:hbraids = 15 & minut += 30 & gs ''mirror'', ''start''">braiding</a> your hair, just the way your sister taught you.'
-	end
+		!!!!!!!! Maruda Hair Mod
+		if hscrunch < 1:hscrunchw = 0
+		if hpingrip < 1:hpingripw = 0
+		if hscrunch < 2:hpigtail = 0
 
-	if hbraids > 0:
-		'Take half an hour removing your <a href="exec:hbraids = 0 & minut += 30 & gs ''mirror'', ''start''">braid</a>.'
+		if pcs_hairlng > 41 and hscrunch >= 1 and hbraids = 0:
+			*nl
+			if hscrunchw = 0 and hpingripw = 0: 'As you have a scrunchy, you can arrange your hair into a <a href="exec:hscrunchw = 1 & gs ''mirror'', ''start''">ponytail</a>. You have <<hscrunch>> scrunchies left.'
+			if hscrunchw = 1: 'Remove the <a href="exec:hscrunchw = 0 & gs ''mirror'', ''start''">scrunchie</a> to get rid of the ponytail.'
+		end
+
+		if pcs_hairlng > 41 and hpingrip >= 1 and hbraids = 0:
+			if hscrunchw = 0 and hpingripw = 0: 'You have several clips, pins and grips for you hair. Hence, you can <a href="exec:hpingripw = 1 & gs ''mirror'', ''start''">updo your hair</a>. You have <<hpingrip>> hair accessories at your disposal.'
+			if hpingripw = 1: 'Let your hair <a href="exec:hpingripw = 0 & gs ''mirror'', ''start''">flow free</a>.'
+		end
+
+		if pcs_hairlng > 80 and hscrunch >= 2 and hbraids = 0:
+			if hscrunchw = 0 and hpingripw = 0: 'You can use two hair ties to make yourself some <a href="exec:hpigtail = 1 & hscrunchw = 2 & gs ''mirror'', ''start''">pigtails</a>.'
+			if hscrunchw = 2: '<a href="exec:hpigtail = 0 & hscrunchw = 0 & gs ''mirror'', ''start''">Remove</a> your scrunchies and let your hair flow free again.'
+		end
+
+		if canBraidHair = 1 and hscrunch >= 1 and hBraids = 0 and (pcs_hairlng > 80 and pcs_hairlng <= 800) and hscrunchw = 0 and hpingripw = 0 and hscrunchw = 0:
+			'You can spend half an hour <a href="exec:hbraids = 15 & minut += 30 & gs ''mirror'', ''start''">braiding</a> your hair, just the way your sister taught you.'
+		end
+
+		if hbraids > 0:
+			'Take half an hour removing your <a href="exec:hbraids = 0 & minut += 30 & gs ''mirror'', ''start''">braid</a>.'
+		end
+		!!!!!!!! Maruda Hair Mod
 	end
-	!!!!!!!! Maruda Hair Mod
 
 	if kosmetica > 0: *nl 'Cosmetics: <<kosmetica>>' else *nl 'You have no makeup.'
 	if lipbalm > 0: *pl ' | Lip gloss: <<lipbalm>>' else *pl ' You have no lip gloss left.'
 	if falselashesplain > 0: *nl 'False lashes: <<falselashesplain>>' else *nl 'You have no false lashes left.'
 	if falselashesmink > 0: *pl ' | Mink lashes: <<falselashesmink>>' else *pl ' You have no mink lashes left.'
 	*nl
-
-	$makeupLight =   'You subtly apply some neutral tones, with a light application of makeup to bring out your natural beauty.'
-	$makeupNatural = 'You apply some mildly vibrant tones and colors of makeup to cover your minor imperfections and enhance your best features.'
-	$makeupHeavy =   'You apply some deeper, richer shades of makeup, thick enough to cover most imperfections, while drawing attention to your eyes and lips.'
-
+	
 	! WD: Cheat Unused ~ 'AutoHapri'
 	if pcs_hairbsh = 0 and AutoHapri = 1:
 		minut += 3
 		pcs_hairbsh = 1
+		'<center><img <<$set_imgh>> src="images/pc/activities/routine/3.jpg"></center>'
 		'You brush your hair.'
 	end
 
@@ -91,6 +229,7 @@ if $ARGS[0] = 'start':
 			'You have no make-up left.'
 		else
 			if pcs_makeup = 2:
+				*clr
 				*pl $makeupLight
 				minut -= 3
 				kosmetica -= 1
@@ -115,24 +254,23 @@ if $ARGS[0] = 'start':
 	if umbrella = 0: 'WARNING: Makeup will run in the rain unless you buy an umbrella.'
 
 	act 'Move away from the mirror':gt 'mirror','fin'
-	
+
 	if pcs_hairbsh = 0: act 'Brush your hair': xgt 'mirror', 'brush'
-	
+
 	! WD: Cheat Unused ~ 'AutoLipBalm'
 
 	!! Added the makeup setting.
-
 	if pcs_makeup = 1 and kosmetica > 0:
 		act 'Apply makeup':
 			*clr & cla
-			'<center><img <<$set_imgh>> src="images/pc/mop.jpg"></center>'
+			'<center><img <<$set_imgh>> src="images/pc/activities/routine/1.jpg"></center>'
 			'You consider for a moment which look you want to go for.'
 			*nl
 			act 'Change your mind': gt 'mirror', 'start'
-			
+
 			if kosmetica > 0:
 				act 'Light make-up':
-					cla
+					*clr & cla
 					minut += 3
 					makupskl_exp += rand(1,3)
 					kosmetica -= 1
@@ -144,7 +282,7 @@ if $ARGS[0] = 'start':
 
 			if kosmetica > 1:
 				act 'Vibrant make-up':
-					cla
+					*clr & cla
 					minut += 5
 					makupskl_exp += rand(1,3)
 					kosmetica -= 2
@@ -156,7 +294,7 @@ if $ARGS[0] = 'start':
 
 			if kosmetica > 2:
 				act 'Thick make-up':
-					cla
+					*clr & cla
 					minut += 10
 					makupskl_exp += rand(1,3)
 					kosmetica -= 3
@@ -179,7 +317,7 @@ if $ARGS[0] = 'start':
 			act 'View results':gt 'mirror', 'start'
 		end
 	end
-	
+
 	if falselashesplain > 0 and pcs_lashes < 3 and lashextensionstyle <= 0:
 		act 'Apply false lashes':
 			cla
@@ -187,7 +325,7 @@ if $ARGS[0] = 'start':
 			act 'View results':gt 'mirror', 'start'
 		end
 	end
-	
+
 	if falselashesmink > 0 and pcs_lashes < 4 and lashextensionstyle <= 0:
 		act 'Apply mink lashes':
 			cla
@@ -195,7 +333,7 @@ if $ARGS[0] = 'start':
 			act 'View results':gt 'mirror', 'start'
 		end
 	end
-	
+
 !	if (pcs_makeup <= 1 and kosmetica > 0) or (lipbalm > 0 and pcs_lipbalm <= 0 and pcs_hairbsh = 0):
 !		act 'Do the works': gt 'mirror', 'works'
 !	end
@@ -271,8 +409,10 @@ if $ARGS[0] = 'start':
 		if mid($routine4,3,1) = 2:'Mink fake lashes'
 		''
 	end
-	
-	gs 'stat'	
+	gs 'stat'
+	killvar 'serv'
+
+	act '<<iif(newstylemirror,''Change to the old style mirror'',''Change to the new style mirror'')>>': newstylemirror = iif(newstylemirror,0,1) & gt 'mirror','start'
 end &! --- start ---
 
 
@@ -447,33 +587,28 @@ if $ARGS[0] = 'works':
 	if kosmetica <= 0:
 		'You don''t have any makeup.'
 	elseif pcs_makeup = 1 and kosmetica >= $ARGS[1]:
-		*clr
-		'<center><img <<$set_imgh>> src="images/pc/mop.jpg"></center>'
 		*nl
 		'You consider for a moment which look you want to go for.'
 		*nl
 		if $ARGS[1] = 1:
-			'Without thinking, you instantly apply a subtle amount of makeup to your face.'
+			'You subtly apply some neutral tones, with a light application of makeup to bring out your natural beauty.'
 			minut += 3
 			makupskl_exp += rand(1,3)
 			kosmetica -= 1
 			pcs_makeup = 2
-			'<<$makeupLight>>'
 		elseif $ARGS[1]= 2:
-			'Without thinking, you instantly apply a moderate amount of makeup to your face.'
+			'You apply some mildly vibrant tones and colors of makeup to cover your minor imperfections and enhance your best features.'
 			minut += 5
 			makupskl_exp += rand(1,3)
 			kosmetica -= 2
 			pcs_makeup = 3
-			'<<$makeupNatural>>'
 		elseif $ARGS[1] = 3:
-			'Without thinking, you instantly apply a heavy amount of makeup to your face.'
+			'You apply some deeper, richer shades of makeup, thick enough to cover most imperfections, while drawing attention to your eyes and lips.'
 			minut += 10
 			makupskl_exp += rand(1,3)
 			kosmetica -= 3
 			vidageday -= 1
 			pcs_makeup = 4
-			'<<$makeupHeavy>>'
 		end
 	elseif kosmetica < $ARGS[1]:
 		'You don''t have enough makeup to apply your chosen option.'
@@ -539,7 +674,7 @@ if $ARGS[0] = 'd_bag_mirror':
 	*clr & cla
 	gs 'stat'
 	'<center><h1>Compact Mirror</h1></center>'
-	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirror_compact.jpg"></center>'
 	'<center><table cellspacing="0" cellpadding="20" valign="top"><tr>'
 	'<td cellspacing="0" cellpadding="0" valign="top">'
 	'You have '+iif(kosmetitka > 0, '<b><<kosmetitka>></b>', 'no')+' cosmetic applications and '+iif(salfetka > 0, '<b><<salfetka>></b>', 'no')+' tissues left in your purse.'
@@ -562,7 +697,7 @@ end
 if $ARGS[0] = 'kosmetitka_apply':
 	*clr & cla
 	'<center><h1>Compact Mirror</h1></center>'
-	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirror_compact.jpg"></center>'
 	'<center><table cellspacing="0" cellpadding="20" valign="top"><tr>'
 	'<td cellspacing="0" cellpadding="0" valign="top">'
 	gs 'stat'
@@ -577,24 +712,27 @@ end
 if $ARGS[0] = 'kosmetitka_fix':
 	*clr & cla
 	'<center><h1>Compact Mirror</h1></center>'	
-	'<center><img <<$set_imgh>> src="/images/pc/items/mirrorcompact.jpg"></center>'
+	'<center><img <<$set_imgh>> src="/images/pc/items/mirror_compact.jpg"></center>'
 	salfetka -= 1
 	makupskl_exp += rand(1,3)
 	if makeupSetting = 1:
 		minut += 3		
 		kosmetitka -= 1
 		pcs_makeup = 2
+		'<center><img <<$set_imgh>> src="images/pc/activities/routine/4.jpg"></center>'
 		'<center>You carefully fix your makeup and restore the neutral and light tones that bring out your natural beauty.</center>'
 	elseif makeupSetting = 2:
 		minut += 5
 		kosmetitka -= 2
 		pcs_makeup = 3
+		'<center><img <<$set_imgh>> src="images/pc/activities/routine/4.jpg"></center>'
 		'<center>You carefully fix your makeup and restore the mildly vibrant tones and colors that cover your minor imperfections and enhance your best features.</center>'			
 	elseif makeupSetting = 3:
 		minut += 10
 		kosmetitka -= 3
 		vidageday -= 1
 		pcs_makeup = 4
+		'<center><img <<$set_imgh>> src="images/pc/activities/routine/4.jpg"></center>'
 		'<center>You carefully fix your makeup and restore the deeper, richer shades, thick enough to cover most imperfections, while drawing attention to your eyes and lips.</center>'
 	end
 
