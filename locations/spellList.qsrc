@@ -603,44 +603,38 @@ if $ARGS[0] = 'teacherActions':
 	i = 0
 	:LearnSpellLoop
 	$ThisSpellName = dyneval("$result = $<<$ThisArrayName>>[<<i>>]")
-	spellDifficulty = $spellDiff[$ThisSpellName]
-	if spellDifficulty = 0: spellDifficulty = 1
+	spellDifficulty = Max(spellDiff[$ThisSpellName],1)
 	if i < ThisArraySize and i < MaxAvailable:
-		if pcs_magik >= spellDifficulty and spellKnown[$ThisSpellName] = 0 and ($spellReq[$ThisSpellName] = '' or spellKnown[$spellReq[$ThisSpellName]]):
-			dynamic "act 'Learn <<$spellName[$ThisSpellName]>> (1:00)':
+		if pcs_magik >= spellDifficulty and spellKnown[$ThisSpellName] = 0 and ($spellReq[$ThisSpellName] = '' or (spellKnown[$spellReq[$ThisSpellName]] = 1)):
+			act 'Learn <<$spellName[$ThisSpellName]>> (1:00)':
 				cla
 				if pcs_mana >= 1000:
 					pcs_mana -= 1000
 					minut += 60
 
-					spellLearn['<<$ThisSpellName>>'] += rand(1, 100/<<spellDifficulty>>)
+					dynamic 'spellLearn[<<$ThisSpellName>>] += rand(1, 100/<<spellDifficulty>>)'
 
-					if spellLearn['<<$ThisSpellName>>'] < 100:
+					if spellLearn[$ThisSpellName] < 100:
 						'You diligently study the spell for an hour, but cannot grasp it.'
 					else
-						spellKnown['<<$ThisSpellName>>'] = 1
+						spellKnown[$ThisSpellName] = 1
 						'Finally, you are able to grasp and learn the spell.'
 						*nl
 						'<<$spellName[$ThisSpellName]>>: <<$spellDesc[$ThisSpellName]>>'
 					end
 				else
-					*pl ""You don't have enough mana to learn this spell.""
+					*pl 'You don''t have enough mana to learn this spell.'
 				end
-				act 'Move away':gt '<<$ExitLocation>>', '<<$ExitLocation2>>'
-			end"
+				act 'Move away': gt $ExitLocation, $ExitLocation2
+			end
 		end
-
 		i += 1
 		jump 'LearnSpellLoop'
 	end
 	killvar 'i'
-	killvar '$ThisSpellName'
 	killvar 'ThisArraySize'
 	killvar 'MaxAvailable'
 	killvar '$ThisArrayName'
-	killvar '$ExitLocation'
-	killvar '$ExitLocation2'
-	killvar 'spellDifficulty'
 end
 
 
