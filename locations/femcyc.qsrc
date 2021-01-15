@@ -1,22 +1,251 @@
 # femcyc
 
-!! important values for pillcon
-!!at 7000 pillcon sveta will begin slowing down the build up of hormone to release eggs - see cyc1
-!!at 20000 pillcon sveta will very rarely even build up hormone to release eggs but its random so it can still happen anyways - see cyc1 and cyc2
-!!at 26000 pillcon sveta only has a 1/400 chance of even releasing an egg at all even if she does build up enough hormone - see cyc2
-!!at 38000 pillcon sveta no longer has periods at all and cannot get pregnant anymore -- see cyc3
+!!
+!!	THIS IS A CORE FILE TO GAME MECHANICS. Please edit CAREFULLY, and leave as many comments as possible!!
+!!
+!!------------------------------------------------------------------------------------------------------------
+!!	femcyc documentation
+!!------------------------------------------------------------------------------------------------------------
+!!
+!!	The femcyc functions try to reproduce a realistic mentruation cycle as well as the proper
+!!	pregnancy of Sveta and the mostly realistic semen absorption/decay cycle.
+!!	The below will explain every variable in use as well as every function and the general construct.
+!!	The femcyc is a highly complex and confusing collection of calculations. So if you do not understand
+!!	it, it is best to leave it alone.
+!!
+!!------------------------------------------------------------------------------------------------------------
+!!
+!!	$ChildFath : array for names of the childs biological father
+!!	$ChildFathDNA : array for the DNA of the childs father
+!!	$ChildThFath : array for the names of the childs believed father (can be different from the biological father)
+!!	$childtype : child type. single child, fraternal twin, identical twin ...
+!!	$cumfthname : the name of the father if sveta is sure
+!!	$cycreport_txt : Text for the current menstruation cycle. e.g. In labour.
+!!	$d_cycreport_update : Dynamic variable to update cycle report
+!!	$d_pregmovement : Dynamic variable for kid movement
+!!	$kid_dna : DNA of the baby/kid
+!!	$kidname : Name of the baby/kid
+!!	$npc_dna : npc DNA
+!!	$pcs_dna : Svetas DNA
+!!	$wombDNA : sperm in womb potent enough to cause pregnancy
+!!	$wombName : the name of the NPC
+!!	$wombpotfath : the name of the potential father, if sveta is not sure
+!!	arrmodtmp : temp array used in pregnancy progression
+!!	babyembryo : used during implant phase. if the fertegg successfully nests, babyembryo is +1. BabyEmbryo is for how many unborn babies are inside Sveta.
+!!	Babyptype : pregnancy type of unborn babies. they might be unimplanted 0, healthy 1, or Ectopic 2.
+!!	broodcurse : some modifier for fertility - brood curse
+!!	can_idx : candidate index - the index for the possible father
+!!	can_sz : has array size of cumarrnam[], used to check if there is cum in the womb.
+!!	cfl_ct : cum father lotto counter. used in a loop
+!!	cfl_idx : cum father lotto index. used as index for arrays.
+!!	cfl_sz : cum father lotto size. used for the size of the array
+!!	cfw_idx : used for the sperm lotto. Index for the father
+!!	cfw_sz : used for the sperm lotto. amount of semen in womb
+!!	ChildConType : Contraceptives used during conception. e.g. condom slipped off or sveta was on a pill.
+!!	ctemp : temporay array for cum ammount
+!!	cum_total : how many amounts of cum are in svetas womb
+!!	cumarr_idx : cum array index, used to identify how much cum is stored in the cum arrays
+!!	cumarrtemp : another temp var for cum arrays
+!!	cumcondslip : Introduced in Cum_Manage.qsrc. Did the condom slip off?
+!!	cumcondslip_aware : is Sveta aware it slipped?
+!!	cumfatherDNA[] : used to figure out the DNA of the father in the sperm lotto
+!!	cumfathlotto[] : used to figure out the name of the father in the sperm lotto
+!!	cumpdrop : used for calculation of drop in cum current potential
+!!	cumsumass : sum of cum on ass
+!!	cumsumbod : sum of cum on body
+!!	cumsumvag : sum of cum on vagina
+!!	cumtime[] : array to store how many times someone came in Sveta. More cumtime means more possibility to be the father.
+!!	cyccustom : custom cycle flag variable. Either 0 or 1. Activates custom cycle reports during pregnancy.
+!!	cycle : current state of svetas cycle, can be 0 to 5. 0 to 4 are usual mentruation cycles including fertilization. 5 is for the status 'pregnant'.
+!!	daykid : Birthday of the baby/kid
+!!	daylastperiod : daylastperiod is for Svetas knowledge on when she began her last period
+!!	egg_idx : egg index. There could be more than one egg in Svetas womb, so the eggs have an index
+!!	egg_sz : var to store amount of unfertilized eggs
+!!	EggRH : The egg release counter. The level of egg release that Sveta has for her ovulation event. 150 generates a single egg, higher amounts might release more.
+!!	eyeskid : Eye color of the child
+!!	fert_thresh : the threshold of an egg to be fertilized. Modified by being on contraceptives and negative factors.
+!!	FertEgg : How many unimplanted eggs Sveta has in her. These are possible babies, but they die 330 hours after ovulation if they do not implant.
+!!	ferteggage : fertile egg age. used to check age of the egg (in hours). Time since the ovulation event. They last 330 and die if not implanted.
+!!	firstmens : The first day that Sveta bled during her last cycle. this is different than daylastperiod because this is the actual date, while daylastperiod is when Svetlana remembers it being.
+!!	FocH : FocH is for how many hours of Foccular cycle Sveta has gone through in her current fertility cycle. Focular starts at the end of her Luteal and contains the bleeding period in Svetkas cycle.
+!!	FocH_Max : maximum Follicular time (in hours)
+!!	hairkid : Hair color of the child
+!!	imp_rand : randomizer variable used during egg implantation phase
+!!	implant_day : day the egg was implanted
+!!	implant_hour : hour the egg was implanted
+!!	implant_idx : implant index used for array indexing, used in implantation phase
+!!	implant_sz : implant array size, used in implantation phase
+!!	isprok : used for menstruation bleeding flagging. can be 0 or 1.
+!!	kid : Kid counter variable
+!!	kidage : Age of the baby/child
+!!	knowpregloss : knowpregloss is for Svetas knowledge that she lost a baby. 1 is for an abortion, 2 is for a miscarrage. 
+!!	knowpregrecover : knowpregrecover is for Svetas knowledge that she just gave birth.
+!!	lactation[] : The lactation array. More on that in lact_lib
+!!	lastmens : timestamp of last menstruation. The last day that Sveta bled during her last cycle.
+!!	lastovulation : used to store the last ovulation date
+!!	lotto_idx : lotto index. Used to randomly pick a sperm.
+!!	LutH : How many hours of Luteal cycle Sveta has gone through in her current fertility cycle.
+!!	LutH_Max : maximum Luteal time (in hours)
+!!	menoage : The age Svetas will be when she goes through menopause.
+!!	mesec : variable for menstruation. How many hours of bleeding Sveta has left in her current fertility cycle.
+!!	monthkid : birth month of the kid
+!!	nextbaby : index for babies.
+!!	Ovulate : Ovulate is the amount of hours remaining in Svetas ovulation period of her current fertility cycle. 
+!!	pillcon : variable for contraceptive pills to prevent pregnancy. More on that below.
+!!	polkid : Sex of the baby/kid. 0 = female, 1 = male
+!!	preg : Pregnancy flag. 0 = not pregnant, 1 = pregnant, 2 = delivery
+!!	PregChem : Progress of the pregnancy in hours.
+!!	pregminut : total minutes + 1440 minutes. The time Sveta has from the first uterine contraction to labour. Usually Sveta dies during labour if this time is surpassed.
+!!	pregspeedcheat : Cheat variable for faster pregnancies.
+!!	rcntorgzm : determine wether Sveta had an orgasm withhin the last hour or not (1 or 0)
+!!	rcntorgzmtmp : temp variable to rewrite to rcntorgzm
+!!	RecovH : Recovery counter in hours. RecovH is the amount of recover hours before Svetas fertility cycle resets after having a baby.
+!!	rej_idx : egg rejection array index. used during luteal phase to loop through any eggs not implanted.
+!!	rej_sz : egg rejection array size. used during luteal phase to loop through any eggs not implanted.
+!!	sexnutrition : succubus sex nutrition
+!!	sparrtmpv : temp var for spatter arrays for temporary array index tracking
+!!	sterileov : sterile ovulation. used for negative effects on ovulation.
+!!	steriletu : sterilized through tubal ligation procedure. Usually smaller than 0 when sterile.
+!!	sterilewb : sterile womb. Womb damage. Used for negative impact in the womb.
+!!	sucabscum : was cum absorbed by succubus? (1 or 0)
+!!	succublvl : succubus level (obviously)
+!!	succubusflag : used for succubus story arc. If Sveta is a succubus, the sperm will be absorbed
+!!	succubxp : succubus experience
+!!	succycletmp : succubus cycle temp var. Used during sperm absorption function.
+!!	tempbabyi : temp var for baby variable removal.
+!!	tempovbonus : temp var for ovulation bonus. Fertility bonus.
+!!	temprand : used as temp var for randomizer
+!!	tempwbbonus : temp variable for womb bonus during egg implant function
+!!	totminut : total minutes variable, used by various functions
+!!	UnfertEgg : UnfertEgg is how many unfertilized eggs Sveta has in her for fertilization during her Ovulation period. Unfertilized eggs are removed at the end of her Ovulation period.
+!!	wombAmount : how potent is the sperm of a guy
+!!	x : used as temp for a loop
+!!	y : used as temp for a loop
+!!	yearkid : Birth year of the baby/kid
+!!	z : used as temp for a loop
+!!
+!!	Cum Array indices (taken from Cum_Manage.qsrc):
+!!
+!!	cumarrnam : Sperm Owner
+!!	cumarrppt : Sperm Potential Potency (max sperm delivery)
+!!	cumarrcpt : Sperm Current Potency	(current amount of sperm)
+!!	cumarrdel : Sperm "Delivery" (method of *VAGINAL ONLY* acquisition)
+!!	cumarrcon :	Contraception typ used
+!!	cumarrage : Sperm age in hours
+!!	cumarrkno : Did you know/realize who did it?
+!!	cumarrcnt : Unique identifier of the exact which time the MC has had this sperm incident occur.
+!!
+!!	Spatter Array indices (taken from Cum_Manage.qsrc):
+!!
+!!	sparrloc : Location of the sperm, as per cumarrdel
+!!	sparrnam : Spatter Owner
+!!	sparrppt : Spatter Potential Potency (Used to increase potency if you don't clean yourself out)
+!!	sparridt : Did you know/realize who did it?
+!!	sparrvol : Volume of the spatter. 40 is average.
+!!	sparrslc : Spread status of the spatter. High volume can spread the contaminant from it's starting place.
+!!	sparrcnt : Unique identifier of the exact which time the MC has had this spatter incident occur.
+!!
+!!	Values of 'cumarrdel' as defined by the cum_arr (taken from Cum_Manage.qsrc):
+!!
+!!	cumarrdel = 0 : 'Vaginal intercourse'
+!!	cumarrdel = 1 : 'From spatter on labia'
+!!	cumarrdel = 2 : 'From the anal area'
+!!	cumarrdel = 3 : 'From sperm on clothing'
+!!	cumarrdel = 4 : 'From sperm on fingers'
+!!	cumarrdel = 5 : 'From sperm on wipes'
+!!	cumarrdel = 6 : 'Unknown'
+!!
+!!	Values of 'cumarrcon' as defined by the cum_arr (taken from Cum_Manage.qsrc):
+!!
+!!	cumarrcon = 0: 'No contraception used'
+!!	cumarrcon = 1: 'You lied about being on the pill'
+!!	cumarrcon = 2: 'You were on the pill'
+!!	cumarrcon = 3: 'You used a condom'
+!!	cumarrcon = 4: 'The condom broke'
+!!	cumarrcon = 5: 'The condom slipped off inside you'
+!!	cumarrcon = 6: 'The condom was sabotaged by someone else'
+!!	cumarrcon = 7: 'You sabotaged the condom'
+!!	cumarrcon = 8: 'Precum had sperm in it'
+!!	cumarrcon = 9: 'You believe are sterile'
+!!
+!!	Values of 'cumarrkno' as defined by the cum_arr (taken from Cum_Manage.qsrc):
+!!
+!!	cumarrkno = -2 : 'You were unaware there was sperm in you'
+!!	cumarrkno = -1 : 'You do not think that any sperm has gotten into you'
+!!	cumarrkno =  0 : 'You know somebody got sperm in you, but you don''t know that person'
+!!	cumarrkno =  1 : 'You know who got sperm in you'
+!!
+!!	Setting for no STD checks
+!!
+!!	cumnostd = 1 : No risk of STD, resets at end of file so must be used for all related cum_management calls
+!!
+!!	0 = 'In your Vagina'
+!!	1 = 'On your labia'
+!!	2 = 'On your panties over your vagina'
+!!	3 = 'In your anus'
+!!	4 = 'On your butt'
+!!	5 = 'On your panties over your butt'
+!!	6 = 'On your clothes in your groin area'
+!!	7 = 'On your clothes'
+!!	8 = 'On your back'
+!!	9 = 'On your legs'
+!!	10 = 'On your arms'
+!!	11 = 'On your face'
+!!	12 = 'Inside your mouth'
+!!	13 = 'On your hands'
+!!	14 = 'On your stomach'
+!!	15 = 'On your breasts'
+!!	16 = 'In your hair'
+!!	17 = 'In a condom in your vagina'
+!!------------------------------------------------------------------------------------------------------------
+!!	important values for pillcon
+!!------------------------------------------------------------------------------------------------------------
+!!	at 7000 pillcon sveta will begin slowing down the build up of hormone to release eggs - see cyc1
+!!	at 20000 pillcon sveta will very rarely even build up hormone to release eggs but its random so it can still happen anyways - see cyc1 and cyc2
+!!	at 26000 pillcon sveta only has a 1/400 chance of even releasing an egg at all even if she does build up enough hormone - see cyc2
+!!	at 38000 pillcon sveta no longer has periods at all and cannot get pregnant anymore -- see cyc3
+!!------------------------------------------------------------------------------------------------------------
+!!	Functions
+!!------------------------------------------------------------------------------------------------------------
+!!	Default :
+!!	- Hourly reduction in semen potency and semen absorption.
+!!	- Hourly call for the breastcycle, managing lactation and changes in the breasts.
+!!	- Hourly call of Svetas cycle via cycle variable.
+!!
+!!	cyc0:
+!!	- Handles actions from Menstruation to Follicular.
+!!
+!!	cyc1:
+!!	- Handles actions from Follicular to Ovulation.
+!!
+!!	cyc2:
+!!	- Handles actions for the Fertilization.
+!!
+!!	cyc3:
+!!	- handles actions from Luteal to Menstration or Pregnancy.
+!!
+!!	cyc4:
+!!	- handles actions from (post pregnancy) Recovery to Follicular..
+!!
+!!	preg:
+!!	- handles actions for the Pregnancy Progression.
+!!------------------------------------------------------------------------------------------------------------
+
+
 
 !! I have to initialize the variables somewhere, maybe in preCUST?
 if Luth_Max = 0: LutH_Max = rand(312,360) & !! 13-15 days including ovulation
 if Foch_Max = 0: FocH_Max = rand(312,360) & !! 13-15 days including menstruation
 
 if $ARGS[0] = '':
+	!!	calling the variable error handler, fixing variables here.
+	gs 'femcyc', 'femcyc_errhdl'
 	!{Hourly reduction in semen potency}
 	!{First it sets the array index to the first index, then it checks to be sure the array tracking the age is less than 144 hours. If it is 144 hours old, it kills that index, which should shift the index up. If it is less than 144 hours old, it sets a current potency drop. The drop is 2x or 3x regularly, but during ovulation it is only 1x, to represent the better environment from fertile cervical mucus.}
 	!{144 hours was selected due to that being approximately the maximum amount of time sperm is viable in the womb (120 would be more accurate, but there is leeway). PLEASE DO NOT CHANGE IT.}
 	!{The potency drop may seem small in game-time, but is meant to be a reasonable approximation to real life. Avoid unprotected sex within 5 days of ovulation if you want to mitigate your risk.}
 	!{the 'rcntorgzm' variable is set to determine whether Sveta has orgasmed within the last hour. If she has, a small potency boost for the guys she has slept with in that hour.}
-
+	
 	if rcntorgzm = 1:
 		if rcntorgzmtmp = 1: rcntorgzm = 0 & rcntorgzmtmp = 0
 		if rcntorgzmtmp = 0: rcntorgzmtmp = 1
@@ -207,7 +436,7 @@ if $ARGS[0] = '':
 		cumsumbod = ctemp[0]
 		cumsumvag = ctemp[1]
 		cumsumass = ctemp[2]
-		KILLVAR 'ctemp'
+		killvar 'ctemp'
 	end
 	!!	Breastcycle. Every breast related change with lactation happens in here.
 	if cheat_NoLactation > 0:
@@ -272,13 +501,13 @@ if $ARGS[0] = 'cyc1':
 		!! the setting of the max_time can be here although it can be changed in the future
 		LutH_Max = rand(312,360) & !! 13-15 days including ovulation
 		!{If you are ready to ovulate, it creates a chance to double ovulate. That chance is increased by your age. Then it does the same for a triple ovulation. Then it sets the ovulation tag, ovulation hour count, and begins a ticker for the life of the eggs.}
-		Temprand = rand(0,20)
-		Temprand += age/15
-		Temprand -= pillcon/1000
+		temprand = rand(0,20)
+		temprand += age/15
+		temprand -= pillcon/1000
 		if temprand > 20:
 			EggRH += 205
-			Temprand = rand(0,20)
-			Temprand += age/15
+			temprand = rand(0,20)
+			temprand += age/15
 			if temprand > 20: EggRH += 410
 		end
 		FocH = 0
@@ -295,9 +524,9 @@ end
 if $ARGS[0] = 'cyc2':
 	can_sz = arrsize('$cumarrnam')
 	if Ovulate > 0 and can_sz > 0 and UnfertEgg > 0:
-		KILLVAR 'cumtime'
-		KILLVAR 'cumfthname'
-		KILLVAR '$wombpotfath'
+		killvar 'cumtime'
+		killvar 'cumfthname'
+		killvar '$wombpotfath'
 		$cumfthname[0] = 'unknown'
 		cumtime[0] = 0
 		can_idx = 0
@@ -360,7 +589,7 @@ if $ARGS[0] = 'cyc2':
 		end
 
 !!{Create lotto of potential fathers based on each potential fathers sperm as a percentage of the total. The higher percentage of sperm from a given father, the more lotto entries he will have.}
-		KILLVAR '$cumfathlotto'
+		killvar '$cumfathlotto'
 		cfw_idx = 0
 		cfw_sz = arrsize('wombAmount')
 		:FathLottoLoop
@@ -418,7 +647,7 @@ if $ARGS[0] = 'cyc2':
 				hairkid[nextbaby] = rand(0, 3)
 				eyeskid[nextbaby] = rand(0, 3)
 				ChildConType[nextbaby] = cumarrcon[nextbaby]
-				if fertegg > 1:
+				if FertEgg > 1:
 					$childtype[nextbaby] = 'fraternal twin'
 					$childtype[nextbaby-1] = 'fraternal twin'
 				else
@@ -435,7 +664,7 @@ if $ARGS[0] = 'cyc2':
 !!{Ovulation to Luteal. It checks to see if you are on the ovulation cycle. If you are, it checks you for your pillcon. If it is high enough, no egg is released. Under high concentrations of pill chemical, ovulation ticks away quicker. Otherwise, it checks to see if your ovulation hormone is high enough, and if it is it gives you an egg and drops a good chunk down on your ovulation hormone. if its still high, it drops another egg. Then it checks your ovulation hours. If its down to 0, it starts the Luteal phase. Otherwise, it adds an hour to the egg age and reduces the ovulation window by an hour.}
 	if pillcon > 26000 and rand(0,400) ! 0: EggRH = 0
 	:OviLoop
-	If EggRH > ((UnfertEgg + FertEgg) * 150):
+	if EggRH > ((UnfertEgg + FertEgg) * 150):
 		UnfertEgg += 1
 		EggRH -= (200 * UnfertEgg)
 		jump 'OviLoop'
@@ -444,9 +673,9 @@ if $ARGS[0] = 'cyc2':
 		cycle = 3
 		UnfertEgg = 0
 	end
-	if fertegg = 1 and ferteggage < 330:
+	if FertEgg = 1 and ferteggage < 330:
 		if rand(0,(2000 - age*20)) = 0:
-			fertegg += 1
+			FertEgg += 1
 			nextbaby = arrsize('$ChildFath')
 			polkid[nextbaby] = polkid[nextbaby-1]
 			$kidname[nextbaby] = 'unborn'
@@ -476,9 +705,9 @@ end
 !{Otherwise, it adds your womb sterility factor to the imp_rand. Then it checks if your imp_rand crosses a threshold for implantation. Younger women implant easier. It then sets the next baby to the next unimplanted baby in your kid array. It registers the kid as a normal pregnancy, removes a fertilized egg and adds an embryo. Then it adds some pregnancy hormone if you arent already pregnant, and calls you officially pregnant.}
 
 if $ARGS[0] = 'cyc3':
-	if fertegg = 1 and ferteggage < 330:
+	if FertEgg = 1 and ferteggage < 330:
 		if rand(0,(2000 - age*20)) = 0:
-			fertegg += 1
+			FertEgg += 1
 			nextbaby = arrsize('$ChildFath')
 			polkid[nextbaby] = polkid[nextbaby-1]
 			$kidname[nextbaby] = 'unborn'
@@ -556,18 +785,18 @@ if $ARGS[0] = 'cyc3':
 		:lutcycloop
 		if rej_idx < rej_sz:
 			if Babyptype[rej_idx] = 0:
-				KILLVAR 'polkid',tempbabyi
-				KILLVAR '$kidname',tempbabyi
-				KILLVAR 'kidage',tempbabyi
-				KILLVAR 'daykid',tempbabyi
-				KILLVAR 'monthkid',tempbabyi
-				KILLVAR 'yearkid',tempbabyi
-				KILLVAR 'Babyptype',tempbabyi
-				KILLVAR '$ChildFath',tempbabyi
-				KILLVAR '$ChildThFath',tempbabyi
-				KILLVAR 'hairkid',tempbabyi
-				KILLVAR 'eyeskid',tempbabyi
-				KILLVAR 'cumarrcon',tempbabyi
+				killvar 'polkid',tempbabyi
+				killvar '$kidname',tempbabyi
+				killvar 'kidage',tempbabyi
+				killvar 'daykid',tempbabyi
+				killvar 'monthkid',tempbabyi
+				killvar 'yearkid',tempbabyi
+				killvar 'Babyptype',tempbabyi
+				killvar '$ChildFath',tempbabyi
+				killvar '$ChildThFath',tempbabyi
+				killvar 'hairkid',tempbabyi
+				killvar 'eyeskid',tempbabyi
+				killvar 'cumarrcon',tempbabyi
 				FertEgg -= 1
 			end
 			rej_idx += 1
@@ -577,13 +806,13 @@ if $ARGS[0] = 'cyc3':
 		if preg = 1:
 			cycle = 5
 		elseif menoage <= age:
-			KILLVAR '$wombpotfath'
+			killvar '$wombpotfath'
 			killvar '$cumfthname'
 			killvar '$cumfthusedname'
 			killvar 'cumtime'
 			cycle = 6
 		else
-			KILLVAR '$wombpotfath'
+			killvar '$wombpotfath'
 			killvar '$cumfthname'
 			killvar '$cumfthusedname'
 			killvar 'cumtime'
@@ -612,7 +841,7 @@ if $ARGS[0] = 'cyc3':
 			end
 		end
 	else
-		if preg = 1:PregChem += 1+pregspeedcheat
+		if preg = 1:PregChem += 1 + pregspeedcheat
 		if rand(0,100) < 100: LutH += 1
 	end
 end
@@ -642,7 +871,7 @@ end
 !{Pregnancy Progression. It checks to see if you are in the pregnancy phase of a cycle. If you are, it progresses your pregnancy chemical. Then it gives a fluxuation of possible due dates. If you cross the due date threshold, you enter labor, marked by preg = 2. Other milestones will also be placed in here, including body deformations. Right now this is mostly an empty placeholder.}
 
 if $ARGS[0] = 'preg':
-	if fertegg = 1 and ferteggage < 330:
+	if FertEgg = 1 and ferteggage < 330:
 		if rand(0,(2000 - age*20)) = 0:
 			babyembryo += 1
 			PregChem += rand(10,30)
@@ -670,7 +899,7 @@ if $ARGS[0] = 'preg':
 		!!	switch on lactation if not already active.
 		if lactation['active'] < 1: func('lact_lib','lact_switch')
 		$cycreport_txt = 'In labour'
-		arrmodtmp =arrsize('$ChildFath')
+		arrmodtmp = arrsize('$ChildFath')
 		arrmodtmp -= (babyembryo+1)
 		:babyfinalpreploop
 		if arrmodtmp < arrsize('$ChildFath') and daykid[arrmodtmp] = 0:
@@ -679,8 +908,8 @@ if $ARGS[0] = 'preg':
 			arrmodtmp += 1
 			jump 'babyfinalpreploop'
 		end
-		KILLVAR '$wombpotfath'
-		KILLVAR '$wombthfath'
+		killvar '$wombpotfath'
+		killvar '$wombthfath'
 		preg = 2
 		pregminut = totminut + 1440
 		if babyembryo > 1:
@@ -702,12 +931,25 @@ if $ARGS[0] = 'preg':
 		'You need to get to a clinic.'
 	end
 	if PregChem > 2203:
-		if pregchem > 2853 or kid > 0:
+		if PregChem > 2853 or kid > 0:
 			if rand(0,7) = 0: dynamic $d_pregmovement
 		else
 			if rand(0,500) = 0: dynamic $d_pregmovement
 		end
 	end
+end
+
+!!	Variable error handler for femcyc. Checking if variables are out of range and resets them.
+if $ARGS[0] = 'femcyc_errhdl':
+	if cycle < 0 or cycle > 6: cycle = 0
+	if rcntorgzmtmp < 0 or rcntorgzmtmp > 1: rcntorgzmtmp = 0
+	if rcntorgzm < 0 or rcntorgzm > 1: rcntorgzm = 0
+	if PregChem < 0: PregChem = 0
+	if preg < 0 or preg > 2: preg = 0
+	if ferteggage < 0: ferteggage = 0
+	if EggRH < 0: EggRH = 0
+	if FocH < 0: FocH = 0
+	if FertEgg < 0: FertEgg = 0
 end
 
 --- femcyc ---------------------------------
