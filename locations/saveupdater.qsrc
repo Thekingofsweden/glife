@@ -634,14 +634,6 @@ if ((100*version_major +version_minor)*100+version_revision)*100+version_patch  
 	end
 	!!---------------------------------------------------------------
 
-	!! fixes the variable for Christina getting outcasted, so she will show up in the journal correctly
-
-	if zverSlutQW = 2:
-		npc_grupTipe['A18'] = 5
-	end
-
-	!!---------------------------------------------------------------
-
 	!!model age addition
 
 	if model['age'] = 0 and model > 0:
@@ -673,16 +665,90 @@ if ((100*version_major +version_minor)*100+version_revision)*100+version_patch  
 	if lariskaHelp_end > 0:  LariskaQw['LariskaHelpEnd'] = lariskaHelp_end & killvar 'lariskaHelp_end'
 	!!---------------------------------------------------------------
 
-	!! Lariska variables removed, no longer needed - 2020/11/30
-	if beInLariskaHome = 1:
-		LariskaHomeIn = 2
+	!! Lariska variables removed, no longer needed - 2020/11/30 - Alaratt
+	!! Edited - 2021/01/19 - Alaratt
+	if beInLariskaHome = 1 or LariskaHomeIn >= 1:
+		if LariskaHomeIn = 1:
+			LariskaQW['story'] = 4
+		else
+			LariskaQW['story'] = 5
+		end
+		killvar 'LariskaHomeIn'
 		killvar 'beInLariskaHome'
 	end
 	if doorlocked > 0: killvar 'doorlocked'
 	if doorpeek > 0: killvar 'doorpeek'
 	if lariskaBDSM > 0: killvar 'lariskaBDSM'
+	if lariskaMotherKnown = 1:
+		LariskaQW['metAnna'] = 1
+		killvar 'lariskaMotherKnown'
+	end
+	if LariskaProfi = 1:
+		LariskaQW['volleyball'] = 1
+		killvar 'LariskaProfi'
+	end
 	!!---------------------------------------------------------------
 
+	!! Migrates Christina variables into an array, removes unneeded variables, and fixes the outcast issue if still needed
+	!! 2021/01/19 - Alaratt
+	if zverSlutQW > 0:
+		if zverSlutQW = 2:
+			!! Christina lost the fight and is outcasted
+			christinaQW['fight'] = 1
+			christinaQW['dompath'] = 7
+			npc_grupTipe['A18'] = 5
+		else
+			!! Christina lost the fight and is prepped for outcasting
+			christinaQW['fight'] = 1
+			christinaQW['dompath'] = 6
+		end
+		killvar 'zverSlutQW'
+	end
+	
+	if zverRageQW > 0:
+		if zverRageQW = 10:
+			!! Christina won the fight
+			christinaQW['fight'] = -1
+			christinaQW['subpath'] = 2
+		elseif zverRageQW = 2:
+			!! Christina lost the fight
+			christinaQW['fight'] = 1
+			christinaQW['dompath'] = 6
+		else
+			!! You spread rumors about Christina and she preps for fight
+			christinaQW['dompath'] = 4
+		end
+		killvar 'zverRageQW'
+	end
+	
+	if socialchg['christina_dont_care'] = 1:socialchg['christina_dont_care'] = 0
+	if zverevaQW > 0:killvar 'zverevaQW'
+	if LinaSlut > 0:killvar 'LinaSlut'
+	if fizrukSex > 0:killvar 'fizrukSex'
+	if kristinaSex > 0:killvar 'kristinaSex'
+	
+	if christinaphotos > 0:
+		if christinaphotos = 3:
+			!! Christina won the fight and you have not had a shower scene with her yet
+			christinaQW['fight'] = -1
+			christinaQW['subpath'] = 2
+		elseif christinaphotos = 4:
+			!! Christina won the fight and you had first shower scene with her
+			christinaQW['fight'] = -1
+			christinaQW['subpath'] = 3
+		elseif christinaphotos = 2
+			!! You submitted to Christina and you had first shower scene with her
+			christinaQW['submit'] = 1
+			christinaQW['subpath'] = 3
+		else
+			!! You submitted to Christina but not had a shower scene with her yet
+			christinaQW['submit'] = 1
+			christinaQW['subpath'] = 2
+		end
+		killvar 'christinaphotos'
+	end
+	
+	!!---------------------------------------------------------------
 
 	!! Shave updater
 	if shave_update ! 1:
