@@ -23,7 +23,7 @@ if $ARGS[0] = 'start':
 	if ((masseuse['<<week>>_shift_1'] = 1 and hour = 9) or (masseuse['<<week>>_shift_2'] = 1 and hour = 13) or (masseuse['<<week>>_shift_3'] = 1 and hour = 17)) and masseuse['uniform'] ! 1:
 		masseuse['weeks_pay'] -= 1
 		'"Hey!" Xian yells at you from the front desk. "You''re late! You''re being docked an hour''s pay for that! Now get changed and get in there!"'
-	elseif (masseuse['<<week>>_shift_1'] = 1 and hour > 9) or (masseuse['<<week>>_shift_2'] = 1 and hour > 13) or (masseuse['<<week>>_shift_3'] = 1 and hour > 17) or masseuse['missed_shift2'] > 0:
+	elseif (masseuse['<<week>>_shift_1'] = 1 and hour > 9 and masseuse['last_worked_day'] ! daystart) or (masseuse['<<week>>_shift_2'] = 1 and hour > 13 and masseuse['last_worked_day'] ! daystart) or (masseuse['<<week>>_shift_3'] = 1 and hour > 17 and (masseuse['last_worked_day'] ! daystart or (masseuse['last_worked_day'] = daystart and masseuse['last_worked_hour'] ! hour))) or masseuse['missed_shift2'] > 0:
 		'"Hey! You missed your shift! What the hell is wrong with you?"'
 		if masseuse['<<week>>_shift_1'] = 1 and hour > 9:
 			masseuse['<<week>>_shift_1'] = 2
@@ -32,8 +32,9 @@ if $ARGS[0] = 'start':
 		elseif masseuse['<<week>>_shift_3'] = 1 and hour > 17:
 			masseuse['<<week>>_shift_3'] = 2
 		end
+		masseuse['missed_shift'] += masseuse['missed_shift2']
 		masseuse['missed_shift2'] = 0
-		masseuse['missed_shift'] += 1
+		
 	end
 	act 'Leave':
 		if masseuse['uniform'] = 1:
@@ -492,6 +493,7 @@ end
 !!	Masseuse Job Stuff
 !!-------------------------------------------------------------------------------------------------------------------------------
 if $ARGS[0] = 'masseuse_orientation':
+	masseuse['hired_day'] = daystart
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/salon.jpg"></center>'
 	'You scribble out a signature and she takes the paper back from you.'
 	'"Thank you very much! So for future reference, I''m Xian, one of the managers here. All your clients will come to me and will be able to request you based on whether you are available or not. Now if you''ll quickly follow me," she gets up from her chair and moves around the desk towards the back.'
@@ -567,7 +569,7 @@ end
 if $ARGS[0] = 'questions':
 	cla & *clr
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
-	'"Pay day is Friday. You can pick it up from me any time on that day. Do you have any questions?"'
+	'"We schedule who''s working every Sunday so be sure to come in then to set your hours. Pay day is Friday. You can pick it up from me any time on or after that day.  Do you have any questions?"'
 	act'No more questions':
 		cla & *clr
 		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
@@ -841,20 +843,27 @@ if $ARGS[0] = 'payday':
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/mall/salon/xian.jpg"></center>'
 	'"I''m here to pick up my pay for this week Xian."'
 	'"Okay!" She opens up a drawer and thumbs through a few different labels before reaching into one and picking up an envelope. She hands it over to you.'
-	if masseuse['shifts_worked'] < masseuse['shifts_required']:
+	if masseuse['hired_day'] <= daystart - 7:
+	
+	!!	gs'salon','first_week'
+	elseif masseuse['shifts_worked'] < masseuse['shifts_required']:
+		masseuse['warning'] - 1
 		'"Hey, you only worked <<masseuse[''shifts_worked'']>> this week. You were supposed to work <<masseuse[''shifts_required'']>>."'
 		'"Sorry," you say, reaching for the envelope. "Won''t happen again."'
 		'"Better not." You try to pull the envelope away but Xian holds on tight to it, not budging until you make eye contact. "<<masseuse[''warning'']>> more times and you''re fired."'
 		*nl
 		'She lets go.'
 	elseif masseuse['shifts_worked'] >= masseuse['shifts_required']:
-		masseuse['shifts_worked'] = 0
 		if masseuse['shifts_worked'] > masseuse['shifts_required']:
-			'"By the way, thanks for covering those extra shifts this week <<$pcs_firstname>>! Really helpful for us."'
-			'"No problem, I wanted the money," you say, taking the envelope.'
+			'"By the way, thank you for covering those extra shifts this week <<$pcs_firstname>>. Really helpful for us."'
+			'"No problem Xian," you say, taking the envelope. "I could use the extra cash."'
 		end
-	end
-	
+	end	
+	gs 'salon','payday_end'
+	act'Leave':gt'salon','start'
+end
+
+if $ARGS[0] = 'payday_end':
 	'Looking inside, you see it''s stuffed with cash that counts out to <<masseuse[''paycheck'']>> <b>₽</b>.'
 	money += masseuse['paycheck']
 	masseuse['money_earned'] += masseuse['paycheck']
@@ -866,7 +875,7 @@ if $ARGS[0] = 'payday':
 	masseuse['payday'] = 0
 	masseuse['weeks_pay'] = 0
 	masseuse['paycheck'] = 0
-	act'Leave':gt'salon','start'
+	masseuse['shifts_worked'] = 0
 end
 
 if $ARGS[0] = 'rehire1':
@@ -1820,6 +1829,23 @@ if $ARGS[0] = 'massage':
 			end
 		end
 	end
+end
+
+if $ARGS[0] = 'massage_explain':
+	*nl
+	'"For women we have several types of massages.'
+	*nl
+	'First off, we have your <b>standard body massage</b>, guaranteed to leave you feeling relaxed and refreshed.'
+	*nl
+	'Then we also have a <b>special wellness massage</b>. Very relaxing as well and with the use of special oils will leave you feeling younger and delay the aging process of your skin.'
+	*nl
+	'There is also the <b>magic finger massage</b>, which relaxes you in a different way. Designed to release tension from your body, it will have you moaning for the entire session we''re sure of it. It has very <i>climactic</i> results.'
+	*nl
+	'We also have a <b>throat massage for those who have a bit of an oral fixation. Helps to satisfy the need to suck on something. Comes with a complimentary cocktail or facial, whichever you choose.'
+	*nl
+	'We have the <b>hardcore massage</b> and the <b>double hardcore massage</b>. The hardcore massage is there to quite literally pound the stress from your body. Our massage therapists are extremely skilled when it comes to relieving stress in this manner. A double hardcore massage is simply adding one more person. Instead of a single massage therapist, two of them will simultaneously pound you for maximum stress relief.'
+	*nl
+	'Lastly, we have a <b>gentle massage</b>. Not everybody likes it hard, so we have a more gentle version as well that should fill your needs quite nicely if you are inclined.'
 end
 
 if $ARGS[0] = 'massage_end':

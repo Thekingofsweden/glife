@@ -2,76 +2,48 @@
 
 
 if $ARGS[0] = 'schedule_reset':
-	masseuse['new_job_week'] = daystart + (8 - week)
+	i = 1
 	if masseuse['shifts_required'] = 5:
-		masseuse['7_shift_1_taken'] = rand(0,2)
-		masseuse['7_shift_2_taken'] = rand(0,2)
-		masseuse['7_shift_3_taken'] = rand(0,2)
-		
-		masseuse['6_shift_1_taken'] = rand(0,2)
-		masseuse['6_shift_2_taken'] = rand(0,2)
-		masseuse['6_shift_3_taken'] = rand(0,2)
-		
-		masseuse['5_shift_1_taken'] = rand(0,2)
-		masseuse['5_shift_2_taken'] = rand(0,2)
-		masseuse['5_shift_3_taken'] = rand(0,2)
-		
-		masseuse['4_shift_1_taken'] = rand(0,2)
-		masseuse['4_shift_2_taken'] = rand(0,2)
-		masseuse['4_shift_3_taken'] = rand(0,2)
-		
-		masseuse['3_shift_1_taken'] = rand(0,2)
-		masseuse['3_shift_2_taken'] = rand(0,2)
-		masseuse['3_shift_3_taken'] = rand(0,2)
-		
-		masseuse['2_shift_1_taken'] = rand(0,2)
-		masseuse['2_shift_2_taken'] = rand(0,2)
-		masseuse['2_shift_3_taken'] = rand(0,2)
-		
-		masseuse['1_shift_1_taken'] = rand(0,2)
-		masseuse['1_shift_2_taken'] = rand(0,2)
-		masseuse['1_shift_3_taken'] = rand(0,2)
-		
+		:loop_masseuse_sched_part
+		if masseuse['<<i>>_shift_1'] ! 1:
+			masseuse['<<i>>_shift_1'] = 0
+			masseuse['<<i>>_shift_1_taken'] = rand(0,2)
+		end
+		if masseuse['<<i>>_shift_2'] ! 1: 
+			masseuse['<<i>>_shift_2'] = 0
+			masseuse['<<i>>_shift_2_taken'] = rand(0,2)
+		end
+		if masseuse['<<i>>_shift_3'] ! 1: 
+			masseuse['<<i>>_shift_3'] = 0
+			masseuse['<<i>>_shift_3_taken'] = rand(-1,2)
+		end
+		i += 1
+		if i < 8: jump 'loop_masseuse_sched_part'
 	elseif masseuse['shifts_required'] = 10:
-	
-		masseuse['7_shift_1_taken'] = rand(-3,2)
-		masseuse['7_shift_2_taken'] = rand(-3,2)
-		masseuse['7_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['6_shift_1_taken'] = rand(-3,2)
-		masseuse['6_shift_2_taken'] = rand(-3,2)
-		masseuse['6_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['5_shift_1_taken'] = rand(-3,2)
-		masseuse['5_shift_2_taken'] = rand(-3,2)
-		masseuse['5_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['4_shift_1_taken'] = rand(-3,2)
-		masseuse['4_shift_2_taken'] = rand(-3,2)
-		masseuse['4_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['3_shift_1_taken'] = rand(-3,2)
-		masseuse['3_shift_2_taken'] = rand(-3,2)
-		masseuse['3_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['2_shift_1_taken'] = rand(-3,2)
-		masseuse['2_shift_2_taken'] = rand(-3,2)
-		masseuse['2_shift_3_taken'] = rand(-3,2)
-		
-		masseuse['1_shift_1_taken'] = rand(-3,2)
-		masseuse['1_shift_2_taken'] = rand(-3,2)
-		masseuse['1_shift_3_taken'] = rand(-3,2)
+		:loop_masseuse_sched_full
+		if masseuse['<<i>>_shift_1'] ! 1: 
+			masseuse['<<i>>_shift_1'] = 0
+			masseuse['<<i>>_shift_1_taken'] = rand(-3,2)
+		end
+		if masseuse['<<i>>_shift_2'] ! 1: 
+			masseuse['<<i>>_shift_2'] = 0
+			masseuse['<<i>>_shift_2_taken'] = rand(-3,2)
+		end
+		if masseuse['<<i>>_shift_3'] ! 1: 
+			masseuse['<<i>>_shift_3'] = 0
+			masseuse['<<i>>_shift_3_taken'] = rand(-3,2)
+		end
+		i += 1
+		if i < 8: jump 'loop_masseuse_sched_full'
 	end
-	gt'masseuse_schedule','start'
 end
 
 
 if $ARGS[0] = 'start':
 
 	act'Finish scheduling':gt'salon','start'
-	
-    if masseuse['new_job_week'] <= daystart: gt'masseuse_schedule','schedule_reset'
-
+	if masseuse['schedule_update'] = 0: masseuse['schedule_update'] = daystart & gs 'masseuse_schedule','schedule_reset'
+	gs 'stat'
 	'<Table border=1><TR><TH>Sunday</TH> <TH>Monday</TH> <TH>Tuesday</TH> <TH>Wednesday</TH> <TH>Thursday</TH> <TH>Friday</TH> <TH>Saturday</TH></TR>'
 
 !! ---------------------------------------------- 09:00 Shifts ---------------------------------------------------------------------------------
@@ -83,6 +55,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['7_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['7_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''7_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -96,6 +71,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['1_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['1_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''1_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -109,6 +87,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['2_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['2_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''2_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -122,6 +103,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['3_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['3_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''3_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -135,6 +119,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['4_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['4_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''4_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -148,6 +135,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['5_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['5_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''5_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -161,6 +151,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['6_shift_1_taken'] = 2:
 		'09:00-13:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['6_shift_1'] = 2:
+		'09:00-13:00 shift'
+		'<i>already worked</i>'
 	else
 		'09:00-13:00 shift'
 		'<a href="exec:masseuse[''6_shift_1''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -177,6 +170,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['7_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['7_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''7_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -190,6 +186,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['1_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['1_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''1_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -203,6 +202,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['2_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['2_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''2_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -216,6 +218,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['3_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['3_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''3_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -229,6 +234,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['4_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['4_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''4_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -242,6 +250,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['5_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['5_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
 		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''5_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -255,8 +266,11 @@ if $ARGS[0] = 'start':
 	elseif masseuse['6_shift_2_taken'] = 2:
 		'13:00-17:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['6_shift_2'] = 2:
+		'13:00-17:00 shift'
+		'<i>already worked</i>'
 	else
-		'09:00-13:00 shift'
+		'13:00-17:00 shift'
 		'<a href="exec:masseuse[''6_shift_2''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
 	end
 	'</td></tr>'
@@ -271,6 +285,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['7_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['7_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''7_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -284,6 +301,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['1_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['1_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''1_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -297,6 +317,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['2_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['2_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''2_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -310,6 +333,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['3_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['3_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''3_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -323,6 +349,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['4_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['4_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''4_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -336,6 +365,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['5_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['5_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''5_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -349,6 +381,9 @@ if $ARGS[0] = 'start':
 	elseif masseuse['6_shift_3_taken'] = 2:
 		'17:00-21:00 shift'
 		'<i>not available</i>'
+	elseif masseuse['6_shift_3'] = 2:
+		'17:00-21:00 shift'
+		'<i>already worked</i>'
 	else
 		'17:00-21:00 shift'
 		'<a href="exec:masseuse[''6_shift_3''] = 0 & gt''masseuse_schedule'',''start''"> Cancel Shift</a>'
@@ -356,9 +391,5 @@ if $ARGS[0] = 'start':
 	'</td></tr>'
 	
 end
-
-
-!! --------------------------------------------------------------- Ignore Everything Past This Line -----------------------------------------------------------------------------
-
 
 --- masseuse_work ---------------------------------
