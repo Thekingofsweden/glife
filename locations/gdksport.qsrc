@@ -20,6 +20,8 @@ if $ARGS[0] = 'start':
 	'In the locker room is a <a href="exec: gt ''mirror'',''start''">mirror</a>, where you can ' + iif(pcs_hairbsh = 0,'<a href="exec: gt ''mirror'',''brush''">brush</a>','brush') + ' your hair.'
 	*nl
 	'You can access your <a href="exec: quick_dress = 1 & gt ''wardrobe'', ''default''">default clothing</a> options directly.'
+	*nl
+	if AlbinaQW['StarletsJoined'] > 0 and AlbinaQW['StarletsShutDown'] = 0 and npc_pregtalk['A23'] = 0 and cheerleaders_on = 1: 'Albina is at cheerleading, so there is no Starlets training today.'
 
 	if kotovLoveQW > 0 and hour = 16:
 		'You see <a href="exec:minut += 3 & gt ''kotovEv''">Vitek Kotov</a> with a large sports bag entering the sports club.'
@@ -121,11 +123,23 @@ if $ARGS[0] = 'start':
 				end
 			end
 		elseif AlbinaQW['StarletsJoined'] > 0 and AlbinaQW['StarletsShutDown'] = 0 and npc_pregtalk['A23'] = 0 and AlbinaQW['startletsday'] ! daystart:
-			if (pregtime >= 90) or (grupTipe = 5):
-				if pregtime >= 90: act 'Train with Starlets': gt 'AlbStars', 'Starletsreact'
-				if grupTipe = 5: act 'Train with Starlets': gt 'AlbStars', 'StarletsEnd' 
+			if hour = 15 and starlets_on = 1:
+				if pregtime >= 90 or grupTipe = 5 or starlets_missed = 1:
+					if pregtime >= 90: act 'Train with Starlets': gt 'AlbStars', 'Starletsreact'
+					if grupTipe = 5: act 'Train with Starlets': gt 'AlbStars', 'StarletsEnd'
+					if starlets_missed = 1:
+						act 'Train with Starlets': 
+							starlets_missed = 0
+							starlet_practice_skipped += 1
+							gt 'AlbStars', 'StarletsPracticeMissed'
+						end
+					end
+				else
+					act 'Train with Starlets': gt 'AlbStars', 'starlets'
+				end
+				act 'Quit the Starlets' : gt 'AlbStars', 'Quit' 
 			else
-				act 'Train with Starlets': gt 'AlbStars', 'starlets'
+				act 'Train with Starlets': '<br><font color="red"> The Starlets are not training right now.</font>'
 			end
 		end
 	elseif pcs_stam <= 20:
@@ -239,7 +253,7 @@ if $ARGS[0] = 'dance2':
 	else
 		'There is nothing you can learn from this dance class with your current skill. You need to find a new teacher or travel to the city to find better dance classes if you wish to improve further.'
 
-		if AlbinaQW['StarletsJoined'] = 0 and StoryLine ! 0:
+		if AlbinaQW['StarletsJoined'] = 0 and StoryLine ! 0 and ( month < 10 or ( month = 10 and day < 18 )):
 			if alterstrtimg = 13:
 				gt 'AlbStars', 'albina3'
 			elseif grupTipe = 1 or grupTipe = 2:
