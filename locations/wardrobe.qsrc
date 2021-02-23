@@ -25,10 +25,10 @@ if $ARGS[0] = 'start':
 	'<center><font color="maroon">These are the clothes you are currently wearing - Click on an item to change it</font></center><center><table border=0 cellspacing=<<ward_img_hgt/25>> cellpadding=5>'
 	*p '<TH>Bra worn</TH><TH>Outfit worn</TH><TH>Coat (only worn outside when cold)</TH>'
 	*P '<TR><TD><center><a href="exec:gt ''bras'', ''view_bra_list'', ''wardrobe''"><img Height = <<ward_img_hgt>> src="<<FUNC(''$body_image'',''bra'')>>"></a></center></TD><TD><center><a href="exec:gt ''clothing_QV'', ''list''"><img Height = <<ward_img_hgt * 2>> src="<<FUNC(''$body_image'',''clothes'')>>"></a></center></TD><TD><center>'
-	if defaultcoat = 0:
-		'<a href="exec:gt ''cloakroom'', ''view_coat_list''">Search the wardrobe</a>'
+	if $coatworntype = 'none':
+		'<a href="exec:gt ''coats'', ''view_coat_list''">Search the wardrobe</a>'
 	else
-		'<a href="exec:gt ''cloakroom'', ''view_coat_list''"><img Height = <<ward_img_hgt * 2>> src="<<FUNC(''$body_image'', ''coat'')>>"></a>'
+		'<a href="exec:gt ''coats'', ''view_coat_list''"><img Height = <<ward_img_hgt * 2>> src="<<FUNC(''$body_image'', ''coat'')>>"></a>'
 	end
 	'</center></TD><TR><TD><center>'
 	if $braworntype ! 'none':
@@ -43,8 +43,8 @@ if $ARGS[0] = 'start':
 		'Remove'
 	end
 	'</center></TD><TD><center>'
-	if defaultcoat ! 0:
-		'<a href="exec:defaultcoat_warmth = 0 & defaultcoat = 0 & gt ''wardrobe'', ''start''">Remove</a>'
+	if $coatworntype ! 'none':
+		'<a href="exec:gs ''coats'', ''remove'' & gt ''wardrobe'', ''start''">Remove</a>'
 	else
 		'Remove'
 	end
@@ -76,7 +76,7 @@ if $ARGS[0] = 'start':
 		'Remove'
 	end
 	'</center></TD><TR><TD><TD><center>'
-	if ($clothingworntype ! 'nude' and (defaultcoat > 0 or bag > 0)) or (defaultcoat > 0 and bag > 0):
+	if ($clothingworntype ! 'nude' and ($coatworntype ! 'none' or bag > 0)) or ($coatworntype ! 'none' and bag > 0):
 		'<a href="exec:gs ''wardrobe'', ''removeall'' & gt ''wardrobe'', ''start''">Remove all items</a>'
 	else
 		'Remove all items'
@@ -115,7 +115,7 @@ if $ARGS[0] = 'removeall':
 	gs 'panties', 'remove'
 	gs 'shoes', 'strip'
 	gs 'purses', 'remove'
-	defaultcoat = 0
+	gs 'coat', 'remove'
 end
 
 !!---------------------------Oufit stuff----------------------------------
@@ -168,28 +168,42 @@ if $ARGS[0] = 'default_entry_wear':
 		gs 'clothing', 'wear', $defclothingtype[default_entry], defclothingnumber[default_entry]
 	end
 
-	if dyneval('RESULT = <<$defbratype[default_entry]>>_bras[<<defbranumber[default_entry]>>]') = 0: $defbratype[default_entry] = 'none' & defbranumber[default_entry] = 0
-	gs 'bras', 'wear', $defbratype[default_entry], defbranumber[default_entry]
+	if dyneval('RESULT = <<$defbratype[default_entry]>>_bras[<<defbranumber[default_entry]>>]') = 0:
+		$defbratype[default_entry] = 'none' & defbranumber[default_entry] = 0
+	else
+		gs 'bras', 'wear', $defbratype[default_entry], defbranumber[default_entry]
+	end
 
-	if dyneval('RESULT = <<$defpantytype[default_entry]>>_panties[<<defpantynumber[default_entry]>>]') = 0: $defpantytype[default_entry] = 'none' & defpantynumber[default_entry] = 0
-	gs 'panties', 'wear', $defpantytype[default_entry], defpantynumber[default_entry]
+	if dyneval('RESULT = <<$defpantytype[default_entry]>>_panties[<<defpantynumber[default_entry]>>]') = 0:
+		$defpantytype[default_entry] = 'none' & defpantynumber[default_entry] = 0
+	else
+		gs 'panties', 'wear', $defpantytype[default_entry], defpantynumber[default_entry]
+	end
 
-	if dyneval('RESULT = s<<$defshoetype[default_entry]>>[<<defshoenumber[default_entry]>>]') = 0: $defshoetype[default_entry] = 'none' & defshoenumber[default_entry] = 0
-	gs 'shoes', 'wear', $defshoetype[default_entry], defshoenumber[default_entry]
+	if dyneval('RESULT = s<<$defshoetype[default_entry]>>[<<defshoenumber[default_entry]>>]') = 0:
+		$defshoetype[default_entry] = 'none' & defshoenumber[default_entry] = 0
+	else
+		gs 'shoes', 'wear', $defshoetype[default_entry], defshoenumber[default_entry]
+	end
 
 	if dyneval('RESULT = <<$defpursetype[default_entry]>>_purses[<<defpursenumber[default_entry]>>]') = 0:
-		$defpursetype[default_entry] = 'none' & defpursenumber[default_entry]
+		$defpursetype[default_entry] = 'none' & defpursenumber[default_entry] = 0
+	else
+		$currentpursetype = $defpursetype[default_entry]
+		currentpursenumber = defpursenumber[default_entry]
 	end
-	$currentpursetype = $defpursetype[default_entry]
-	currentpursenumber = defpursenumber[default_entry]
+
 	if $currentpursetype = 'none':
 		bag = 0
 	else
 		bag = 1
 	end
 
-	if dyneval('RESULT = coat[<<defcoat[default_entry]>>]') = 0: defcoat[default_entry] = 0
-	defaultcoat = defcoat[default_entry]
+	if dyneval('RESULT = <<$defcoattype[default_entry]>>[<<defcoatnumber[default_entry]>>]') = 0:
+		$defcoattype[default_entry] = 'none' & defcoatnumber[default_entry]
+	else
+		gs 'coat', 'wear', $defcoattype[default_entry], defcoatnumber[default_entry]
+	end
 
 	!! default school girl uniform is always allowed to be worn if still in school
 	if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $defclothingtype[default_entry] = 'gm_school' and defclothingnumber[default_entry] = 6:
@@ -234,8 +248,8 @@ if $ARGS[0] = 'default_entry_wear':
 			gs 'stat'
 			gt 'wardrobe', 'start'
 		end
-	!! not exercise clothing, not coat, and not loose fitting
-	elseif $defclothingtype[default_entry] ! 'exercise' and $defclothingtype[default_entry] ! 'coat' and CloStyle ! 5:
+	!! not exercise clothing, and not loose fitting
+	elseif $defclothingtype[default_entry] ! 'exercise' and CloStyle ! 5:
 		!! check for if the hipsize is too far from your hipsize
 		dynamic 'RESULT = <<$defclothingtype[default_entry]>>_b[<<defclothingnumber[default_entry]>>]'
 		if RESULT < pcs_hips - 8 or RESULT > pcs_hips + 8:
@@ -289,7 +303,8 @@ if $ARGS[0] = 'default_entry_set':
 	else
 		$defpursetype[i] = 'none'
 	end
-	defcoat[i] = defaultcoat
+	$defcoattype[i] = $coatworntype
+	defcoatnumber[i] = coatwornnumber
 
 	$def_clothing_temp = '<<$def_clothing_name[i]>>'
 	$def_clothing_name[i] = input ('<center>Enter a name for this outfit set<br><font color="grey">Leaving blank will reuse current name.</font></center>')
@@ -335,7 +350,8 @@ if $ARGS[0] = 'default_entry_up':
 	tempshoewornnumber = defshoenumber[i]
 	$tempcurrentpursetype = $defpursetype[i]
 	tempcurrentpursenumber = defpursenumber[i]
-	tempdefaultcoat = defcoat[i]
+	$tempcurrentcoattype = $defcoattype[i]
+	tempcurrentcoatnumber = defcoatnumber[i]
 	$def_clothing_temp = '<<$def_clothing_name[i]>>'
 
 	$defclothingtype[i] = $defclothingtype[j]
@@ -348,7 +364,8 @@ if $ARGS[0] = 'default_entry_up':
 	defshoenumber[i] = defshoenumber[j]
 	$defpursetype[i] = $defpursetype[j]
 	defpursenumber[i] = defpursenumber[j]
-	defcoat[i] = defcoat[j]
+	$defcoattype[i] = $defcoattype[j]
+	defcoatnumber[i] = defcoatnumber[j]
 	$def_clothing_name[i] = '<<$def_clothing_name[j]>>'
 
 	$defclothingtype[j] = $tempclothingworntype
@@ -361,7 +378,8 @@ if $ARGS[0] = 'default_entry_up':
 	defshoenumber[j] = tempshoewornnumber
 	$defpursetype[j] = $tempcurrentpursetype
 	defpursenumber[j] = tempcurrentpursenumber
-	defcoat[j] = tempdefaultcoat
+	$defcoattype[j] = $tempcurrentcoattype
+	defcoatnumber[j] = tempcurrentcoatnumber
 	$def_clothing_name[j] = '<<$def_clothing_temp>>'
 
 	gt 'wardrobe', 'default'
@@ -387,7 +405,8 @@ if $ARGS[0] = 'default_entry_down':
 	tempshoewornnumber = defshoenumber[i]
 	$tempcurrentpursetype = $defpursetype[i]
 	tempcurrentpursenumber = defpursenumber[i]
-	tempdefaultcoat = defcoat[i]
+	$tempcurrentcoattype = $defcoattype[i]
+	tempcurrentcoatnumber = defcoatnumber[i]
 	$def_clothing_temp = '<<$def_clothing_name[i]>>'
 
 	$defclothingtype[i] = $defclothingtype[j]
@@ -400,7 +419,8 @@ if $ARGS[0] = 'default_entry_down':
 	defshoenumber[i] = defshoenumber[j]
 	$defpursetype[i] = $defpursetype[j]
 	defpursenumber[i] = defpursenumber[j]
-	defcoat[i] = defcoat[j]
+	$defcoattype[i] = $defcoattype[j]
+	defcoatnumber[i] = defcoatnumber[j]
 	$def_clothing_name[i] = '<<$def_clothing_name[j]>>'
 
 	$defclothingtype[j] = $tempclothingworntype
@@ -413,7 +433,8 @@ if $ARGS[0] = 'default_entry_down':
 	defshoenumber[j] = tempshoewornnumber
 	$defpursetype[j] = $tempcurrentpursetype
 	defpursenumber[j] = tempcurrentpursenumber
-	defcoat[j] = tempdefaultcoat
+	$defcoattype[j] = $tempcurrentcoattype
+	defcoatnumber[j] = tempcurrentcoatnumber
 	$def_clothing_name[j] = '<<$def_clothing_temp>>'
 
 	gt 'wardrobe', 'default'
@@ -432,7 +453,8 @@ if $ARGS[0] = 'default_entry_delete':
 	killvar 'defshoenumber', i
 	killvar 'defpursetype', i
 	killvar 'defpursenumber', i
-	killvar 'defcoat', i
+	killvar 'defcoattype', i
+	killvar 'defcoatnumber', i
 	killvar 'def_clothing_name', i
 	gt 'wardrobe', 'default'
 end
@@ -456,7 +478,8 @@ if $ARGS[0] = 'sports_entry_set':
 		sportsshoenumber = shoewornnumber
 		$sportspursetype = $currentpursetype
 		sportspursenumber = currentpursenumber
-		sportscoat = defaultcoat
+		$sportscoattype = $currentcoattype
+		sportscoatnumber = currentcoatnumber
 
 		$sports_clothing_temp = '<<$sports_clothing_name>>'
 		$sports_clothing_name = input ('<center>Enter a name for this outfit set<br><font color="grey">Leaving blank will reuse current name.</font></center>')

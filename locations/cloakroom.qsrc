@@ -3,8 +3,8 @@
 menu_off = 1
 
 $coat_list_line = {
-	!! a single line in a clothing list (wardrobe, etc)
-	!! ARGS 0 - clothing index
+	!! a single line in a coat list (wardrobe, etc)
+	!! ARGS 0 - coat index
 
 	if Enable_clothwidth > 0:
 		clothing_temp = Enable_clothwidth - 1
@@ -16,13 +16,14 @@ $coat_list_line = {
 
 	$RESULT = '<TR bgcolor='+$bgcolor+'>'
 
-	$RESULT +='<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', <<ARGS[0]>>"><img src="<<FUNC(''$clothing_image'', ''coat'', ARGS[0])>>" width="<<clothing_temp>>"></a></TD>'
+	$RESULT +='<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', <<ARGS[2]>>"><img src="<<FUNC(''$coat_image'',  $ARGS[1], ARGS[2])>>"></center>'
+	'coat no.<<ARGS[1]>>" width="<<clothing_temp>>"></a></TD>'
 
-	$RESULT += '<TD>Coat # <<ARGS[0]>><br>strength: ' + dyneval '$RESULT += coat_h[<<ARGS[0]>>]'+'</TD>'
+	$RESULT += '<TD>Coat # <<ARGS[2]>><br>strength: ' + dyneval '$RESULT += <<$ARGS[1]>>_h[<<ARGS[2]>>]'+'</TD>'
 
-	$RESULT += '<TD>' + FUNC('$clothing_name', 'coat', ARGS[0]) + '</TD>'
+	$RESULT += '<TD>$coat_description</TD>'
 
-	$RESULT += '<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', <<ARGS[0]>>">View</a></TD>'
+	$RESULT += '<TD><a href="exec:gt ''cloakroom'', ''view_coat_item'', $ARGS[1], ARGS[2]">View</a></TD>'
 
 	if coat_h[i] > 0:
 		$RESULT += '<TD><a href="exec:defaultcoat = ''<<i>>'' & gt ''cloakroom'', ''view_coat_list''">Wear</a></TD>'
@@ -35,19 +36,19 @@ $coat_list_line = {
 	$RESULT += '</TD>'
 
 	$RESULT += '<TD>'
-	if dyneval('RESULT = coat_s[<<ARGS[0]>>]') = 0:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest'', <<ARGS[0]>>">Keep</a>'
-	if dyneval('RESULT = coat_s[<<ARGS[0]>>]') = 2:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest1'', <<ARGS[0]>>">Unwanted</a>'
+	if dyneval('RESULT = coat_s[<<ARGS[2]>>]') = 0:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest'', $ARGS[1], ARGS[2]">Keep</a>'
+	if dyneval('RESULT = coat_s[<<ARGS[2]>>]') = 2:$RESULT += ' <a href="exec:gt ''cloakroom'', ''dest1'', $ARGS[1], ARGS[2]">Unwanted</a>'
 	$RESULT += '</TD>'}
 
 if $ARGS[0] = 'dest':
 	*clr
-	dynamic 'coat_s[<<ARGS[1]>>] = 2'
+	dynamic '<<$ARGS[1]>>_s[<<ARGS[2]>>] = 2'
 	gt 'cloakroom', 'view_coat_list'
 end
 
 if $ARGS[0] = 'dest1':
 	*clr
-	dynamic 'coat_s[<<ARGS[1]>>] = 0'
+	dynamic '<<$ARGS[1]>>_s[<<ARGS[2]>>] = 0'
 	gt 'cloakroom', 'view_coat_list'
 end
 
@@ -86,6 +87,14 @@ if $ARGS[0] = 'view_coat_list':
 		i += 1
 	if i <= ARRSIZE('coat'):jump 'loopcoat'
 
+	i = 1
+	:loop_bomba_coats
+	if bomba_coats[i] = 1 and bomba_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''bomba'', <<i>>"><img src="images/pc/items/bomba/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('bomba_coats'):jump 'loop_bomba_coats'
+
+	'<center><img src="images/locations/city/island/flamingos/shop_name.png"></center>'
+
 	'</table>'
 
 	act 'Return':gt 'wardrobe', 'start'
@@ -106,18 +115,18 @@ if $ARGS[0] = 'view_coat_item':
 	!! ARGS 1 - clothing index
 
 	cla
-	'<center><img <<$set_imgh>> src="<<FUNC(''$clothing_image'', ''coat'', ARGS[1])>>"></center>'
+	'<center><img src="<<FUNC(''$coat_image'',  $ARGS[2], ARGS[3])>>"></center>'
 	'coat no.<<ARGS[1]>>'
 	FUNC('$attributes_coat', coat, ARGS[1])
-	FUNC('$clothing_name', coat, ARGS[1])
 
+	$coat_description
 
 	$RESULT = '(strength '
 	dynamic '$RESULT += coat_h[<<ARGS[1]>>]'
 	$RESULT += ')'
 	'<<$RESULT>>'
 
-	!! if the clothing is worn out
+	!! if the coat is worn out
 	if dyneval('RESULT = coat_h[<<ARGS[1]>>]') <= 0:
 		'This item is worn and is not suitable for further wear.'
 		act 'Throw it away':
@@ -131,7 +140,7 @@ if $ARGS[0] = 'view_coat_item':
 	if defaultcoat ! '<<ARGS[1]>>':
 		act 'Wear this coat':
 			defaultcoat = '<<ARGS[1]>>'
-			defaultcoat_warmth = CloWarm
+			defaultcoat_warmth = CoatWarm
 			defaultcoat_quality = CloQuality
 			gt 'wardrobe', 'start'
 		end
