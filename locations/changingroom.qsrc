@@ -5,9 +5,9 @@ menu_off = 1
 if $ARGS[0] = 'view_swim_list':
 
 	if $loc = 'fit' or $loc = 'bass' or temper >= 15:
-		if $clothingworntype ! 'swimwear' and $clothingworntype ! 'beach':
+		if $clothingworntype ! 'swimwear' and $clothingworntype ! 'scandalicious_swimsuit' and $clothingworntype ! 'scandalicious_bikinis':
 			if $clothingworntype = 'nude':
-				if $lastwornclothingtype ! 'swimwear' and $lastwornclothingtype ! 'beach':
+				if $lastwornclothingtype ! 'swimwear' and $lastwornclothingtype ! 'scandalicious_swimsuit' and $lastwornclothingtype ! 'scandalicious_bikinis':
 					$normalclothingworntype = $lastwornclothingtype
 					normalclothingwornno = lastwornclothingnumber
 				end
@@ -18,9 +18,8 @@ if $ARGS[0] = 'view_swim_list':
 		end
 
 		i = 1
-		h = 0
 		:loopswimwear
-			if swimwear[i] = 1 and swimwear_s[i] = 0 and ($clothingworntype ! 'swimwear' or clothingwornnumber ! i):h += 1 & *p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''swimwear'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
+			if swimwear[i] = 1 and swimwear_s[i] = 0 and ($clothingworntype ! 'swimwear' or clothingwornnumber ! i):*p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''swimwear'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/12swimwear/<<i>>.jpg" 	height="250" /></a>'
 			i += 1
 		if i <= ARRSIZE('swimwear'):jump 'loopswimwear'
 
@@ -28,15 +27,21 @@ if $ARGS[0] = 'view_swim_list':
 		*nl
 
 		i = 1
-		h = 0
-		:loopbeach
-			if beach[i] = 1 and beach_s[i] = 0 and ($clothingworntype ! 'beach' or clothingwornnumber ! i):h += 1 & *p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''beach'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/15beachbabe/<<i>>.jpg" 	height="250" /></a>'
+		:loopscandalicious_swimsuit
+			if scandalicious_swimsuit[i] = 1 and scandalicious_swimsuit_s[i] = 0 and ($clothingworntype ! 'scandalicious_swimsuit' or clothingwornnumber ! i):*p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''scandalicious_swimsuit'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/15beachbabe/<<i>>.jpg" 	height="250" /></a>'
 			i += 1
-		if i <= ARRSIZE('beach'):jump 'loopbeach'
+		if i <= ARRSIZE('scandalicious_swimsuit'):jump 'loopscandalicious_swimsuit'
 
-		if h = 0 and $clothingworntype ! 'swimwear': '<center>You do not own any regular swimwear.</center>'
-		if h = 0 and $clothingworntype ! 'beach': '<center>You do not own any slutty swimwear.</center>'
-		if h = 0 and $clothingworntype = 'swimwear' or $clothingworntype = 'beach': '<center>You are wearing swimwear.</center>'
+		i = 1
+		:loopscandalicious_bikinis
+			if scandalicious_bikinis[i] = 1 and scandalicious_bikinis_s[i] = 0 and ($clothingworntype ! 'scandalicious_bikinis' or clothingwornnumber ! i):*p '<a href="exec:gt ''changingroom'', ''view_swim_item'', ''scandalicious_bikinis'', <<i>>"><img <<$set_imgh>> src="images/pc/clothing/15beachbabe/<<i>>.jpg" 	height="250" /></a>'
+			i += 1
+		if i <= ARRSIZE('scandalicious_bikinis'):jump 'loopscandalicious_bikinis'
+
+		if ARRSIZE('swimwear') = 0: '<center>You do not own any regular swimwear.</center>'
+		if ARRSIZE('scandalicious_swimsuit') = 0: '<center>You do not own any slutty swimsuits.</center>'
+		if ARRSIZE('scandalicious_bikinis') = 0: '<center>You do not own any slutty bikinis.</center>'
+		if $clothingworntype = 'swimwear' or $clothingworntype = 'scandalicious_swimsuit' or $clothingworntype = 'scandalicious_bikinis': '<center>You are wearing swimwear.</center>'
 
 	elseif temper < 15:
 		'<center>It''s below 15C - far too cold to get changed into swimwear. You should wait until the weather warms up.</center>'
@@ -63,10 +68,14 @@ if $ARGS[0] = 'view_swim_item':
 	'<<$ARGS[1]>> no.<<ARGS[2]>>'
 	if $ARGS[1] = 'swimwear':
 		FUNC('$attributes_swimwear', $ARGS[1], ARGS[2])
-	else
-		FUNC('$attributes_beach', $ARGS[1], ARGS[2])
+		FUNC('$clothing_name', $ARGS[1], ARGS[2])
+	elseif $ARGS[1] = 'scandalicious_swimsuit'
+		FUNC('$attributes_scandalicious_swim_one', $ARGS[1], ARGS[2])
+		$swimwear_description
+	elseif $ARGS[1] = 'scandalicious_bikinis'
+		FUNC('$attributes_scandalicious_swim_two', $ARGS[1], ARGS[2])
+		$swimwear_description
 	end
-	FUNC('$clothing_name', $ARGS[1], ARGS[2])
 
 	$RESULT = '(strength '
 	dynamic '$RESULT += <<$ARGS[1]>>_h[<<ARGS[2]>>]'
@@ -95,7 +104,7 @@ if $ARGS[0] = 'view_swim_item':
 end
 
 
-!! following function counts all available swim and beach wear including the one which could be dressed already.
+!! following function counts all available swimwear even if being worn currently.
 !! you can add 'swim' or 'beach' if you want to count just one of them
 !! use func('changingroom','count_swim_item') or func('changingroom','count_swim_item','swim') or func('changingroom','count_swim_item','beach')
 
@@ -103,18 +112,26 @@ if $ARGS[0] = 'count_swim_item':
 	h = 0
 	if $ARGS[1] = 'swim' or $ARGS[1] = '':
 		i = 1
-		:loopcountswimwear
+		:loopcount_swimwear
 			if swimwear[i] = 1 and swimwear_s[i] = 0 :h += 1
 			i += 1
-		if i <= ARRSIZE('swimwear'):jump 'loopcountswimwear'
+		if i <= ARRSIZE('swimwear'):jump 'loopcount_swimwear'
 	end
 
-	if $ARGS[1] = 'beach' or $ARGS[1] = '':
+	if $ARGS[1] = 'scandalicious_swimsuit' or $ARGS[1] = '':
 		i = 1
-		:loopcountbeach
-			if beach[i] = 1 and beach_s[i] = 0 :h += 1
+		:loopcount_scandalicious_swimsuit
+			if scandalicious_swimsuit[i] = 1 and scandalicious_swimsuit_s[i] = 0 :h += 1
 			i += 1
-		if i <= ARRSIZE('beach'):jump 'loopcountbeach'
+		if i <= ARRSIZE('scandalicious_swimsuit'):jump 'loopcount_scandalicious_swimsuit'
+	end
+
+	if $ARGS[1] = 'scandalicious_bikinis' or $ARGS[1] = '':
+		i = 1
+		:loopcount_scandalicious_bikinis
+			if scandalicious_bikinis[i] = 1 and scandalicious_bikinis_s[i] = 0 :h += 1
+			i += 1
+		if i <= ARRSIZE('scandalicious_bikinis'):jump 'loopcount_scandalicious_bikinis'
 	end
 	result = h
 	killvar 'i'
