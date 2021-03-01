@@ -60,7 +60,7 @@ $clothing_list_line = {
 	if $ARGS[0] ! 'sell' and $ARGS[0] ! 'resize':
 		if StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and $ARGS[1] = 'gm_school' and ARGS[2] = 6:
 			$RESULT += ' <a href="exec:gs ''clothing'', ''wear'', ''<<$ARGS[1]>>'', <<ARGS[2]>> & gt ''clothing'', ''view_clothing_list'', ''wardrobe'', ''<<$ward_list_store>>''">Wear</a></TD>'
-		elseif ($ARGS[1] ! 'coat' and $ARGS[1] ! 'swimwear' and $ARGS[1] ! 'beach') and dyneval('RESULT = <<$ARGS[1]>>_h[<<ARGS[2]>>]') > 0:
+		elseif $ARGS[2] ! 'danilovich_swimsuit' and $ARGS[2] ! 'scandalicious_bikinis' and $ARGS[2] ! 'scandalicious_swimsuit' and $ARGS[2] ! 'allure_bikinis' and $ARGS[2] ! 'allure_bikinis' and dyneval('RESULT = <<$ARGS[1]>>_h[<<ARGS[2]>>]') > 0:
 			if $ARGS[1] ! 'exercise' and CloStyle ! 5 and (dyneval('RESULT = <<$ARGS[1]>>_b[<<ARGS[2]>>]') < (pcs_hips - 8) or dyneval('RESULT = <<$ARGS[1]>>_b[<<ARGS[2]>>]') > (pcs_hips + 8)) or (ARRPOS('$CloLosTyp', $ARGS[1]) ! -1 and ARRPOS('CloLosNum',ARGS[2]) ! -1):
 				$RESULT += '</TD>'
 			else
@@ -157,6 +157,9 @@ if $ARGS[0] = 'view_clothing_list':
 	elseif $ARGS[2] = 'scandalicious_swimwear':
 		!'<center><b><font color="maroon">Viewing Swimwear from scandalicious</font></b></center>'
 		'<center><img src="images/locations/city/citycenter/mall/scandalicious_swimwear.png"></center>'
+	elseif $ARGS[2] = 'allure':
+		!'<center><b><font color="maroon">Viewing Swimwear from allure</font></b></center>'
+		'<center><img src="images/locations/pavlovsk/commercial/allure/shop_name.png"></center>'
 	else
 		'<center><b><font color="maroon">Click on a shop name to view clothes from that shop</font></b></center>'
 
@@ -205,6 +208,8 @@ if $ARGS[0] = 'view_clothing_list':
 		if ARRSIZE('scandalicious_outfits') > 0 or ARRSIZE('scandalicious_dress') > 0:'<center><a href="exec:$ward_list_store = ''scandalicious'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''scandalicious''"><img src="images/locations/city/citycenter/mall/scandalicious.png"></a></center>'
 
 		if ARRSIZE('scandalicious_bikinis') > 0 or ARRSIZE('scandalicious_swimsuit') > 0:'<center><a href="exec:$ward_list_store = ''scandalicious_swimwear'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''scandalicious_swimwear''"><img src="images/locations/city/citycenter/mall/scandalicious_swimwear.png"></a></center>'
+
+		if ARRSIZE('allure_bikinis') > 0 or ARRSIZE('allure_swimsuit') > 0:'<center><a href="exec:$ward_list_store = ''allure'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''allure''"><img src="images/locations/pavlovsk/commercial/allure/shop_name.png"></a></center>'
 
 		if ARRSIZE('fancy_burlesque') > 0:'<center><a href="exec:$ward_list_store = ''fancypancy'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''fancypancy''"><img src="images/locations/oldtown/fancypancy/shop_name.png"></a></center>'
 
@@ -449,6 +454,28 @@ if $ARGS[0] = 'view_clothing_list':
 			gs 'clothing', 'clothwidth'
 		end
 
+		if $ARGS[2] = 'allure':
+			$ward_list_store = $ARGS[2]
+			i = 1
+			:loopallure_bikinis
+				if allure_bikinis[i] = 1 and allure_bikinis_s[i] = cloc and ($clothingworntype ! 'allure_bikinis' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'allure_bikinis', i)
+				i += 1
+			if i <= ARRSIZE('allure_bikinis'):jump 'loopallure_bikinis'
+
+			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
+			gs 'clothing', 'clothwidth'
+
+			$ward_list_store = $ARGS[2]
+			i = 1
+			:loopallure_swimsuit
+				if allure_swimsuit[i] = 1 and allure_swimsuit_s[i] = cloc and ($clothingworntype ! 'allure_swimsuit' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'allure_swimsuit', i)
+				i += 1
+			if i <= ARRSIZE('allure_swimsuit'):jump 'loopallure_swimsuit'
+
+			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
+			gs 'clothing', 'clothwidth'
+		end
+
 		if $ARGS[2] = 'sexshop':
 			$ward_list_store = $ARGS[2]
 			i = 1
@@ -533,10 +560,10 @@ if $ARGS[0] = 'view_clothing_list':
 			if i <= ARRSIZE('exercise'):jump 'loopexercise'
 
 			i = 1
-			:loopswimwear
-				if swimwear[i] = 1 and swimwear_s[i] = cloc :*P dyneval($clothing_list_line, $ARGS[1], 'swimwear', i)
+			:loopdanilovich_swimsuit
+				if danilovich_swimsuit[i] = 1 and danilovich_swimsuit_s[i] = cloc :*P dyneval($clothing_list_line, $ARGS[1], 'danilovich_swimsuit', i)
 				i += 1
-			if i <= ARRSIZE('swimwear'):jump 'loopswimwear'
+			if i <= ARRSIZE('danilovich_swimsuit'):jump 'loopdanilovich_swimsuit'
 
 			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
 			gs 'clothing', 'clothwidth'
@@ -751,7 +778,7 @@ if $ARGS[0] = 'view_clothing_item':
 			end
 
 			!! if the clothing is a type that checks for hip size
-			if $ARGS[2] ! 'exercise' and $ARGS[2] ! 'coat' and CloStyle ! 5:
+			if $ARGS[2] ! 'exercise' and CloStyle ! 5:
 				!! if the hipsize is too far from your hipsize
 				dynamic 'RESULT = <<$ARGS[2]>>_b[<<ARGS[3]>>]'
 				if RESULT < pcs_hips - 8 or RESULT > pcs_hips + 8:
@@ -794,7 +821,7 @@ if $ARGS[0] = 'view_clothing_item':
 			end
 		end
 
-		if $ARGS[2] ! 'coat' and $ARGS[2] ! 'swimwear' and $ARGS[2] ! 'beach':
+		if $ARGS[2] ! 'danilovich_swimsuit' and $ARGS[2] ! 'scandalicious_bikinis' and $ARGS[2] ! 'scandalicious_swimsuit' and $ARGS[2] ! 'allure_bikinis' and $ARGS[2] ! 'allure_bikinis':
 
 			if CloInhibit > pcs_inhib:
 				'You don''t feel daring enough to wear an outfit this revealing.'
