@@ -606,27 +606,7 @@ if $ARGS[0] = 'teacherActions':
 	spellDifficulty = Max(spellDiff[$ThisSpellName],1)
 	if i < ThisArraySize and i < MaxAvailable:
 		if pcs_magik >= spellDifficulty and spellKnown[$ThisSpellName] = 0 and ($spellReq[$ThisSpellName] = '' or (spellKnown[$spellReq[$ThisSpellName]] = 1)):
-			act 'Learn <<$spellName[$ThisSpellName]>> (1:00)':
-				cla
-				if pcs_mana >= 1000:
-					pcs_mana -= 1000
-					minut += 60
-
-					dynamic 'spellLearn[<<$ThisSpellName>>] += rand(1, 100/<<spellDifficulty>>)'
-
-					if spellLearn[$ThisSpellName] < 100:
-						'You diligently study the spell for an hour, but cannot grasp it.'
-					else
-						spellKnown[$ThisSpellName] = 1
-						'Finally, you are able to grasp and learn the spell.'
-						*nl
-						'<<$spellName[$ThisSpellName]>>: <<$spellDesc[$ThisSpellName]>>'
-					end
-				else
-					*pl 'You don''t have enough mana to learn this spell.'
-				end
-				act 'Move away': gt $ExitLocation, $ExitLocation2
-			end
+			dynamic "act 'Learn <<$spellName[$ThisSpellName]>> (1:00)':	gt 'spellList', 'act learn', '<<$ThisSpellName>>','<<$ExitLocation>>','<<$ExitLocation2>>'"
 		end
 		i += 1
 		jump 'LearnSpellLoop'
@@ -636,6 +616,34 @@ if $ARGS[0] = 'teacherActions':
 	killvar 'MaxAvailable'
 	killvar '$ThisArrayName'
 end
+
+if $ARGS[0] = 'act learn':
+	cla
+	$ThisSpellName = $ARGS[1]
+	$ExitLocation = $ARGS[2]
+	$ExitLocation2 = $ARGS[3]
+	spellDifficulty = Max(spellDiff[$ThisSpellName],1)
+	if pcs_mana >= 1000:
+		pcs_mana -= 1000
+		minut += 60
+		spellLearn[$ThisSpellName] += rand(1, 100/spellDifficulty)
+
+		if spellLearn[$ThisSpellName] < 100:
+			'You diligently study the spell for an hour, but cannot grasp it.'
+		else
+			spellKnown[$ThisSpellName] = 1
+			'Finally, you are able to grasp and learn the spell.'
+			*nl
+			'<<$spellName[$ThisSpellName]>>: <<$spellDesc[$ThisSpellName]>>'
+		end
+	else
+		*pl 'You don''t have enough mana to learn this spell.'
+	end
+	act 'Move away': gt $ExitLocation, $ExitLocation2
+end
+
+
+
 
 
 if $ARGS[0] = 'numAvailableSpells':
