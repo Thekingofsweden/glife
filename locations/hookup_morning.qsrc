@@ -1,0 +1,1222 @@
+# hookup_morning
+
+
+if $ARGS[0] = 'morning':
+	'<center><video autoplay loop src="images/shared/romance/misc/wakeup1.mp4"></video></center>'
+	if pcs_makeup > 1:
+		pcs_makeup = 0
+		vidageday -= 1
+		*nl
+		if hookup['hangover'] = 1:
+			!! hungover
+			'A sharp lance of pain pierces your consciousness, bringing you out of sleep. You wake up blearily, head <i>pounding</i> with an awful hangover. With an internal groan, you realize your makeup still smeared across your face from last night too.'
+		else
+			'Something stirs in your mind and you slowly come to consciousness. Blearily, you wake up, wondering why your face feels itchy before you internally groan, realizing you never washed off your makeup last night and it''s now smeared across your face.'
+		end
+	elseif hookup['hangover'] = 1:
+		'A sharp lance of pain pierces your consciousness, bringing you out of sleep. You wake up blearily, head <i>pounding</i> with an awful hangover.'
+	else
+		'Something stirs in your mind and you slowly come to consciousness. Blearily, you rub your forehead, yawning as you wake up.'
+	end
+	if kanikuli = 0 and StoryLine = 1 and SchoolAtestat = 0 and SchoolBlock = 0 and week < 6:
+		!! late for school
+		act'Continue':gt'hookup_morning','late_for_school'
+	else
+		*nl
+		gs'hookup_morning','wakeup'
+	end
+end
+
+if $ARGS[0] = 'late_for_school':
+	cla & *clr
+	'<center><video autoplay loop src="images/shared/romance/misc/wakeup2.mp4"></video></center>'
+	'Eyes fluttering open, you see the faint light of the sun before they go wide in shock. You grab your phone and turn on the screen.'
+	*nl
+	'<b><<$month>> <<day>></b>'
+	'<b><<$week>></b>'
+	if minut = 0:
+		'<b><<hour>>:00</b>'
+	elseif minut > 9:
+		'<b><<hour>>:0<<minut>></b>'
+	else
+		'<b><<hour>>:<<minut>></b>'
+	end
+	*nl
+	'<i>Oh fuck! You have to get to school!</i>'
+	act'<i>Get dressed!</i>':
+		cla & *clr
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		gs'clothing','wear_last_worn'
+		gs'underwear','wear'
+		'Scrambling from the bed, you start grabbing your clothes and throwing them on as fast as you can.'
+		if PCloStyle2 = 4:
+			!! you were wearing your school uniform last night
+			'You probably don''t have time for a shower, but at least you don''t have to run home and change clothes, you think gratefully to yourself as your pull on your disgarded uniform from last night.'
+		else
+			'You need to get home and change into your uniform! You''re not sure if you have time for a shower, but you definitely <i>need</i> to get your uniform!'
+		end
+		
+		hookup['continuation'] = rand(0,2)
+		if hookup['continuation'] = 0:
+			'"Hey, where''re you going?" <<$npc_firstname>> says, turning over and squinting at you with sleepy eyes. "What''s the rush?"'
+			act'I need to be somewhere!':
+				cla & *nl
+				'"I''m gonna be late for something!" you huff out. With one last quick check, you make sure all your clothes are in place and rush out the door, leaving <<$npc_firstname>> and your night together behind you.'
+				act'Leave':gs'hookup_after','exit'
+			end
+			
+			act'I''m gonna be late for school!':
+				cla & *nl
+				if PCloStyle2 = 4:
+					!! you were wearing your school uniform last night
+					'"I need to go! I''m going to be late for school!" you huff out. You quickly check your uniform one last time, making sure everything''s in place. It''s a bit wrinkled from laying in a pile all night, but it''ll have to do in a pinch. Not even saying goodbye, you rush out the door, leaving <<$npc_firstname>> and your night together behind you.'
+				else
+					'"I need to go! I''m going to be late for school!" you huff out. With one last quick check, you make sure all your clothes are in place and rush out the door, leaving <<$npc_firstname>> and your night together behind you.'
+				end
+				act'Leave':gs'hookup_after','exit'
+			end
+		elseif hookup['continuation'] = 1:
+			!! FWB/Booty calls?
+			'"I had a good time last night," he says, seeming to ignore your panic.'
+			'"Yeah?" you reply absentmindedly, looking for your purse.'
+			'"I''d love to hook up with you again sometime."'
+			'"What, just like fuck buddies or something?" you say, kneeling on the floor looking under the furniture.'
+			'"Yeah."'
+		elseif hookup['continuation'] = 2:
+			!! Ask to start dating
+			'"I know you''re in a rush but I just wanted to let you know I had a really good time last night."'
+			'"Yeah?" you reply absentmindedly, looking for your purse.'
+			'"Could I see you again sometime? Take you out on a date or something?"'
+		end
+			
+		if hookup['continuation'] > 0:
+			act'I don''t have time for this!':
+				cla & *clr
+				$npc_apt_bedroom
+				'"I really don''t have time for this right now! Gotta go!"'
+				if PCloStyle2 = 4:
+					!! you were wearing your school uniform last night
+					'You quickly check your uniform one last time, making sure everything''s in place. It''s a bit wrinkled from laying in a pile all night, but it''ll have to do in a pinch. Not even saying goodbye, you rush out the door, leaving <<$npc_firstname>> and your night together behind you.'
+				else
+					'With one last quick check, you make sure all your clothes are in place and rush out the door, leaving <<$npc_firstname>> and your night together behind you.'
+				end
+				act'Leave':gt'hookup_after','exit'
+			end
+			
+			act'<i>Sure!Callme!</i>':
+				cla & *clr
+				$npc_apt_bedroom
+				'"Uhh, sure!"'
+				'<i>Found it!</i> You grab your purse from where it slipped under the bed. Standing back up, you pull a pen from it and frantically scribble your number down on a piece of paper you found while you were looking around.'
+				if hookup['continuation'] = 1:
+					'"Call me when you want to hook up!" you shout over your shoulder as you run out the door.'
+				elseif hookup['continuation'] = 2:
+					'"Call me when you want to hang out!" you shout over your shoulder as you run out the door.'
+				end
+				act'Leave':gt'hookup_after','exit'
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'wakeup':
+!!{	if npc_earlyriser = 1:
+		!! he woke up before you
+		if npc_generous = 1:
+			!! breakfast in bed
+			'You start when the door opens and <<$npc_firstname>> walks in holding a tray.'
+			'"Sorry about that," he grins. "Didn''t mean to scare you. You were still sleeping so I didn''t want to wake you up. I made breakfast."'
+		else
+			
+		end
+	elseif npc_latesleeper = 1:
+		'You turn and see him still sleeping next to you.'
+		act'Slip out of bed':
+			cla & *clr
+			!! IMAGE HERE
+			'Slip out of bed, get dressed'
+			act'Sneak out':
+				cla & *clr
+				!! IMAGE HERE
+				
+				act'Leave':gt'hookup_after','exit'
+			end
+			act'Leave your number behind':
+				cla & *clr
+				!! IMAGE HERE
+				
+				act'Leave':gt'hookup_after','exit'
+			end
+		end
+		
+		act'Look for the shower':
+			
+				
+			dynamic $showerdin
+			
+		end
+		
+		act'Wake him up with a blowjob':
+			cla & *clr
+			!! IMAGE HERE
+			gs 'arousal','bj',rand(2,5)
+			gs 'stat'
+			'You blow him until he wakes up.'
+			act'Keep sucking':
+				gs 'arousal','bj',rand(2,5)
+				gs 'stat'
+				
+				'I''m gonna cum!'
+				act'Let him cum in your mouth':
+				
+				
+				act'Let him cum on your face':
+				
+				
+			end
+			
+			if pcs_vag > 0:
+				act'Let''s fuck':
+					hookup['position'] = rand(1,3)
+					if hookup['position'] = 1:
+						!! IMAGE HERE
+						
+					elseif hookup['position'] = 2:
+					
+					elseif hookup['position'] = 3:
+						
+						
+					end
+					if hookup['condom'] = 1:
+						'He starts reaching for a condom'
+						
+						act'Wait for him':
+							
+							'Impatient waiting'
+							
+							act'Sex':gt'hookup_morning','morning_fuck'
+						end
+						
+						act'Skip it!'
+							
+							'Skip it! I need you inside me now!'
+							if npc_condomconscious = 1:
+								'No'
+							else
+								hookup['condom'] = 2
+								'Hell yeah'
+							end
+							act'Sex':gt'hookup_morning','morning_fuck'
+						end
+					else
+					
+					end
+					gt'hookup_morning','fuck'
+				end
+			end
+		end
+		if npc_apt_type > 2:
+			act'Put your panties on':
+			
+			end
+			
+			act'Go explore his place':gt'hookup_morning','explore'
+			
+			act'Find the kitchen':
+			
+		end
+	else}
+		'Turning over, you see <<$npc_firstname>> laying next to you. He stirs as well and rolls over to face you, prying open his eyes.'
+		'"Mornin''," he mumbles. "You just wake up too?"'
+		'"Yeah," you mumble back.'
+		act'I need coffee':
+			cla & *clr
+			$npc_apt_bedroom
+			'"I could really use a cup of coffee," you say.'
+			if npc_apt_type > 2:
+				!! if not a studio or a dorm
+				'"Me too. I have some in the kitchen if you wanna come with."'
+				act'Sure':
+					cla & *clr
+					'<center><video autoplay loop src="images/shared/romance/misc/nude_walk1.mp4"></video></center>'
+					'"Sure, lead the way."'
+					'You climb out of bed, not bothering to get dressed as you follow him. You already spent the night naked with him, what''s a cup of coffee longer?'
+					'You can''t help but peek into the other rooms as you pass by before ending up in the kitchen where <<$npc_firstname>> is already filling the pot with water.'
+					act'Wait':gt'hookup_morning','coffee'
+				end
+				
+				act'I''ll catch up (get dressed first)':
+					cla & *clr
+					$npc_apt_bedroom
+					'"Sounds good, but I''ll catch up. I think I''d like to avoid any accidents with hot drinks and bare skin," you smirk.'
+					'"Yeah that''s a good idea," he agrees. Reaching down, he pulls on a pair of shorts before stepping out of the room. "Just come out whenever you''re ready."'
+					'"I will," you reply as the door clicks shut behind him.'
+					act'Get dressed':
+						cla & *clr
+						'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+						gs'clothing','wear_last_worn'
+						gs'underwear','wear'
+						gs'stat'
+						'Grabbing your own clothes, you pull them on, smoothing out the wrinkles as best you can from where they were strewn across the floor last night before leaving to join <<$npc_firstname>> in the kitchen.'
+						act'Continue':gt'hookup_morning','coffee'
+					end
+				end
+				
+				act'Borrow your shower?':
+					cla & *clr
+					hookup['morning_shower'] = 1
+					$npc_apt_bedroom
+					'"Actually, do you mind if I borrow your shower?"'
+					'"Yeah, go ahead. You can catch up when you''re done."'
+					'"Thanks," you smile gratefully as he leaves the room. Hauling yourself out of the bed, you duck out the door yourself, finding <<$npc_firstname>>''s bathroom in the hallway and hop in the shower.'
+					act'Shower':
+						cla & *clr
+						'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+						minut += 10
+						shampoo += 1
+						'You twist on the faucet and hot water comes rushing out, sighing in pleasure as it pours over your skin. After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out a minute later.'
+						dynamic $showerdin
+						*nl
+						'Figuring you''ve used enough of his water, you turn off the tap and step out to dry yourself off.'
+						act'Go to the kitchen':gt'hookup_morning','coffee'
+						
+						act'Go get dressed':
+							cla & *clr
+							'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+							gs'clothing','wear_last_worn'
+							gs'underwear','wear'
+							gs'stat'
+							'Heading back to <<$npc_firstname>>''s room, you pick up your clothes off the floor and tug them on over your wet hair before leaving again to join him in the kitchen.'
+							act'Go to the kitchen':gt'hookup_morning','coffee'
+						end
+					end
+				end
+			else
+				'"Me too. Let me just get the pot going." Getting up from the bed, he steps across his tiny room to his little kitchen and starts rifling through cupboards, pulling out various coffee paraphernalia.'
+				act'Wait in bed':
+					cla & *clr
+					$npc_apt_bedroom
+					'You cuddle up in the sheets, savoring their warmth and waiting while the coffee brews. A few minutes later, <<$npc_firstname>> pours two cups, bringing one over to you.'
+					'"Here you go."'
+					'"Thanks," you smile, taking the cup from him and bringing it to your lips.'
+					act'Focus on the coffee':
+						cla & *clr
+						minut += 2
+						gs 'beverage','coffee'
+						'<center><img <<$set_imgh>> src="images/shared/drinks/coffee_bed1.jpg"></center>'
+						'Your attention is completely consumed by the coffee as you drink it greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+						act'Time to get going':
+							cla & *clr
+							'<center><img <<$set_imgh>> src="images/shared/drinks/coffee_bed1.jpg"></center>'
+							'"That was great," you sigh. "But I should get going."'
+							'Hauling yourself to your feet, you clamber out of bed and start picking your clothes up from where you threw them on the floor last night.'
+							act'Get dressed':gt'hookup_morning','morning_leave'
+							
+							gs'hookup_morning','later_nude'
+						end
+						!! act'Doing anything later today?':
+					end
+					
+					act'Make small talk':
+						cla & *clr
+						minut += 2
+						gs 'beverage','coffee'
+						'<center><img <<$set_imgh>> src="images/shared/drinks/coffee_bed1.jpg"></center>'
+						'You make small talk while drinking coffee.'
+						act'Time to get going':
+							cla & *clr
+							$npc_apt_bedroom
+							'"That was great," you sigh. "But I should get going."'
+							'Hauling yourself to your feet, you clamber out of bed and start picking your clothes up from where you threw them on the floor last night.'
+							act'Get dressed':gt'hookup_morning','morning_leave'
+							
+							gs'hookup_morning','later_nude'
+						end
+					end
+				end
+				
+				act'Get dressed':
+					cla & *clr
+					gs'hookup_after','dress'
+					minut += 1
+					'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+					'While the coffee brews, you haul yourself out of bed and pick up your clothes from where you threw them last night. You frown, noticing they''re a bit wrinkled, but it''s not like you cared much about hanging it up last night or anything like that. Whatever, nothing you can do about it now.'
+					*nl
+					'By the time you''ve pulled them on, the coffee is done and <<$npc_firstname>> pours two cups, handing one to you.'
+					'"Thanks," you smile, taking it gratefully.'
+					act'Drink':
+						cla & *clr
+						minut += 2
+						gs 'beverage','coffee'
+						$npc_apt_bedroom
+						'It''s cheap stuff, but caffeine is caffeine and you drink it greedily, savoring every gulp. Within a couple minutes, the mug is empty.'
+						act'Time to get going':
+							cla & *clr
+							$npc_apt_bedroom
+							'"That was great," you sigh. "But I should get going."'
+							'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+							act'Gather your things':gt'hookup_morning','morning_leave'
+							
+							gs'hookup_morning','later_dressed'
+						end						
+					end
+					
+					act'Make small talk':
+						cla & *clr
+						minut += 2
+						gs 'beverage','coffee'
+						$npc_apt_bedroom
+						'You make small talk while drinking coffee.'
+						act'Time to get going':
+							cla & *clr
+							$npc_apt_bedroom
+							'"That was great," you sigh. "But I should get going."'
+							'Hauling yourself to your feet, you clamber out of bed and start picking your clothes up from where you threw them on the floor last night.'
+							act'Gather your things':gt'hookup_morning','morning_leave'
+							
+							gs'hookup_morning','later_dressed'
+						end
+					end
+				end
+				
+				act'Borrow your shower?':
+					cla & *clr
+					hookup['morning_shower'] = 1
+					$npc_apt_bedroom
+					'"Mind if I borrow your shower?" you ask, glancing towards the bathroom door of his small apartment.'
+					'"Yeah, go ahead. Coffee will be brewed by the time you''re done."'
+					'"Thanks," you smile gratefully as he leaves the room. Hauling yourself out of the bed, you duck out the door yourself, finding <<$npc_firstname>>''s bathroom in the hallway and hop in the shower.'
+					act'Shower':
+						cla & *clr
+						'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+						minut += 10
+						shampoo += 1
+						'You twist on the faucet and hot water comes rushing out, sighing in pleasure as it pours over your skin. After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out a minute later.'
+						dynamic $showerdin
+						*nl
+						'Figuring you''ve used enough of his water, you turn off the tap and step out to dry yourself off.'
+						act'Time for coffee':gt'hookup_morning','coffee'
+						
+						act'Go get dressed':
+							cla & *clr
+							'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+							gs'clothing','wear_last_worn'
+							gs'underwear','wear'
+							gs'stat'
+							'Stepping out of the bathroom, you''re immediately hit by the smell of cooked food.'
+							'"Coffee''s done," <<$npc_firstname>> says, gesturing to his side where the pot is filled black liquid. "Help yourself when you''re ready. I thought I''d fry up some eggs while you were in there."'
+							'"Thanks," you say, beginning to pick up your clothes. "I''m just going to get dressed first. Don''t want any accidents."'
+							'"Yeah sure. Help yourself when you''re ready."'
+							'You tug your clothes on, frowning at the wrinkles on them. Well, that''s going to happen when you throw your clothes on the ground rushing to get into somebody''s pants.'
+							act'Just coffee':
+								cla & *clr
+								minut += 2
+								gs 'beverage','coffee'
+								$npc_apt_bedroom
+								'You grab a mug and fill it up, drinking greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+								'"No breakfast for you?"'
+								'"Coffee is all I need," you smile back.'
+								act'Time to get going':
+									cla & *clr
+									$npc_apt_bedroom
+									'"That was great," you sigh. "But I should get going."'
+									'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+									act'Gather your things':gt'hookup_morning','morning_leave'
+									
+									gs'hookup_morning','later'
+								end	
+							end
+							
+							act'Have breakfast together':gt'hookup_morning','eggs'
+						end
+					end
+				end
+			end
+			
+		end
+		
+		act'Can I use your shower?':
+			cla & *clr
+			$npc_apt_bedroom
+			'"Mind if I borrow your shower?" you ask, glancing towards the bathroom door of his small apartment.'
+			'"Yeah, go ahead."'
+			'"Thanks," you smile gratefully. Hauling yourself out of the bed, you duck inside, twist the faucet of the shower.'
+			act'Shower':
+				cla & *clr
+				'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+				minut += 10
+				shampoo += 1
+				'Hot water comes rushing out and you step in, sighing in pleasure as it pours over your skin. <i>That feels so nice...</i> After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out shortly after.'
+				dynamic $showerdin
+				*nl
+				'Figuring you''ve used enough of his water, you turn off the tap and step out.'
+				act'Dry off':
+					cla & *clr
+					$npc_apt_bedroom
+					'You step out of the bathroom and see <<$npc_firstname>> still laying in bed.'
+					'"Love that view," he smirks, shamelessly ogling your moist naked body.'
+					'"Thanks, I really needed that," you smile back. "I should really get going though."'
+					act'Get dressed':gt'hookup_morning','morning_leave'
+					gs'hookup_morning','later'
+				end
+			end
+		end
+!!	end
+!! this end is for earlyrising and latesleeping
+
+end
+
+!!{
+if $ARGS[0] = 'hangover':
+
+	'He wakes up at the same time as you'
+	:loopwakeup3
+	if hookup['hangover'] = 1:
+		act'I need coffee':
+			cla & *nl
+			'"I desperately need coffee," you wince, rubbing your brow as if will somehow make your blindingly painful headache go away.'
+			'"Me too." <<$npc_firstname>> says, seemingly in the same state.'
+			
+		end
+		
+		act'Can I use your shower?':
+		
+		
+		end
+		
+		act'I need coffee and a shower'
+		
+		
+		end
+		
+	else
+	
+	
+	end
+	if hookup['im_hungover'] = 0:
+		act'I''m so hungover':
+			cla & *clr
+			hookup['im_hungover'] = 1
+			$npc_apt_bedroom
+			'"I''m so hungover right now," you groan.'
+			'"Same..."'
+		end
+	end
+end}
+
+if $ARGS[0] = 'explore':
+	hookup['explore'] = 1
+	if $pantyworntype ! 'none':
+		!! IMAGE HERE
+		
+	else
+		!! IMAGE HERE
+		
+		
+	end
+	if npc_apt_type = 3:		
+		'End up in the kitchen'
+		
+	elseif npc_apt_type = 4:
+		
+		'Peek into a bunch of rooms, get naked surprised by roommates.'
+		
+	elseif npc_apt_type = 5:
+		'Peek into a bunch of rooms, end up in the kitchen.'
+		
+	elseif npc_apt_type = 6:
+		'Peek into a bunch of rooms, they''re very high quality.'
+	end
+	
+
+end
+
+if $ARGS[0] = 'kitchen':
+	act'Look for some cereal':
+		cla & *clr
+		
+		if hookup['hangover'] = 1:
+		
+		else
+		
+		end
+		if npc_apt_type = 1:
+			!! studio apartment
+			'<<$npc_firstname>> wakes up'
+		else
+			'<<$npc_firstname>> comes out'
+		end
+	end
+	
+	
+	act'Get a glass of water':
+		cla & *clr
+		
+		if hookup['hangover'] = 1:
+		
+		else
+		
+		end
+		if npc_apt_type = 1:
+			!! studio apartment
+			'<<$npc_firstname>> wakes up'
+		else
+			'<<$npc_firstname>> comes out'
+		end
+		
+	end
+	
+	
+	act'Cook breakfast':
+		cla & *clr
+		
+		if hookup['hangover'] = 1:
+			'You despreately need some thing to deal with this pounding headache'
+		else
+			'You cook breakfast normally.'
+		end
+		if npc_apt_type = 4 and hookup['explore'] ! 1:
+			'<<$npc_firstname>>''s roommates come out'
+			act'Shriek':
+			
+			
+			end
+			
+			act'Act casual':
+			
+			
+			end
+		else
+			if npc_apt_type = 1:
+				!! studio apartment
+				'<<$npc_firstname>> wakes up'
+			else
+				'<<$npc_firstname>> comes out'
+			end
+			'"Made us breakfast"'
+			act'Eat together':
+				cla & *clr
+				
+				!!{if npc_perv >= 70 or ($braworntype = 'none' and npc_perv >= 50):
+					'He starts coming onto you'
+					act'Stop it':
+					
+					end
+					
+					act'Let''s take this to the bedroom':gt'hookup_morning','morning_sex'
+				else}
+					act'Finish eating and clean up':
+						cla & *clr
+						!! IMAGE HERE
+						'You clean up together'
+						gt'hookup_morning','morning_leave'
+					end
+					
+					act'Can I borrow your shower?':
+						
+						dynamic $showerdin
+							
+						gt'hookup_morning','morning_leave'
+					end
+					
+					gt'hookup_morning','morning_leave'
+				!!end
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'coffee':
+	if npc_apt_type > 2:
+		!! not a studio or dorm
+		$npc_apt_kitchen
+		if hookup['morning_shower'] = 1:
+			'As you wander towards the kitchen, you sniff the air, detecting something more than just coffee.'
+			'"That smells nice," you say, entering the room.'
+			if $clothingworntype = 'nude':
+				'"Yeah," <<$npc_firstname>> says, turning to face you. "Since you were going to be a little while, I thought I''d make some eg-"'
+				'He stops mid sentence when he sees you standing there naked, hair still wet from the shower. You smirk at his stare.'
+				'"Thanks."'
+			else
+				'"Yeah," <<$npc_firstname>> says, turning to face you. "Since you were going to be a little while, I thought I''d make some eggs in the meantime. Coffee''s already done if you want to pour yourself a cup."'
+				'"Thanks."'
+			end
+			act'Just have coffee':
+				cla & *clr
+				minut += 2
+				gs 'beverage','coffee'
+				if $clothingworntype = 'nude':
+					'<center><img <<$set_imgh>> src="images/shared/drinks/nude_coffee1.jpg"></center>'
+				else
+					$npc_apt_kitchen
+				end
+				'You grab a mug and fill it up, drinking greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+				'"No breakfast for you?"'
+				'"Coffee is all I need," you smile back.'
+				act'Time to get going':
+					cla & *clr
+					if $clothingworntype = 'nude':
+						'<center><img <<$set_imgh>> src="images/shared/romance/misc/nude_kitchen1.jpg"></center>'
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and head back to his room to get dressed.'
+					else
+						$npc_apt_kitchen
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+					end
+					act'Gather your things':gt'hookup_morning','morning_leave'
+					
+					gs'hookup_morning','later'
+				end	
+			end
+			
+			act'Have breakfast with him':gt'hookup_morning','eggs'
+		else
+			minut += 5
+			if $clothingworntype = 'nude':
+				'You follow <<$npc_firstname>> to the kitchen and sit down at his table, waiting patiently while he pulls coffee paraphernalia from his cupboards and begins brewing. A few minutes later, he hands you a steaming cup of joe, which you gratefully accept.'
+			else
+				'You step into the kitchen and are immediately hit by the wonderful smell of coffee.'
+				'"Hey, you''re just in time. Pot just finished brewing." He pours a cup and hands it to you, which you gratefully accept.'
+			end
+			
+			act'Drink':
+				cla & *clr
+				minut += 2
+				gs 'beverage','coffee'
+				if $clothingworntype = 'nude':
+					'<center><img <<$set_imgh>> src="images/shared/drinks/nude_coffee1.jpg"></center>'
+				else
+					$npc_apt_kitchen
+				end
+				'You drink deeply, savoring the hot liquid as it runs down your throat. It''s cheap stuff, but caffeine is caffeine and you gulp it down greedily. Within a couple minutes, the mug is empty.'
+				act'Time to get going':
+					cla & *nl
+					if $clothingworntype = 'nude':
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and head back to his room to get dressed.'
+						act'Get dressed':gt'hookup_morning','morning_leave'
+					else
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+						act'Gather your things':gt'hookup_morning','morning_leave'
+					end
+				end
+			end
+			act'Make small talk':
+				cla & *clr
+				minut += 2
+				gs 'beverage','coffee'
+				if $clothingworntype = 'nude':
+					!! if possible, replace with two people drinking coffee naked
+					'<center><img <<$set_imgh>> src="images/shared/drinks/nude_coffee1.jpg"></center>'
+					'You make small talk as you sip your coffee.'
+				else
+					$npc_apt_kitchen
+					'You make small talk as you sip your coffee.'
+				end
+				act'Time to get going':
+					cla & *nl
+					if $clothingworntype = 'nude':
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and head back to his room to get dressed.'
+						act'Get dressed':gt'hookup_morning','morning_leave'
+					else
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+						act'Gather your things':gt'hookup_morning','morning_leave'
+					end
+				end
+			end
+		end
+	else
+		!! studio apartment/dorm
+		$npc_apt_kitchen
+		if hookup['morning_shower'] = 1 and $clothingworntype = 'nude':
+			'Stepping out of the bathroom, you''re immediately hit by the smell of cooked food.'
+			'"That smells nice," you say, stepping out into the room.'
+			'"Yeah," <<$npc_firstname>> says, turning to face you. "Since you were going to be a little while, I thought I''d make some eggs."'
+			'Ignoring your clothes and the eggs, you head straight to the coffee pot, grabbing a mug and filling it to the brim.'
+			act'Just coffee':
+				cla & *clr
+				minut += 2
+				gs 'beverage','coffee'
+				'<center><img <<$set_imgh>> src="images/shared/drinks/nude_coffee1.jpg"></center>'
+				'You grab a mug and fill it up, drinking greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+				'"No breakfast for you? Or... anything else...?"'
+				'"Coffee is all I need," you smirk back.'
+				act'Time to get going':
+					cla & *clr
+					$npc_apt_kitchen
+					'"That was great," you sigh. "But I should get going."'
+					'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+					act'Gather your things':gt'hookup_morning','morning_leave'
+					
+					gs'hookup_morning','later'
+				end	
+			end
+			
+			act'Have breakfast together':gt'hookup_morning','eggs'
+		end
+	end
+end
+
+if $ARGS[0] = 'eggs':
+	gs'food','family_meals','breakfast'
+	if $clothingworntype = 'nude':
+		!! if possible replace with two people eating breakfast naked
+		$npc_apt_kitchen
+		'The two of you enjoy your eggs and coffee together. The coffee is cheap, the eggs are alright, but the company is pleasant as you chit-chat about nothing. Soon enough, your cups are empty and your plates are clean.'
+		act'I should go':
+			cla & *nl
+			'"Well, I should probably get going," you say, standing up and putting your dishes in the sink. You head back to <<$npc_firstname>>''s bedroom, with him following along behind.'
+			act'Get dressed':gt'hookup_morning','morning_leave'
+		end
+	else
+		if npc_apt_type = 1:
+			$npc_apt_kitchen
+		elseif npc_apt_type = 2:
+			$npc_apt_kitchen
+		else
+			$npc_apt_kitchen
+		end
+		'The two of you enjoy your eggs and coffee together. The coffee is cheap, the eggs are alright, but the company is pleasant.'
+		act'I should go':
+			cla & *nl
+			'"Well, I should probably get going," you say, standing up and putting your dishes in the sink.'
+			act'Grab your things':gt'hookup_morning','morning_leave'
+		end
+	end
+end
+
+
+if $ARGS[0] = 'morning_leave':
+	if hookup['continuation'] = 0:hookup['continuation'] = rand(0,2)
+	if $clothingworntype = 'nude':
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		gs'clothing','wear_last_worn'
+		if hookup['dress'] = 1:
+			'You pick up your dress off the floor, pulling your head through it and down over your shoulders.'
+			if hookup['continuation'] > 0:
+				'"I had a great time last night," <<$npc_firstname>> says, watching you.'
+				$hookup['reaction'] = 'pulling your dress all the way down and smoothing out the skirt.'
+			end
+		elseif PCloSkirt > 0:
+			'You pick your skirt off the floor, pulling it up your legs and over your hips.'
+			if hookup['continuation'] > 0:
+				'"I had a great time last night," <<$npc_firstname>> says, watching you dress.'
+				$hookup['reaction'] = 'pulling your top down over shoulders and tugging it past your breasts and all the way down.'
+			end
+		else
+			'You pick your pants off the floor, putting your legs through and tugging it up over your hips.'
+			if hookup['continuation'] > 0:
+				'"I had a great time last night," <<$npc_firstname>> says, watching you dress.'
+				$hookup['reaction'] = 'pulling your top down over shoulders and tugging it past your breasts and all the way down.'
+			end
+		end
+
+		gs'clothing','strip'
+		if hookup['continuation'] > 0:
+			gs'hookup_morning','continuation_reponse1'
+		else
+			gs'hookup_morning','later_nude'
+		end
+	else
+		$npc_apt_bedroom
+		'Stooping down next to the bed, you find your purse on the floor and scoop it up before heading towards the exit.'
+		if hookup['continuation'] > 0:
+			'"You know," <<$npc_firstname>> says, leaning against the door frame. "I had a great time last night."'
+			gs'hookup_morning','continuation_reponse1'
+		else
+			gs'hookup_morning','later_dressed'
+		end
+	end
+end
+
+if $ARGS[0] = 'continuation_reponse1':
+	act'Yeah?':
+		cla
+		'"Yeah?" you reply, <<$hookup[''reaction'']>>'
+		gs'hookup_morning','continuation_reponse2'
+	end
+	
+	act'Me too':
+		cla
+		'"Yeah, me too," you smile, <<$hookup[''reaction'']>>'
+		gs'hookup_morning','continuation_reponse2'
+	end
+	
+	act'If you say so':
+		cla
+		'"If you say so," you shrug, <<$hookup[''reaction'']>>'
+		gs'hookup_morning','continuation_reponse2'
+	end
+end
+
+if $ARGS[0] = 'continuation_reponse2':
+	if hookup['continuation'] = 1:
+		!! FWB/Booty calls?
+		'"I was thinking maybe we should hook up again sometime. You down for it?"'
+		'"Like what? Just Booty calls?"'
+		'"Yeah, nothing serious. Just sex."'
+	elseif hookup['continuation'] = 2:
+		!! Ask to start dating
+		'"I was wondering... would you be up for seeing each other again? Maybe on a... date? Or something?"'
+	end
+	gs'hookup_morning','continuation_reponse3'
+end
+
+if $ARGS[0] = 'continuation_reponse3':
+	act'This was a one night stand':
+		cla & *nl
+		if $clothingworntype = 'nude':
+			'"Sorry," you shake your head. "This was a one time thing. I''m not looking for anything lasting."'
+			if hookup['continuation'] = 1:
+				'"Whatever, your loss," he shrugs.'
+				'"Pfft-! Yeah, sure," you snigger back, pulling on the rest of your clothes. You give yourself a once over, making sure everything''s in place and wave goodbye as you head towards the door.'
+			elseif hookup['continuation'] = 2:
+				'"Oh. Uhh, well..." <<$npc_firstname>> trails off and you''re left in an extremely uncomfortable silence while you get dressed in front of him.'
+				'<i>Holy fuck this is awkward,</i> you think to yourself as you pull the last of your clothes on. After giving yourself a once over, you give <<$npc_firstname>> a strained smile and wave goodbye, quickly striding towards the door to escape.'
+			end
+			gs'hookup_after','dress'
+		else
+			'"Sorry," you shake your head. "This was a one time thing. I''m not looking for anything lasting."'
+			if hookup['continuation'] = 1:
+				'"Whatever, your loss," he shrugs.'
+				'"Pfft-! Yeah, sure," you snigger back, turning towards the door. "Still, maybe we''ll run into each other again or something. See you."'
+				'With a half-hearted goodbye, you open the door and leave <<$npc_firstname>>''s apartment.'
+			elseif hookup['continuation'] = 2:
+				'"Oh. Uhh, well..." <<$npc_firstname>> trails off and you''re left in an extremely uncomfortable silence.'
+				'<i>Well this is awkward...</i> you think to yourself as you turn towards the door.'
+				'"I guess I''ll see you later then... or... well... not..." There''s another awkward silence. Not knowing what else to do, you just open the door and close it behind you without another word.'
+			end
+		end
+		act'Leave':gt'hookup_after','exit'
+	end
+	
+	act'Sure':
+		cla & *clr
+		$npc_apt_hall
+		if $clothingworntype = 'nude':
+			if hookup['continuation'] = 1:
+				!! npc_QW = 1
+				'"Sure, sounds fun," you smile.'
+				'You tell him your number while you finished getting dressed and he taps it into his phone. A few moments later, a notification pings in your messages:'
+				*nl
+				hookup['text_message'] = rand(1,2)
+				if hookup['text_message'] = 1:
+					'		<b><font color="blue">hey fuck buddy</font></b>'
+					*nl
+					'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+				elseif hookup['text_message'] = 2:
+					*nl
+					'		<b><font color="blue">send nudes</font></b>'
+					*nl
+					'"We''ll see about that," you smirk back. "Anyways, see you around."'
+				end
+				'Your little exchange done, you wave him goodbye and head out the door.'
+			elseif hookup['continuation'] = 2:
+				!! npc_QW = 2
+				'"Yeah, I think I''d like that," you smile gently.'
+				'You tell him your number while you finished getting dressed and he taps it into his phone. A few moments later, a notification pings in your messages:'
+				*nl
+				hookup['text_message'] = rand(1,2)
+				if hookup['text_message'] = 1:
+					'		<b><font color="blue">hey cutie</font></b>'
+					*nl'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+				elseif hookup['text_message'] = 2:
+					'		<b><font color="blue">dont forget to call :)</font></b>'
+					*nl
+					'"I won''t," you promise.'
+				end
+				'That bit of business done, you wave him goodbye and head out the door.'
+			end
+			gs'hookup_after','dress'
+		else
+			$npc_apt_hall
+			if hookup['continuation'] = 1:
+				!! npc_QW = 1
+				'"Sure, sounds fun," you smile.'
+				'Leaning against the door, you tell him your number while he taps it into his phone. A few moments later, a notification pings in your messages:'
+				*nl
+				hookup['text_message'] = rand(1,2)
+				if hookup['text_message'] = 1:
+					'		<b><font color="blue">hey fuck buddy</font></b>'
+					*nl
+					'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+				elseif hookup['text_message'] = 2:
+					'	<b><font color="blue">send nudes</font></b>'
+					*nl
+					'"We''ll see about that," you smirk back. "Anyways, see you around."'
+				end
+				'Your little exchange done, you wave him goodbye and head out the door.'
+			elseif hookup['continuation'] = 2:
+				!! npc_QW = 2
+				'"Yeah, I think I''d like that," you smile gently.'
+				'Leaning against the door, you tell him your number while he taps it into his phone. A few moments later, a notification pings in your messages:'
+				*nl
+				hookup['text_message'] = rand(1,2)
+				if hookup['text_message'] = 1:
+					'		<b><font color="blue">hey cutie</font></b>'
+					*nl
+					'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+				elseif hookup['text_message'] = 2:
+					'		<b><font color="blue">dont forget to call :)</font></b>'
+					*nl
+					'"I won''t," you promise.'
+				end
+				'That bit of business done, you wave him goodbye and head out the door.'
+			end
+		end
+		act'Leave':gt'hookup_after','exit'
+	end
+	
+	if hookup['continuation'] = 2:
+		act'I''m not up for anything serious':
+			cla & *clr
+			$npc_apt_hall
+			'"I''m not looking for anything serious right now."'
+			act'Sorry':
+				cla & *nl
+				'"Sorry..."'
+				if $clothingworntype = 'nude':
+					gs'hookup_after','dress'
+					'"Oh. Uhh, well, it''s fine I guess..." <<$npc_firstname>> trails off and you''re left in an extremely uncomfortable silence while you get dressed in front of him.'
+					'<i>Holy fuck this is awkward,</i> you think to yourself as you pull the last of your clothes on. After giving yourself a once over, you give <<$npc_firstname>> a strained smile and wave goodbye, quickly striding towards the door to escape.'
+				else
+					'"Oh. Uhh, well, it''s fine I guess..." <<$npc_firstname>> trails off and you''re left in an extremely uncomfortable silence while you get dressed in front of him.'
+					'<i>Well this is awkward...</i> you think to yourself as you turn towards the door.'
+					'"I guess I''ll see you later then... or... well... not..." There''s another awkward silence. Not knowing what else to do, you just open the door and close it behind you without another word.'
+				end
+				
+				act'Leave':gt'hookup_after','exit'
+			end
+			
+			act'If it''s just a hookup...':
+				cla & *nl
+				'"If it''s just a hookup," you continue. "or something like last night, I wouldn''t mind getting together for some fun, but I''m just not interested in dating anybody."'
+				if rand(1,10) > 7:
+					'"Well... If it means I can see you again, then sure I guess." <<$npc_firstname>> doesn''t really seem satisfied with the results, but he still tells you his number while you tap it into your contact list.'
+					'"So uhh, yeah... Call me sometime?"'
+					'"If I need some relief," you say with a shrug. You wave an awkward goodbye, you head out the door and out of <<$npc_firstname>>''s apartment.'
+					act'Leave':gt'hookup_after','exit'
+				else
+					'"No," he shakes his head. "I don''t want to get led on by you if you''re only interested in a fuck and not anything real. Guess this is just a one night stand."'
+					act'Taken aback':
+						cla & *clr
+						$npc_apt_hall
+						'You blink in surprise, recoiling slightly at his words. That response really wasn''t what you saw coming. After all, what guy just gives up free access to sex?'
+						'"Uhh well, uhh... Alright... Guess I won''t see you later then..." you respond awkwardly. After giving yourself a once over, you give <<$npc_firstname>> a strained smile and wave goodbye, quickly striding towards out the door.'
+						act'Leave':gt'hookup_after','exit'
+					end
+					
+					act'It''s to be expected':
+						cla & *clr
+						$npc_apt_hall
+						'You nod to yourself, admittedly a little bit wistfully. It''s to be expected from a guy like him. But if he wants something more, you just can''t give it to him. You''re only after pleasure, you don''t want to get tangled up in a relationship.'
+						'"Well, guess I won''t see you around then so... Bye?" You wave <<$npc_firstname>> goodbye and stride out the door, unable to feel that this little bit of fun took a bit of a damper turn right at the end.'
+						act'Leave':gt'hookup_after','exit'
+					end
+				end
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'later_nude':
+	if hookup['fuck'] > 0:
+		$hookup['fun'] = 'fuck'
+	else
+		$hookup['fun'] = 'fun'
+	end
+	if $clothingworntype = 'nude':gs'hookup_after','dress'
+	hookup['continuation'] = rand(0,2)
+	act'I should go':
+		cla & *clr
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		if hookup['dress'] = 1:
+			'"Well," you say, almost apologetically, pulling your dress down over your breasts and smoothing it out over your legs. "I should go."'
+		else
+			'"Well," you say, almost apologetically, throwing your top over your shoulders and down over your breasts. "I should go."'
+		end
+		'"Alright. See you around. Or not. Whatever."'
+		'You smirk and shrug on the rest of your clothes before heading out the door.'
+		act'Leave':gt'hookup_after','exit'
+	end
+	
+	act'Thanks for the <<$hookup[''fun'']>>':
+		cla & *clr
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		if hookup['dress'] = 1:
+			'"Well, thanks for the <<$hookup[''fun'']>>," you say, smoothing your skirt out over your legs.'
+		else
+			'"Well, thanks for the <<$hookup[''fun'']>>," you say, pulling your top down over your head.'
+		end
+		'"Right back at you," he smiles in return.'
+		'"I gotta get going though."'
+		'"Alright. See you around. Or not. Whatever."'
+		'You smirk and shrug on the rest of your clothes before heading out the door.'
+		act'Leave':gt'hookup_after','exit'
+	end
+	
+	act'We should hook up again later':
+		cla & *clr
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		if $clothingworntype = 'nude':gs'hookup_after','dress'
+		if hookup['dress'] = 1:
+			'"We should hook up again some time," you say, pulling your dress over head.'
+			$hookup['reaction1'] = 'as you finish pulling your dress all the way down'
+			$hookup['reaction2'] = 'finish smoothing out the wrinkles in your skirt'
+		elseif PCloSkirt > 0:
+			'"We should hook up again some time," you say, pulling your skirt up over your hips.'
+			$hookup['reaction1'] = 'your top just above your breasts ready to be pulled down'
+			$hookup['reaction2'] = 'tug your top all the way down'
+		else
+			'"We should hook up again some time," you say, pulling your pants up over your hips.'
+			$hookup['reaction1'] = 'your top just above your breasts ready to be pulled down'
+			$hookup['reaction2'] = 'tug your top all the way down'
+		end
+		if rand(1,3) = 1:
+			'"Nah, this was a one time thing. I never fuck the same girl twice."'
+			'You pause for a moment, <<$hookup[''reaction1'']>>, giving him a look. "Seriously?"'
+			'"Do I look like I''m kidding?" he grins back, clearly satisfied with himself.'
+			'<i>Free access to pussy and you''re just gonna turn it down. Whatever...</i> you think to yourself as you <<$hookup[''reaction2'']>>.'
+			*nl
+			'Once you''re done, you grab your things and leave. <<$npc_firstname>> doesn''t say a word as you close the door behind you.'
+			act'Leave':gt'hookup_after','exit'
+		else
+			'"What, like fuck buddies?"'
+			'"Why not?" you smirk.'
+			'"Sure, I''ll sleep with you again if you''re offering."'
+			'You tell him your number while you finished getting dressed and he taps it into his phone. A few moments later, a notification pings in your messages:'
+			if hookup['text_message'] = 1:
+				'	<b><font color="blue">hey fuck buddy</font></b>'
+				'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+			elseif hookup['text_message'] = 2:
+				'	<b><font color="blue">send nudes</font></b>'
+				*nl
+				'"We''ll see about that," you roll your eyes back. "Anyways, see you around."'
+			end
+			'That little exchange done, you cheerfullly wave him goodbye and head out the door.'
+			act'Leave':gt'hookup_after','exit'
+		end
+	end
+	
+	act'Maybe I could see you again sometime?':
+		cla & *clr
+		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+		gs'hookup_after','dress'
+		if hookup['dress'] = 1:
+			'"Maybe I could see you again? Maybe we could go on a date?" you say, pulling your dress over head.'
+			$hookup['reaction1'] = 'as you finish pulling your dress all the way down'
+			$hookup['reaction2'] = 'finish smoothing out the wrinkles in your skirt'
+		elseif PCloSkirt > 0:
+			'"Maybe I could see you again? Maybe we could go on a date?" you say, pulling your skirt up over your hips.'
+			$hookup['reaction1'] = 'your top just above your breasts ready to be pulled down'
+			$hookup['reaction2'] = 'tug your top all the way down'
+		else
+			'"Maybe I could see you again? Maybe we could go on a date?" you say, pulling your pants up over your hips.'
+			$hookup['reaction1'] = 'your top just above your breasts ready to be pulled down'
+			$hookup['reaction2'] = 'tug your top all the way down'		
+		end
+		if rand(1,3) = 1:
+			'"Nah, this was a one time thing. I never fuck the same girl twice."'
+			'You pause for a moment, <<$hookup[''reaction1'']>>, giving him a look. "Seriously?"'
+			'"Do I look like I''m kidding?" he grins back, clearly satisfied with himself.'
+			'<i>Wow... You can really pick em, huh <<$pcs_nickname>>...</i> you think to yourself as you <<$hookup[''reaction2'']>>. <i>Ugh. Whatever...</i>'
+			*nl
+			'Once you''re done, you grab your things and leave. <<$npc_firstname>> doesn''t say a word as you close the door behind you.'
+			act'Leave':gt'hookup_after','exit'
+		else
+			'"You mean like a date?"'
+			'"Yeah... like a date..."'
+			'For a moment you feel intensely awkward as you finish tugging on your clothes waiting for his response, but when you turn to look at him he''s smiling.'
+			'"A date... Yeah, I''d like to take you on a date sometime." Your expression bursts into a smile as well, unable to contain yourself.'
+			'You tell him your number while you finished getting dressed and he taps it into his phone. A few moments later, a notification pings in your messages:'
+			*nl
+			hookup['text_message'] = rand(1,2)
+			if hookup['text_message'] = 1:
+				'	<b><font color="blue">hey cutie</font></b>'
+				'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+			elseif hookup['text_message'] = 2:
+				'	<b><font color="blue">dont forget to call :)</font></b>'
+				*nl
+				'"I won''t," you promise.'
+			end
+			'That little exchange done, you cheerfullly wave him goodbye and head out the door.'
+			act'Leave':gt'hookup_after','exit'
+		end
+	end
+end
+	
+if $ARGS[0] = 'later_dressed':
+	act'We should hook up again later':
+		cla & *nl
+		if $clothingworntype = 'nude':gs'hookup_after','dress'
+		'"You know, I was thinking you say," stopping at the door. "We should hook up again some time."'
+		if rand(1,3) = 1:
+			'"Nah, this was a one time thing. I never fuck the same girl twice."'
+			'You pause for a moment, giving him a look. "Seriously?"'
+			'"Do I look like I''m kidding?" he grins back, clearly satisfied with himself.'
+			'<i>Free access to pussy and you''re just gonna turn it down. Whatever...</i> you think to yourself, rolling your eyes and turning towards the door.'
+			*nl
+			'You grab the handle and fling it open, leaving in exasperation.'
+			act'Leave':gt'hookup_after','exit'
+		else
+			'"What, like fuck buddies?"'
+			'"Why not?" you smirk.'
+			'"Sure, I''ll sleep with you again if you''re offering."'
+			'You tell him your number while you finished getting dressed and he taps it into his phone. A few moments later, a notification pings in your messages:'
+			if hookup['text_message'] = 1:
+				'	<b><font color="blue">hey fuck buddy</font></b>'
+				'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+			elseif hookup['text_message'] = 2:
+				'	<b><font color="blue">send nudes</font></b>'
+				*nl
+				'"We''ll see about that," you roll your eyes back. "Anyways, see you around."'
+			end
+			'That little exchange done, you wink as you pass him and head out the door.'
+			act'Leave':gt'hookup_after','exit'
+		end
+	end
+	
+	act'Maybe I could see you again sometime?':
+		cla & *nl
+		if $clothingworntype = 'nude':gs'hookup_after','dress'
+		'"I was thinking..." you say, stopping at the door. "Maybe I could see you again? Like a... date...?"'
+
+		if rand(1,3) = 1:
+			'"Nah, this was a one time thing. I never fuck the same girl twice."'
+			'You pause for a moment, <<$hookup[''reaction1'']>>, giving him a look. "Seriously?"'
+			'"Do I look like I''m kidding?" he grins back, clearly satisfied with himself.'
+			'<i>Wow... You can really pick em, huh <<$pcs_nickname>>...</i> you think to yourself as you <<$hookup[''reaction2'']>>. <i>Ugh. Whatever...</i>'
+			*nl
+			'Once you''re done, you grab your things and leave. <<$npc_firstname>> doesn''t say a word as you close the door behind you.'
+			act'Leave':gt'hookup_after','exit'
+		else
+			'For a moment you feel intensely awkward as you wait for his response, but when you turn to look at him he''s smiling.'
+			'"A date... Yeah, I''d like to take you on a date sometime." Your expression bursts into a smile as well, unable to contain yourself.'
+			'You tell him your number and he taps it into his phone. A few moments later, a notification pings in your messages:'
+			*nl
+			hookup['text_message'] = rand(1,2)
+			if hookup['text_message'] = 1:
+				'	<b><font color="blue">hey cutie</font></b>'
+				'"Hey yourself," you say aloud, looking up at him. "Anyways, see you around."'
+			elseif hookup['text_message'] = 2:
+				'	<b><font color="blue">dont forget to call :)</font></b>'
+				*nl
+				'"I won''t," you promise.'
+			end
+			'That little exchange done, you cheerfullly wave him goodbye and head out the door.'
+			act'Leave':gt'hookup_after','exit'
+		end
+	end
+end
+
+!! ------------------------------------ Morning Sex Stuff -------------------------------------------------------
+
+
+
+--- hookup_morning ---------------------------------
