@@ -9,11 +9,7 @@ if masseuse['jobtype'] < 1:
 	masseuse['<<week>>_shift_3'] = 0
 end
 
-if masseuse['jobtype'] > 0 and week = 5 and masseuse['weeks_pay'] > 0:
-	masseuse['payday'] = 1
-end
-
-if masseuse['<<week>>_shift_1'] ! 0 or masseuse['<<week>>_shift_2'] ! 0 or masseuse['<<week>>_shift_3'] ! 0:
+if (masseuse['<<week>>_shift_1'] ! 0 or masseuse['<<week>>_shift_2'] ! 0 or masseuse['<<week>>_shift_3'] ! 0) and masseuse['last_worked_day'] ! daystart:
 	masseuse['missed_shift2'] = 1
 end
 
@@ -87,6 +83,12 @@ end
 
 !! masseuse paycheck
 if masseuse['weeks_pay'] > 0 and week = 5:masseuse['paycheck'] = 1
+
+if masseuse['jobtype'] > 0 and week = 5 and masseuse['weeks_pay'] > 0:
+	masseuse['payday'] = 1
+end
+
+if week = 7 and masseuse['schedule_update'] ! daystart: gs 'masseuse_schedule','schedule_reset'
 
 !!modelling check
 if model_week ! (daystart - week) / 7:model_job_week = 0
@@ -1882,6 +1884,8 @@ end
 !!---------- School related schedule -------------------------------------------------------------------------
 starlets_on     = iif( ( (week = 5 and odd_week = 0) or (week = 1 or week = 3 or week >= 6) ) and natholi = 0,1,0)
 cheerleaders_on = iif( ( (week = 5 and odd_week = 1) or (week = 2 or week = 4) ) and (natholi = 0 and (month >9 or month <6)) ,1,0)
+
+if starlets['late_message'] = 1: starlets['late_message'] = 0
 
 !!------------------------------------------------------------------------------------------------------------
 
