@@ -127,7 +127,7 @@ if $ARGS[0] = 'view_clothing_list':
 		'<h3><center><b><font color="maroon">Choose an item to sell</font></b></center></h3>'
 	end
 
-	if $ARGS[2] = 'gm' or $ARGS[2] = 'gm_outfits' or $ARGS[2] = 'gm_dress' or $ARGS[2] = 'gm_office' or $ARGS[2] = 'gm_school' or $ARGS[2] = 'gm_uniform':
+	if $ARGS[2] = 'gm' or $ARGS[2] = 'gm_outfits' or $ARGS[2] = 'gm_dress' or $ARGS[2] = 'gm_office' or $ARGS[2] = 'gm_school' or $ARGS[2] = 'gm_maid' or $ARGS[2] = 'gm_server':
 		!'<center><b><font color="maroon">Viewing clothes from G&M</font></b></center>'
 		'<center><img src="images/locations/city/citycenter/mall/gm.png"></center>'
 	elseif $ARGS[2] = 'kats':
@@ -201,7 +201,9 @@ if $ARGS[0] = 'view_clothing_list':
 
 		if ARRSIZE('gm_office') > 0:'<center><a href="exec:$ward_list_store = ''gm_office'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''gm_office''"><img src="images/pc/items/gm/officewear.png"></a></center>'
 
-		if ARRSIZE('gm_uniform') > 0:'<center><a href="exec:$ward_list_store = ''gm_uniform'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''gm_uniform''"><img src="images/pc/items/gm/uniforms.png"></a></center>'
+		if ARRSIZE('gm_maid') > 0:'<center><a href="exec:$ward_list_store = ''gm_maid'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''gm_maid''"><img src="images/pc/items/gm/gm_maid.png"></a></center>'
+
+		if ARRSIZE('gm_server') > 0:'<center><a href="exec:$ward_list_store = ''gm_server'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''gm_server''"><img src="images/pc/items/gm/gm_server.png"></a></center>'
 
 		if ARRSIZE('misc_outfits') > 0:'<center><a href="exec:$ward_list_store = ''misc'' & gt ''clothing'', ''view_clothing_list'', ''<<$ward_list_page>>'', ''misc''"><img src="images/pc/items/misc/misc.png"></a></center>'
 
@@ -300,13 +302,25 @@ if $ARGS[0] = 'view_clothing_list':
 			gs 'clothing', 'clothwidth'
 		end
 
-		if $ARGS[2] = 'gm_uniform':
+		if $ARGS[2] = 'gm_maid':
 			$ward_list_store = $ARGS[2]
 			i = 1
-			:loopuniform
-				if gm_uniform[i] = 1 and gm_uniform_s[i] = cloc and ($clothingworntype ! 'gm_uniform' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'gm_uniform', i)
+			:loopgm_maid
+				if gm_maid[i] = 1 and gm_maid_s[i] = cloc and ($clothingworntype ! 'gm_maid' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'gm_maid', i)
 				i += 1
-			if i <= ARRSIZE('gm_uniform'):jump 'loopuniform'
+			if i <= ARRSIZE('gm_maid'):jump 'loopgm_maid'
+
+			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
+			gs 'clothing', 'clothwidth'
+		end
+
+		if $ARGS[2] = 'gm_server':
+			$ward_list_store = $ARGS[2]
+			i = 1
+			:loopgm_server
+				if gm_server[i] = 1 and gm_server_s[i] = cloc and ($clothingworntype ! 'gm_server' or clothingwornnumber ! i):*P dyneval($clothing_list_line, $ARGS[1], 'gm_server', i)
+				i += 1
+			if i <= ARRSIZE('gm_server'):jump 'loopgm_server'
 
 			act 'Return': killvar '$ward_list_store' & gt 'clothing', 'view_clothing_list', '<<$ward_list_page>>'
 			gs 'clothing', 'clothwidth'
@@ -632,15 +646,10 @@ if $ARGS[0] = 'view_clothing_item':
 		if CloInhibit + 10 > pcs_inhib and CloInhibit <= pcs_inhib: 'You find this outfit more revealing than you are completely comfortable with but that makes it quite exciting too.'
 	end
 
-	if $ARGS[2] = 'gm_uniform':
-		if CloStyle2 = 1:
-			'This outfit is considered to be a maid uniform.'
-		elseif CloStyle2 = 3:
-			'This is a stripper outfit.'
-		else
-			'This outfit is a server uniform, suitable for jobs that require one.'
-		end
-	end
+!!CloStyle2: 1 Maid, 2 Server, 3 Stripper, 4 School
+	if CloStyle2 = 1: 'This is a maid outfit.'
+	if CloStyle2 = 2: 'This outfit is a server uniform.'
+	if CloStyle2 = 3: 'This outfit is a stripper uniform, suitable for jobs that require one.'
 
 	if CloStyle2 = 4:
 		if CloInhibit <= 10:
@@ -878,7 +887,7 @@ if $ARGS[0] = 'view_clothing_item_buy':
 		dynamic $ARGS[2] + '_h[<<ARGS[3]>>] = 15 + <<h>>'
 	elseif $ARGS[2] = 'eroto_dress' or $ARGS[2] = 'eroto_outfits' or $ARGS[2] = 'eroto_strip' or $ARGS[2] = 'exhibit' or $ARGS[2] = 'fancy_burlesque':
 		dynamic $ARGS[2] + '_h[<<ARGS[3]>>] = 35 + <<h>>'
-	elseif $ARGS[2] = 'gm_school' or $ARGS[2] = 'gm_uniform':
+	elseif $ARGS[2] = 'gm_school' or $ARGS[2] = 'gm_maid' or $ARGS[2] = 'gm_server':
 		dynamic $ARGS[2] + '_h[<<ARGS[3]>>] = 120 + <<h>>'
 	elseif $ARGS[2] = 'danilovich':
 		dynamic $ARGS[2] + '_h[<<ARGS[3]>>] = 100 + <<h>>'
