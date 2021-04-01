@@ -45,7 +45,9 @@ if $ARGS[0] = 'start':
 
 	act 'Leave the boutique': minut += 3 & gt 'torgcentr'
 	
-	act 'View clothing': minut += 5 & gt 'moncheri', 'clothes'
+	act 'View gowns': minut += 5 & gt 'moncheri', 'gowns'
+
+	act 'View dresses': minut += 5 & gt 'moncheri', 'dresses'
 
 	act 'View shoes': minut += 5 & gt 'moncheri', 'shoes'
 
@@ -55,11 +57,53 @@ if $ARGS[0] = 'start':
 
 end
 
-if $ARGS[0] = 'clothes':
-	$loc_arg = 'clothes'
+if $ARGS[0] = 'gowns':
+	$loc_arg = 'gowns'
 	$loc = 'moncheri'
 	$menu_loc = 'moncheri'
-	$menu_arg = 'clothes'
+	$menu_arg = 'gowns'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing Mon Chéri outfits</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return': minut += 1 & gt 'moncheri', 'start'
+
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+		if Clothingstock > 7:
+			i = 1
+		elseif Clothingstock > 15:
+			i = 2
+		else
+			i = 3
+		end
+
+		:loopmoncheri_gown
+			if moncheri_gown[i] = 0:
+				gs 'clothing_attributes', 'moncheri_gown', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+				
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''moncheri'', ''moncheri_gown''"><img src="images/pc/items/moncheri/gown/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 3
+		if i <= 160:jump 'loopmoncheri_gown'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
+end
+
+if $ARGS[0] = 'moncheri_gown':gt 'clothing', 'view_clothing_item', 'shop', 'moncheri_gown',i, 20000
+
+if $ARGS[0] = 'dresses':
+	$loc_arg = 'dresses'
+	$loc = 'moncheri'
+	$menu_loc = 'moncheri'
+	$menu_arg = 'dresses'
 	menu_off = 0
 	*clr & cla
 	gs'stat'
@@ -78,32 +122,22 @@ if $ARGS[0] = 'clothes':
 			i = 2
 		end
 
-		:loopmoncheri
-			if moncheri[i] = 0:
-				gs 'clothing_attributes', 'moncheri', i
+		:loopmoncheri_dress
+			if moncheri_dress[i] = 0:
+				gs 'clothing_attributes', 'moncheri_dress', i
 				gs 'clothing_QV', 'shop_filter'
 
 				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
 				
-					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''moncheri'', ''moncheri''"><img src="images/pc/clothing/4formal/<<i>>.jpg" 	height="250" /></a>'
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''moncheri'', ''moncheri_dress''"><img src="images/pc/items/moncheri/dress/<<i>>.jpg" 	height="250" /></a>'
 				end
 			end
 			i += 2
-		if i <= 185:jump 'loopmoncheri'
+		if i <= 81:jump 'loopmoncheri_dress'
 	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
 end
 
-if $ARGS[0] = 'moncheri':
-	cla
-	menu_off = 1
-	if moncheri[i] ! 0:
-		msg 'You already own these clothes.'
-		gt 'moncheri', 'clothes'
-	end
-
-	gt 'clothing', 'view_clothing_item', 'shop', 'moncheri',i, 20000
-
-end
+if $ARGS[0] = 'moncheri_dress': gt 'clothing', 'view_clothing_item', 'shop', 'moncheri_dress',i, 20000
 
 if $ARGS[0] = 'shoes':
 	$loc_arg = $ARGS[0]
@@ -118,7 +152,7 @@ if $ARGS[0] = 'shoes':
 	i = 1
 
 	:loopmoncheri_shoes
-		if smoncheri[i] = 0:*p '<a href="exec: i = <<i>> & gt ''moncheri'', ''moncheri_shoes''"><img src="images/pc/items/moncheri/shoes/<<i>>.jpg" height="250" /></a>'
+		if moncheri_shoe[i] = 0:*p '<a href="exec: i = <<i>> & gt ''moncheri'', ''moncheri_shoes''"><img src="images/pc/items/moncheri/shoes/<<i>>.jpg" height="250" /></a>'
 		i += 1
 	if i <= 40:jump 'loopmoncheri_shoes'
 end
