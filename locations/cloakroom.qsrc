@@ -82,16 +82,40 @@ if $ARGS[0] = 'view_coat_list':
 	'<table><table border=0 cellspacing=0 cellpadding=5><TH></TH><TH>Item no.</TH><TH>Description</TH><TH>Large image</TH><TH>Set as default</TH><TH>Default</TH><TH>Set for sale</TH>'
 
 	i = 1
-	:loopcoat
-		if coat[i] = 1:*p dyneval($coat_list_line, i)
-		i += 1
-	if i <= ARRSIZE('coat'):jump 'loopcoat'
+	:loop_gm_coats
+	if gm_coats[i] = 1 and gm_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''gm'', <<i>>"><img src="images/pc/items/gm/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('gm_coats'):jump 'loop_gm_coats'
+
+	i = 1
+	:loop_cats_coats
+	if cats_coats[i] = 1 and cats_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''cats'', <<i>>"><img src="images/pc/items/cats/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('cats_coats'):jump 'loop_cats_coats'
+
+	i = 1
+	:loop_moncheri_coats
+	if moncheri_coats[i] = 1 and moncheri_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''moncheri'', <<i>>"><img src="images/pc/items/moncheri/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('moncheri_coats'):jump 'loop_moncheri_coats'
 
 	i = 1
 	:loop_bomba_coats
 	if bomba_coats[i] = 1 and bomba_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''bomba'', <<i>>"><img src="images/pc/items/bomba/coats/<<i>>.jpg" 	height="300" /></a>'
 	i += 1
 	if i <= ARRSIZE('bomba_coats'):jump 'loop_bomba_coats'
+
+	i = 1
+	:loop_dolls_coats
+	if dolls_coats[i] = 1 and dolls_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''dolls'', <<i>>"><img src="images/pc/items/dolls/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('dolls_coats'):jump 'loop_dolls_coats'
+
+	i = 1
+	:loop_danilovich_coats
+	if danilovich_coats[i] = 1 and danilovich_coats_s[i] = ploc:*p '<a href="exec:gt ''coats'', ''view_coat_item'',  ''<<$ARGS[1]>>'', ''danilovich'', <<i>>"><img src="images/pc/items/danilovich/coats/<<i>>.jpg" 	height="300" /></a>'
+	i += 1
+	if i <= ARRSIZE('danilovich_coats'):jump 'loop_danilovich_coats'
 
 	'<center><img src="images/locations/city/island/flamingos/shop_name.png"></center>'
 
@@ -100,9 +124,10 @@ if $ARGS[0] = 'view_coat_list':
 	act 'Return':gt 'wardrobe', 'start'
 	if defaultcoat ! 0:
 		act 'Remove coat':
-			defaultcoat_warmth = 0
-			defaultcoat_quality = 0
-			defaultcoat = 0
+			$coatworntype = 'none'
+			$coatwornnumber = 0
+			PCoatWarm = 0
+			PCoatQuality = 0
 			gt 'cloakroom', 'view_coat_list'
 		end
 	end
@@ -116,35 +141,34 @@ if $ARGS[0] = 'view_coat_item':
 
 	cla
 	'<center><img src="<<FUNC(''$coat_image'',  $ARGS[2], ARGS[3])>>"></center>'
-	'coat no.<<ARGS[1]>>'
-	FUNC('$attributes_coat', 'coat', ARGS[1])
+	'<<$ARGS[2]>> coat no.<<ARGS[3]>>'
+	FUNC('$coat_attributes', $ARGS[2], ARGS[3])
 
 	$coat_description
 
 	$RESULT = '(strength '
-	dynamic '$RESULT += coat_h[<<ARGS[1]>>]'
+	dynamic '$RESULT += <<$ARGS[2]>>_h[<<ARGS[3]>>]'
 	$RESULT += ')'
 	'<<$RESULT>>'
 
 	!! if the coat is worn out
-	if dyneval('RESULT = coat_h[<<ARGS[1]>>]') <= 0:
+	if dyneval('RESULT = <<$ARGS[2]>>_h[<<ARGS[3]>>]') <= 0:
 		'This item is worn and is not suitable for further wear.'
 		act 'Throw it away':
-			dynamic 'coat[<<ARGS[1]>>] = 0'
-			gt 'cloakroom', 'view_coat_list', 'coat'
+			dynamic '<<$ARGS[2]>>[<<ARGS[3]>>] = 0'
+			gt 'cloakroom', 'view_coat_list'
+		end
+	else
+		act 'Wear this coat':
+			$coatworntype = $ARGS[2]
+			$coatwornnumber = ARGS[3]
+			PCoatWarm = CoatWarm
+			PCoatQuality = CoatQuality
+			gt 'wardrobe', 'start'
 		end
 	end
 
 	act 'Return':gt 'cloakroom', 'view_coat_list'
-
-	if defaultcoat ! '<<ARGS[1]>>':
-		act 'Wear this coat':
-			defaultcoat = '<<ARGS[1]>>'
-			defaultcoat_warmth = CoatWarm
-			defaultcoat_quality = CloQuality
-			gt 'wardrobe', 'start'
-		end
-	end
 end
 
 --- cloakroom ---------------------------------
