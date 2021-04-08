@@ -1,6 +1,7 @@
 # npcgeneratec
 
 ! {This file expects npctempgsex which is the desired sex of the NPC to be generated, $npctempgn[0], which is the used name of the generated NPC. Rapist or Red Headed Stranger, for example. And npctempgage, which is the approximate age of the NPC in years. Everything is then randomly generated, and you are expected to fix the generated NPC yourself with any special items you need from it after it completes running. So sex, what you call them until they introduce themselves, and age.}
+
 ! The fourth parameters indicates what area the npc''s home is in
 !! 1 - Pavlovsk Residential Area
 !! 2 - Student dorms in the city
@@ -156,9 +157,6 @@ npc_syth[$npclastgenerated] = 0
 npc_gon[$npclastgenerated] = 0
 npc_thrush[$npclastgenerated] = 0
 
-! {Chemestry and clothing preference are unspecified}
-npc_style[$npclastgenerated] = 0
-
 npc_sex[$npclastgenerated] = 0
 npc_perv[$npclastgenerated] = 0
 
@@ -200,9 +198,12 @@ $npc_dna[$npclastgenerated] = func('DNA','create')
 	end
 	
 	if npc_finance[$npclastgenerated] = 0:
-		if npc_residence[$npclastgenerated] ! 0 and npctempgage < 22:
-			npc_student = rand(0,1)
+		if npc_residence[$npclastgenerated] ! 1 and npc_residence[$npclastgenerated] ! 4 and npctempgage < 22:
+			npc_student[$npclastgenerated] = rand(0,1)
 			npc_apt_type[$npclastgenerated] = rand(1,4)
+		elseif npc_residence[$npclastgenerated] = 2:
+			npc_student[$npclastgenerated] = 1
+			npc_apt_type[$npclastgenerated] = 2
 		else
 			npc_apt_type[$npclastgenerated] = rand(2,4)
 		end
@@ -216,14 +217,85 @@ $npc_dna[$npclastgenerated] = func('DNA','create')
 		npc_occupation[$npclastgenerated] = rand(14,18)
 	end
 	
-	if npc_apt_type = 2:
+	
+!	npc_style determines generally how they dress and what their "persona" is
+!	1 - "normal"
+!	2 - Gopnik
+!	3 - nerdy
+!	4 - sporty
+!	5 - fashionable
+!	6 - businessman
+	if npc_occupation < 15:
+		npc_style[$npclastgenerated] = rand(1,5)
+	else
+		npc_style[$npclastgenerated] = (rand(2,6) mod 6) + 1
+	end
+	
+	if npc_apt_type = 6:
+		!! high rise
+		
+		!! this is to determine what their spare room is used for based on their personality type
+		if npc_style = 3:
+			npc_apt_spare = 1
+		elseif npc_style = 2 or npc_style = 4:
+			npc_apt_spare = 2
+		else
+			npc_apt_spare = rand(1,2)
+		end
+		if npc_apt_spare = 1:
+			$npc_apt_spare = 'gaming'
+		elseif npc_apt_spare = 2:
+			$npc_apt_spare = 'gym'
+		end
+		npc_apt_number[$npclastgenerated] = rand(1,2)
+		$npc_apt_bedroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/high_rise/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_kitchen[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/high_rise/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_livingroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/high_rise/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_bathroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/high_rise/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_hall[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/high_rise/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'		
+	elseif npc_apt_type = 4 or npc_apt_type = 5:
+		!! multi-bedroom
+		!! npc_apt_type = 4 will one day be living with roommates but for now we''re just making it easy on ourselves. No roommates until later.
+		
+		!! this is to determine what their spare room is used for based on their personality type
+		if npc_style = 3:
+			npc_apt_spare = 1
+		elseif npc_style = 2 or npc_style = 4:
+			npc_apt_spare = 2
+		else
+			npc_apt_spare = rand(1,2)
+		end
+		if npc_apt_spare = 1:
+			$npc_apt_spare = 'gaming'
+		elseif npc_apt_spare = 2:
+			$npc_apt_spare = 'gym'
+		end
+		
+		npc_apt_number[$npclastgenerated] = rand(1,2)
+		$npc_apt_bedroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_kitchen[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/kitchen.jpg"></center>'
+		$npc_apt_livingroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/living.jpg"></center>'
+		$npc_apt_bathroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/bath.jpg"></center>'
+		$npc_apt_hall[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/living.jpg"></center>'
+		$npc_apt_spare[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/multibedroom/<<npc_apt_number[$npclastgenerated]>>/<<$npc_apt_spare[$npclastgenerated]>>.jpg"></center>'
+	elseif npc_apt_type = 3:
+		!! one bedroom
+		npc_apt_number[$npclastgenerated] = rand(1,3)
+		$npc_apt_bedroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
+		$npc_apt_kitchen[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/kitchen.jpg"></center>'
+		$npc_apt_livingroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/living.jpg"></center>'
+		$npc_apt_bathroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/bath.jpg"></center>'
+		$npc_apt_hall[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/living.jpg"></center>'
+	elseif npc_apt_type = 2:
+		!! studio apartment
 		npc_apt_number[$npclastgenerated] = rand(1,2)
 		$npc_apt_bedroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/studio/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
 		$npc_apt_kitchen[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/studio/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
 		$npc_apt_livingroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/studio/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
 		$npc_apt_bathroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/studio/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
 		$npc_apt_hall[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/studio/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
-	else
+	elseif npc_apt_type = 1:
+		!! student dorm
 		npc_apt_number[$npclastgenerated] = rand(1,3)
 		$npc_apt_bedroom[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/bedroom.jpg"></center>'
 		$npc_apt_kitchen[$npclastgenerated] = '<center><img <<$set_imgh>> src="images/shared/romance/lovers/homes/1bedroom/<<npc_apt_number[$npclastgenerated]>>/kitchen.jpg"></center>'
@@ -255,7 +327,15 @@ $npc_dna[$npclastgenerated] = func('DNA','create')
 
 
 	npc_humor[$npclastgenerated] = rand(0,3)
- 
+	
+!! npc_fav_pos = 1: missionary
+!! npc_fav_pos = 2: doggy
+!! npc_fav_pos = 3: cowgirl
+!! npc_fav_pos = 4: blowjobs
+!! npc_fav_pos = 5: titjobs
+!! npc_fav_pos = 6: 69
+!! npc_fav_pos = 7: anal
+	
 	npc_fav_pos[$npclastgenerated] = rand(1,7)
  
 	npc_tit_pref[$npclastgenerated] = rand(0,3)
@@ -266,7 +346,7 @@ $npc_dna[$npclastgenerated] = func('DNA','create')
 
 ! we will skip addit for now, have a variable just for smoking
 
-	npc_addit[$npclastgenerated] = rand(0,1)
+!!	npc_addit[$npclastgenerated] = rand(0,1)
 
 	npc_doors[$npclastgenerated] = rand(0,2)
 
@@ -279,6 +359,33 @@ $npc_dna[$npclastgenerated] = func('DNA','create')
 	npc_lover_keys[$npclastgenerated] = 0
 
 	npc_residence[$npclastgenerated] = temp_location
+	
+!! traits
+
+	if rand(0,2) > 0:
+		if rand(0,1) = 1:
+			npc_earlyriser[$npclastgenerated] = 1
+		else
+			npc_latesleeper[$npclastgenerated] = 1
+		end
+	end
+	
+	if rand(0,2) > 0:
+		if rand(0,1) = 1:
+			npc_generous[$npclastgenerated] = 1
+		else
+			npc_selfish[$npclastgenerated] = 1
+		end
+	end
+	
+	npc_argumentative[$npclastgenerated] = rand(0,2)
+	npc_competitive[$npclastgenerated] = rand(0,2)
+	npc_insecure[$npclastgenerated] = rand(0,2)
+	npc_condom_conscious[$npclastgenerated] = rand(0,1)
+	npc_childfree[$npclastgenerated] = rand(0,2)
+	npc_abusive[$npclastgenerated] = rand(0,2)
+	npc_sexdrive[$npclastgenerated] = rand(1,10)
+	
 
 ! {Variables are cleaned up.}
 killvar '$npctempgn'
