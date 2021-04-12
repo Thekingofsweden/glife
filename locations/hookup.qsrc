@@ -77,10 +77,10 @@ if $ARGS[0] = 'start':
 				$hookup['position'] = 'miss'
 				'"I want you inside me," you whisper, drawing back off of him and spreading your legs. <<$npc_firstname>> eagerly follows you and you grab his cock, guiding it into your pussy.'
 				act'Get fucked':
-					if rand(0,1) = 1:
-						gt'hookup','miss_norm1'
+					if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+						gt'hookup_sex','miss_norm1'
 					else
-						gt'hookup','miss_hard1'
+						gt'hookup_sex','miss_hard1'
 					end
 				end
 			end
@@ -91,10 +91,10 @@ if $ARGS[0] = 'start':
 				$hookupposition = 'doggy'
 				'"I want you inside me," you whisper, drawing back off of him and get on your hands and knees, presenting your ass. You don''t turn around, not even when you feel his hand on your ass, but you do gasp when you feel his thumb spread apart your pussy.'
 				act'Get fucked':
-					if rand(0,1) = 1:
-						gt'hookup','doggy_norm1'
+					if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+						gt'hookup_sex','doggy_norm1'
 					else
-						gt'hookup','doggy_hard1'
+						gt'hookup_sex','doggy_hard1'
 					end
 				end
 			end
@@ -106,11 +106,11 @@ if $ARGS[0] = 'start':
 				'You give him a few more jerks before throwing your legs over his, holding his cock between your thighs.'
 				'"I want you inside me," you whisper, lowering yourself down onto his cock.'
 				if pcs_vag = 0:
-					act'Ride him':gt'hookup','cowgirl_virg_norm1'
+					act'Ride him':gt'hookup_sex','cowgirl_virg_norm1'
 				else
-					act'Ride him':gt'hookup','cowgirl_norm1'
+					act'Ride him':gt'hookup_sex','cowgirl_norm1'
 					
-					act'Ride him <i>hard</i>':gt'hookup','cowgirl_hard1'
+					act'Ride him <i>hard</i>':gt'hookup_sex','cowgirl_hard1'
 				end
 			end
 		end
@@ -582,6 +582,60 @@ end
 if $ARGS[0] = 'bj2':
 	if hookup['bj'] = 2 or hookup['return_bj'] = 1:
 		gs'hookup_after','pre'
+		
+	elseif npc_generous = 1 and hookup['cuni'] < 1:
+		'"So, did you want a turn?"'
+		'"A turn what?"'
+		'"Getting head." <<$npc_firstname>> begins creeping down towards your legs, kissing them all along the way until he''s between them.'
+		act'Get eaten out':gt'hookup','lick_pussy'
+		
+		act'I''d rather just fuck':
+			cla & *clr
+			$npc_apt_bedroom
+			'<<$npc_firstname>> gets all the way down to your pussy and you open your legs, but when he tries to move in you put your hand on his head and stop him in his tracks.'
+			'"Actually, I''d rather just fuck instead," you grin.'
+			'"Well, shit. Hang on, gimme a minute to get hard again."'
+			act'Wait':gt'hookup','wait'
+		end
+		
+		
+		act'I''m okay (stop here)':
+			cla & *clr
+			$npc_apt_bedroom
+			'<<$npc_firstname>> gets all the way down to your pussy, but when he tries to move in you put your hand on his head and stop him in his tracks, closing your legs in front of him.'
+			'"Nah, I''m okay."'
+			'"Really?" He looks up at you in convusion.'
+			'"Yeah. No need for that."'
+			'"Really? Why?"'
+			act'Don''t feel like it':
+				cla & *nl
+				hookup['get_out'] = 2
+				'"Just don''t really feel like it."'
+				'"Oh. Well, if you say so." He pulls back and lays down on the bed next to you.'
+				gs'hookup_after','pre'
+			end
+			
+			act'You''re a stranger':
+				cla & *nl
+				hookup['get_out'] = 2
+				'"I don''t know you well enough," you smile apologetically. "Sorry, I just need to be comfortable with a guy to let them go down on me. I wouldn''t be able to get off even if I let you."'
+				'"Makes sense," he nods, withdrawing and laying down on the bed next to you.'
+				gs'hookup_after','pre'
+			end
+			
+			if stat['bj'] > 10:
+				act'I prefer giving head':
+					cla & *nl
+					hookup['get_out'] = 2
+					'"I prefer giving over receiving. I don''t know, I just can''t really enjoy it when someone goes down on me. Can''t get out of my own head. Would rather give head instead." You smirk at him and add on a wink to the end of your statement.'
+					'"Well shit," he says, pulling back and flopping down on the bed next to you. "I''m the same way. Watching a girl squirm under my tongue is even more fun than a blowjob to me."'
+					'"Really?" You give him a quizzical look.'
+					'"Really! What are the odds huh? Two people who want to give head and neither of us want to receive it. Should we both just watch each other go down on other people?"'
+					'His last comment sparks an involuntary guffaw and the two of you both burst into laughter.'
+					gs'hookup_after','pre'
+				end
+			end
+		end
 	else
 		act'I should get going':
 			cla & *clr
@@ -912,8 +966,9 @@ end
 if $ARGS[0] = 'lick_pussy':
 	'<center><video autoplay loop src="images/shared/sex/kuni/pussylick4.mp4"></video></center>'
 	hookup['orgasm'] = orgasm
+	hookup['cuni'] += 1
 	gs'arousal','cuni',rand(5,10),'no_orgasm_msg'
-	if hookup['orgasm'] = orgasm:
+	if hookup['orgasm'] < orgasm:
 		'Chills ripple across your skin as <<$npc_firstname>> goes down on you. Kissing, licking, teasing every part of your pussy. It leaves you squirming and your nipples quivering in time with your hitching breath.'
 		*nl
 		'In no time at all, you''re about to cum. You hold it back, trying to enjoy <<$npc_firstname>>''s tongue for as long as possible, but eventually you can''t take it anymore.'
@@ -923,7 +978,7 @@ if $ARGS[0] = 'lick_pussy':
 			'Your entire body goes taut as your orgasm washes through you. Your back arches while your pussy clenches hard, completely unable to control your muscles in the face of ecstatic pleasure.'
 			*nl
 			'<<$npc_firstname>> doesn''t let up for a moment, relentlessly teasing your clit and lapping up your pussy juices, drawing out every last spasm from you until you''re left breathing raggedly in a post orgasmic high.'
-			if hookup['bj_cum'] > 0:
+			if hookup['bj_cum'] > 0 or hookup['fuck'] > 0:
 				act'Thanks':
 					cla & *clr
 					'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
@@ -955,8 +1010,7 @@ if $ARGS[0] = 'lick_pussy':
 								cla & *clr
 								'<center><video autoplay loop src="images/shared/sex/misc/wait.mp4"></video></center>'
 								'"You look ready to go again," you ask, glancing down at his cock. "Round 2?"'
-								'"Fuck yeah."'
-								'The two of you lunge at each other, meeting in a passionate kiss that involves tongues being thrust as far past lips as they can go.'
+								'Neither of you wait for a response and the two of you lunge at each other, meeting in a passionate kiss that involves tongues being thrust as far past lips as they can go.'
 								gs'hookup','condoms'
 								gs'hookup','position_choose'
 							end
@@ -1002,7 +1056,7 @@ if $ARGS[0] = 'lick_pussy':
 										'You lay back on the bed, beckoning him toward you. You don''t have time for condoms, you need him inside you now!'
 										'He eagerly follows and you spread your legs for him, excitement coursing through you when you feel his cock rub against your pussy lips.'
 									end
-									act'Lose your virginity':gt'hookup','miss_virg_norm1'
+									act'Lose your virginity':gt'hookup_sex','miss_virg_norm1'
 								end
 										
 										
@@ -1010,27 +1064,23 @@ if $ARGS[0] = 'lick_pussy':
 										'"Let''s just do it normally," he smiles back and moves between your legs. You eagerly spread them, laying down on your back, feeling his cock rubbing against the outside of your pussy lips.'
 										act'Lose your virginity':
 											if rand(0,1) = 1:
-											gt'hookup','miss_virg_norm1'
+											gt'hookup_sex','miss_virg_norm1'
 										else
-											gt'hookup','miss_virg_hard1'
+											gt'hookup_sex','miss_virg_hard1'
 										end
 										end
 									elseif hookup['position'] = 2:
 										act'Lose your virginity':
 											if rand(0,1) = 1:
-												gt'hookup','doggy_virg_norm1'
+												gt'hookup_sex','doggy_virg_norm1'
 											else
-												gt'hookup','doggy_virg_hard1'
+												gt'hookup_sex','doggy_virg_hard1'
 											end
 										end
 									
 								act'Climb on top of him':
 									act'Continue':
-										if rand(0,1) = 1:
-											gt'hookup','cowgirl_virg_norm1'
-										else
-											gt'hookup','cowgirl_virg_hard1'
-										end
+										gt'hookup_sex','cowgirl_virg_norm1'
 									end
 								end}
 							end
@@ -1063,22 +1113,35 @@ if $ARGS[0] = 'lick_pussy':
 						$npc_apt_bedroom
 						'"Sorry," you say. "No fucking tonight. I''m saving myself for marriage."'
 						if hookup['bj_cum'] = 0:
-							'"What the fuck? Then why''d you stop blowing me if you weren''t going to put out in the first place?"'
-							act'I wanted to get off first':
-								cla & *nl
-								'"I just wanted to get off first," you smile, crawling towards him and dipping your head towards his cock.'
-								act'Blow him':gt'hookup','bj'
+							
+							if npc_generous = 1:
+								'"Oh. Well, how about I just keep doing this?" <<$npc_firstname>> kneels his head again and before you can respond you feel his tongue glide across your pussy again, sending shivers through you.'
+								act'I want to... but I can''t':
+									cla & *nl
+									'It feels great. And his next lick feels just as good as the last one. It''s so tempting... but you push his head away anyways.'
+									'"I want to, I really do. I just... can''t tonight."'
+									'"Oh." He pulls back. He looks surprisngly disappointed that he''s not eating you out for a guy you just blueballed. "Well, if you''re sure..."'
+									gs'hookup_after','pre'
+								end
+								act'Give in':gt'hookup','lick_pussy2'
+							elseif npc_selfish = 1:
+								'"What the fuck? Then why''d you stop blowing me if you weren''t going to put out in the first place?"'
+								act'I wanted to get off first':
+									cla & *nl
+									'"I just wanted to get off first," you smile, crawling towards him and dipping your head towards his cock.'
+									act'Blow him':gt'hookup','bj'
+								end
+								
+								act'It always ends when the guy cums':
+									cla & *nl
+									'"It always ends when the guy cums," you roll your eyes. "Didn''t want you running off before I got mine." Crawling towards him, you flash a grin before leaning down to take his cock in your mouth.'
+									act'Blow him':gt'hookup','bj'
+								end
+								
+								!!{act'Just don''t like cum':
+								
+								end}
 							end
-							
-							act'It always ends when the guy cums':
-								cla & *nl
-								'"It always ends when the guy cums," you roll your eyes. "Didn''t want you running off before I got mine." Crawling towards him, you flash a grin before leaning down to take his cock in your mouth.'
-								act'Blow him':gt'hookup','bj'
-							end
-							
-							!!{act'Just don''t like cum':
-							
-							end}
 						else
 							'"Pretty loose for a girl who wants to stay a virgin," he remarks.'
 							'"What, you''re saying that you didn''t want someone to go down on you while you were still a virgin?"'
@@ -1229,6 +1292,97 @@ if $ARGS[0] = 'lick_pussy':
 	end
 end
 
+if $ARGS[0] = 'lick_pussy2':
+	hookup['cuni_loop'] = rand(2,5)
+	hookup['get_out'] = 2
+	hookup['orgasm'] = orgasm
+	:hookup_cuni_loop
+	gs'arousal','cuni',rand(5,10),'no_orgasm_msg'
+	hookup['cuni_count'] += 1
+	if hookup['cuni_count'] < hookup['cuni_loop']: jump 'hookup_cuni_loop'
+	gs'stat'
+	if hookup['orgasm'] = orgasm - 1:
+		'<center><video autoplay loop src="images/shared/sex/kuni/pussylickorgasm2.mp4"></video></center>'
+		'It feels too good and you can''t resist him. You lay back, enjoying his tongue rolling across your pussy, teasing your clit, lapping up your juices. You feel your orgasm building up and up and up until it crescendos and your whole body goes taut, the heat of your climax washing through you all the way from your groin to goosebumps prickling across your skin.'
+		*nl
+		'Your climax starts to fade when you feel <<$npc_firstname>>''s tongue on your pussy again and it''s drives you crazy. The sensory overload from your previous orgasms left your clit so sensitive that it hurts. You urgently push his head away, scooting backwards away from him.'
+		'"I can''t!" you gasp. "Too much! Too sensitive!"'
+		'You snap your legs closed, one of your hands between them, shuddering as you wait for your sensitivity to die down.'
+	elseif orgasm >= hookup['orgasm'] + 2:
+		'<center><video autoplay loop src="images/shared/sex/kuni/pussylick4.mp4"></video></center>'
+		'It feels too good and you can''t resist him. You lay back, enjoying his tongue rolling across your pussy, teasing your clit, lapping up your juices. You feel your orgasm building up and up and up until it crescendos and your whole body goes taut, the heat of your climax washing through you all the way from your groin to goosebumps prickling across your skin.'
+		*nl
+		'Your climax starts to fade when you feel <<$npc_firstname>>''s tongue on your pussy again and it''s drives you crazy. It immediately begins to build again and in no time, you cum again.'
+		*nl
+		'He keeps going, giving you orgasm after orgasm until every part of your body is taut with energy. You can feel your nipples quivering in the cool air. Your pussy is so sensitive it hurts. When his tongue touches your clit again the sensory overload from your repeated climaxes is too much. You urgently push his head away, scooting backwards away from him.'
+		'"I can''t!" you gasp. "Too much! Too sensitive!"'
+		'You snap your legs closed, one of your hands between them, shuddering as you wait for your sensitivity to die down.'
+	end
+	act'You really like eating pussy':
+		cla & *clr
+		$npc_apt_bedroom
+		'"You... really like... eating pussy... huh...?" you pant, still quivering in sensitivity.'
+		'"I guess," he grins. "I suppose I just like giving more than receiving."'		
+		act'I''ve heard of guys like you':
+			cla & *nl
+			'"I''ve... heard of... guys like you..." You take a few deep breaths, finally managing to calm down a little bit. "Not gonna lie, that''s kind of weird."'
+			'"What''s weird? That I like watching a woman writhe in pleasure under my tongue more than I like blowing a load in her mouth?"'
+			act'... actually I get it now':
+				cla & *clr
+				$npc_apt_bedroom
+				'You take a moment to consider his words before relenting.'
+				'"Actually... that makes sense. Seeing how a guy reacts when you go down on him is like... the best part of going down on him. I guess I just didn''t think it applied to boys. Usually they only want to get off."'
+				gs'hookup','pre'
+			end
+			
+			act'Yeah, that''s weird':
+				cla & *clr
+				$npc_apt_bedroom
+				'You take a moment to consider his words before responding.'
+				'"Yeah. That''s weird. You''re telling me you''re a guy who doesn''t want a blowjob if he can eat a woman out instead?"'
+				'"Pretty much."'
+				'"Yup. Weird."'
+				gs'hookup','pre'
+			end
+		end
+	end
+	
+	act'You''re really okay with not getting off?':
+		cla & *clr
+		$npc_apt_bedroom
+		'"You... you''re... you''re really... okay... with not... getting off?" you pant, still quivering in sensitivity.'
+		'"Not okay with it exactly," he shrugs. "I''ll probably jack off in the shower, thinking about eating you out later. And I like fucking girls. But yeah I guess I like making girls get off more."'		
+		act'I''ve heard of guys like you':
+			cla & *nl
+			'"I''ve... heard of... guys like you..." You take a few deep breaths, finally managing to calm down a little bit. "Not gonna lie, that''s kind of weird."'
+			'"What''s weird? That I like watching a woman writhe in pleasure under my tongue more than I like blowing a load in her mouth?"'
+			act'... actually I get it now':
+				cla & *clr
+				$npc_apt_bedroom
+				'You take a moment to consider his words before relenting.'
+				'"Actually... that makes sense. Seeing how a guy reacts when you go down on him is like... the best part of going down on him. I guess I just didn''t think it applied to boys. Usually they only want to get off."'
+				gs'hookup','pre'
+			end
+			
+			act'Yeah, that''s weird':
+				cla & *clr
+				$npc_apt_bedroom
+				'You take a moment to consider his words before responding.'
+				'"Yeah. That''s weird. You''re telling me you''re a guy who doesn''t want a blowjob if he can eat a woman out instead?"'
+				'"Pretty much."'
+				'"Yup. Weird."'
+				gs'hookup','pre'
+			end
+		end
+		act'Why does that sound dirty':
+			cla & *nl
+			'"Why does... somehow sound... even dirtier...?" You take a few deep breaths, finally managing to calm down a little bit.'
+			'"Maybe you just have a sick mind," he grins.'
+			gs'hookup','pre'
+		end
+	end
+end
+
 !!{if $ARGS[0] = '69_1':
 	'<center><img <<$set_imgh>> src="images/shared/sex/69/1.jpg"></center>'
 	hookup['orgasm'] = orgasm
@@ -1308,7 +1462,6 @@ end}
 
 
 if $ARGS[0] = 'wait':
-	cla & *clr
 	'<center><video autoplay loop src="images/shared/sex/misc/wait.mp4"></video></center>'
 	'You lay back on the bed fidgeting and watching impatiently while he works himself with his hand trying to get his erection up a second time.'
 	*nl
@@ -1531,97 +1684,420 @@ if $ARGS[0] = 'no_condom2':
 	end
 end
 
-
 if $ARGS[0] = 'position_choose':
-	hookup['fuck'] = 1
-	act'How do you want to fuck me?':
-		cla & *clr
-		hookup['position'] = rand(1,3)
-		if hookup['position'] = 1:
-			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss2.jpg"></center>'
-			'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
-			'"Let''s just do it normally," he smiles back and moves between your legs. You eagerly spread them, laying down on your back and grabbing his cock when you feel it above your pussy.'
-			act'Continue':
-				if rand(0,1) = 1:
-					gt'hookup','miss_norm1'
-				else
-					gt'hookup','miss_hard1'
+!!	if hookup['switch_position'] = 0:
+		act'How do you want to fuck me?':
+			cla & *clr
+			hookup['fuck'] = 1
+			hookup['position'] = rand(1,3)
+			if hookup['position'] = 1:
+				'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss2.jpg"></center>'
+				'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
+				'"Let''s just do it normally," he smiles back and moves between your legs. You eagerly spread them, laying down on your back and grabbing his cock when you feel it above your pussy.'
+				act'Continue':
+					if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+						gt'hookup_sex','miss_norm1'
+					else
+						gt'hookup_sex','miss_hard1'
+					end
 				end
-			end
-		elseif hookup['position'] = 2:
-			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
-			'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
-			'"I want to fuck you from behind."'
-			'You flip over onto your belly and he pulls you up to your hands and knees. You wait excitedly, until you feel the tip of his cock press against pussy.'
-			act'Continue':
-				if rand(0,1) = 1:
-					gt'hookup','doggy_norm1'
-				else
-					gt'hookup','doggy_hard1'
+				gs'hookup','virgin'
+			elseif hookup['position'] = 2:
+				'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
+				'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
+				'"I want to fuck you from behind."'
+				'You flip over onto your belly and he pulls you up to your hands and knees. You wait excitedly, until you feel the tip of his cock press against pussy.'
+				act'Continue':
+					if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+						gt'hookup_sex','doggy_norm1'
+					else
+						gt'hookup_sex','doggy_hard1'
+					end
 				end
-			end
-		elseif hookup['position'] = 3:
-			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
-			'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
-			'"I want you to be on top."'
-			'He lays back and you climb on top of him, throwing your thighs over his, slapping his hardon against your belly.'
-			act'Continue':
-				if rand(0,1) = 1:
-					gt'hookup','cowgirl_norm1'
-				else
-					gt'hookup','cowgirl_hard1'
+				gs'hookup','virgin'
+			elseif hookup['position'] = 3:
+				'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
+				'"So, how do you want to fuck me?" you ask, deciding to leave it up to him.'
+				'"I want you to be on top."'
+				'He lays back and you climb on top of him, throwing your thighs over his, slapping his hardon against your belly.'
+				act'Continue':
+					if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+						gt'hookup_sex','cowgirl_norm1'
+					else
+						gt'hookup_sex','cowgirl_hard1'
+					end
 				end
+				gs'hookup','virgin'
 			end
 		end
-	end
-
+!!	end
 	
 	act'Lay back on the bed and spread your legs':
 		cla & *clr
 		'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss1.jpg"></center>'
 		$hookup['position'] = 'miss'
+		hookup['fuck'] = 1
 		'You lay back onto the bed and spread your legs, beckoning him towards you with your finger.'
 		'He scoots up between your legs, his cock dangling out in front of him. You grab hold of it, guiding him towards your pussy.'
-		act'Get fucked':
-			if rand(0,1) = 1:
-				gt'hookup','miss_norm1'
-			else
-				gt'hookup','miss_hard1'
+!!{		if hookup['switch_position'] = 1:
+			act'Switch to missionary':
+				if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+					gt'hookup_sex','miss_norm2'
+				else
+					gt'hookup_sex','miss_hard2'
+				end
 			end
-		end
+		else}
+			act'Get fucked':
+				if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+					gt'hookup_sex','miss_norm1'
+				else
+					gt'hookup_sex','miss_hard1'
+				end
+			end
+!!		end
+		gs'hookup','virgin'
 	end
 		
 	act'Get on all fours':
 		cla & *clr
 		'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
 		$hookupposition = 'doggy'
+		hookup['fuck'] = 1
 		'You give his cock a few more tugs before turning around and getting on your hands and knees, pussy facing towards him.'
 		'"Enough of the appetizer, how about the main course?" you say, wiggling your bum at him. You don''t turn around, not even when you feel his hand on your ass, thumb spreading your pussy lips.'
 		act'Get fucked':
-			if rand(0,1) = 1:
-				gt'hookup','doggy_norm1'
+			if rand(0,1) = 1 or hookup['gentle'] = 1 and hookup['rough'] ! 1:
+				gt'hookup_sex','doggy_norm1'
 			else
-				gt'hookup','doggy_hard1'
+				gt'hookup_sex','doggy_hard1'
 			end
 		end
+		gs'hookup','virgin'
 	end
 	
 	act'Climb on top of him':
 		cla & *clr
 		'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
 		$hookupposition = 'cowgirl'
+		hookup['fuck'] = 1
 		'You give him a few more jerks before throwing your legs over his, holding his cock between your thighs.'
 		'"I think it''s time to go for a ride," you grin, gently slapping his hardon against your belly.'
 		act'Put him inside you':
-			if pcs_vag = 0:gt'hookup','cowgirl_virg_norm1'
+			if pcs_vag = 0:gt'hookup_sex','cowgirl_virg_norm1'
 			cla & *clr
 			gs'arousal','vaginal',1,'no_orgasm_msg'
 			gs'stat'
 			'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/enter1.mp4"></video></center>'
 			'Grabbing hold of his cock, you carefully line it up with your pussy, easing down onto it until you feel his full length standing up inside you.'
-			act'Ride him':gt'hookup','cowgirl_norm1'
+			act'Ride him':gt'hookup_sex','cowgirl_norm1'
 			
-			act'Ride him <i>hard</i>':gt'hookup','cowgirl_hard1'
+			act'Ride him <i>hard</i>':gt'hookup_sex','cowgirl_hard1'
+		end
+		gs'hookup','virgin'
+	end
+end
+
+if $ARGS[0] = 'virgin':
+	if pcs_vag = 0:
+		act'Wait I''m a virgin!':
+			hookup['virgin'] = 1
+			cla & *clr
+			$npc_apt_bedroom
+			if $hookup['position'] = 'miss':
+				'"Wait!" you yelp, closing up your legs halfway. <<$npc_firstname>> freezes up, body over yours, his cock resting against your pussy.'
+				*nl
+				'"I... I''m a virgin..."'
+				'"Oh." He slumps backwards, not sure where you''re going with this.'
+				gs'hookup','not_ready'
+				
+				act'Go slow okay?':
+					cla & *nl
+					'"Just... go slow, okay? I''m new at this," you smile nervously, spreading your legs again.'
+					'<<$npc_firstname>> nods and gently pushes cock into your pussy.'
+					act'Lose your virginity':gt'hookup_sex','miss_virg_norm1'
+				end
+				
+				if hookup['condom'] < 1:
+					act'Ask him to use a condom (<<will_cost>> Willpower)':
+						gs 'willpower','pay','self'
+						gs 'stat'
+						gt'hookup','virgin_condom3'
+					end
+					if prezikcount + prezik > 0:
+						act'Put a condom on him (<<will_cost>> Willpower)':
+							gs 'willpower','pay','self'
+							gs 'stat'
+							gt'hookup','virgin_condom4'
+						end
+					end
+				end
+				
+			elseif $hookup['position'] = 'doggy':
+				'"Wait!" you yelp. <<$npc_firstname>> freezes up, hands on your ass, and you can feel his cock pressing right against your pussy lips.'
+				*nl
+				'Sitting up and looking over your shoulder to face him, you stammer out, "I... I''m a virgin..."'
+				'"Oh." He slumps backwards, not sure where you''re going with this.'
+				gs'hookup','not_ready'
+				
+				act'Go slow okay?':
+					cla & *nl
+					'"Just... go slow, okay? I''m new at this," you smile nervously.'
+					'<<$npc_firstname>> nods and you turn back around and hold your breath, feeling him gently push his cock into your pussy.'
+					act'Lose your virginity':gt'hookup_sex','miss_doggy_norm1'
+				end
+				
+				if hookup['condom'] < 1:
+					act'Ask him to use a condom (<<will_cost>> Willpower)':
+						gs 'willpower','pay','self'
+						gs 'stat'
+						gt'hookup','virgin_condom3'
+					end
+					if prezikcount + prezik > 0:
+						act'Put a condom on him (<<will_cost>> Willpower)':
+							gs 'willpower','pay','self'
+							gs 'stat'
+							gt'hookup','virgin_condom4'
+						end
+					end
+				end
+			elseif $hookup['position'] = 'cowgirl':
+				'"Wait!" you yelp. <<$npc_firstname>> freezes up, putting his hands up, .'
+				*nl
+				'Still resting your thighs on top of his, you stammer out, "I... I''m a virgin..."'
+				'"Oh." He relaxes back onto the bed underneath you, not sure where you''re going with this.'
+				gs'hookup','not_ready'
+				
+				act'Go slow okay?':
+					cla & *nl
+					'"Just... go slow, okay? I''m new at this," you smile nervously.'
+					'<<$npc_firstname>> nods and you raise your hips again, biting your lip in apprehension as you slowly lower yourself down onto his cock.'
+					act'Lose your virginity':gt'hookup_sex','miss_doggy_norm1'
+				end
+				
+				
+				gs'hookup','virgin_condom3'
+				
+				gs'hookup','virgin_condom4'
+				
+			end
+		end
+	end
+end
+
+if $ARGS[0] = 'not_ready':
+	act'I''m just not sure if I''m ready':
+		cla & *clr
+		$npc_apt_bedroom
+		'"I''m just not sure if I''m ready," you stammer.'
+		if npc_generous = 1:
+			'"Well... we don''t have to if you''re not ready. We can just stop right here."'
+			act'If that''s really okay':
+				cla & *nl
+				if hookup['bj_cum'] > 0:
+					'"Are you sure?" you ask. "I feel kind of bad now... we got this far and all..."'
+					'"Yeah of course. It''s your body, your choice. I can''t <i>make</i> you fuck me. Besides, you already got me off earlier. It''s not like you''re blueballing me."'
+					'"If it''s really okay then..."'
+					gs'hookup_after','pre'
+				else
+					'"Are you sure?" you ask. "I feel kind of bad now... we got this far and all..."'
+					'"Yeah of course. It''s your body, your choice."'
+					'"If it''s really okay then..."'
+					'"Although..." <<$npc_firstname>> seems hesitant to say something. "Maybe you could at least blow me before we call it quits?"'
+					act'Sure':
+						cla & *nl
+						'"Yeah," you smile. "That sounds fair."'
+						'You wiggle down the bed and lean down to get between his legs.'
+						act'Blow him':gt'hookup','bj'
+					end
+				end
+			end
+			gs'hookup','want_to'
+			gs'hookup','bj_instead'
+		elseif npc_selfish = 1:
+			'"Seriously? We get right here and you''re going to call it quits?" <<$npc_firstname>> seems furious.'
+			act'I''m just scared!':
+				cla & *nl
+				'"I''m jus-" you try to protest before he interrupts, shouting at you.'
+				'<i><b>"Are you fucking kidding me?!"</b></i>'
+				'You recoil slightly in instinctual fear.'
+				if temp_rape_variable > 6:
+					!! rape scene
+					
+				else
+					'"Get the fuck out!" he shouts again, pointing at the door.'
+					'"But-!"'
+					'"<i>Get out!</i>"'
+					act'Gather your things and leave':
+						cla & *clr
+						$npc_apt_bedroom
+						'After seeing his explosive anger, you don''t want to stick around any longer than you have to. You throw your clothes on as fast as you can, grab your things, and run out the door.'
+						act'Escape':gt'hookup_after','exit'
+					end
+				end
+			end
+			gs'hookup','want_to'
+			gs'hookup','bj_instead'
+		else
+			'"Uhh... well..."'
+			'<<$npc_firstname>> looks down at himself, almost as if contemplating what to do with his solidly erect dick.'
+			'"Soooo... you <i>don''t</i> want to have sex...?'
+			gs'hookup','want_to'
+			gs'hookup','bj_instead'
+		end
+	end
+end
+
+if $ARGS[0] = 'want_to':
+	act'No, I want to':
+		cla & *clr
+		if $hookup['position'] = 'miss':
+			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss1.jpg"></center>'
+			'"No, no," you shake your head. "I want to. I was just getting cold feet."'
+			'You spread your legs wider, tugging on <<$npc_firstname>>''s cock, beckoning him in.'
+			act'Lose your virginity':
+				if rand(0,1) = 1 or npc_generous = 1:
+					gt 'hookup_sex','miss_virg_norm1'
+				else
+					gt 'hookup_sex','miss_virg_hard1'
+				end
+			end
+		elseif $hookup['position'] = 'doggy':
+			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
+			'"No, no," you shake your head. "I want to. I was just getting cold feet."'
+			'You adjust your knees, spreading your legs a little wider and squaring your shoulders to look forward.'
+			act'Lose your virginity':
+				if rand(0,1) = 1 or npc_generous = 1:
+					gt 'hookup_sex','miss_doggy_norm1'
+				else
+					gt 'hookup_sex','miss_doggy_hard1'
+				end
+			end
+		elseif $hookup['position'] = 'cowgirl':
+			'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
+			'"No, no," you shake your head. "I want to. I was just getting cold feet."'
+			'You scoot forward, raising your hips so you''re right over his cock. You grab hold of it and begin guiding it inside you.'
+			act'Lose your virginity':gt 'hookup_sex','cowgirl_virg_norm1'
+		end
+		'"Let''s do this. Make me a woman."'
+	end
+end
+
+if $ARGS[0] = 'bj_instead':
+	if hookup['bj_cum'] = 0:
+		act'Can I just blow you':
+			cla & *nl
+			'"Can I just blow you instead?"'
+			if npc_selfish = 1:
+				if rand(0,1) = 1:
+					'"Ugh fine, but it better be good." He grabs you roughly by the head and shoves you down towards his crotch.'
+				else
+					'"No, it''s fuck or nothing! So what''s it gonna be?"'
+					act'Don''t give in':
+						cla & *clr
+						$npc_apt_bedroom
+						'"... nothing then."'
+						'<i><b>"Are you fucking kidding me?!"</b></i> he screams.'
+						'You recoil from him in fear.'
+						if temp_rape_variable > 6:
+							!! rape scene
+							
+						else
+							'"Get the fuck out!" he shouts again, pointing at the door.'
+							'"But-!"'
+							'"<i>Get out!</i>"'
+							act'Gather your things and leave':
+								cla & *clr
+								$npc_apt_bedroom
+								'After seeing his explosive anger, you don''t want to stick around any longer than you have to. You throw your clothes on as fast as you can, grab your things, and run out the door.'
+								act'Escape':gt'hookup_after','exit'
+							end
+						end
+					end
+					
+					act'Give in':
+						cla & *clr
+						if $hookup['position'] = 'miss':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and spread your legs, allowing <<$npc_firstname>> to eagerly push his cock inside you.'
+							act'Lose your virginity':gt 'hookup_sex','miss_virg_hard1'
+						elseif $hookup['position'] = 'doggy':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and turn around. You bite your lip in apprehension as you feel <<$npc_firstname>> push his cock inside you.'
+							act'Lose your virginity':gt 'hookup_sex','doggy_virg_hard1'
+						elseif $hookup['position'] = 'cowgirl':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and raise your hips again. You bite your lip in apprehension as you slowly lower yourself down onto his cock.'
+							act'Lose your virginity':gt 'hookup_sex','cowgirl_virg_norm1'
+						end
+					end
+				end
+			else
+				'"Well, I''ll never say no to a blowjob."'
+				'"Thanks," you smile. With that, you scoot down the bed and lean down, lowering your head between his legs.'
+				act'Blow him':gt'hookup','bj'
+			end
+		end
+		
+		!!{act'What about anal instead?':
+		
+		
+		end}
+	else
+		act'Can I just blow you again instead?':
+			if npc_selfish = 1:
+				if rand(0,1) = 1:
+					'"Ugh <i>again?</i>"'
+					'"... yes," you respond meekly.'
+					'"<i>Fine</i>, but it better be good." He grabs you roughly by the head and shoves you down towards his crotch.'
+				else
+					'"Ugh <i>again?</i>"'
+					'"... yes," you respond meekly.'
+					'"No, it''s fuck or nothing! So what''s it gonna be?"'
+					act'Don''t give in':
+						cla & *clr
+						$npc_apt_bedroom
+						'"... nothing then."'
+						'<i><b>"Are you fucking kidding me?!"</b></i> he screams.'
+						'You recoil from him in fear.'
+						if temp_rape_variable > 6:
+							!! rape scene
+							
+						else
+							'"Get the fuck out!" he shouts again, pointing at the door.'
+							'"But-!"'
+							'"<i>Get out!</i>"'
+							act'Gather your things and leave':
+								cla & *clr
+								$npc_apt_bedroom
+								'After seeing his explosive anger, you don''t want to stick around any longer than you have to. You throw your clothes on as fast as you can, grab your things, and run out the door.'
+								act'Escape':gt'hookup_after','exit'
+							end
+						end
+					end
+					
+					act'Give in':
+						cla & *clr
+						if $hookup['position'] = 'miss':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/miss1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and spread your legs, allowing <<$npc_firstname>> to eagerly push his cock inside you.'
+							act'Lose your virginity':gt 'hookup_sex','miss_virg_hard1'
+						elseif $hookup['position'] = 'doggy':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/doggy1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and turn around. You bite your lip in apprehension as you feel <<$npc_firstname>> push his cock inside you.'
+							act'Lose your virginity':gt 'hookup_sex','doggy_virg_hard1'
+						elseif $hookup['position'] = 'cowgirl':
+							'<center><img <<$set_imgh>> src="images/shared/sex/foreplay/cowgirl1.jpg"></center>'
+							'Unable to summon the will to say no, you nod and raise your hips again. You bite your lip in apprehension as you slowly lower yourself down onto his cock.'
+							act'Lose your virginity':gt 'hookup_sex','cowgirl_virg_norm1'
+						end
+					end
+				end
+			else
+				'"Well, I''ll never say no to a blowjob."'
+				'"Thanks," you smile. With that, you scoot down the bed and lean down, lowering your head between his legs.'
+				act'Blow him':gt'hookup','bj'
+			end
 		end
 	end
 end
@@ -1632,31 +2108,29 @@ if $ARGS[0] = 'virgin_condom1':
 	'<<$npc_firstname>> climbs on top of you and just as he''s preparing to enter you, you freeze up and say, "Wait!" His body also goes tense at the panic in your voice.'
 	'"Could you put on a condom first?" you ask.'
 	if rand(1,10) >= 7:
-		if rand(1,2) = 1:
-			'"Come on... You really want to use a condom for your first time?"'
-			act'Can''t take chances':
-				cla & *nl
-				'"Yes," you respond. "I can''t take any chances. Please?"'
-				'<<$npc_firstname>> sighs. "Okay, fine." Pulling himself off of you, he grabs a package from his nightstand, tearing it open and rolling it onto his dick before taking his place back between you legs.'
-				act'Lose your virginity':
-					if rand(0,1) = 1:
-						gt 'hookup','miss_virg_norm1'
-					else
-						gt 'hookup','miss_virg_hard1'
-					end
+		'"Come on... You really want to use a condom for your first time?"'
+		act'Can''t take chances':
+			cla & *nl
+			'"Yes," you respond. "I can''t take any chances. Please?"'
+			'<<$npc_firstname>> sighs. "Okay, fine." Pulling himself off of you, he grabs a package from his nightstand, tearing it open and rolling it onto his dick before taking his place back between you legs.'
+			act'Lose your virginity':
+				if rand(0,1) = 1:
+					gt 'hookup_sex','miss_virg_norm1'
+				else
+					gt 'hookup_sex','miss_virg_hard1'
 				end
 			end
-			
-			act'Well...':
-				cla & *nl
-				'<i>Well...</i>'
-				'"Maybe..." you start. "... it''ll be okay this one time... this... first time..."'
-				act'Lose your virginity':
-					if rand(0,1) = 1:
-						gt 'hookup','miss_virg_norm1'
-					else
-						gt 'hookup','miss_virg_hard1'
-					end
+		end
+		
+		act'Well...':
+			cla & *nl
+			'<i>Well...</i>'
+			'"Maybe..." you start. "... it''ll be okay this one time... this... first time..."'
+			act'Lose your virginity':
+				if rand(0,1) = 1:
+					gt 'hookup_sex','miss_virg_norm1'
+				else
+					gt 'hookup_sex','miss_virg_hard1'
 				end
 			end
 		end
@@ -1676,1694 +2150,155 @@ if $ARGS[0] = 'virgin_condom2':
 	'He grins back at you, pushing you down onto the bed and climbing on top of you.'
 	act'Lose your virginity':
 		if rand(0,1) = 1:
-			gt 'hookup','miss_virg_norm1'
+			gt 'hookup_sex','miss_virg_norm1'
 		else
-			gt 'hookup','miss_virg_hard1'
+			gt 'hookup_sex','miss_virg_hard1'
 		end
 	end
 end
 
-!! 1 is the starting pace, 2 is if pace changes
-
-if $ARGS[0] = 'miss_virg_norm1':
-	gs'arousal','vaginal',1,'no_orgasm_msg'
-	gs'stat'
-	$hookup['position'] = 'miss'
-	if hookup['virgin'] = 1:
-		'<center><video autoplay loop src="images/shared/sex/vag/miss/enter1.mp4"></video></center>'
-		'<<$npc_firstname>> presses his cock against the entrance of your pussy before plunging it all the way in. It fills you up, stretching your walls and tearing straight through your maidenhood, causing you to gasp. Whether in excitement or pain, you aren''t really sure.'
-		'"You okay?"'
-		'"Mhmm." You just nod, not feeling able to say anything else in the moment.'
-		'"I''m gonna start moving," he says. You nod again, indicating for him to continue.'
-		*nl
-		
-		act'Continue':
-			cla & *clr
-			hookup['orgasm'] = orgasm
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-			'<<$npc_firstname>> slowly builds into a steady rhythm and as he continues to fuck you, you...'
-			gs'hookup','virgin_enjoyment'
-		end
-	else
-		'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-		'<<$npc_firstname>> presses his cock against the entrance of your pussy before plunging it all the way in. It fills you up, stretching your walls and tearing straight through your maidenhood, causing you to gasp. Whether in excitement or pain, you aren''t really sure.'
-		*nl
-		'Oblivious to the loss of your virginity, he doesn''t stop, working up to a steady rhythm right away while you continue to wince in pain.'
-		act'Continue':
-			cla & *clr
-			hookup['orgasm'] = orgasm
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-			'As <<$npc_firstname>> continues to fuck you, you...'
-			gs'hookup','virgin_enjoyment'
-		end
-	end
-end
-
-if $ARGS[0] = 'miss_virg_norm2':
-	cla & *clr
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-	'As <<$npc_firstname>> changes his pace, you sigh deeply, feeling like you can breathe again.'
-	*nl
-	'Now that you aren''t worried about being literally fucked to death, you feel like you can focus on the sensations of your first time and you...'
-	gs'hookup','virgin_enjoyment'
-end
-
-if $ARGS[0] = 'miss_virg_hard1':
-	gs'arousal','vaginal',1,'rough','no_orgasm_msg'
-	gs'stat'
-	$hookup['position'] = 'miss'
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/hard1.mp4"></video></center>'
-	'You half gasp half shriek as <<$npc_firstname>> slams his cock inside you, tearing straight through your hymen in one thrust and your eyes water at the intense stab of pain.'
-	*nl
-	'Completely oblivious to the loss of your virginity, <<$npc_firstname>> doesn''t stop for even a second and begins fucking you <i>hard</i>.'
-	act'Continue':
-		cla & *clr
-		gs'arousal','vaginal',rand(3,5),'rough','no_orgasm_msg'
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/vag/miss/hard2.mp4"></video></center>'
-		'<i>"Ahh! Ahh!! AH! AHH!!"</i>'
-		'You can''t help but scream with every thrust as <<$npc_firstname>> fucks you roughly and with high intensity. It hurts so much. Every time his cock slams back in to you, you feel like you''re going to die. The force of his thrusts bounce your breasts so violently they hurt. It feels like your pussy is being fucked into an open wound and you wonder if you''re going to have internal bruises tomorrow morning.'		
-		act'Endure it':
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5),'rough','no_orgasm_msg'
-			gs'stat'
-			cla & *nl
-			'The next few minutes pass by in a torturous blur. You have no idea how much time actually passes by, only that every second of it is filled with pain, tears, and prayer that it will end after the next thrust.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'Can we slow down?':
-			cla & *nl
-			'"Can we-! Slow down-! A little-?" you whimper under <<$npc_firstname>>''s relentless pounding. "This is-! A bit-! Rough-!"'
-			if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-				$orgasm_or = 'no'
-				'"Not a chance, I''m enjoying this." He ignores your pleas, continuing to relentlessly fuck you. The next few minutes pass by in a torturous blur. You have no idea how much time actually passes by, only that every second of it is filled with pain, tears, and prayer that it will end after the next thrust.'
-				gs'hookup','fuck_cum'
-			else
-				hookup['speed_change'] = 1
-				'"Oh, sorry. I guess I just got caught up in it."'
-				'He relaxes his pace to a blessedly slower speed and begins to fuck you far more gently.'
-				act'Continue':gt'hookup','miss_virg_norm2'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'doggy_virg_norm1':
-	gs'arousal','vaginal',1,'no_orgasm_msg'
-	gs'stat'
-	$hookup['position'] = 'doggy'
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/enter1.mp4"></video></center>'
-	if hookup['virgin'] = 1:
-		'<<$npc_firstname>> presses his cock against the entrance of your pussy before plunging it all the way in. It fills you up, stretching your walls and tearing straight through your maidenhood, causing you to gasp. Whether in excitement or pain, you aren''t really sure.'
-		'"You okay?"'
-		'"Mhmm." You just nod, not feeling able to say anything else in the moment.'
-		'"I''m gonna start moving," he says. You nod again, indicating for him to continue.'
-		*nl
-		act'Continue':
-			cla & *clr
-			hookup['orgasm'] = orgasm
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-			'<<$npc_firstname>> slowly builds into a steady rhythm and as he continues to fuck you, you...'
-			gs'hookup','virgin_enjoyment'
-		end
-	else
-		'<<$npc_firstname>> slowly presses his cock inside you. The walls of your pussy gradually stretch as he moves further inside and you gasp at the sensation until he reaches your hymen. Completely unaware of your virginity, he continues pushing.'
-		*nl
-		'His cock tears through it and you feel a stab of pain, eliciting a pained cry from your mouth. Drawing back out again, he thrusts again, causing another whimper. But as he draws back out the next time he pauses.'
-		'"What the- Is this blood? Hey... are you a virgin?"'
-		if mesec > 0:
-			act'I''m on my period (partial lie)':
-				cla & *nl
-				'"No! I''m not! I''m just... on my period."'
-				'It''s not <i>entirely</i> a lie, you think to yourself since you are actually on your period.'
-				'"But we can keep going, right?" you ask timidly.'
-				'"Oh. Yeah." And he begins fucking you agian, picking up to a steady rhythm.'
-				act'Continue':gt'hookup','doggy_virg_norm1_1'
-			end
-		else
-			act'I''m on my peroid (lie)':
-				cla & *nl
-				'"No! I''m not! I''m just... on my period." You''re not entirely sure why you''re lying about this, but you are nonetheless.'
-				'"But we can keep going, right?" you ask timidly.'
-				'"Oh. Yeah." <<$npc_firstname>> begins fucking you agian, picking up to a steady rhythm.'
-				act'Continue':gt'hookup','doggy_virg_norm1_1'
-			end
-		end
-		
-		act'Yes... (shy)':
-			cla & *nl
-			hookup['virgin'] = 1
-			'"Ye- yes..." you mumble shyly.'
-			'"You should have said something," he grins. "This is going to be fun..."'
-			'<<$npc_firstname>> starts fucking you again, working up to a steady pace.'
-			act'Continue':gt'hookup','doggy_virg_norm1_1'
-		end
-		
-		act'Not anymore':
-			cla & *nl
-			hookup['virgin'] = 1
-			'"Not anymore," you say, looking back at him over your shoulder with a pained smile.'
-			'"You fucking minx," <<$npc_firstname>> grins back, immediately thrusting back into you and building up a steady rhythm.'
-			act'Continue':gt'hookup','doggy_virg_norm1_1'
-		end
-	end
-end
-
-if $ARGS[0] = 'doggy_virg_norm1_1':
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	cla & *clr
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/med2.mp4"></video></center>'
-	'The sound of flesh against flesh fills the room, <<$npc_firstname>> cock rhythmically moving in and out of your bloody pussy, hips slapping against your ass. As he fucks you, you...'
-	gs'hookup','virgin_enjoyment'
-end
-
-if $ARGS[0] = 'doggy_virg_norm2':
-	cla & *clr
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/med2.mp4"></video></center>'
-	'As <<$npc_firstname>> changes his pace, you sigh deeply, feeling like you can breathe again.'
-	*nl
-	'Now that you aren''t worried about being literally fucked to death, you feel like you can focus on the sensations of your first time and you...'
-	gs'hookup','virgin_enjoyment'
-end
-
-if $ARGS[0] = 'doggy_virg_hard1':
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	$hookup['position'] = 'doggy'
-	cla & *clr
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/kotovsex10.mp4"></video></center>'
-	if hookup['virgin'] = 1:
-	
-	else
-		'Without warning, <<$npc_firstname>> plunges his cock inside you full force. You half gasp half shriek as his cock tears straight through your hymen and your eyes water from the intense stab of pain.'
-		*nl
-		'Completely oblivious to the loss of your virginity, <<$npc_firstname>> doesn''t stop for even a second and begins fucking you <i>hard</i>.'
-		act'Continue':
-			cla & *clr
-			gs'arousal','vaginal',rand(3,5),'rough','no_orgasm_msg'
-			gs'stat'
-			if hookup['condom'] = 1:
-				'<center><video autoplay loop src="images/shared/sex/vag/doggy/condom1.mp4"></video></center>'
-			else
-				'<center><video autoplay loop src="images/shared/sex/vag/doggy/kotovsex10.mp4"></video></center>'
-			end
-			'<i>"Ahh! Ahh!! AH! AHH!!"</i>'
-			'You''re reduced to a screaming mess as <<$npc_firstname>> fucks you roughly and without mercy or restraint. It hurts so much. Every time his cock slams back in to you, you feel like you''re going to die. The force of his thrusts bounce your breasts so violently they hurt. It''s like your pussy is being torn in half and you wonder if you''re going to piss blood after this.'
-			act'Endure it':
-				$orgasm_or = 'no'
-				gs'arousal','vaginal',rand(3,5),'rough','no_orgasm_msg'
-				gs'stat'
-				cla & *nl
-				'The next few minutes pass by in a torturous blur. You have no idea how much time actually passes by, only that every second of it is filled with pain, tears, and prayer that it will end after the next thrust.'
-				gs'hookup','fuck_cum'
-			end
-			
-			act'Can we slow down?':
-				cla & *nl
-				'"Can we-! Slow down-! A little-?" you whimper under <<$npc_firstname>>''s relentless pounding. "This is-! A bit-! Rough-!"'
-				if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-					'"Not a chance, I''m enjoying this." He ignores your pleas, continuing to relentlessly fuck you. The next few minutes pass by in a torturous blur. You have no idea how much time actually passes by, only that every second of it is filled with pain, tears, and prayer that it will end after the next thrust.'
-					gs'hookup','fuck_cum'
-				else
-					hookup['speed_change'] = 1
-					'"Oh, sorry. I guess I just got caught up in it."'
-					'He relaxes his pace to a blessedly slower speed and begins to fuck you far more gently.'
-					act'Continue':gt'hookup','doggy_virg_norm2'
-				end
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'cowgirl_virg_norm1':
-	gs'arousal','vaginal',1,'no_orgasm_msg'
-	gs'stat'
-	$hookup['position'] = 'cowgirl'
-	
-	'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/enter1.mp4"></video></center>'
-	if hookup['virgin'] = 1:
-		!! to be written later
-	else
-		'Grabbing hold of <<$npc_firstname>>''s cock, you try to guide it in with your hand as you ease yourself down onto it. It''s kind of awkward to do and you have a lot of difficulty getting it to enter your pussy straight. Embarrassingly, it takes several tries before you think you finally have the tip inside you. With that out of the way, you carefully lower yourself down, letting your walls stretch until you feel <<$npc_firstname>>''s dick putting pressure on your hymen.'
-		'"You okay?" he asks.'
-		'"Yeah! Yeah!" you reply hurriedly. And with a deep breath, you bounce once, tearing straight through your virginity.'
-		act'<b>!!!!</b>':
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			cla & *clr
-			if hookup['condom'] = 1:
-				'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/condom1.mp4"></video></center>'
-			else
-				'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/slow1.mp4"></video></center>'
-			end
-			'The pain of <<$npc_firstname>>''s cock ripping through your hymen is enough to make you involuntarily squeak and your eyes water. Nevertheless, you don''t stop, raising your hips and dropping them back down again. And again. And again. You slowly ride <<$npc_firstname>>''s cock and after just a few more bounces, you realize you...'
-			gs'hookup','virgin_enjoyment'
-		end
-	end
-end
-
-if $ARGS[0] = 'virgin_enjoyment':
-	if hookup['speed_change'] = 1:
-		act'... still find it painful':
-			hookup['virgin_enjoyment'] = -1
-			cla & *nl
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5)
-			gs'stat'
-			'... still find it really painful.'
-			*nl
-			'Maybe it''s just the after effect of being too rough with you before carrying over, but this <i>really fucking hurts!</i> Every time <<$npc_firstname>> thrusts into you, it feels like your vagina is going to split in half. Everything about it hurts. Your insides hurt, your vulva hurts, your cervix hurts, it feels like your pussy is literally being stabbed. You keep expecting it to get better, for the pain to go away and the enjoyment to start, but it never does. All you can do is clench your teeth, squeeze your eyes shut, and keep enduring until it''s over.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'... aren''t really enjoying it':
-			hookup['virgin_enjoyment'] = 0
-			cla & *nl
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5)
-			gs'stat'
-			'... still don''t really enjoy it...'
-			*nl
-			'It hurt when <<$npc_firstname>> first entered you and when he was just pounding on you with no regard for your comfort, but now that he''s slowed down, it''s just a sort of pressure you feel inside you. The sensation isn''t painful but it you''re not getting any pleasure from it either. After his previous speed, maybe your pussy just went numb...?'
-			gs'hookup','fuck_cum'
-		end
-
-		act'... are starting to feel good':
-			hookup['virgin_enjoyment'] = 1
-			cla & *nl
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			'... start to feel really good...'
-			*nl
-			'The pain of the previous form of fucking begins to fade and pleasure takes its place. Like an itch you''ve never been able to scratch or a "fullness" you''ve never experienced, you can feel his cock deep inside you and it feels <i>so good</i>, causing you to openly moan as he fucks you.'
-			*nl
-			if hookup['orgasm'] < orgasm:
-				'You''re so caught up in the enjoyment of it, you almost don''t realize when you''re about to cum. The pressure inside you building and building with each time <<$npc_firstname>>''s cock fills you up. One moment you''re thinking, <i>More! More! More!</i> and the next, every muscle in your body goes taut as you cum hard on <<$npc_firstname>>''s dick.'
-			else
-				'You spend the next several minutes fucking joyously, wondering why you waited so long to feel this good!'
-			end
-			gs'hookup','fuck_cum'
-		end
-	else
-		act'... find it painful':
-			hookup['virgin_enjoyment'] = -1
-			cla & *nl
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5)
-			gs'stat'
-			'... find it really painful.'
-			*nl
-			'Every time <<$npc_firstname>>''s cock moves inside you, it feels like your vagina is going to split in half. Everything about it hurts. Your insides hurt, your vulva hurts, your cervix hurts, it feels like your pussy is literally being stabbed. You keep expecting it to get better, for the pain to go away and the enjoyment to start, but it never does. All you can do is clench your teeth, squeeze your eyes shut, and keep enduring until it''s over.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'... aren''t really enjoying it':
-			hookup['virgin_enjoyment'] = 0
-			cla & *nl
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5)
-			gs'stat'
-			'... aren''t really enjoying it...'
-			*nl
-			'It hurt when <<$npc_firstname>> first entered you, but now that your pussy has adjusted but that pain has taken a back seat and become nothing more than a dull throb But other than that, it''s just a sort of pressure you feel inside you that comes and goes with the motions of his cock. The sensation isn''t painful but it you''re not getting any pleasure from it either. The experience is just sort of... bland.'
-			gs'hookup','fuck_cum'
-		end
-
-		act'... are starting to feel good':
-			hookup['virgin_enjoyment'] = 1
-			cla & *nl
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			'... start to feel really good...'
-			*nl
-			'The initial pain you felt is still there, but now there''s something else that''s going along with it. Like an itch you''ve never been able to scratch or a "fullness" you''ve never experienced, you can feel his cock deep inside you and it feels <i>so good</i>, causing you to openly moan.'
-			*nl
-			if hookup['orgasm'] < orgasm:
-				'You''re so caught up in the enjoyment of it, you almost don''t realize when you''re about to cum. The pressure inside you builds and builds with each time <<$npc_firstname>>''s cock fills you up. One moment you''re thinking, <i>More! More! More!</i> and the next, every muscle in your body goes taut as you go into spasms, cumming hard on <<$npc_firstname>>''s dick.'
-			else
-				'You spend the next several minutes fucking joyously, wondering why you waited so long to feel this good!'
-			end
-			gs'hookup','fuck_cum'
-		end
-	end
-
-end
-
-
-if $ARGS[0] = 'miss_norm1':
-	$hookup['position'] = 'miss'
-	if pcs_vag = 0:gt'hookup','miss_virg_norm1'
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-	if mesec > 0:
-		'<<$npc_firstname>> fucks you slowly but steadily. His cock is coated in the blood from your menstrual cycle, red liquid streaming out of your pussy with every thrust. But it doesn''t stop him from continuing to drive balls deep inside you every time.'
-	else
-		'<<$npc_firstname>> fucks you slowly but steadily, drawing his cock all the way out and driving it balls deep inside you each time.'
-	end
-	act'Don''t stop!':
-		hookup['orgasm'] = orgasm
-		gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-		gs'stat'
-		cla & *nl
-		'"Don''t stop!" you moan.'
-		'You love the way he fucks you, how his cock slowly stretches your pussy out until you feel completely full before withdrawing it again, leaving you aching for more.'
-		if hookup['orgasm'] < orgasm:
-			'It builds something inside your body, some kind of energy. You can feel it in your toes, curling in pleasure. You can feel it in the tips of your nipples, stiff with arousal. And the burning <i>heat</i> inside your pussy, growing hotter by the second. Each thrust causes the heat to intensify inside you, straining against your skin until you can''t take it anymore.'
-			*nl
-			'You release a wordless cry, every muscle in your body going taut and your pussy clenching hard with <<$npc_firstname>> still inside you. For the briefest of moments, it''s almost like you can feel every single contour, curve, and vein of his cock.'
-		else
-			*nl
-			'"Don''t stop! Don''t stop! Don''t stop! Don''t stop!" you repeat over and over again, unable to think of any other words with your mind lost in carnal pleasures.'
-		end
-		gs'hookup','fuck_cum'
-	end
-	
-	act'Isn''t this kind of slow?':
-		hookup['orgasm'] = orgasm
-		cla & *nl
-		$OpenInnerThought + 'Isn''t this kind of... slow?' + $CloseInnerThought
-		*nl
-		'The pace at which <<$npc_firstname>> is fucking you is unbelievably frustrating. It feels nice, but you want more! As it currently is, it just feels like a literal cocktease.'
-		act'Don''t ruin the mood':
-			cla & *clr
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-			'You sigh internally, but decide not to ruin the mood by telling <<$npc_firstname>> he''s a boring lay. He continues to fuck you excruciatingly slowly, while you try to focus on the sensations as much as possible to just maybe get some satisfaction out of it.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'Can you fuck me harder?':
-			cla & *clr
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-			'"Hey uhh, you can actually fuck me harder if you want to."'
-			if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-				$orgasm_or = 'no'
-				gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-				'"That''s okay, I''m enjoying this."'
-				'"You sure?" you ask again, a little desperately. "My pussy can take a <i>real</i> pounding you know."'
-				'"Yeah, I''m sure. This is good."'
-				'You scream internally at his refusal to take the hint and end up spending the next few minutes getting fucked in the most boring way possible.'
-				gs'hookup','fuck_cum'
-			else
-				'"Oh! Uhmm, sure I can do that."'
-				'You sigh in relief that he took the hint and <<$npc_firstname>> changes his pace, beginning to fuck you a little bit faster and a whole lot harder.'
-				act'Continue':gt'hookup','miss_hard2'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'miss_norm2':	
-	$hookup['position'] = 'miss'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/slow2.mp4"></video></center>'
-	'Now that <<$npc_firstname>> isn''t fucking with the force of a jackhammer, the whole experience becomes much more pleasant. Instead of pounding your pussy numb, you can actually feel his cock stretching your walls, the sensation of being filled up when he''s deep inside you, and every thrust elicits moans of pleasure from your lips.'
-	*nl
-	if hookup['orgasm'] < orgasm:
-		'It builds something inside your body, some kind of energy. You can feel it in your toes, curling in pleasure. You can feel it in the tips of your nipples, stiff with arousal. And the burning <i>heat</i> inside your pussy, growing hotter by the second. Each thrust causes the heat to intensify inside you, straining against your skin until you can''t take it anymore.'
-		*nl
-		'You release a wordless cry, every muscle in your body going taut and your pussy clenching hard with <<$npc_firstname>> still inside you. For the briefest of moments, it''s almost like you can feel every single contour, curve, and vein of his cock.'
-	end
-	gs'hookup','fuck_cum'
-end
-
-if $ARGS[0] = 'miss_hard1':
-	$hookup['position'] = 'miss'
-	if pcs_vag = 0:gt'hookup','miss_virg_hard1'
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/med3.mp4"></video></center>'
-	if mesec > 0:
-		'<<$npc_firstname>>''s elicits an involuntary gasp from your lips as he goes balls deep with the first thrust. He doesn''t give you a single moment to adjust and immediately pulls out to thrust back in. <<$npc_firstname>> rapidly builds up to a fast pace. Tiny flecks of blood from your period spatter across both of your skin from the force of his fucking and you can see his cock is painted red with it.'
-	else
-		'<<$npc_firstname>>''s elicits an involuntary gasp from your lips as he goes balls deep with the first thrust. He doesn''t give you a single moment to adjust and immediately pulls out to thrust back in. <<$npc_firstname>> rapidly builds up to a fast pace, bouncing your breasts with the force of his fucking and you think to yourself...'
-	end
-
-	act'This feels so good':
-		hookup['orgasm'] = orgasm
-		gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-		gs'stat'
-		cla & *clr
-		'<center><video autoplay loop src="images/shared/sex/vag/miss/med1.mp4"></video></center>'
-		$OpenInnerThought + 'This feels soooo goooood...' + $CloseInnerThought
-		'You love the way he fucks you, thoroughly enjoying the pounding you''re receiving and you quickly lose yourself in the rhythmic slapping of his body against yours.'
-		if hookup['orgasm'] < orgasm:
-			*nl
-			'As <<$npc_firstname>> continues to fuck you, something builds inside you. Every time his cock slams into your pussy is like sparks flying off a hammer. This <i>heat</i>, this friction, burning inside your pussy and every part of your body, growing hotter by the second. Each thrust builds more heat inside you, straining against your skin until you can''t take it anymore.'
-			*nl
-			'You scream uncontrollably as you climax, every muscle in your body going taut and your pussy clenching hard with <<$npc_firstname>> still pounding you. You ride out your orgasm as far as it will take you until your body goes slack.'		
-		end
-		gs'hookup','fuck_cum'
-	end
-	
-	act'This is too hard!':
-		hookup['orgasm'] = orgasm
-		cla & *nl
-		$OpenInnerThought + 'Isn''t this-! Kind of-! Rough-?!' + $CloseInnerThought
-		*nl
-		'<<$npc_firstname>> is fucking you way too hard for your pleasure. Your tits hurt with how much they''re bouncing around and his cock is stabbing into you at uncomfortable angles, the force he''s putting behind the thrusts making it even worse.'
-		act'Don''t ruin the mood':
-			cla & *clr
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/med3.mp4"></video></center>'
-			'You don''t want to ruin the mood, so you don''t say anything and continue to endure the painful fucking you''re receiving from <<$npc_firstname>>, wincing with every thrust.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'Can you slow down a little?':
-			'<center><video autoplay loop src="images/shared/sex/vag/miss/med3.mp4"></video></center>'
-			'"Do you think-! We could-! Slow down a little?" you manage to grunt out.'
-			if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-				$orgasm_or = 'no'
-				gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-				'"No way, this is great!" <<$npc_firstname>> grunts back, not even slowing down a beat.'
-				'"This is-! I''m not really-!"'
-				'"You''ll get used to it soon!"'
-				'He keeps fucking you hard, redoubling his efforts to fuck you with even greater force.'
-				*nl
-				'You do not get used to it.'
-				gs'hookup','fuck_cum'
-			else
-				'"Oh! Sorry, I thought you liked it. I can slow down a little."'
-				'You sigh in relief as he reduces the speed and force of his thrusts to a more managable level. Though you do wonder how he was mistaking your groans of pain for moans of pleasure.'
-				act'Continue':gt'hookup','miss_norm2'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'miss_hard2':
-	$hookup['position'] = 'miss'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/miss/med1.mp4"></video></center>'
-	'Now that <<$npc_firstname>> isn''t fucking you like your bones were made of glass, the whole experience becomes much more enjoyable. He pounds your pussy with enough force to make your breasts jiggle and the bed creak and the sensation is enough to make you openly moan.'
-	*nl
-	if hookup['orgasm'] < orgasm:
-		'As <<$npc_firstname>> continues to fuck you, something builds inside you. Every time his cock slams into your pussy is like sparks flying off a hammer. This <i>heat</i>, this friction, burning inside your pussy and every part of your body, growing hotter by the second. Each thrust builds more heat inside you, straining against your skin until you can''t take it anymore.'
-		*nl
-		'You scream uncontrollably in climax, every muscle in your body going taut and your pussy clenching hard with <<$npc_firstname>> still pounding you. You ride out your orgasm as far as it will take you until your body goes slack.'		
-	end
-	gs'hookup','fuck_cum'
-end
-
-if $ARGS[0] = 'doggy_norm1':
-	$hookup['position'] = 'doggy'
-	if pcs_vag = 0:gt'hookup','doggy_virg_norm1'
-	gs'arousal','vaginal',1,'no_orgasm_msg'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/enter1.mp4"></video></center>'
-	'You tense up slightly when <<$npc_firstname>> presses his cock inside you. You can''t help but hold your breath as he slowly slides in, his girth stretching the walls of your pussy, finally releasing it when you can feel his entire length inside you. After a moment of letting you adjust, he starts moving.'
-	act'Get fucked':
-		cla & *clr
-		minut += rand(3,5)
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/vag/doggy/slow2.mp4"></video></center>'
-		if mesec > 0:
-			'<<$npc_firstname>> drives his cock in and out of you in a steady rhythm, not too fast but not particularly slow either. His hips brush against your ass with every thrust, driving himself deep inside you. As he fucks you, you can feel the blood of your menstrual cycle leaking from your pussy, trickling down your thighs.'
-		else
-			'<<$npc_firstname>> drives his cock in and out of you in a steady rhythm, not too fast but not particularly slow either. His hips brush against your ass with every thrust, and you think to yourself...'
-		end
-		act'Don''t stop!':
-			hookup['orgasm'] = orgasm
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-			gs'stat'
-			cla & *nl
-			'"Don''t stop!" you moan. Everything about this sends pleasure coursing through your body. Getting fucked from behind, how deep <<$npc_firstname>> drives his cock inside you, and the perfect pace that leaves you panting like a wanton whore.'
-			if hookup['orgasm'] < orgasm:
-				*nl
-				'Your panting becomes heavier with every thrust and a burning heat is building up between your legs. Your nipples start to tingle and you can feel them quivering in the air with the motions of your jiggling breasts. It builds pressure inside you, stacking one good feeling on top of another until it cresendos, the pressure releasing in waves of mindnumbing bliss.'
-				*nl
-				'Every muscle of your body goes taut and <<$npc_firstname>> continues to fuck you even as you cum hard on his cock. Your chest feels so tight that you can''t breathe and your voice becomes a mere whine as you clench your teeth together, unable to do anything else in the face of euphoric orgasm. Finally, it breaks and your elbows buckle underneath your own weight, leaving you ass up, face down, and gasping for air.'
-			else
-				*nl
-				'"Don''t stop! Don''t stop! Don''t stop! Don''t stop!" you repeat over and over again, unable to think of any other words with your mind lost in carnal pleasures as you moan into the bedsheets.'
-			end
-			gs'hookup','fuck_cum'
-		end
-		
-		act'I wish he''d fuck me harder':
-			hookup['orgasm'] = orgasm
-			cla & *nl
-			$OpenInnerThought + 'Can''t he fuck me harder than this?' + $CloseInnerThought
-			*nl
-			'He''s being too gentle for you right now. Maybe you''d like it some other time, but right now you want to get <i>pounded</i>. This pace is just... boring...'
-			act'Don''t ruin the mood':
-				cla & *clr
-				$orgasm_or = 'no'
-				gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-				gs'stat'
-				'<center><video autoplay loop src="images/shared/sex/vag/doggy/bored1.mp4"></video></center>'
-				'You sigh internally, but decide not to ruin the mood by telling <<$npc_firstname>> he''s a boring lay. He continues to fuck you from behind while you openly let your disappointment show on the face he can''t see.'
-				gs'hookup','fuck_cum'
-			end
-			
-			act'Can you fuck me harder?':
-				cla
-				if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-					*clr
-					'<center><video autoplay loop src="images/shared/sex/vag/doggy/bored1.mp4"></video></center>'
-					$orgasm_or = 'no'
-					gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-					'"Hey uhh, you can actually fuck me harder if you want to."'
-					'"That''s okay, I''m enjoying this."'
-					'"You sure?" you ask again, a little desperately. "My pussy can take a <i>real pounding</i> you know."'
-					'"Yeah, I''m sure. This is good."'
-					'You scream internally at his refusal to take the hint and end up spending the next few minutes getting fucked in the most boring way possible.'
-					gs'hookup','fuck_cum'
-				else
-					*nl
-					'"Really?" He starts, seeming surprised but eager.'
-					'"Yeah," you grin back at him. I can take it. <i>Clap</i> my cheeks."'
-					'You shriek in delight as he thrusts his cock into you with full force, the impact rippling through your entire body. Shortly after scream quickly devolves into rhythmic moans when <<$npc_firstname>> continues fucking you, but much harder than before.'
-					act'Continue':gt'hookup','doggy_hard2'
-				end
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'doggy_norm2':
-	$hookup['position'] = 'doggy'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/slow2.mp4"></video></center>'
-	'Now that <<$npc_firstname>> isn''t fucking with the force of a jackhammer, the whole experience becomes much more pleasant. Instead of pounding your pussy numb, you can actually feel his cock stretching your walls, the pleasure of being filled to the brim when his full length is inside you and being able to enjoy it for the moment before he pulls away. Every thrust leaves you moaning for more.'
-	*nl
-	if hookup['orgasm'] < orgasm:
-		'It builds something inside your body, some kind of energy. You can feel it in your toes, curling in pleasure. You can feel it in the tips of your nipples, stiff with arousal. And the burning <i>heat</i> inside your pussy, growing hotter by the second. Each thrust causes the heat to intensify inside you, straining against your skin until you can''t take it anymore.'
-		*nl
-		'You release a wordless cry, every muscle in your body going taut and your pussy clenching hard with <<$npc_firstname>> still inside you. For the briefest of moments, it''s almost like you can feel every single contour, curve, and vein of his cock.'
-	end
-	gs'hookup','fuck_cum'
-end
-
-if $ARGS[0] = 'doggy_hard1':
-	$hookup['position'] = 'doggy'
-	if pcs_vag = 0:gt'hookup','doggy_virg_hard1'
-	minut += rand(3,5)
-	gs'arousal','vaginal',1,'no_orgasm_msg','rough'
-	gs'stat'
-	'<center><video autoplay loop src="images/shared/sex/vag/doggy/rough1.mp4"></video></center>'
-	'You gasp as <<$npc_firstname>> slams his cock into you from behind, the impact rippling through your entire body. As your head jerks back reflexively, <<$npc_firstname>>''s hand grabs hold of your hair, yanking on it to pull you harder onto his cock.'
-	*nl
-	if mesec > 0:
-		'<<$npc_firstname>> drives himself in and out of your pussy, fucking you hard, the sound of your cheeks getting clapped bouncing off the walls. His cock slams into you and you can feel it force the menstrual blood from your uterus, sending it running down your thighs.'
-	else
-		'<<$npc_firstname>> drives himself in and out of your pussy, fucking you hard, the sound of your cheeks getting clapped bouncing off the walls. And you think to yourself...'
-	end
-	act'Yes! Yes! Yes! Yes!':
-		hookup['orgasm'] = orgasm
-		gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-		gs'stat'
-		cla & *nl
-		'"Yes! Yes! Yes! Pound my pussy!" you scream out loud.'
-		*nl
-		'The hair grab was unexpected, but you''re loving how rough he''s treating you, the force with which he fucks you. You love how deep his cock goes inside you and he''s hammering your pussy in all the right ways.'
-		if hookup['orgasm'] < orgasm:
-			*nl
-			'Every time his hips come into contact with your ass, it''s like your body is storing up the force of his thrusts. The pressure builds inside you and your groans get louder and louder until you''re trembling. And then your orgasm breaks.'
-			*nl
-			'Every muscle of your body goes taut and <<$npc_firstname>> continues to fuck you even as you cum hard. You scream in pleasure, so intense it''s almost painful, coming close to blacking out. You vaguely remember individual sensations, like the rigidity of your nipples or your pussy clamping down on his cock. But beyond that, everything just becomes a blur, pulsations of orgasm rocking through your body.'
-		end
-		gs'hookup','fuck_cum'
-	end
-	
-	act'This is too rough!':
-		hookup['orgasm'] = orgasm
-		cla & *nl
-		$OpenInnerThought + 'This is-! Too rough-!' + $CloseInnerThought
-		*nl
-		'You want to scream as he pulls on your hair, feeling like he''s going to rip it out and putting an awful strain on your neck. His cock is like a jackhammer, pounding into your pussy in the worst way, feeling more like he''s punching your cervix than fucking you. It''s so painful and unpleasant, you feel like you''re going to die.'
-		act'Don''t ruin the mood':
-			cla & *clr
-			$orgasm_or = 'no'
-			gs'arousal','vaginal',rand(3,5),'no_orgasm_msg','rough'
-			gs'stat'
-			'<center><video autoplay loop src="images/shared/sex/vag/doggy/hard2.mp4"></video></center>'
-			'For whatever reason, you can''t bring yourself to say anything, and simply endure the rough treatment. You sigh in relief when <<$npc_firstname>> releases your hair but only for a brief moment when he uses his extra hand to grab hold of your ass and pound you even harder. You grab onto the edge of the bed and hang on for dear life, whimpering as he mercilessly fucks you.'
-			gs'hookup','fuck_cum'
-		end
-		
-		act'Can we slow down?':
-			cla
-			if (rand(1,10) >= 7 or npc_selfish = 1 or npc_abusive = 1) and npc_generous ! 1:
-				*clr
-				'<center><video autoplay loop src="images/shared/sex/vag/doggy/hard2.mp4"></video></center>'
-				$orgasm_or = 'no'
-				gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-				'"Do you think-! We could-! Slow down a little?" you manage to whimper out. "This is to rough for me."'
-				'"No way, this is great!" <<$npc_firstname>> grunts back, not even slowing down a beat.'
-				'"This is-! I''m not really-!"'
-				'"You''ll get used to it soon!"'
-				'He releases his hair, grabbing your ass with both hands and begins fucking you even harder, pounding you into the mattress. All you can do is grab the sheets and grit your teet, praying that it will end soon.'
-				gs'hookup','fuck_cum'
-			else
-				*nl
-				'"Oh! Sorry." He stops fucking you abruptly, releasing your hair. "I thought you liked it rough. My bad, I''ll be more gentle."'
-				$OpenInnerThought + 'How could he think I liked that?' + $CloseInnerThought
-				'You sigh in relief as he picks up his pace again, this time without leaving you feel like you''re being battered to bits.'
-				act'Continue':gt'hookup','doggy_norm2'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'doggy_hard2':
-	cla & *clr
-	$hookup['position'] = 'doggy'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	if hookup['condom'] = 1:
-		'<center><video autoplay loop src="images/shared/sex/vag/doggy/condom1.mp4"></video></center>'
-	else
-		'<center><video autoplay loop src="images/shared/sex/vag/doggy/hard1.mp4"></video></center>'
-	end
-	'<<$npc_firstname>> slams his cock into your pussy and you can''t help yourself, throwing your ass back into his thrusts to increase the force with which he obligingly claps your cheeks. Endorphins rush to your head, sending you into a giggling fit even while the bed wobbles beneath you.'
-	if hookup['orgasm'] < orgasm:
-		act'Continue':
-			cla & *clr
-			'<center><video autoplay loop src="images/shared/sex/vag/doggy/orgasm1.mp4"></video></center>'
-			'Your giggling slowly turns into panting and your breath becomes heavier with every thrust. Tension begins to build inside you, storing itself inside you. Your core begins to grow tighter and tighter until every muscle in your body goes completely taut and you shudder in violent orgasm.'
-			*nl
-			'<<$npc_firstname>> drives himself deep inside you and you release a tortured cry, continuing to spasm as you ride out the rest of your orgasm on his cock.'
-			gs'hookup','fuck_cum'
-		end
-	else
-		gs'hookup','fuck_cum'
-	end
-end
-
-
-
-if $ARGS[0] = 'cowgirl_norm1':
-	$hookup['position'] = 'cowgirl'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	if hookup['condom'] = 1:
-		'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/condom1.mp4"></video></center>'
-	else
-		'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/med1.mp4"></video></center>'
-	end
-	'You start bouncing up and down on his cock, enjoying the feeling of it slide in and out of you, hitting the angles in your pussy that can only be hit when you''re on top.'
-	if hookup['orgasm'] < orgasm:
-		*nl
-		'Each bounce builds pressure inside you. Every bounce of pressure piles on the last one. Soon, your body is filled with tension. You throw yourself down onto <<$npc_firstname>>''s cock one last time and the tension breaks, releasing waves of orgasm through your entire body. You cry out, impaling yourself on his cock, toes curling with pleasure, shuddering as you become oblivious to everything except your mind numbing orgasm and the cock stuffed in inside pussy'	
-	end
-	gs'hookup','fuck_cum'
-end
-
-if $ARGS[0] = 'cowgirl_hard1':
-	$hookup['position'] = 'cowgirl'
-	hookup['orgasm'] = orgasm
-	gs'arousal','vaginal',rand(3,5),'no_orgasm_msg'
-	'<center><video autoplay loop src="images/shared/sex/vag/cowgirl/hard2.mp4"></video></center>'
-	'You begin throwing yourself up and down on <<$npc_firstname>>''s cock, your breasts bouncing wildly from the force of your thrusts. You lean back on your own legs for leverage, trying to get the maximum height to come down on his dick with the maximum force every time.'
-	if hookup['orgasm'] < orgasm:
-		*nl
-		'Each bounce builds pressure inside you. Every bounce of pressure piles on the last one. Soon, your body is filled with tension. You throw yourself down onto <<$npc_firstname>>''s cock one last time and the tension breaks, releasing waves of ecstasy through your entire body. You cry out, impaling yourself on his cock, toes curling with pleasure, shuddering as you become oblivious to everything except your mind numbing orgasm and the cock stuffed in inside pussy.'	
-	end
-	gs'hookup','fuck_cum'
-end
-
-if $ARGS[0] = 'fuck_cum':
-	$hookup['next_act1'] = 'hookup_after'
-	$hookup['next_act2'] = 'pre'
-	hookup['cum_choice'] = rand(1,10)
-	if hookup['cum_choice'] > 5 and hookup['condom'] = 1:
-		act'Continue':
-			gs'cum_call','',$boy,1,3
-			if hookup['orgasm'] < orgasm:
-				!! differing descriptions based on position
-				if $hookup['position'] = 'miss':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum61.jpg"></center>'
-					'As your orgasm winds down, you look up and realize that <<$npc_firstname>> has stopped moving and is breathing heavily. He pulls out of you and you can see the condom encasing his cock sagging, filled with white liquid.'
-					act'Continue':
-						cla & *clr
-						gs'cum_call','stomach',$boy,1
-						$hookup['cum_choice'] = 'condom'
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/condom1.jpg"></center>'
-						'<<$npc_firstname>> pulls the condom from his dick with a wet slapping sound, and semen flies from the open end, spattering across your skin. He ties it off and tosses it onto your stomach, landing next to his cum.'
-						gs'hookup_after','gross_condom'
-						
-						!!gs'hookup_after','good_for_you'
-					end
-					
-				elseif $hookup['position'] = 'doggy':
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum71.jpg"></center>'
-					'Right as your orgasm finishes winding down, <<$npc_firstname>> thrusts hard into you one last time, holding his cock as deep inside you as it can go. You feel him shudder inside you, his cock flexing inside of your pussy before his body relaxes and pulls his dick from your pussy. Based on that, you assume he must''ve cum too, and as you glance backwards you can see him peeling the condom from his cock, a white viscous liquid filling the rubber sleeve.'
-					gs'hookup_after','pre'
-				elseif $hookup['position'] = 'cowgirl':
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum81.jpg"></center>'
-					'As your orgasm finishes winding down, you look down and see <<$npc_firstname>>''s face also somewhat strained.'
-					'"Did you... did we... together...?" you pant, climbing off his cock. As you suspected, the condom encasing it is filled with thick white liquid. He pulls it off with a wet slapping sound, tying the end off and throwing it into the corner.'
-					gs'hookup_after','pre'
-				end
-			else
-				gs'hookup','cum_condom'
-			end
-		end
-	elseif hookup['cum_choice'] <= 3:
-		if hookup['condom'] = 1:
-			gs'hookup','cum_condom'
-		else
-			act'Continue':
-				cla & *clr
-				gs'cum_call','',$boy,1
-				$hookup['cum_choice'] = 'creampie'
-				if hookup['orgasm'] < orgasm:
-					!! differing descriptions based on position
-					if $hookup['position'] = 'miss':
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/vagcreampie/oops.jpg"></center>'
-						'As your orgasm finishes winding down, you stiffen when you realize that <<$npc_firstname>> isn''t moving. His expression seems strained, like he''s holding his breath. After a moment, he pulls his cock from your pussy and you feel something dribble out after it.'
-					elseif $hookup['position'] = 'doggy':
-						'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/doggy1.mp4"></video></center>'
-						'As your orgasm finishes winding down, you stiffen when you realize something. <<$npc_firstname>>''s balls deep inside you, but he isn''t moving and you can feel him twitching inside you. After a moment, he pulls his cock from your pussy and you feel something dribble out after it.'
-					elseif $hookup['position'] = 'cowgirl':
-						'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cowgirl1.mp4"></video></center>'
-						'As your orgasm finishes winding down, you stiffen when you realize you can feel <<$npc_firstname>> twitching inside you. Lifting your thigh, he pushes you off of him. His dick flops out of you and you can feel something dribble out after it.'
-					end
-					
-					act'What the fuck!':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum111.jpg"></center>'
-						!! chose to forgo a condom "just this once"
-						if hookup['condom'] = 2:
-							'"What the fuck!" you scream, jumping up. You look down between your legs and wipe your hand across your pussy, confirming your suspicions when your fingers come back with a viscious white liquid on them. "You just came inside me!"'
-						!! let him fuck you without one if he wouldn''t cum inside you
-						elseif hookup['condom'] = 3:
-							'"What the fuck!" you scream, jumping up. You look down between your legs and wipe your hand across your pussy, confirming your suspicions when your fingers come back with a viscious white liquid on them. "I told you not to cum inside me!"'
-						!! he promised he wouldn''t cum inside you
-						elseif hookup['condom'] = 4:
-							'"What the fuck!" you scream, jumping up. You look down between your legs and wipe your hand across your pussy, confirming your suspicions when your fingers come back with a viscious white liquid on them. "You said you''d pull out!"'
+if $ARGS[0] = 'virgin_condom3':
+	if hookup['condom'] < 1:
+		act'Ask him to use a condom (<<will_cost>> Willpower)':
+			gs 'willpower','pay','self'
+			gs 'stat'
+			gt'hookup','virgin_condom3'
+			'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
+			$npc_apt_bedroom
+			'"I changed my mind, can you use a condom? Please?"'
+			if rand(1,10) >= 7:
+				'"Come on... You really want to use a condom for your first time?"'
+				act'Can''t take chances':
+					cla & *nl
+					'"Yes," you respond. "I can''t take any chances. Please?"'
+					'<<$npc_firstname>> sighs. "Okay, fine." Pulling himself off of you, he grabs a package from his nightstand, tearing it open and rolling it onto his dick before taking his place back between you legs.'
+					act'Lose your virginity':
+						if rand(0,1) = 1:
+							gt 'hookup_sex','miss_virg_norm1'
 						else
-							'"What the fuck!" you scream, jumping up. "Did you just cum inside me???" You look down between your legs and wipe your hand across your pussy, confirming your suspicions when your fingers come back with a viscious white liquid on them.'
+							gt 'hookup_sex','miss_virg_hard1'
 						end
-						gs'hookup_after','creampie_mad'
 					end
-					gs'hookup_after','creampie_react'
-				else
-					gs'hookup','creampie_surprise'
-				end
-			end
-		end
-	elseif hookup['cum_choice'] > 3:
-		cla & *nl
-		if hookup['orgasm'] < orgasm:
-			gs'arousal','vaginal',rand(3,5)
-			gs'stat'
-			if $hookup['position'] = 'miss':
-				'After your orgasm winds down, <<$npc_firstname>> continues fucking you, driving himself deep between your legs.'
-			elseif $hookup['position'] = 'doggy':
-				'After your orgasm winds down, <<$npc_firstname>> continues driving his cock deep inside you, piledriving your pussy from behind.'
-			elseif $hookup['position'] = 'cowgirl':
-				'After your orgasm winds down, you take a few deep breathes and tiredly resume bouncing up and down on <<$npc_firstname>>''s cock.'
-			end
-			'A few minutes later, you feel him tense up and he grunts out, "I''m gonna cum!"'
-		else
-			'The two of you continue fucking for a few more minutes, when you feel him tense up and he grunts out, "I''m gonna cum!"'
-		end
-		
-		act'Cum wherever you want':
-			cla & *nl
-			'"Cum-! Wherever-! You want!"'
-			act'Continue':
-				if hookup['cum_choice'] >= 8:
-					gt'hookup','cum_inside'
-				elseif hookup['cum_choice'] = 7:
-					gt'hookup','cum_mouth'
-				elseif hookup['cum_choice'] = 6:
-					gt'hookup','cum_facial'
-				elseif hookup['cum_choice'] >= 4:
-					gt'hookup','cum_pullout'
-				end
-			end
-		end
-		
-		act'Finish him with your hand':gt'hookup','cum_jerkoff'
-		
-		act'On my face!':hookup['facial_ask'] = 1 & gt'hookup','cum_facial'
-		
-		act'In my mouth!':hookup['mouth_ask'] = 1 & gt'hookup','cum_mouth'
-		
-		if hookup['condom'] ! 1:
-			act'Cum inside me!':hookup['creampie_ask'] = 1 & gt'hookup','cum_inside'
-			
-			act'Pull out!':hookup['pullout_ask'] = 1 & gt'hookup','cum_pullout'
-			
-			act'Not inside me!':hookup['not_inside'] = 1 & gt'hookup','cum_not_inside'
-		else
-			act'Let him cum in the condom':gt'hookup','cum_condom'
-		end
-			!!act'Make him cum':gt'hookup','cum_force'
-	end
-end
-
-if $ARGS[0] = 'cum_jerkoff':
-	$hookup['cum_choice'] = 'hand'
-	gs'cum_call','hands',$boy,1
-	gs'stat'
-	'<center><img <<$set_imgh>> src="images/shared/sex/handjob/bossbjcum.jpg"></center>'
-	'"Let me finish you off!"'
-	if hookup['condom'] = 1:
-		if $hookup['position'] = 'miss':
-			'You push him off of you and onto his back. Leaning forward between his legs, you rip off the condom, flinging it away and begin fervently jerk him off. Moments later, a fountain of white liquid erupts from the tip of his cock, spilling down your fingers.'
-		elseif $hookup['position'] = 'doggy':
-			'Pulling yourself off <<$npc_firstname>>''s cock, you turn around and push him onto his back. You jump between his legs, ripping off the condom and flinging it away before fervently jerking him off. Moments later a fountain of white liquid erupts from the tip of his cock, spilling down your fingers.'
-		elseif $hookup['position'] = 'cowgirl':
-			'Pulling yourself off <<$npc_firstname>>''s cock, you shuffle backwards and kneel between his legs. You rip off the condom and fling it away before fervently jerking him off. Moments later a fountain of white liquid erupts from the tip of his cock, spilling down your fingers.'
-		end
-	else
-		if $hookup['position'] = 'miss':
-			'You push him off of you and onto his back. Leaning forward between his legs, you grab hold of his cock and fervently jerk him off. Moments later, a fountain of white liquid erupts from it, spilling down your fingers.'
-		elseif $hookup['position'] = 'doggy':
-			'Pulling yourself off <<$npc_firstname>>''s cock, you turn around and push him onto his back. You jump between his legs, grabbing hold of his cock, fervently jerking him off and moments later a fountain of white liquid erupts from the tip of his cock, spilling down your fingers.'
-		elseif $hookup['position'] = 'cowgirl':
-			'Pulling yourself off <<$npc_firstname>>''s cock, you shuffle backwards and kneel between his legs. You grab hold of his cock, fervently jerking him off and moments later, a fountain of white liquid erupts from it, spilling down your fingers.'
-		end
-	end
-	'You grin at him as he cums all over your hand, continuing to jerk him until his cock stops twitching and nothing else comes out. After a couple more tugs for good measure, you pull back.'
-	if salfetka > 0:
-		act'Get some wipes from your bag':
-			gs 'cum_cleanup', 'cleanloc', 13
-			gs'stat'
-			cla & *clr
-			'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
-			$npc_apt_bedroom
-			'Leaning down off the bed, you dig into your bag with your clean hand and grab some wipes out of it and clean off your fingers. Feeling nice, you also take a moment to wipe down <<$npc_firstname>>''s cock for him at the same time since you sort of made him cum all over himself. Once you''re both all cleaned off, you toss it into the wastebasket by his bed.'
-			gs'hookup_after','pre'
-		end
-	end
-	
-	act'Ask him if he has any tissues':
-		gs 'cum_cleanup', 'cleanloc', 13
-		gs'stat'
-		cla & *clr
-		'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
-		$npc_apt_bedroom
-		'"Got anything for this?" you ask, holding up your hand, spreading your fingers to emphasize the sticky strands of cum hanging from them.'
-		'"Yeah, got some wipes right here." <<$npc_firstname>> reaches for his nightstand, pulling a bag of wipes out of the drawer. He pulls one out and starts wiping himself down, tossing you the bag. You pull one out with your unsoiled hand and wipe off your fingers until your hand is feeling nice and clean. Following <<$npc_firstname>>''s lead, you finish by tossing the used wipe into a small trashcan in the corner of the room.'
-		gs'hookup_after','pre'
-	end
-	
-	act'Lick your fingers clean':
-		gs'stat'
-		gs 'cum_cleanup', 'cleanloc', 13
-		swallow += 1
-		cla & *clr
-		'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
-		$npc_apt_bedroom
-		'Briefly making eye contact with <<$npc_firstname>>, you stick out your tongue and run it up your hand, drawing loose strands of cum from it and into your mouth. You give your hand a thorough tongue bath, sucking your fingers clean at the end. Once finished, you smack your lips, smiling at <<$npc_firstname>> who stared at you the whole time.'
-		'"Any chance I could get one of those?" he gestures towards his cock, still covered with cum.'
-		act'You''re on your own':
-			cla & *clr
-			'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
-			$npc_apt_bedroom
-			'"Sorry soldier, but you''re on your own," you giggle.'
-			'"<i>Of course I am...</i>" He sighs but reaches for his nightstand, pulling a pack of wipes from it and gets to work cleaning himself up. Once he''s done, he tosses the used wipe into a trash can in the corner of his room.'
-			gs'hookup_after','pre'
-		end
-		
-		act'Sure':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/blowjob/clean.jpg"></center>'
-			'"Sure thing," you shrug. Crawling forward between his legs, you bend down and begin to lap up the cum running down <<$npc_firstname>>''s cock. You lick every curve and contour of is dick until it''s completely clean, licking your hand clean a second time once you''re done.'
-			'"There. All better?"'
-			'"Much better," he smiles back.'
-			gs'hookup_after','pre'
-		end
-	end
-end
-
-if $ARGS[0] = 'cum_facial':
-	$hookup['cum_choice'] = 'face'
-	gs'cum_call','face',$boy,1
-	$hookup['cum_choice'] = 'face'
-	!! differing descriptions based on position
-	'<center><img <<$set_imgh>> src="images/shared/sex/cock/jerk.jpg"></center>'
-	if hookup['facial_ask'] = 1:
-		'"Cum on my face!"'
-	elseif hookup['not_inside'] = 1:
-		'"Not inside me!" you yelp frantically.'
-	end
-	if hookup['condom'] = 1:
-		if $hookup['position'] = 'miss':
-			'<<$npc_firstname>> pulls out from you and tears the condom off his cock before rapidly jerking off in front of your face. In the moments just before he cums, you...'
-		elseif $hookup['position'] = 'doggy':
-			'<<$npc_firstname>> pulls out from you and turns you around. He tears the condom off his cock and begins rapidly jerking off in front of your face. In the moments just before he cums, you...'
-		elseif $hookup['position'] = 'cowgirl':
-			'<<$npc_firstname>> lifts you off his cock and tears the condom off of it before rapidly jerking off in front of your face. In the moments just before he cums, you...'
-		end
-	else
-		if $hookup['position'] = 'miss':
-			'<<$npc_firstname>> pulls out from you and begins rapidly jerking off in front of your face. In the moments just before he cums, you...'
-		elseif $hookup['position'] = 'doggy':
-			'<<$npc_firstname>> pulls out from you and turns you around. He begins rapdily jerking off in front of your face. In the moments just before he cums, you...'
-		elseif $hookup['position'] = 'cowgirl':
-			'<<$npc_firstname>> lifts you off his cock and begins rapidly jerking off in front of your face. In the moments just before he cums, you...'
-		end
-	end
-	
-	act'Close your eyes':
-		cla & *clr
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/cum/facial/facial0,3.mp4"></video></center>'
-		'You close your eyes, waiting for <<$npc_firstname>> to blow his load and in seconds you feel hot liquid splash over your skin. Despite the fact you were expecting it, you can''t help but flinch with every time cum spatters across your face, especially when somehow every shot manages to hit one of your eyelids.'
-		*nl
-		'<i>He better not be aiming for my eyes...</i> you think to yourself.'
-		
-		act'Wipe your eyes':
-			gs'cum_call','hands',$boy,1
-			gs'stat'
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-			'You carefully wipe the cum away from your eyes and open them. The edges of your vision are still blurry with sticky liquid, but you can still see <<$npc_firstname>> relaxing back onto his bed.'
-			gs'hookup_after','pre'
-		end
-		
-		act'Clean him off with your mouth':
-			gs'stat'
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial24.jpg"></center>'
-			'Opening your mouth, you lean forward, blindly questing for <<$npc_firstname>>''s cock with your mouth. Your lips bump into the tip and you ease yourself onto it. You can faintly taste yourself on his cock, as well as the remenants of cum that was still inside it, drawn out by the vacuum of your mouth. Carefully prying your eyes open, you are greeted with the sight of <<$npc_firstname>> staring down at you.'
-			'"Fuck..."'
-			gs'hookup_after','pre'
-		end		
-	end
-	
-	act'Stick out your tongue (swallow)':
-		cla & *clr
-		gs'cum_call','mouth',$boy,1
-		gs'cum_call','breasts',$boy,1
-		$hookup['cum_choice'] = 'face'
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/cum/facial/facial25.mp4"></video></center>'
-		'You hop off the bed and kneel down, closing your eyes, opening your mouth, and sticking out your tongue as far as it can go. Moments later, you feel a hot glob of bitter liquid land directly on your tongue, followed by more that spatters across your face, running down your cheek and dripping onto your breasts. The rest spray across your lips and fill your mouth.'
-		act'Gulp':
-			cla & *clr
-			swallow += 1
-			'<center><video autoplay loop src="images/shared/sex/cum/facial/facial26.mp4"></video></center>'
-			'A few seconds go by and no more spurts of cum land on you so you close your mouth and swallow, gulping down the entire load. You open your mouth again afterwards to pick up any stray shots, but it seems <<$npc_firstname>> is out of ammo so you open your eyes to look at him.'
-			'"You''re a swallower huh?" <<$npc_firstname>> says, cock still hanging in front of your face.'
-			act'Guys think it''s hot':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/after.jpg"></center>'
-				'"Eh, guys think it''s hot. Wouldn''t do it otherwise." You shrug but can''t help smiling at him.'
-				'"Well you''re not wrong."'
-				gs'hookup_after','pre'
-				
-				act'Kiss his cock':
-					cla & *clr
-					'<center><video autoplay loop src="images/shared/sex/cum/kiss_cock.mp4"></video></center>'
-					'"Glad my hard work is appreciated," you smile, leaning in and giving <<$npc_firstname>>''s cock a gentle kiss on the tip.'
-					gs'hookup_after','pre'
-				end
-			end
-			
-			act'Spitting is quitting':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/after.jpg"></center>'
-				'"Spitting is quitting," you grin at him.'
-				'"So it''s not that you''re a swallower, you''re just not a quitter?"'
-				
-				gs'hookup_after','pre'
-				
-				act'Kiss his cock':
-					cla & *clr
-					'<center><video autoplay loop src="images/shared/sex/cum/kiss_cock.mp4"></video></center>'
-					'"Isn''t that the same thing?" you smile, leaning in and giving <<$npc_firstname>>''s cock a gentle kiss on the tip.'
-					gs'hookup_after','pre'
-				end
-			end
-			
-			
-			act'I like the taste':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/after.jpg"></center>'
-				'"I like the taste," you say, licking your lips.'
-				'"You little slut," he whispers.'
-				
-				gs'hookup_after','pre'
-				
-				act'Kiss his cock':
-					cla & *clr
-					'<center><video autoplay loop src="images/shared/sex/cum/kiss_cock.mp4"></video></center>'
-					'"It''s cause I like cock so much." You lean in, giving <<$npc_firstname>> a gentle kiss on the tip.'
-					gs'hookup_after','pre'
-				end
-			end
-		end
-	end
-	
-	act'Stick out your tongue (spit)':
-		$hookup['next_act1'] = 'hookup_after'
-		$hookup['next_act2'] = 'pre'
-		cla & *clr
-		gs'cum_call','mouth',$boy,1
-		gs'cum_call','face',$boy,1
-		gs'cum_call','hair',$boy,1
-		$hookup['cum_choice'] = 'face'
-		hookup['bj_cum'] = 2
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/cum/facial/facial29.mp4"></video></center>'
-		'You open your mouth wide and stick your tongue out, waiting for the shot to come. <<$npc_firstname>> grins, continuing to jack off with one hand and grabbing you by the hair with the other, positioning your face right in front of his cock. Moments later, spurts of semen erupt from it, spattering across your face and covering your tongue. You quickly spit the bitter liquid out over your lips as he continues to cum, a couple stray shots flying into your hair. A few seconds later, he stops ejaculating and releases your hair, standing back from you.'
-		if rand(0,1) = 1:
-			'"What, you don''t swallow?"'
-			gs'hookup','dont_swallow'
-		else
-			'"Love seeing a girl''s face with my cum all over it," <<$npc_firstname>> grins.'
-			'"Well I''m glad you enjoy the view," you say amusedly.'
-			gs'hookup_after','pre'
-		end
-	end
-	
-	act'Brace yourself (disgust)':
-		cla & *clr
-		gs'stat'
-		'<center><video autoplay loop src="images/shared/sex/cum/facial/facial30.mp4"></video></center>'
-		'The first shot of cum hits you directly in the eye, and you squeeze both of them shut as you to cringe in disgust. More and more spurts come out, spraying across your face and completely covering your eyes. By the time he''s finished orgasming, your visage is absolutely plastered with semen and your expression is stuck in an involuntary grimace.'
-		'"Oh my god! That''s so gross!" you cringe.'
-		if hookup['facial_ask'] = 1:
-			'"Huh? But if you think it''s gross, why did you ask me to do cum on your face?"'
-			if hookup['condom'] ! 1:
-				act'I didn''t want you cumming inside':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-					'"I just didn''t want you to cum inside me," you say, carefully wiping the cum from your eyes. Blinking them open, your vision has a lot of white blurry edges, and the first sight you''re greeted with is <<$npc_firstname>> wearing a shit eating grin while looking at your plastered face.'
-					act'Why do you even like this??':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-						'"Why do boys even like doing this???" you complain.'
-						'"I dunno, it''s just hot."'
-						'"Ugh."'
-						gs'hookup_after','pre'
-					end
-					
-					act'Fuck off!':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial33.jpg"></center>'
-						'"Oh fuck off," you grumble, causing him to laugh.'
-						gs'hookup_after','pre'
-					end
-					
-					act'Give him the finger':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial32.jpg"></center>'
-						'You don''t even dignify him with a verbal response, just giving him a finger while glaring at him through cum glazed eyes. He snickers in return.'
-						gs'hookup_after','pre'
-					end
-				end
-			end
-			
-			act'Because guys like it':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-				'"Because guys like it?" you say, carefully wiping the cum from your eyes. Blinking them open, your vision has a lot of white blurry edges, and the first sight you''re greeted with is <<$npc_firstname>> wearing a shit eating grin while looking at your plastered face.'
-				act'Why do you even like this??':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-					'"Why do boys even like doing this???" you complain.'
-					'"You know, the fact that you don''t like it somehow makes this even hotter."'
-					'"Ugh."'
-					gs'hookup_after','pre'
 				end
 				
-				act'Fuck off!':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial33.jpg"></center>'
-					'"Oh fuck off," you grumble, causing him to laugh.'
-					gs'hookup_after','pre'
-				end
-				
-				act'Give him the finger':
-					cla & *clr
-					'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial32.jpg"></center>'
-					'You don''t even dignify him with a verbal response, just giving him a finger while glaring at him through cum glazed eyes. He snickers in return.'
-					gs'hookup_after','pre'
-				end
-			end
-			
-			act'I didn''t think it would be this gross!':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-				'"Because I didn''t think it would be this gross!" you cry. Carefully wiping the cum from your eyes, you blinking them open, vision ringed with blurry white edges, and the first sight you''re greeted with is <<$npc_firstname>> wearing a shit eating grin while looking at your plastered face.'
-				'"What? You mean to tell me you''ve never had a facial before?"'
-				if facial = 1:
-					'"... yes... You''re the first one."'
-					'"Fucking hot," he says, still grinning.'
-					act'Why do you even like this??':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-						'"Why do boys even like doing this???" you complain.'
-						'"You know, the fact that you don''t like it somehow makes this even hotter."'
-						'"Ugh."'
-						gs'hookup_after','pre'
-					end
-					
-					act'Oh fuck off':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial33.jpg"></center>'
-						'"Oh fuck off," you grumble, causing him to laugh.'
-						gs'hookup_after','pre'
-					end
-					
-					act'Give him the finger':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial32.jpg"></center>'
-						'You don''t even dignify him with a verbal response, just giving him a finger while glaring at him through cum glazed eyes. He snickers in return.'
-						gs'hookup_after','pre'
-					end
-				else
-					'"Well, no... but still..."'
-					'"You know, the fact that you don''t like it somehow makes this even hotter."'
-					act'Why do you even like this??':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-						'"Why do you even like this???" you complain.'
-						'"Ugh."'
-						gs'hookup_after','pre'
-					end
-					
-					act'Fuck off!':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial33.jpg"></center>'
-						'"Oh fuck off," you grumble, causing him to laugh.'
-						gs'hookup_after','pre'
-					end
-					
-					act'Give him the finger':
-						cla & *clr
-						'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial32.jpg"></center>'
-						'You don''t even dignify him with a verbal response, just giving him a finger while glaring at him through cum glazed eyes. He snickers in return.'
-						gs'hookup_after','pre'
+				act'Well...':
+					cla & *nl
+					'<i>Well...</i>'
+					'"Maybe..." you start. "... it''ll be okay this one time... this... first time..."'
+					act'Lose your virginity':					
+						if $hookup['position'] = 'miss':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','miss_virg_norm1'
+							else
+								gt 'hookup_sex','miss_virg_hard1'
+							end
+							
+						elseif $hookup['position'] = 'doggy':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','doggy_virg_norm1'
+							else
+								gt 'hookup_sex','doggy_virg_hard1'
+							end						
+						elseif $hookup['position'] = 'cowgirl':
+							gt 'hookup_sex','cowgirl_virg_norm1'
+						end
 					end
 				end
-			end
-		else
-			'Carefully wiping the cum from your eyes, you blinking them open, vision ringed with blurry white edges, and the first sight you''re greeted with is <<$npc_firstname>> wearing a shit eating grin while looking at your plastered face.'
-			act'Why do you even like this??':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial31.jpg"></center>'
-				'"Why do boys even like doing this???" you complain.'
-				'"I dunno, it''s just hot."'
-				'"Ugh."'
-				gs'hookup_after','pre'
-			end
-			
-			act'Fuck off!':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial33.jpg"></center>'
-				'"Oh fuck off," you grumble, causing him to laugh.'
-				gs'hookup_after','pre'
-			end
-			
-			act'Give him the finger':
-				cla & *clr
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/facial/facial32.jpg"></center>'
-				'You don''t even dignify him with a verbal response, just giving him a finger while glaring at him through cum glazed eyes. He snickers in return.'
-				gs'hookup_after','pre'
-			end
-		end
-	end
-end
-
-if $ARGS[0] = 'cum_mouth':
-	$hookup['cum_choice'] = 'mouth'
-	gs'cum_call','mouth',$boy,1
-	!! differing descriptions based on position
-	'<center><video autoplay loop src="images/shared/sex/blowjob/bj47.mp4"></video></center>'
-	if hookup['mouth_ask'] = 1:
-		'"In my mouth!"'
-	elseif hookup['not_inside'] = 1:
-		'"Not inside me!" you yelp frantically.'
-	else
-		'"I wanna cum in your mouth!"'
-	end
-	*nl
-	if hookup['condom'] = 1:
-		if $hookup['position'] = 'miss':
-			'<<$npc_firstname>> climbs off of you rips the condom off of his cock. You kneel forward, wrapping your lips around his cock and begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		elseif $hookup['position'] = 'doggy':
-			'You pull yourself off of <<$npc_firstname>>''s cock and turn around, pushing him onto his back and rip the condom off him. Wrapping your lips around his girth,you begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		elseif $hookup['position'] = 'cowgirl':
-			'You jump off <<$npc_firstname>>''s cock and turn around, ripping the condom off of him. Wrapping your lips around his girth, you begin sucking him off, you begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		end
-	else
-		if $hookup['position'] = 'miss':
-			'You push <<$npc_firstname>> off of you on to his back and dive between his legs. Wrapping your lips around his cock, you begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		elseif $hookup['position'] = 'doggy':
-			'You pull yourself off of <<$npc_firstname>>''s cock and turn around, pushing him onto his back. Wrapping your lips around his girth, you begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		elseif $hookup['position'] = 'cowgirl':
-			'You jump off <<$npc_firstname>>''s cock and turn around, diving between his legs. Wrapping your lips around his girth, you begin sucking him off until you feel hot globs of liquid spurt into your mouth.'
-		end
-	end
-	
-	act'Gather it in your mouth':
-		cla & *clr
-		'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum51.jpg"></center>'
-		'You keep your lips wrapped tight around the tip of <<$npc_firstname>>''s cock while he cums, sucking every last drop of spunk from it until it stops twitching and you think his orgasm if finished. Looking up at him, you stick out your tongue, showing him the entire load you gathered in your mouth.'
-		'A whispered, "Holy fuck..." is his only response.'
-		act'Spit':
-			hookup['bj_cum'] = 2
-			gs'cum_call', 'face', $boydesc, 1
-			gs'stat'
-			cla & *clr
-			'<center><video autoplay loop src="images/shared/sex/cum/spit1.mp4"></video></center>'
-			'Pulling back you play with the cum in your mouth a little, giggling as you show it off until you spit it out, letting it dribble over the edge of your lips.'
-			'"Fuck that was hot," <<$npc_firstname>> breathes.'
-			if rand(0,1) = 1:
-				'"What, you don''t swallow?"'
-				gs'hookup','dont_swallow'
 			else
-				gs'hookup_after','pre'
-			end
-		end
-		
-		act'Swallow':
-			swallow += 1
-			cla & *clr
-			'<center><video autoplay loop src="images/shared/sex/cum/swallow3.mp4"></video></center>'
-			'Taking a step back, you open your mouth again to show <<$npc_firstname>> how much cum is still inside it. With a deep breath, you swallow the entire load in one gulp, sticking your tongue back out again to show him that it''s all gone.'
-			'"Fucking hell..." <<$npc_firstname>> whispers, the only thing he''s able to say.'
-			'You smile back at him, satisfied with a job well done.'
-			gs'hookup_after','pre'
-		end
-	end
-	
-	act'Gag':
-		cla & *clr
-		'<center><video autoplay loop src="images/shared/sex/cum/mouth/gag2.mp4"></video></center>'
-		'The intensity of the bitter flavor is far more than you expect and you immediately pull your mouth off, spitting out the first load. You stick your tongue out, tryiing to soldier through and at least take the rest of it but as soon as the next shot hits your tongue your gag reflex kicks in instead, causing you to retch.'
-		'Still holding onto <<$npc_firstname>>''s cock with one hand, you clamp your other hand over your mouth, throat convulsing. It smears the cum on your lips all over your face, but you somehow manage to stop yourself from throwing up all over the bed.'
-		'"Uhh, you okay?"'
-		act'Wrong pipe':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum112.jpg"></center>'
-			'"I- uhh, it went down the wrong pipe," you wheeze, covering your lie up with a cough.'
-			'"Careful girl, that''s not usually what a means when he says he wants to see you choke on his cock."'
-			'He laughs at his own joke and you give a weak smile, eyes still watering from how bad his cum tasted.'
-			gs'hookup_after','pre'
-		end
-		
-		act'That tastes awful!':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum52.jpg"></center>'
-			'"That- <i>cough</i> tastes awful!" you wheeze, eyes watering.'
-			'"Wait, is this the first time someone''s cum in your mouth?"'
-			if swallow > 0:
-				'"No," you look at him accusingly. "You just taste terrible! Yech!"'
-			else
-				'"Yeah," you say, eyes watering.'
-				'"Don''t worry, you''ll get used to it eventually," he grins.'
-				$OpenInnerThought + 'You mean all cum tastes like this...?' + $CloseInnerThought
-			end
-			gs'hookup_after','pre'
-		end
-		
-		act'I didn''t know it tasted like that':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/mouth/cum52.jpg"></center>'
-			'"I didn''t know it tasted like that," you cough.'
-			'"Is this the first time someone''s cum in your mouth?"'
-			if swallow > 0:
-				'"Yeah," you lie, eyes watering.'
-				'"Don''t worry, you''ll get used to it eventually," he grins.'
-				$OpenInnerThought + 'Get used to it? Cum that tastes like that? Yeah right...' + $CloseInnerThought
-			else
-				'"Yeah," you say, eyes watering.'
-				'"Don''t worry, you''ll get used to it eventually," he grins.'
-				$OpenInnerThought + 'You mean all cum tastes like this...?' + $CloseInnerThought
-			end
-			gs'hookup_after','pre'
-		end
-	end
-end
-
-if $ARGS[0] = 'cum_inside':
-	if hookup['condom'] = 1:gt 'hookup','cum_condom'
-	gs'cum_call','',$boy,1
-	$hookup['cum_choice'] = 'creampie'
-	!! differing descriptions based on position
-	if hookup['creampie_ask'] = 1:
-		if $hookup['position'] = 'miss':
-			'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/creampie1.mp4"></video></center>'
-			'"Cum inside me!" you cry. "Fill me up!"'
-			if pcs_horny > 90:
-				orgasm += 1
-				'<<$npc_firstname>> goes stiff as soon as you say the words and you feel cum spurt out inside you. The sensation pushes you over the edge, causing your pussy to clamp down onto his cock and your body to spasm uncontrollably. The two of cum together, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade and <<$npc_firstname>> pulls out of you.'
-			else
-				'<<$npc_firstname>> goes stiff as soon as you say the words, his cock pulsing inside you. He groans loudly and something spills into your pussy. The two of you stay like that for several seconds before <<$npc_firstname>> relaxes and pulls himself out of you.'
-			end
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-				'As <<$npc_firstname>> pulls away, a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-				gs'hookup_after','creampie_react'
-			end
-		elseif $hookup['position'] = 'doggy':
-			'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/doggy1.mp4"></video></center>'
-			'"Cum inside me!" you cry. "Fill me up!"'
-			if pcs_horny > 90:
-				orgasm += 1
-				'<<$npc_firstname>> drives himself deep inside you as soon as you say the words and you feel cum spurt out inside you. The sensation pushes you over the edge, causing your pussy to clamp down onto his cock and your body to spasm uncontrollably. The two of cum together, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade and <<$npc_firstname>> pulls out of you.'
-			else
-				'<<$npc_firstname>> drives his cock deep inside you and goes stiff as soon as you say the words. He groans loudly and his cock pulses inside you. The two of you stay like that for several seconds before he pulls out of you and you feel something thick drip from your pussy.'
-			end
-			
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-				'You roll onto your back breathing hard and a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-				gs'hookup_after','creampie_react'
-			end
-		elseif $hookup['position'] = 'cowgirl':
-			'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cumvaginal.mp4"></video></center>'
-			'"Cum inside me!" you cry. "Fill me up!"'
-			if pcs_horny > 90:
-				orgasm += 1
-				'You drop your hips, impaling yourself on <<$npc_firstname>>''s cock. He thrusts his hips upward, driving himself deep inside you and you feel cum spurt out inside you. The sensation pushes you over the edge, causing your pussy to clamp down onto his cock even more and your body to spasm uncontrollably. The two of cum together, holding each other tight, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade, leaving both of you panting.'
-			else
-				
-				'You drop your hips, impaling yourself on <<$npc_firstname>>''s cock. He grabs you and holds you tight, thrusting humself upward, driving his cock in deep into you as he can manage. As he does, you feel him stiffen up and groan, and his cock pulses inside you.'
-			end
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cowgirl1.mp4"></video></center>'
-				'Grabbing you by the thigh, <<$npc_firstname>> carefully pushes you away from him and you oblige, pulling yourself off of him. His cock flops from your pussy and you feel a thick glob of liquid immediately begin to leak out from you.'
-				act'Continue':
-					cla & *clr
-					'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-					'You flop down onto the bed next to <<$npc_firstname>>, breathing hard as a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-					!!gs'hookup_after','good_for_you'
-					gs'hookup_after','pre'
-					gs'hookup_after','creampie_react'
-				end
-			end
-		end
-	else
-		$hookup['cum_choice'] = 'creampie'
-		if $hookup['position'] = 'miss':
-			'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/creampie1.mp4"></video></center>'
-			if pcs_horny > 90:
-				orgasm += 1
-				'<<$npc_firstname>> drives himself inside you, grunting, and you feel cum spurt out inside you. The sensation pushes you over the edge, gasping as waves of orgasm wash through you. The two of cum together, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade and <<$npc_firstname>> pulls out of you.'
-			else
-				'<<$npc_firstname>> drives himself inside you, grunting, his cock pulsing inside you and something spills into your pussy. He holds himself inside you like that for several seconds before he relaxes and pulls himself out of you.'
-			end
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-				'As <<$npc_firstname>> pulls away, a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-				!!gs'hookup_after','good_for_you'
-				gs'hookup_after','pre'
-				gs'hookup_after','creampie_react'
-			end
-		elseif $hookup['position'] = 'doggy':
-			if pcs_horny > 90:
-				orgasm += 1
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/doggy2.mp4"></video></center>'
-				'<<$npc_firstname>> drives himself deep inside you, grunting, and you feel cum spurt out inside you. The sensation pushes you over the edge, and you groan, tensing as waves of orgasm wash through you. The two of cum together, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade and <<$npc_firstname>> pulls out of you.'
-			else
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/doggy1.mp4"></video></center>'
-				'<<$npc_firstname>> drives himself inside you, grunting, his cock pulsing inside you. He holds himself inside you like that for several seconds before pulling out and you feel something thick drip from your pussy.'
-			end
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-				'You roll onto your back breathing hard and a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-				!!gs'hookup_after','good_for_you'
-				gs'hookup_after','pre'
-				gs'hookup_after','creampie_react'
-			end
-		elseif $hookup['position'] = 'cowgirl':
-			if pcs_horny > 90:
-				orgasm += 1
-				'<<$npc_firstname>> grabs you and pulls you down onto his cock. He thrusts his hips upward, driving himself deep inside you and you feel cum spurt out inside you. The sensation pushes you over the edge, causing your pussy to clamp down onto his cock even more and your body to spasm uncontrollably. The two of cum together, holding each other tight, both of your orgasms fueling the other''s. After an indeterminable amount of time, your orgasms fade, leaving both of you panting.'
-			else
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cumvaginal.mp4"></video></center>'
-				'<<$npc_firstname>> grabs you and pulls you down onto his cock. He holds you tight, thrusting humself upward, driving his cock in deep into you as he can manage. As he does, you feel him stiffen up and groan, and his cock pulses inside you.'
-			end
-			act'Continue':
-				cla & *clr
-				'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cowgirl1.mp4"></video></center>'
-				'<<$npc_firstname>> carefully pushes you away from him and you oblige, pulling yourself off of him. His cock flops from your pussy and you feel a thick glob of liquid immediately begin to leak out from you.'
-				act'Continue':
-					cla & *clr
-					'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/drip3.mp4"></video></center>'
-					'You flop down onto the bed next to <<$npc_firstname>>, breathing hard as a slurry of liquid trickles from your pussy, running down your ass and into the bedsheets.'
-					gs'hookup_after','creampie_mad'
-					gs'hookup_after','creampie_react'
-				end
+				hookup['condom'] = 1
+				'He nods, reaching over to his nightstand and retrieving one, rolling the rubber onto his cock. While he works that out, you consider how you want to do this with him...'
+				gs'hookup','position_choose'
 			end
 		end
 	end
 end
 
 
-if $ARGS[0] = 'cum_pullout':
-	if hookup['pullout_ask'] = 1:
-		
-		!! differing descriptions based on position
-		if $hookup['position'] = 'miss':
-			$hookup['cum_choice'] = 'stomach'
-			gs'cum_call','stomach',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/stomach/bellycum2.jpg"></center>'
-			'"Pull out!"'
-			*nl
-			'At your words, he yanks himself from your pussy and furiously jacks off. Moments later, cum bursts from his cock, spattering all over your belly. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-		elseif $hookup['position'] = 'doggy':
-			$hookup['cum_choice'] = 'back'
-			gs'cum_call','butt',$boy,1
-			gs'cum_call','back',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/back1.jpg"></center>'
-			'"Pull out!"'
-			*nl
-			'At your words, he yanks himself from your pussy and begins furiously jacking off over your ass. Moments later, you feel hot viscious liquid spatter all over it and across your back. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-		elseif $hookup['position'] = 'cowgirl':
-			$hookup['cum_choice'] = 'ass'
-			gs'cum_call','butt',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum4.jpg"></center>'
-			'"Pull out!"'
-			*nl
-			'At your words, you jump off his cock and reach behind you to grab it with your hand, furiously jerking it. Moments later, you feel hot viscious liquid spatter all over your ass. Both of you take a few seconds to catch your breath before he relaxes his bed under you.'
-		end
-		gs'hookup_after','pre'
-	else
-		if $hookup['position'] = 'miss':
-			gs'cum_call','stomach',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/stomach/bellycum2.jpg"></center>'
-			if hookup['not_inside'] = 1:
-				'"Not inside me!" you yelp frantically.'
-				*nl
-			end
-			$hookup['cum_choice'] = 'stomach'
-			if hookup['condom'] = 1:
-				'<<$npc_firstname>> pulls himself out of your pussy and tears off the condom, furiously jacking off over you. Moments later, he starts ejaculating, sending cum flying all over your body, spattering across your belly. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-			else
-				'<<$npc_firstname>> pulls himself out of your pussy and starts furiously jacking off over you. Moments later, he starts ejaculating, sending cum flying all over your body, spattering across your belly. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-			end
-		elseif $hookup['position'] = 'doggy':
-			$hookup['cum_choice'] = 'back'
-			gs'cum_call','butt',$boy,1
-			gs'cum_call','back',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/back1.jpg"></center>'
-			if hookup['not_inside'] = 1:
-				'"Not inside me!" you yelp frantically.'
-				*nl
-			end
-			if hookup['condom'] = 1:
-				'At your words, he yanks himself from your pussy and you hear a <i>snap</i> as he rips the condom off of his cock before furiously jacking off over your ass. Moments later, you feel hot viscious liquid spatter all over it and across your back. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-			else
-				'At your words, he yanks himself from your pussy and begins furiously jacking off over your ass. Moments later, you feel hot viscious liquid spatter all over it and across your back. Both of you take a few seconds to catch your breath before he draws back, laying down on the bed.'
-			end
-		elseif $hookup['position'] = 'cowgirl':
-			$hookup['cum_choice'] = 'stomach'
-			gs'cum_call','stomach',$boy,1
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/stomach/bellycum2.jpg"></center>'
-			if hookup['not_inside'] = 1:
-				'"Not inside me!" you yelp frantically.'
-				*nl
-			end
-			if hookup['condom'] = 1:
-				'At your words, he suddenly pushes you forward, eliciting a yelp as you fall onto your back. He rips the condom off his cock and scoots forward, furiously jacking off over you. Moments later, he starts ejaculating, sending cum flying all over your body, spattering across your belly. Both of you take a few seconds to catch your breath before he relaxes, laying down on the bed.'
-			else
-				'At your words, he suddenly pushes you forward, eliciting a yelp as you fall onto your back. He scoots forward and begins furiously jacking off over you. Moments later, he starts ejaculating, sending cum flying all over your body, spattering across your belly. Both of you take a few seconds to catch your breath before he relaxes, laying down on the bed.'
-			end
-		end
-		gs'hookup_after','pre'
-	end
-end
-
-if $ARGS[0] = 'creampie_surprise':
-	$hookup['cum_choice'] = 'creampie'
-	if $hookup['position'] = 'miss':
-		'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/creampie1.mp4"></video></center>'
-		if hookup['not_inside'] = 1:
-			'"Not insi-!"'
-		elseif pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-			hookup['no_cum'] = 1
-			'"Nngh~! Ahhh~! Don''t stop!" you moan. "Don''t stop! Don''t stop! Don-"'
-			*nl
-		end
-		'Suddenly, <<$npc_firstname>> grabs you tight, thrusting himself deep into your pussy. Your eyes go wide when he grunts and you can feel his cock twitching inside you.'
-	elseif $hookup['position'] = 'doggy':
-		'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/doggy2.mp4"></video></center>'
-		if hookup['not_inside'] = 1:
-			'"Not insi-!"'
-		elseif pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-			hookup['no_cum'] = 1
-			'"Nngh~! Ahhh~! Don''t stop!" you moan. "Don''t stop! Don''t stop! Don-"'
-			*nl
-		end
-		'Suddenly, <<$npc_firstname>> drives his cock deep into your pussy and your eyes go wide when he shudders and you feel his cock twitching inside you. Moments later, he withdraws and you feel something trickle from your pussy.'
-	elseif $hookup['position'] = 'cowgirl':
-		'<center><video autoplay loop src="images/shared/sex/cum/vagcreampie/cumvaginal.mp4"></video></center>'
-		if hookup['not_inside'] = 1:
-			'"Not insi-!"'
-		elseif pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-			hookup['no_cum'] = 1
-			'"Nngh~! Ahhh~! Yeah!" you moan, frantically bouncing up and down on <<$npc_firstname>>''s cock. "Yes! Yes!Fuck! Fuck! Ye-"'
-			*nl
-		end
-		'Suddenly, <<$npc_firstname>> grabs you tight, pulling you down against his chest and thrusting himself deep into your pussy. Your eyes go wide when he grunts and you can feel his cock twitching inside you.'
-	end
-	
-	act'What the fuck!':
-		cla & *clr
-		gs'cum_call','hands',$boy,1
-		'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum111.jpg"></center>'
-		if $hookup['position'] = 'miss':
-			gs'cum_call','stomach',$boy,1
-			'"What the fuck!" you shout, pushing him off of you mid orgasm, a shot of cum from his loose cock spattering on your belly. You scramble backwards off the bed, and wipe your pussy with your hand, horrified when your fingers come back with white sticky liquid draped across them. "You just came inside me!"'
-		elseif $hookup['position'] = 'doggy':
-			'"What the fuck!" you shout, jumping off his cock and scrambling away from him off the bed. You wipe your pussy with your hand, horrified when your fingers come back with white sticky liquid draped across them. "You just came inside me!"'
-		elseif $hookup['position'] = 'cowgirl':
-			'"What the fuck!" you shout, practically leaping off of his cock, which continues spasming like a dying snake, spewing cum all over the bed. You scramble away from him and wipe your pussy with your hand, horrified when your fingers come back with white sticky liquid draped across them. "You just came inside me!"'
-		end
-		gs'hookup_after','creampie_mad'
-	end
-
-	gs'hookup_after','creampie_react'
-end
-
-if $ARGS[0] = 'cum_not_inside':
-	if hookup['cum_choice'] > 9:
-		gs'cum_call','',$boy,1
-		gt'hookup','creampie_surprise'
-	else		
-		if hookup['cum_choice'] >= 8:
-			gt'hookup','cum_mouth'
-		elseif hookup['cum_choice'] >= 6:
-			gt'hookup','cum_facial'
-		else
-			gt'hookup','cum_pullout'
-		end
-	end
-end
-
-
-
-if $ARGS[0] = 'cum_condom':
-	act'Continue':
-		$hookup['cum_choice'] = 'condom'
-		if $hookup['position'] = 'miss':
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum61.jpg"></center>'
-			if pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-				hookup['no_cum'] = 1
-				'"Nngh~! Ahhh~! Don''t stop!" you moan. "Don''t stop! Don''t stop! Don-"'
-				*nl
-			end
-			'<<$npc_firstname>> suddenly thrusts into you one more time and stops, tensing up and shuddering as he does so. A few moments later, he withdraws his cock from your pussy and you can see the condom around it sagging, filled with a white liquid.'
-			act'Continue':
-				cla & *clr
-				gs'cum_call','stomach',$boy,1
-				'<center><img <<$set_imgh>> src="images/shared/sex/cum/condom1.jpg"></center>'
-				'<<$npc_firstname>> pulls the condom from his dick with a wet slapping sound, and semen flies from the open end, spattering across your skin. He ties it off and tosses it onto your stomach, landing next to his cum.'
-				gs'hookup_after','gross_condom'
-			end
-		elseif $hookup['position'] = 'doggy':
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum71.jpg"></center>'
-			if pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-				hookup['no_cum'] = 1
-				'"Nngh~! Ahhh~! Don''t stop!" you moan. "Don''t stop! Don''t stop! Don-"'
-				*nl
-			end
-			'<<$npc_firstname>> suddenly thrusts hard into you and stops moving, holding his cock as deep inside you as it can go. You feel him shudder inside you, his cock flexing inside your pussy before his body relaxes and pulls his dick from your pussy. Based on that, you assume he must''ve cum and as you glance backwards you confirm your suspicions, watching him peel the condom from his cock, a white viscous liquid filling the rubber sleeve. He ties it off and tosses it aside.'
-			!!gs'hookup_after','good_for_you'
-			gs'hookup_after','pre'
-			
-		elseif $hookup['position'] = 'cowgirl':
-			'<center><img <<$set_imgh>> src="images/shared/sex/cum/cum81.jpg"></center>'
-			if pcs_horny >= 90 and hookup['orgasm'] = orgasm:
-				hookup['no_cum'] = 1
-				'"Nngh~! Ahhh~!" you moan, continuing to bounce up and down on <<$npc_firstname>>''s cock. "Yes! Yes! Yes! Ye-"'
-				*nl
-			end
-			'<<$npc_firstname>> suddenly grabs you by the hips thrusts hard into you, holding you down onto his cock. You feel him shudder inside you, his cock flexing inside your pussy before his body relaxes. You carefully pull yourself from <<$npc_firstname>>''s dick. As it pops from your pussy, you see that the rubber encasing it is filled with a thick white liquid. He pulls off the condom with a wet slapping sound, tying it off and tossing it aside.'
-			gs'hookup_after','pre'
-		end
-	end
-end
-
-if $ARGS[0] = 'dont_swallow':
-	act'Don''t like it':
-		cla & *nl
-		'"Eh," you shrug. "Don''t like it."'
-		gs $hookup['next_act1'],$hookup['next_act2']
-	end
-	act'I only swallow for boys I like':
-		cla & *nl
-		'"I only swallow for boys I really like," you respond playfully. "I just met you, you''re not worthy of the privilege yet."'
-		if $fametown_slut >= 150:
-			'"Please," he snorts. "I''ve heard the rumors about you. Everybody knows you swallow."'
-			act'Rude!':
-				cla & *clr
+if $ARGS[0] = 'virgin_condom4':
+	if will_cost <= pcs_willpwr and prezikcount + prezik > 0:
+		act'Put a condom on him (<<will_cost>> Willpower)':
+			gs 'willpower','pay','self'
+			gs 'stat'
+			if rand(1,10) >= 7:
 				'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
 				$npc_apt_bedroom
-				'Your expression forms into a scowl as you get off the bed.'
-				'"Pretty rude way of treating a girl who just did you a favor," you huff.'
-				'"What? You''re going to say you''re not a cocksucker right after sucking my cock?"'
-				act'Asshole!':
-					cla & *clr
-					'<center><b><font color="maroon"><<$npc_firstname>>''s Bedroom</font></b></center>'
-					$npc_apt_bedroom
-					'"Fucking asshole!" you spit as you start grabbing your clothes.'
-					'"Oh yeah, I heard you do that too. Do you mind? Or do I have to pay for that one?"'
-					'You throw your clothes on and grab your purse heading towards the door.'
-					'"Fuck you!" you shout, slamming it behind you.'
-					'"I just did!" you hear muffled through the door. Fuming, you stomp your way out of the building.'
-					act'Leave':gt'hookup_after','exit'
+				'Reaching over the side of the bed, you scrabble through your purse until you find the condom you''re looking for, holding it up in front of you.'
+				'"Let''s use a condom, okay?"'
+				'"Come on... You really want to use a condom for your first time?"'
+				act'Can''t take chances':
+					cla & *nl
+					'<center><img <<$set_imgh>> src="images/shared/sex/misc/condom_put.jpg"></center>'
+					'"Yes," you respond. "I can''t take any chances. Please?"'
+					'<<$npc_firstname>> sighs. "Okay, fine."'
+					'You sigh in relief, tearing open the packaging and clumsily rolling the rubber onto his cock.'
+					act'Lose your virginity':
+						if $hookup['position'] = 'miss':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','miss_virg_norm1'
+							else
+								gt 'hookup_sex','miss_virg_hard1'
+							end
+							
+						elseif $hookup['position'] = 'doggy':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','doggy_virg_norm1'
+							else
+								gt 'hookup_sex','doggy_virg_hard1'
+							end						
+						elseif $hookup['position'] = 'cowgirl':
+							gt 'hookup_sex','cowgirl_virg_norm1'
+						end
+					end
+				end
+				
+				act'Well...':
+					cla & *nl
+					'<i>Well...</i>'
+					'"Maybe..." you start. "... it''ll be okay this one time... this... first time..."'
+					act'Lose your virginity':					
+						if $hookup['position'] = 'miss':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','miss_virg_norm1'
+							else
+								gt 'hookup_sex','miss_virg_hard1'
+							end
+							
+						elseif $hookup['position'] = 'doggy':
+							if rand(0,1) = 1 or npc_generous = 1:
+								gt 'hookup_sex','doggy_virg_norm1'
+							else
+								gt 'hookup_sex','doggy_virg_hard1'
+							end						
+						elseif $hookup['position'] = 'cowgirl':
+							gt 'hookup_sex','cowgirl_virg_norm1'
+						end
+					end
+				end
+			else
+				hookup['condom'] = 1
+				'<center><img <<$set_imgh>> src="images/shared/sex/misc/condom_put.jpg"></center>'
+				'Reaching over the side of the bed, you scrabble through your purse until you find the condom you''re looking for, holding it up in front of you.'
+				'"Let''s use a condom, okay?"'
+				'He nods, and you sigh in relief, tearing open the packaging and clumsily rolling the rubber onto his cock.'
+				act'Lose your virginity':					
+					if $hookup['position'] = 'miss':
+						if rand(0,1) = 1 or npc_generous = 1:
+							gt 'hookup_sex','miss_virg_norm1'
+						else
+							gt 'hookup_sex','miss_virg_hard1'
+						end
+						
+					elseif $hookup['position'] = 'doggy':
+						if rand(0,1) = 1 or npc_generous = 1:
+							gt 'hookup_sex','doggy_virg_norm1'
+						else
+							gt 'hookup_sex','doggy_virg_hard1'
+						end					
+					elseif $hookup['position'] = 'cowgirl':
+						gt 'hookup_sex','cowgirl_virg_norm1'
+					end
 				end
 			end
-			
-			act'You heard wrong':
-				cla & *nl
-				'"Nope, spit those guys out too. Sorry to let you find out personally, but the rumors are wrong," you wink.'
-				gs $hookup['next_act1'],$hookup['next_act2']
-			end
-			
-			act'Maybe I just liked them more (tease)':
-				cla & *nl
-				'"Maybe I just liked them more than you," you smirk.'
-				gs $hookup['next_act1'],$hookup['next_act2']
-			end
-		else
-			'"You saying you don''t like me?"'
-			'"Well, I didn''t say that..." you smile back.'
-			gs $hookup['next_act1'],$hookup['next_act2']
 		end
 	end
 end

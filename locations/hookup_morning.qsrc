@@ -56,7 +56,7 @@ if $ARGS[0] = 'late_for_school':
 			'You need to get home and change into your uniform! You''re not sure if you have time for a shower, but you definitely <i>need</i> to get your uniform!'
 		end
 		
-		hookup['continuation'] = rand(0,2)
+		if hookup['continuation'] = 0:hookup['continuation'] = rand(0,2)
 		if hookup['continuation'] = 0:
 			'"Hey, where''re you going?" <<$npc_firstname>> says, turning over and squinting at you with sleepy eyes. "What''s the rush?"'
 			act'I need to be somewhere!':
@@ -123,12 +123,40 @@ end
 if $ARGS[0] = 'wakeup':
 !!{	if npc_earlyriser = 1:
 		!! he woke up before you
-		if npc_generous = 1:
+		if npc_generous = 1 and npc_apt_type ! 1:
 			!! breakfast in bed
-			'You start when the door opens and <<$npc_firstname>> walks in holding a tray.'
-			'"Sorry about that," he grins. "Didn''t mean to scare you. You were still sleeping so I didn''t want to wake you up. I made breakfast."'
-		else
+			hookup['b_i_b'] = 1
+			'You wake up, blearily blinking and slightly confused, trying to get your bearings. You''re in someone else''s room that isn''t your own.'
+			if npc_apt_type = 2:
+				'Slowly, you realize you smell food.'
+			else
+				'You start when the door opens and <<$npc_firstname>> walks in holding a tray.'
+				'"Sorry about that," he grins. "You were still sleeping so I didn''t want to wake you up. I made breakfast."'
+			end
 			
+			act'Clingy much?':
+				cla & *clr
+				!! IMAGE HERE
+				'Geez, clingy much?'
+				act'Take the food':
+			end
+			
+			act'Wow, thanks!':
+				cla & *clr
+				!! IMAGE HERE
+				
+			end
+		else
+			'You wake up, blearily blinking and slightly confused, trying to get your bearings. You''re in someone else''s room that isn''t your own.'
+			if npc_apt_type = 1:
+				'It''s a... dorm room...?'
+			elseif npc_apt_type = 2:
+				'He''s in the shower'
+			elseif npc_apt_type = 3:
+				'He''s in the shower and you can hear it through the wall'
+			else
+				'You''re alone'
+			end
 		end
 	elseif npc_latesleeper = 1:
 		'You turn and see him still sleeping next to you.'
@@ -217,7 +245,7 @@ if $ARGS[0] = 'wakeup':
 			end
 		end
 		if npc_apt_type > 2:
-			act'Put your panties on':
+			act'Put your underwear on':
 			
 			end
 			
@@ -233,6 +261,7 @@ if $ARGS[0] = 'wakeup':
 		act'I need coffee':
 			cla & *clr
 			$npc_apt_bedroom
+			hookup['coffee'] = 1
 			'"I could really use a cup of coffee," you say.'
 			if npc_apt_type > 2:
 				!! if not a studio or a dorm
@@ -242,7 +271,18 @@ if $ARGS[0] = 'wakeup':
 					'<center><video autoplay loop src="images/shared/romance/misc/nude_walk1.mp4"></video></center>'
 					'"Sure, lead the way."'
 					'You climb out of bed, not bothering to get dressed as you follow him. You already spent the night naked with him, what''s a cup of coffee longer?'
-					'You can''t help but peek into the other rooms as you pass by before ending up in the kitchen where <<$npc_firstname>> is already filling the pot with water.'
+					if npc_apt_spare = 1:
+						'You can''t help but peek into the other rooms as you pass. Through one door is the <a href="exec:gs ''shortgs'',''img msg'',''$npc_apt_living''">living room</a> you passed through last night from the front door. The memory is somewhat hazy as you mostly remember focusing on <<$npc_firstname>>''s body, instead of what the room looked like. Inside another room, you find <a href="exec:gs ''shortgs'',''img msg'',''$npc_apt_spare''">a desk with a monitor and a keyboard on top.</a> <i>Bit of a gamer huh?</i> you think to yourself, strutting past.'
+						*nl
+						'After your snooping, you quickly continue onward into the kitchen where <<$npc_firstname>> is already filling the pot with water.'
+					elseif npc_apt_spare = 2:
+						'You can''t help but peek into the other rooms as you pass. Through one door is the <a href="exec:gs ''shortgs'',''img msg'',''$npc_apt_living''">living room</a> you passed through last night from the front door. The memory is somewhat hazy as you mostly remember focusing on <<$npc_firstname>>''s body, instead of what the room looked like. Inside another room, you find <a href="exec:gs ''shortgs'',''img msg'',''$npc_apt_spare''">a room filled with various exercise equipment.</a> <i>Likes to work out huh?</i> you think to yourself, strutting past.'
+						*nl
+						'After your snooping, you quickly continue onward into the kitchen where <<$npc_firstname>> is already filling the pot with water.'
+					else
+						'You can''t help but peek into the other rooms as you pass. Through one door is the <a href="exec:gs ''shortgs'',''img msg'',''$npc_apt_living''">living room</a> you passed through last night from the front door. The memory is somewhat hazy as you mostly remember focusing on <<$npc_firstname>>''s body, instead of what the room looked like. After your snooping, you quickly continue onward into the kitchen where <<$npc_firstname>> is already filling the pot with water.'
+					end
+					
 					act'Wait':gt'hookup_morning','coffee'
 				end
 				
@@ -263,35 +303,7 @@ if $ARGS[0] = 'wakeup':
 					end
 				end
 				
-				act'Borrow your shower?':
-					cla & *clr
-					hookup['morning_shower'] = 1
-					$npc_apt_bedroom
-					'"Actually, do you mind if I borrow your shower?"'
-					'"Yeah, go ahead. You can catch up when you''re done."'
-					'"Thanks," you smile gratefully as he leaves the room. Hauling yourself out of the bed, you duck out the door yourself, finding <<$npc_firstname>>''s bathroom in the hallway and hop in the shower.'
-					act'Shower':
-						cla & *clr
-						'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
-						minut += 10
-						shampoo += 1
-						'You twist on the faucet and hot water comes rushing out, sighing in pleasure as it pours over your skin. After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out a minute later.'
-						dynamic $showerdin
-						*nl
-						'Figuring you''ve used enough of his water, you turn off the tap and step out to dry yourself off.'
-						act'Go to the kitchen':gt'hookup_morning','coffee'
-						
-						act'Go get dressed':
-							cla & *clr
-							'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
-							gs'clothing','wear_last_worn'
-							gs'underwear','wear'
-							gs'stat'
-							'Heading back to <<$npc_firstname>>''s room, you pick up your clothes off the floor and tug them on over your wet hair before leaving again to join him in the kitchen.'
-							act'Go to the kitchen':gt'hookup_morning','coffee'
-						end
-					end
-				end
+				act'Borrow your shower?':gt'hookup_morning','shower'
 			else
 				'"Me too. Let me just get the pot going." Getting up from the bed, he steps across his tiny room to his little kitchen and starts rifling through cupboards, pulling out various coffee paraphernalia.'
 				act'Wait in bed':
@@ -380,91 +392,155 @@ if $ARGS[0] = 'wakeup':
 					end
 				end
 				
-				act'Borrow your shower?':
-					cla & *clr
-					hookup['morning_shower'] = 1
-					$npc_apt_bedroom
-					'"Mind if I borrow your shower?" you ask, glancing towards the bathroom door of his small apartment.'
-					'"Yeah, go ahead. Coffee will be brewed by the time you''re done."'
-					'"Thanks," you smile gratefully as he leaves the room. Hauling yourself out of the bed, you duck out the door yourself, finding <<$npc_firstname>>''s bathroom in the hallway and hop in the shower.'
-					act'Shower':
-						cla & *clr
-						'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
-						minut += 10
-						shampoo += 1
-						'You twist on the faucet and hot water comes rushing out, sighing in pleasure as it pours over your skin. After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out a minute later.'
-						dynamic $showerdin
-						*nl
-						'Figuring you''ve used enough of his water, you turn off the tap and step out to dry yourself off.'
-						act'Time for coffee':gt'hookup_morning','coffee'
-						
-						act'Go get dressed':
-							cla & *clr
-							'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
-							gs'clothing','wear_last_worn'
-							gs'underwear','wear'
-							gs'stat'
-							'Stepping out of the bathroom, you''re immediately hit by the smell of cooked food.'
-							'"Coffee''s done," <<$npc_firstname>> says, gesturing to his side where the pot is filled black liquid. "Help yourself when you''re ready. I thought I''d fry up some eggs while you were in there."'
-							'"Thanks," you say, beginning to pick up your clothes. "I''m just going to get dressed first. Don''t want any accidents."'
-							'"Yeah sure. Help yourself when you''re ready."'
-							'You tug your clothes on, frowning at the wrinkles on them. Well, that''s going to happen when you throw your clothes on the ground rushing to get into somebody''s pants.'
-							act'Just coffee':
-								cla & *clr
-								minut += 2
-								gs 'beverage','coffee'
-								$npc_apt_bedroom
-								'You grab a mug and fill it up, drinking greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
-								'"No breakfast for you?"'
-								'"Coffee is all I need," you smile back.'
-								act'Time to get going':
-									cla & *clr
-									$npc_apt_bedroom
-									'"That was great," you sigh. "But I should get going."'
-									'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
-									act'Gather your things':gt'hookup_morning','morning_leave'
-									
-									gs'hookup_morning','later'
-								end	
-							end
-							
-							act'Have breakfast together':gt'hookup_morning','eggs'
-						end
-					end
-				end
+				act'Borrow your shower?':gt'hookup_morning','shower'
 			end
-			
 		end
 		
-		act'Can I use your shower?':
-			cla & *clr
-			$npc_apt_bedroom
-			'"Mind if I borrow your shower?" you ask, glancing towards the bathroom door of his small apartment.'
-			'"Yeah, go ahead."'
-			'"Thanks," you smile gratefully. Hauling yourself out of the bed, you duck inside, twist the faucet of the shower.'
-			act'Shower':
+		act'Can I use your shower?':gt'hookup_morning','shower'
+!!	end
+!!	this end is for earlyrising and latesleeping
+end
+
+if $ARGS[0] = 'shower':
+	hookup['morning_shower'] = 1
+	$npc_apt_bathroom
+	if npc_apt_type > 2:
+		'"Actually, do you mind if I borrow your shower?"'
+		'"Yeah, go ahead. You can catch up when you''re done."'
+		'"Thanks," you smile gratefully as he leaves the room. Hauling yourself out of the bed, you duck out the door yourself, finding <<$npc_firstname>>''s bathroom in the hallway and hop in the shower.'
+	else
+		'"Mind if I borrow your shower?" you ask, glancing towards the bathroom door of his small apartment.'
+		'"Yeah, go ahead."'
+		'"Thanks," you smile gratefully. Hauling yourself out of the bed, you duck inside, twist the faucet of the shower.'
+	end
+	act'Shower':
+		cla & *clr
+		'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+		minut += 10
+		shampoo += 1
+		'You twist the faucet and hot water comes rushing out, sighing in pleasure as it pours over your skin. <i>That feels so nice...</i> After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out shortly after.'
+		dynamic $showerdin
+		*nl
+		'Figuring you''ve used enough of his water, you turn off the tap and step out.'
+		if hookup['coffee'] = 1 and npc_apt_type > 2:
+			act'Go to the kitchen':gt'hookup_morning','coffee'
+
+			act'Go get dressed':
 				cla & *clr
-				'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
-				minut += 10
-				shampoo += 1
-				'Hot water comes rushing out and you step in, sighing in pleasure as it pours over your skin. <i>That feels so nice...</i> After enjoying it for a little while, you borrow <<$npc_firstname>>''s shampoo and start scrubbing your hair, washing it out shortly after.'
-				dynamic $showerdin
-				*nl
-				'Figuring you''ve used enough of his water, you turn off the tap and step out.'
-				act'Dry off':
+				'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+				gs'clothing','wear_last_worn'
+				gs'underwear','wear'
+				gs'stat'
+				'Heading back to <<$npc_firstname>>''s room, you pick up your clothes off the floor and tug them on over your wet hair before leaving again to join him in the kitchen.'
+				act'Go to the kitchen':gt'hookup_morning','coffee'
+			end
+		elseif hookup['coffee'] = 1:
+			act'Time for coffee':gt'hookup_morning','coffee'
+			
+			act'Go get dressed':
+				cla & *clr
+				'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+				gs'clothing','wear_last_worn'
+				gs'underwear','wear'
+				gs'stat'
+				'Stepping out of the bathroom, you''re immediately hit by the smell of cooked food.'
+				'"Coffee''s done," <<$npc_firstname>> says, gesturing to his side where the pot is filled black liquid. "Help yourself when you''re ready. I thought I''d fry up some eggs while you were in there."'
+				'"Thanks," you say, beginning to pick up your clothes. "I''m just going to get dressed first. Don''t want any accidents."'
+				'"Yeah sure. Help yourself when you''re ready."'
+				'You tug your clothes on, frowning at the wrinkles on them. Well, that''s going to happen when you throw your clothes on the ground rushing to get into somebody''s pants.'
+				act'Just coffee':
 					cla & *clr
+					minut += 2
+					gs 'beverage','coffee'
 					$npc_apt_bedroom
-					'You step out of the bathroom and see <<$npc_firstname>> still laying in bed.'
-					'"Love that view," he smirks, shamelessly ogling your moist naked body.'
-					'"Thanks, I really needed that," you smile back. "I should really get going though."'
-					act'Get dressed':gt'hookup_morning','morning_leave'
-					gs'hookup_morning','later'
+					'You grab a mug and fill it up, drinking greedily. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+					'"No breakfast for you?"'
+					'"Coffee is all I need," you smile back.'
+					act'Time to get going':
+						cla & *clr
+						$npc_apt_bedroom
+						'"That was great," you sigh. "But I should get going."'
+						'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+						act'Gather your things':gt'hookup_morning','morning_leave'
+						
+						gs'hookup_morning','later'
+					end	
 				end
+				
+				act'Have breakfast together':gt'hookup_morning','eggs'
+			end
+		elseif hookup['b_i_b'] = 1:
+			act'Join <<$npc_firstname>> for breakfast':gt'hookup_morning','breakfast'
+			
+			act'Get dressed':
+				cla & *clr
+				'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
+				gs'clothing','wear_last_worn'
+				gs'underwear','wear'
+				gs'stat'
+				if npc_apt_type > 2:
+					'Feeling refreshed, you leave the bathroom and head back to <<$npc_firstname>>''s room to tug on your clothes.'
+					act'Skip out on <<$npc_firstname>>':
+						cla & *clr
+						$npc_apt_hall
+						'While you''re at it, you grab the rest of your things and head straight for the door. You pass by the kitchen on the way and <<$npc_firstname>> watches you with confusion.'
+						'"Hey! Where''re you going? You''re not staying for breakfast?"'
+						'"Sorry, I really can''t stay."'
+						'"Wait but-"'
+						'"Toodles!" You waggle your fingers and slip in and out the door in a second.'
+						*nl
+						'<i>Ugh. Why can''t a one night stand just be a one night stand anymore?</i>'
+						act'Leave':gt'hookup_after','exit'
+					end
+					act'Head to the kitchen':gt'hookup_morning','breakfast'
+				else
+					'Stepping out of the bathroom, you''re immediately hit by the smell of the food again.'
+					'"Have a good time in there?"'
+					'"The best," you grin back, heading straight for your clothes and tugging them on.'
+					'"So, gonna join me for breakfast then?"'
+					act'Nope, gotta go (skip out)':
+						cla & *clr
+						$npc_apt_bedroom
+						'"Nope, gotta go."'
+						'"You sure? I-"'
+						'"Nah, I''m good." Grabbing the rest of your things, you pop open the door and waggle your fingers at him. "Toodles!" and shut the door behind you.'
+						*nl
+						'<i>Geez. Who cooks breakfast after a hookup?</i>'
+						act'Leave':gt'hookup_after','exit'
+					end
+					act'Just coffee':
+						cla & *clr
+						minut += 2
+						gs 'beverage','coffee'
+						$npc_apt_bedroom
+						'"Just coffee for me," you smile. Grabbing a mug, you fill it up with coffee and enjoy a long sip. It''s cheap stuff, but caffeine is caffeine and you savor every gulp. Within a couple minutes, the mug is empty.'
+						act'Time to get going':
+							cla & *clr
+							$npc_apt_bedroom
+							'"That was great," you sigh. "But I should get going."'
+							'You put the empty mug in <<$npc_firstname>>''s sink and turn around to grab your stuff.'
+							act'Gather your things':gt'hookup_morning','morning_leave'
+							
+							gs'hookup_morning','later' 
+						end	
+					end
+					
+					act'Sure':gt'hookup_morning','breakfast'
+				end
+				
+			end
+		else
+			act'Dry off':
+				cla & *clr
+				$npc_apt_bedroom
+				'You step out of the bathroom and see <<$npc_firstname>> still laying in bed.'
+				'"Love that view," he smirks, shamelessly ogling your moist naked body.'
+				'"Thanks, I really needed that," you smile back. "I should really get going though."'
+				act'Get dressed':gt'hookup_morning','morning_leave'
+				gs'hookup_morning','later'
 			end
 		end
-!!	end
-!! this end is for earlyrising and latesleeping
-
+	end
 end
 
 !!{
@@ -791,6 +867,14 @@ if $ARGS[0] = 'eggs':
 	end
 end
 
+if $ARGS[0] = 'breakfast':
+	
+	if hookup['morning_shower'] = 1:
+	
+	else
+	
+	end
+end
 
 if $ARGS[0] = 'morning_leave':
 	if hookup['continuation'] = 0:hookup['continuation'] = rand(0,2)
@@ -1032,7 +1116,7 @@ if $ARGS[0] = 'later_nude':
 		$hookup['fun'] = 'fun'
 	end
 	if $clothingworntype = 'nude':gs'hookup_after','dress'
-	hookup['continuation'] = rand(0,2)
+	if hookup['continuation'] = 0:hookup['continuation'] = rand(0,2)
 	act'I should go':
 		cla & *clr
 		'<center><video autoplay loop src="images/pc/activities/misc/dress_1.mp4"></video></center>'
