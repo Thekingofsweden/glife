@@ -1,0 +1,86 @@
+# shop_materinstvo
+
+if $shoplocation = 'items': gt 'shop_materinstvo', 'items'
+
+if $ARGS[0] = 'start':
+	*clr & cla
+	$loc = 'shop_materinstvo'
+	$loc_arg = 'start'
+	$location_type = 'public_indoors'
+	$menu_loc = 'shop_materinstvo'
+	$menu_arg = 'start'
+	killvar $shoplocation
+	menu_off = 0
+	gs 'stat'
+	gs 'themes', 'indoors'
+	gs 'shop_materinstvo' , 'config'
+	'<center><b><font color="maroon">Materinstvo</font></b></center>'
+	'<center><img src="images/locations/city/citycenter/mall/maternity/shop.jpg"></center>'
+	*nl
+	'This is a shop dedicated to all things pregnancy related.  Here you can buy Pregnancy Clothing or items to aid the process of getting through the day.'
+	act 'Leave the Shop':gt 'torgcentr'
+	act 'View clothes': minut += 3 & gt 'shop_materinstvo', 'clothes'
+	act 'View items': minut += 3 & gt 'shop_materinstvo', 'items'
+end
+
+if $ARGS[0] = 'items':
+	$shoplocation = 'items'
+	*clr & cla
+	$loc = 'shop_materinstvo'
+	$loc_arg = 'items'
+	$menu_loc = 'shop_materinstvo'
+	$menu_arg = 'items'
+	menu_off = 0
+	gs 'stat'
+	'<center><b><font color="maroon">Materinstvo</font></b></center>'
+	'<center><img src="images/locations/city/citycenter/mall/maternity/shop1.jpg"></center>'
+
+	*pl '<center><table align="center" width=80%>'
+	*p func ('$stock_item', 12, 'Morning Sickness Pills', 80, 'ms_pill', $curloc)
+	*p func ('$single_stock_item', 1, 'Pregnancy Ball', 2475, 'preg_ball', $curloc)
+	*p func ('$single_stock_item', 1, 'Pregnancy Brace', 975, 'preg_brace', $curloc)
+	*p func ('$single_stock_item', 1, 'Pregnancy Pillow', 2475, 'preg_pillow', $curloc)
+	*p '</table></center>'
+	gs 'stat'
+	gs 'themes', 'indoors'
+
+	act 'Return': gt 'shop_materinstvo', 'start'
+end
+
+if $ARGS[0] = 'clothes':
+	$loc_arg = 'clothes'
+	$loc = 'shop_materinstvo'
+	$menu_loc = 'shop_materinstvo'
+	$menu_arg = 'clothes'
+	menu_off = 0
+	*clr & cla
+	gs'stat'
+	'<center><b><font color="maroon">Viewing Flamingo''s outfits</font></b></center>'
+	*nl
+
+	gs 'clothing_QV', 'shop_header'
+
+	act 'Return': minut += 1 & gt 'shop_materinstvo', 'start'
+
+	clothingfilter['qualitycheck'] = 7
+	:loopquality
+		i = 1
+
+		:loopmaterinstvo
+			if materinstvo_dress[i] = 0:
+				gs 'clothing_attributes', 'materinstvo_dress', i
+				gs 'clothing_QV', 'shop_filter'
+
+				if clothingfilter['quality'] = 0 or clothingfilter['qualitycheck'] = CloQuality:
+				
+					if clothingfilter_risk = 1 and clothingfilter_pandb = 1 and clothingfilter_norm2 = 1: *p '<a href="exec: i = <<i>> & gt ''shop_materinstvo'', ''materinstvo_dress''"><img src="images/pc/items/mommy/<<i>>.jpg" 	height="250" /></a>'
+				end
+			end
+			i += 1
+		if i <= 10:jump 'loopmaterinstvo'
+	if clothingfilter['quality'] = 1 and clothingfilter['qualitycheck'] > 0: clothingfilter['qualitycheck'] -=1 & jump 'loopquality'
+end
+
+if $ARGS[0] = 'materinstvo_dress': gt 'clothing', 'view_clothing_item', 'shop', 'materinstvo_dress',i, 2000
+
+------------ shop_materinstvo ------------
