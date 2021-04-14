@@ -86,47 +86,61 @@ if $ARGS[0] = 'work_floor':
 	$menu_arg = 'work_floor'
 	menu_off = 0
 	if sound = 0 and hour >= 8 and hour < 17:PLAY 'sound/office.mp3',30 & PLAY 'sound/office2.mp3',30
-!!check all the sounds to make sure they turn off when Sveta leaves the location with the sound playing
 	minut += 5
 	gs 'stat'
 	'<center><b><font color="maroon">Engineering company offices</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/lobby.jpg"></center>'
 	'This is the main hall for your work floor. It is nicely decorated and you can hear other people working in the office.'
-	if hour >= 9 and hour < 17 and workSec >= 1:'You''re too late for work, so you''re told to take the day off.'
-	if workSec >= 1 and $clothingworntype ! 'gm_office' and hour >= 9 and hour < 17:'You are not dressed according to the corporate dress code.'
-	if hour < 9 and workSec >= 1 and $clothingworntype = 'gm_office':
-		act 'Go to work':
-			sekDay += 1
-			hour = 9
-			minut = 0
-			gt 'office', 'secretary_office'
-		end
-		act 'Go to the breakroom':gt 'office', 'work_floor'
-		act 'Go to restrooms':gt 'office', 'restrooms'
-	end
 	if workSec = 1:
-		act 'Resign':
-			*clr & cla
-			menu_off = 1
-			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/npc/torbica_office.jpg"></center>'
-			'You walk into Mrs Torbica''s office and tell her. "I am resigning."'
-      		'"Are you sure?" She asks obviously a little surprised you are quiting.'
-			act 'Yes, I quit.':
-       			*clr & cla
-				minut += 30
-				work = 0
-				workSec = 0
+		if hour >= 8 and hour < 17:
+			if hour = 8:
+				act 'Go to work':
+					sek['atwork'] = daystart
+					minut = 60 - minut
+					gt 'office', 'secretary_office'
+				end
+			else
+				'You''re too late for work, so you''re told to take the day off.'
+			end
+			act 'Go to the breakroom':gt 'office', 'work_floor'
+			act 'Go to restrooms':gt 'office', 'restrooms'
+		end
+		if sek['atwork'] = daystart and hour = 12:
+			act 'Go back to work station':
+				sekDay += 1
+				if hour = 12: minut += 60 - minut
+				gs 'stat'
+				gt 'office', 'work'
+			end
+		end
+		if $clothingworntype ! 'gm_office':
+			'You are not dressed according to the corporate dress code.'
+		else
+		if hour >= 8 and hour < 17:
+			act 'Resign':
+				*clr & cla
+				menu_off = 1
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/npc/torbica_office.jpg"></center>'
-				'"Yes I am sure." You tender your resignation and then leave.'
-				act 'Leave': minut += 15 & gt 'city_center'
-      		end
-			act 'Nevermind': gt 'office', 'work_floor'
-      	end
+				'You walk into Mrs Torbica''s office and tell her. "I am resigning."'
+				'"Are you sure?" She asks obviously a little surprised you are quiting.'
+				act 'Yes, I quit.':
+					*clr & cla
+					minut += 30
+					work = 0
+					workSec = 0
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/npc/torbica_office.jpg"></center>'
+					'"Yes I am sure." You tender your resignation and then leave.'
+					act 'Leave': minut += 15 & gt 'city_center'
+				end
+				act 'Nevermind': gt 'office', 'work_floor'
+			end
+		end
 	end
 	act 'Leave': minut += 5 & gt 'city_center'
 end
 
 if $ARGS[0] = 'secretary_office':
+	CLOSE ALL
 	*clr & cla
 	$menu_loc = 'office'
 	$menu_arg = 'secretary_office'
@@ -161,8 +175,7 @@ if $ARGS[0] = 'break_room':
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/breakroom.jpg"></center>'
 	'The room is neat and clean. Across from the door is a couch along one wall with a few comfortable chairs. With a large table in the middle of the room and along one wall is a set of cabinets, with a sink, some appliances and a fridge to store your lunch in, if you bring one.'
 	dynamic $driwater
-	if buterbrod > 0:
-!!need to add the hours to be between 12 and 13 aka noon and 1pm
+	if buterbrod > 0 and hour = 12:
 		act 'eat brought lunch':
 			*clr & cla
 			minut += 20
@@ -176,8 +189,12 @@ if $ARGS[0] = 'break_room':
 			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/breakroom.jpg"></center>'
 			'You get your lunch out of the fridge and warm it up in the microwave. After that you sit down to enjoy a pleasant lunch.'
 			act 'Go to the corridor':gt 'office', 'work_floor'
-			act 'Go back to work station': minut + 40 & gt 'office', 'work'
-	!!this act needs time added to it so it advance till the second time Sveta works after lunch. not sure if i did that right or not
+			act 'Go back to work station':
+				sekDay += 1
+				if hour = 12: minut += 60 - minut
+				gs 'stat'
+				gt 'office', 'work'
+			end
 		end
 	end
 	act 'Go to the corridor':gt 'office', 'work_floor'
@@ -254,11 +271,12 @@ if $ARGS[0] = 'work':
 	'<center><b><font color="maroon">Your workstation</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/work_station.jpg"></center>'
 	'Once seated at your work station you say hi to a few of your co-workers and then look at what work you need to get done today.'
-	if hour >= 8 and hour < 12 or hour >= 13 and hour < 17:
-!!check I did time  right so Sveta and work between 8-12 and 13-17 hours only
+	if (hour >= 8 and hour < 12) or (hour >= 13 and hour < 17):
 		act 'Start working':
+			if hour = 12: minute += 60 - minut + 240
+			if hour = 8 or hour = 13: minute += 60 - minut + 180
+			if hour = 9: minute += 60 - minut + 120
 			*clr & cla
-	!!need to make sure the time advances. In the morning it should go to 12 aka noon after hitting start work, after lunch 13 hours aka 1pm it should advance time till 17 aka 5pm
 			if sound = 0 and hour >= 8 and hour < 17:PLAY 'sound/office.mp3',30 & PLAY 'sound/office2.mp3',30
 			gs 'stat'
 			work = rand(1,9)
@@ -333,10 +351,9 @@ if $ARGS[0] = 'interview':
 				workSec = 1
 				sekDay = 0
 				minut += 60
-!!pay for this job will need to be changed, so it pays on every Friday and pays 1340 every day Sveta works or 6700 if she works every day that week.
 				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/npc/torbica_office.jpg"></center>'
 				'"Yes, I will take the job. Thank you very much." You tell her.'
-				'"Excellent, here is a welcome packet. Make sure to come to work wearing the appropriate clothes, work starts at 9am, but it is ok to show up as early as 8am." After a little more pleasantries you gather your stuff and leave.'
+				'"Excellent, here is a welcome packet. Make sure to come to work wearing the appropriate clothes, work starts at 9am, but it is ok to show up as early as 8am. It is not ok to leave before 5pm, other than to get lunch. If you leave work early you won''t be paid for the day." After a little more pleasantries you gather your stuff and leave.'
 				act 'Leave': minut += 15 & gt 'city_center'
 			end
 		elseif hotcat >= 6 and $clothingworntype ! 'gm_office':
@@ -348,7 +365,6 @@ if $ARGS[0] = 'interview':
 			'You start to respond to ask just what she means you don''t look the part, but before you can respond she keeps talking. "I am afraid I can''t offer you the job. Perhaps you should put more effort in how you look, our employees represent us and we only hire the best. If you don''t mind I am rather busy." She says indication the door, is she really saying she isn''t going to hire you because you are not pretty enough? You feel angry that you are being judge on your looks and not how well you could do the job, but you know it is pointless to try and argue, so you get up and leave.'
 			act 'Leave': minut += 15 & gt 'city_center'
 		else
-!! this would happen if the following is true correct? hotcat <= 5, and $clothingworntype ! 'gm_office'
 			'As soon as you walk in the woman takes one look at you and frowns. "What are you wearing?"'
 			'You start to respond that it is just your clothes, not sure what she meant by that, but before you can respond she keeps talking. "It doesn''t matter. That is not appropriate attire, I am afraid I can''t offer you the job looking like that. Perhaps you should put more effort in how you look, our employees represent us and we only hire the best. If you don''t mind I am rather busy." She says indication the door, crestfallen and knowing there is nothing you can say you turn to leave, you should have really wore a womans suit.'
 			act 'Leave': minut += 15 & gt 'city_center'
