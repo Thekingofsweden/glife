@@ -1,24 +1,41 @@
 # albinahome
 
 
+!! Albina House Schedule
+!! 23 - 07 ... no reply
+
 if $ARGS[0] = 'gate':
-	gs 'stat'
-	if (hour >= 17 and week < 6 and kanikuli = 0 and hour < 20) or (hour >= 9 and week >= 6 and kanikuli = 0 and hour < 20) or (hour >= 9 and kanikuli > 0 and hour < 20):
-		'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/albinahome/albinahome.jpg"></center>'
-		if AlbinaQW['albride'] = 2:
-			AlbinaQW['albride'] = 3
-			'You push a button on the intercom and you''re surprised to hear a somewhat cautious sounding female voice crackle through the speaker as you hear Albina in the background.'
-			'The strange voice asks who you are and when she says your name to Albina, Albina gleefully tells you to excuse her mother''s caution and invites you in. The voice apologizes to you as the gate slowly opens.'
-			act 'Walk up the driveway': gt 'albinahome', 'hallway'
+	act 'Leave':gt 'pav_residential'
+	
+    if hour  = 23 or hour < 7:
+		'Do not dare to ring insuch ungodly hour'
+	elseif hour < 9:
+		'You push a button on the intercom and a female voice blasts through. "What kind of ungodly hour do you call this?! Come back later for a social call!" That must have been her mother.'	
+	elseif hour <17:
+		if (kanikuli = 0) and (week < 6):
+			'Nobody answers your call'
 		else
-			'You push a button on the intercom and you hear the familiar voice of Albina''s mother on the other end. You tell her it''s you and she opens the gate.'
-			'"She really enjoys having you come round and visit her you know? It''s good for her to have such a dependable friend to rely on after everything she''s been through." she adds.'
-			act 'Walk up the driveway': gt 'albinahome', 'hallway'
+			gt 'albinahome', 'mom answers'
 		end
-	else
+	elseif hour < 20:
+		gt 'albinahome', 'mom answers'
+	else	
 		if hour >= 9:'You push a button on the intercom and a female voice comes through asking who it is. When you say you''re here to see Albina, she tells you that Albina is currently unavailable and you should come back later.'
-		if hour < 9:'You push a button on the intercom and a female voice blasts through. "What kind of ungodly hour do you call this?! Come back later for a social call!" That must have been her mother.'
-		act 'Leave':gt 'pav_residential'
+	end
+	gs 'stat'
+end
+
+if $ARGS[0] = 'mom answers':
+	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/resident/albinahome/albinahome.jpg"></center>'
+	if AlbinaQW['albride'] = 2:
+		AlbinaQW['albride'] = 3
+		'You push a button on the intercom and you''re surprised to hear a somewhat cautious sounding female voice crackle through the speaker as you hear Albina in the background.'
+		'The strange voice asks who you are and when she says your name to Albina, Albina gleefully tells you to excuse her mother''s caution and invites you in. The voice apologizes to you as the gate slowly opens.'
+		act 'Walk up the driveway': gt 'albinahome', 'hallway'
+	else
+		'You push a button on the intercom and you hear the familiar voice of Albina''s mother on the other end. You tell her it''s you and she opens the gate.'
+		'"She really enjoys having you come round and visit her you know? It''s good for her to have such a dependable friend to rely on after everything she''s been through." she adds.'
+		act 'Walk up the driveway': gt 'albinahome', 'hallway'
 	end
 end
 
@@ -44,7 +61,7 @@ if $ARGS[0] = 'hallway':
 	elseif AlbinaQW['visiting'] = 0:
 		!! Entering the house and getting random chances for events/being met by random household member
 		AlbinaQW['visiting'] = 1
-		temp = rand(1, 12)
+		temp = iif((month < 9) and (month > 5) and (week = 3 or week = 6), rand(1, 12), rand(1,10)) 
 		if temp = 1:
 			!! Random House Events
 			gt 'albina_house_events', 'start_2'
@@ -54,6 +71,12 @@ if $ARGS[0] = 'hallway':
 		elseif temp = 3:
 			!! Lazar Sex Event
 			gt 'albina_lazar_sex', 'lazar_start'
+		elseif temp = 11:
+			!! Mom Event
+			gt 'albina_mother_event', 'Sunbathing alone'
+		elseif (temp = 12) :
+			!! Mom Albina Event
+			gt 'albina_mother_event', 'Sunbathing with Albina'
 		else
 			!! Greeted by maid(Wed or Sat) or Mother(Zoya) or Albina
 			if week = 3 or week = 6:
