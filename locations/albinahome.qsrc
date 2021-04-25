@@ -5,6 +5,7 @@
 !! 23 - 07 ... no reply
 
 if $ARGS[0] = 'gate':
+	AlbinaQW['event'] = 0
 	act 'Leave':gt 'pav_residential'
 	
     if hour = 23 or hour < 7:
@@ -61,7 +62,9 @@ if $ARGS[0] = 'hallway':
 	elseif AlbinaQW['visiting'] = 0:
 		!! Entering the house and getting random chances for events/being met by random household member
 		AlbinaQW['visiting'] = 1
+		AlbinaQW['event'] = 1
 		temp = iif((month < 9) and (month > 5) and (week = 3 or week = 6), rand(1, 12), rand(1,10)) 
+		if temp < 5 or temp > 10: AlbinaQW['event'] = 1
 		if temp = 1:
 			!! Random House Events
 			gt 'albina_house_events', 'start_2'
@@ -79,11 +82,12 @@ if $ARGS[0] = 'hallway':
 			gt 'albina_house_events', 'swim_winter2'
 		elseif temp = 11:
 			!! Mom Event
-			gt 'albina_mother_event', 'Sunbathing alone'
+			gt 'albina_mother_events', 'Sunbathing alone'
 		elseif (temp = 12) :
 			!! Mom Albina Event
-			gt 'albina_mother_event', 'Sunbathing with Albina'
+			gt 'albina_mother_events', 'Sunbathing with Albina'
 		else
+			AlbinaQW['event'] = 0
 			!! Greeted by maid(Wed or Sat) or Mother(Zoya) or Albina
 			if week = 3 or week = 6:
 				!! maid greeting sveta at front door
@@ -167,26 +171,29 @@ if $ARGS[0] = 'bedroom':
 	$menu_arg = 'bedroom'
 	menu_off = 0
 	
-	AlbinaQW['activities'] = rand(1,3)
-	if AlbinaQW['activities'] = 1:
-		if month >=11 and month <= 12 or month >=1 and month <=3:
-!!			if rand(1,2) = 1:
-				gt'albina_house_events','swim_winter1'
-!!			else
-!!				gt'albina_house_events','swim_winter2'
-!!			end
-		else
-			gt'albina_house_events','swim_summer1'
+	if AlbinaQW['event'] = 0:
+		AlbinaQW['event'] = 1
+
+		AlbinaQW['activities'] = rand(1,3)
+		if AlbinaQW['activities'] = 1:
+			if month >=11 and month <= 12 or month >=1 and month <=3:
+	!!			if rand(1,2) = 1:
+					gt'albina_house_events','swim_winter1'
+	!!			else
+	!!				gt'albina_house_events','swim_winter2'
+	!!			end
+			else
+				gt'albina_house_events','swim_summer1'
+			end
+		end
+		if AlbinaQW['extra'] ! daystart: 
+			if rand(0,10) = 0: 
+				gt 'albina_house_events','dancing' 
+			elseif rand(0,9) = 0:
+				gt 'albina_house_events','ass_too_big'
+			end
 		end
 	end
-	if AlbinaQW['extra'] ! daystart: 
-		if rand(0,10) = 0: 
-			gt 'albina_house_events','dancing' 
-		elseif rand(0,9) = 0:
-			gt 'albina_house_events','ass_too_big'
-		end
-	end
-	
 	minut += 1
 	gs 'stat'
 	gs 'themes', 'indoors'
@@ -650,10 +657,5 @@ if $ARGS[0] = 'strapon_finish':
 	gs 'stat'
 	act 'Finish':gt 'albinahome', 'bedroom'
 end
-
-
-
-
-
 
 --- albinahome ---------------------------------
