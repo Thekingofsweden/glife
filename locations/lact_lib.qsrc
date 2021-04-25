@@ -203,14 +203,17 @@ if $ARGS[0] = 'checkExtBreastGrowth':
 		!!	technically, the below will recalculate everything. Nothing else. Just like in init breast tissue. Just added some extra cases for lactation and induction.
 		!!	checking if changes were made to the stuff that is interesting for lactation.
 		if lactation['useable_cupsize'] <> lactation['last_useable_cupsize'] and lactation['useable_cupsize'] > 0:
+			!! to prevent the infinite loop, I limited the maximal number of the loops - rachel , but the author should check the code and find the bug
+			i = 0
 			:cEBG_loop
+			i += 1
 			lactation['breastglandtissue'] = ((func('lact_lib','bsizetoccm', lactation['useable_cupsize'])*lactation['breastdensitypercent'])/100) + (lactation['preggrowth']/100)
 			!!	getting the breast max milk storage. Please be aware that there is storage even if no lactation is happening. Factors 100 and 500 stand for flat glands and inflated glands.
 			!!	usually nature intented women to be able to breastfeed. depending on age and size, babys eat about 80ml to 150ml. if both breast make 80ml together, then we are fine. Even AA cups can do this.
 			!!	this is what the pregtime check is for. Making sure sveta would have been able to breastfeed. There is a jump to loop back.
 			if lactation['active'] > 0:
 				lactation['breastmm'] = (lactation['breastglandtissue']*(100 + (lactation['alveoliexpandlvl'] * 40)))*lactation['breastcount']
-				if pregtimes > 0 and (lactation['breastglandtissue']*500) < 80000:
+				if i < 10 and pregtimes > 0 and (lactation['breastglandtissue']*500) < 80000:
 					!!	make the percentage change and jump back, so everything is recalculated. Do not mess with the factors.
 					lactation['breastdensitypercent'] = 8500/func('lact_lib','bsizetoccm', lactation['useable_cupsize'])
 					jump 'cEBG_loop'
@@ -218,7 +221,7 @@ if $ARGS[0] = 'checkExtBreastGrowth':
 			elseif lactation['active'] <= 0:
 				!! Taking gland inflation level into account.
 				lactation['breastmm'] = (lactation['breastglandtissue']*(100 + (lactation['alveoliexpandlvl'] * 40)))*lactation['breastcount']
-				if pregtimes > 0 and lactation['breastglandtissue'] < 40:
+				if i < 10 and pregtimes > 0 and lactation['breastglandtissue'] < 40:
 					!!	make the percentage change and jump back, so everything is recalculated. Do not mess with the factors.
 					lactation['breastdensitypercent'] = 4500/func('lact_lib','bsizetoccm', lactation['useable_cupsize'])
 					jump 'cEBG_loop'
