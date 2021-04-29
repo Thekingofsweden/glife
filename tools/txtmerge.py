@@ -38,6 +38,16 @@ for location in root.iter('Location'):
     except IOError:
         print("WARNING: missing location %s" % iname)
         pass
+from datetime import date
+from sys import version_info
+ofile.write(u"#addbuilddate" + '\n')
+today = date.today()
+if version_info.major == 2:
+	du = unicode(today.strftime("$builddate = '%B %d, %Y'"), 'utf8') + '\n'
+elif version_info.major == 3:
+	du = str(today.strftime("$builddate = '%B %d, %Y'")) + '\n'
+ofile.write(du)
+ofile.write(u"--- addbuilddate ---------------------------------" + '\n')
 
 ofile.close()
     
