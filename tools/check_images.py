@@ -21,7 +21,6 @@ for name in os.listdir("locations"):
 		continue
 		# skip directories
 	else:
-		print "file", name
 		ifile = io.open(
 			os.path.join("locations", name),
 			mode='rt',

@@ -1,0 +1,1 @@
+python tools/check_images.py > missing_pictures.txt
