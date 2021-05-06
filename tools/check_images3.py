@@ -30,8 +30,7 @@ for name in os.listdir("locations"):
         )
         text = ifile.read()
         for match in re.finditer(r"images.+?[.](gif|jpg|png|mp4)", text, flags=re.U):
-            imgfile = match.group().encode("utf-8")
-            imgfile = imgfile.decode('utf-8')
+            imgfile = match.group().encode("utf-8").decode()
             randmatch = re.search(r"'\s*[+]\s*rand\s*[(]\s*(\d+)\s*[,]\s*(\d+)\s*[)]\s*[+]\s*'", imgfile)
             if randmatch != None:
                 for i in range(int(randmatch.group(1)), 1+int(randmatch.group(2))):
