@@ -11,9 +11,6 @@ import sys
 startpattern = """images/"""
 imgFormats = ['jpg','gif','png','mp4']
 
-infile = io.open('glife.txt',mode='r',encoding='utf-16')
-lines = infile.readlines()
-
 images = []
 
 for name in os.listdir("locations"):
