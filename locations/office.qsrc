@@ -92,7 +92,14 @@ if $ARGS[0] = 'work_floor':
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/lobby.jpg"></center>'
 	'This is the main hall for your work floor. It is nicely decorated and you can hear other people working in the office.'
 	if workSec = 1:
-		if hour >= 8 and hour < 17:
+		if sek['atwork'] = daystart and hour = 12:
+			act 'Go back to work station':
+				sekDay += 1
+				if hour = 12: minut += 60 - minut
+				gs 'stat'
+				gt 'office', 'work'
+			end
+		elseif hour >= 8 and hour < 17:
 			if hour = 8:
 				act 'Go to work':
 					sek['atwork'] = daystart
@@ -104,14 +111,6 @@ if $ARGS[0] = 'work_floor':
 			end
 			act 'Go to the breakroom':gt 'office', 'work_floor'
 			act 'Go to restrooms':gt 'office', 'restrooms'
-		end
-		if sek['atwork'] = daystart and hour = 12:
-			act 'Go back to work station':
-				sekDay += 1
-				if hour = 12: minut += 60 - minut
-				gs 'stat'
-				gt 'office', 'work'
-			end
 		end
 		if $clothingworntype ! 'gm_office':
 			'You are not dressed according to the corporate dress code.'
@@ -203,6 +202,7 @@ end
 
 if $ARGS[0] = 'restrooms':
 	killvar '$boy'
+	office_ladies_entry = 0
 	$menu_loc = 'office'
 	$menu_arg = 'restrooms'
 	menu_off = 0
@@ -226,14 +226,17 @@ if $ARGS[0] = 'restrooms':
 end
 
 if $ARGS[0] = 'womens_restrooms':
-	killvar '$boy'
+	office_ladies_entry = 1
 	$menu_loc = 'office'
-	$menu_arg = 'restrooms'
+	$menu_arg = 'womens_restrooms'
+	$locM = 'office'
+	$locM_arg = 'womens_restrooms'
 	menu_off = 0
 	gs 'stat'
 	'<center><b><font color="maroon">Womens Restrooms</font></b></center>'
 	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/office/womensbr.jpg"></center>'
-	'You enter the womens restroom, there is a couple of other women at the sink. One checking her makeup as they both talk for a moment. They give you a brief smile and then both exit leaving you alone in the restroom. The restroom is very clean and nice, it is one of the nicest if not the nicest restroom you have been in.'
+	if office_ladies_entry = 0: 'You enter the womens restroom, there is a couple of other women at the sink. One checking her makeup as they both talk for a moment. They give you a brief smile and then both exit leaving you alone in the restroom.'
+	'The restroom is very clean and nice, it is one of the nicest if not the nicest restroom you have been in.'
 
 	act 'Look in the mirror': gt 'mirror', 'start'
 	dynamic $tampon
@@ -245,9 +248,10 @@ if $ARGS[0] = 'womens_restrooms':
 end
 
 if $ARGS[0] = 'mens_restrooms':
-	killvar '$boy'
 	$menu_loc = 'office'
-	$menu_arg = 'restrooms'
+	$menu_arg = 'mens_restrooms'
+	$locM = 'office'
+	$locM_arg = 'mens_restrooms'
 	menu_off = 0
 	gs 'stat'
 	'<center><b><font color="maroon">Mens Restrooms</font></b></center>'
