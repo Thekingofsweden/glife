@@ -649,6 +649,23 @@ if $ARGS[0] = '':
 	elseif GspravkaT = 2 and motherKnowSpravka = 0 and ((week >= 6 and hour >= 6 and hour <= 21) or (week < 6 and hour >= 16 and hour <= 21)):
 		gt 'mother', 'referral_fail'
 	end
+
+	gs 'mother', 'check_workout'
+end
+
+! Called from mother and gadhouse, injects options for asking about workout sessions or starting a session
+if $ARGS[0] = 'check_workout':
+	if motherQW['workout'] ! 1:
+		act 'Ask <<$npc_nickname[''A29'']>> to workout sometime': gt 'mother', 'ask_mother_workout'
+	end
+
+	if (CloStyle = 5 or $clothingworntype = 'danilovich') and hour >= 6 and hour < 12 and motherQW['workout'] = 1 and motherQW['workout_day'] ! daystart:
+		if $loc = 'kuhrPar':
+			act 'Ask <<$npc_nickname[''A29'']>> to workout': gt 'mother', 'mother_workout_pav'
+		elseif $loc = 'gadhouse':
+			act 'Ask <<$npc_nickname[''A29'']>> to workout': gt 'mother', 'mother_workout_gad'
+		end
+	end
 end
 
 if $ARGS[0] = 'referral':
@@ -1815,6 +1832,170 @@ if $ARGS[0] = 'condom_steal':
 		'Not wanting to get into middle of that you quietly continue on, not getting noticed by them.'
 	end
 	act 'Quietly walk away': gt $loc, $loc_arg
+end
+
+if $ARGS[0] = 'ask_mother_workout':
+	*clr & cla
+	minut += 2
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/mother.jpg"></center>'
+	'You wonder if your <<$npc_nickname[''A29'']>> would be interested in working out with you, even if it was just to do a short yoga session or go for a run. In that vein you ask her if that is something she would be interested in.'
+	*nl
+	if npc_rel['A29'] >= 60:
+		motherQW['workout'] = 1
+		'"You know what <<$pcs_firstname>>, that sounds like it could be fun. Grab me whenever I''m home or when we''re visiting your grandparents; it''d be nice to get out into the countryside. You''d better be dressed and ready, though!"'
+	else 
+		'"No thanks <<$pcs_firstname>>, I''ll leave all that to people younger than me"'
+		'I guess I need to work at it more. Maybe get more confident about my body to be convincing, improve my relationship with her and find that something to get her to open up... you think to yourself.'
+	end
+	act 'Accept her decision': gt 'mother'
+end
+
+if $ARGS[0] = 'mother_workout_pav':
+	*clr & cla
+	menu_off = 1
+	minut += rand(1,3)
+	motherQW['workout_day'] = daystart
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/mother.jpg"></center>'
+	'"You ready to go work out?" You ask her.'
+	'"Ok <<$pcs_firstname>>, I''ll get ready and meet you outside"'
+	'With that you wait outside for your <<$npc_nickname[''A29'']>> to appear'
+	act 'Meet her outside for a jog': gt 'mother' , 'mother_jog_pav'
+	act 'Meet her outside for Yoga': gt 'mother' , 'mother_yoga_pav'
+end
+
+if $ARGS[0] = 'mother_workout_gad':
+	*clr & cla
+	menu_off = 1
+	minut += rand(1,3)
+	motherQW['workout_day'] = daystart
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/mother.jpg"></center>'
+	'"You ready to go work out?" You ask her.'
+	'"Ok <<$pcs_firstname>>, I''ll get ready and meet you outside"'
+	'With that you wait outside for your <<$npc_nickname[''A29'']>> to appear'
+	act 'Meet her outside for a jog': gt 'mother', 'mother_jog_gad'
+	act 'Meet her outside for Yoga': gt 'mother', 'mother_yoga_gad'
+end
+	
+if $ARGS[0] = 'mother_jog_pav':
+	*clr & cla
+	minut += rand(4,6)
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/ready_run.jpg"></center>'
+	'You are waiting outside in the courtyard when you see your <<$npc_nickname[''A29'']>> appear from around the corner. She does a few stretches before announcing to you that she is ready to get moving. The two of you walk to the park, as you do you chat about a variety of things. Once you get to the park you both do a little stretching before you start jogging.'
+	act 'Get Jogging': 
+		*clr & cla
+		gs 'exercise', 'tier1', 60, 'run_exp'
+		fat -= rand(2,6)
+		gs 'sweat', 'add', 5
+		gs 'stat'
+		'<center><img src="images/characters/pavlovsk/resident/mom/pavrun1.jpg"></center>'
+		'You and your <<$npc_nickname[''A29'']>> start jogging down one of the park paths. It''s not particularly taxing but you are glad to spend time with her. As you run you notice some men leering, but neither of you make a big deal out of it. Running through the park is quite refreshing overall, especially with company.'
+		act 'Return Home': 
+			npc_rel['A29'] += rand(2,3)
+			minut += 30
+			gs 'stat'
+			*clr & cla
+			'<center><img src="images/characters/pavlovsk/resident/mom/pavrun2.jpg"></center>'
+			'With your joint jogging session drawing to a close, you congratulate your <<$npc_nickname[''A29'']>> on a good workout. She might not be as perky as you are afterwards, but you get the impression she enjoyed spending time with you. She has a drink of water and smiles at you, catching her breath and telling you that she had fun running with you and that you should do it again sometime.'
+			act 'Walk into the apartment' : gt 'korrPar'
+		end
+	end
+end
+
+if $ARGS[0] = 'mother_yoga_pav':
+	*clr & cla
+	menu_off = 1
+	minut += rand (2,6)
+	npc_rel['A29'] += rand(5,10)
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/mother.jpg"></center>'
+	'You ask your <<$npc_nickname[''A29'']>> if she would like to do some yoga up at the park. "Of course, I''d love to give Yoga a try! I''ll just go and put on some more appropriate clothing"'
+	act 'Meet her outside':
+		*clr & cla
+		minut += rand(2,4)
+		gs 'stat'
+		'<center><img src="images/characters/pavlovsk/resident/mom/pavyoga1.jpg"></center>'
+		'You see your <<$npc_nickname[''A29'']>> has put on some very light clothing, and you head off towards the park - chatting as you go. It is not long before you arrive, so you quickly get ready to start your routine.'
+		act 'Do some yoga':
+			*clr & cla
+			minut += rand(20,30)
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/resident/mom/pavyoga2.jpg"></center>'
+			'You and your <<$npc_nickname[''A29'']>> do some simple yoga routines together. It isn''t as pressing as when you do them by yourself, but you enjoy being able to spend time with her. Sometimes men walk by and leer at you both for a while, seeming to enjoy the free show.'
+			act 'Just see how your partner is doing': 
+				*clr & cla
+				minut += rand(2,4)
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/resident/mom/momyev2.jpg"></center>'
+				'Your <<$npc_nickname[''A29'']>> is more flexible than you gave her credit for. In any case she has seen you looking at her. "What? Just because I am older doesn''t mean I don''t try and take care of myself. Don''t look so surprised." You compliment her for both her efforts with yoga and for keeping fit. You take the opportunity now to start packing up and the pair of you head back to the apartment.'
+				act 'Walk into the apartment' : gt 'korrPar'
+			end
+		end
+	end
+end
+	
+if $ARGS[0] = 'mother_jog_gad':
+	*clr & cla
+	menu_off = 1
+	minut += rand(2,5)
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/ready_run.jpg"></center>'
+	'You go outside to wait for your <<$npc_nickname[''A29'']>> and do a little stretching whilst waiting.'
+	'Your <<$npc_nickname[''A29'']>> is ready very quickly, and she''s showing quite a lot of enthusiasm for the run. She must be looking quite forward to it, or to spending time with you.'
+	'"Well, I''m ready! Shall we set off?"'
+	act 'Let her take the lead': 
+		*clr & cla
+		gs 'exercise', 'tier1', 60, 'run_exp'
+		fat -= rand(2,6)
+		gs 'sweat', 'add', 5
+		gs 'stat'
+		'<center><img src="images/characters/pavlovsk/resident/mom/gadrun1.jpg"></center>'
+		'Your <<$npc_nickname[''A29'']>> leads you out of the house and into the countryside. You let her take the lead as she knows the area well. This also gives you the chance to chat with her as you jog along. You talk about a variety of topics and enjoy spending the time with your <<$npc_nickname[''A29'']>>, as well as getting the chance to jog around the countryside and see all the interesting routes your <<$npc_nickname[''A29'']>> knows about and enjoys taking.'
+		act 'Return Home':
+			*clr & cla
+			minut += 30
+			npc_rel['A29'] += rand(2,3)
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/resident/mom/gadrun2.jpg"></center>'
+			'With your run going very smoothly, it doesn''t take too long until you circle back to the cottage and finish your run. You and your <<$npc_nickname[''A29'']>> feel quite tired out from the run, but she looks very happy from the experience overall and you''re glad you have the chance to spend time with her like this.'
+			act 'Walk into the cottage' : gt $loc, $loc_arg
+		end
+	end
+end
+	
+if $ARGS[0] = 'mother_yoga_gad':
+	*clr & cla
+	menu_off = 1
+	minut += rand (2,6)
+	npc_rel['A29'] += rand(5,10)
+	gs 'stat'
+	'<center><img src="images/characters/pavlovsk/resident/mom/mother.jpg"></center>'
+	'You ask your <<$npc_nickname[''A29'']>> if she would like to do some yoga up at your meadow nearby, reassuring her as to how secluded it is. "Of course, I''d love to give Yoga a try. I''ll just go and put on some more appropriate clothing"'
+	act 'Meet her outside':
+		*clr & cla
+		minut += rand(2,4)
+		gs 'stat'
+		'<center><img src="images/characters/pavlovsk/resident/mom/gadyoga1.jpg"></center>'
+		'You see your <<$npc_nickname[''A29'']>> has put on some very light clothing and you both head off towards the meadow, chatting as you go. It is not long before you arrive and you quickly get ready to start your routine.'
+		act 'Do some yoga':
+			*clr & cla
+			minut += rand(20,30)
+			gs 'stat'
+			'<center><img src="images/characters/pavlovsk/resident/mom/gadyoga2.jpg"></center>'
+			'You and your <<$npc_nickname[''A29'']>> do some simple yoga routines together. It isn''t as pressing as when you do them by yourself but you enjoy being able to spend time with her. The area is quite secluded and private, and you and your <<$npc_nickname[''A29'']>> are left to run your routine in peace and quiet. It is a nice experience and gives you plenty of time to talk whilst going through your poses and stretches.'
+			act 'Just see how your partner is doing': 
+				*clr & cla
+				minut += rand(2,4)
+				gs 'stat'
+				'<center><img src="images/characters/pavlovsk/resident/mom/gadyoga3.jpg"></center>'
+				'Your <<$npc_nickname[''A29'']>> is more flexible than you gave her credit for. In any case she has seen you looking at her. "What? Just because I am older doesn''t mean I don''t try and take care of myself. Don''t look so surprised." You compliment her for both her efforts with yoga and for keeping fit. You take the opportunity now to start packing up and the pair of you head back to the cottage.'
+				act 'Head back home' : gt $loc, $loc_arg
+			end
+		end
+	end
 end
 
 --- mother ---------------------------------
