@@ -1,0 +1,407 @@
+# shop_photography
+
+! Photography shop in the City Center Mall
+! Variables used:
+! photographyEv = Track shop progression through buying a camera
+!	0 = First visit
+!	1 = Return visitor, but have not bought camera
+!	2 = Bought camera, unlocks portfolio sharing
+! photography_job = Track progression through job events
+! photojob_daystart = Track when job last accepted - only allowed one job per week
+if $ARGS[0] = 'start':
+	$loc = 'shop_photography'
+	$loc_arg = 'start'
+	$location_type = 'public_indoors'
+	cls
+	menu_off = 0
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">Camera & Photography Store</font></b></center>'
+	'<center><img src="images/locations/city/citycenter/mall/photoshop/shop.jpg"></center>'
+	'The shop is dedicated to Camera''s and is celebrating this fact by displaying a myriad of them along every wall. A singular counter sits just off the adjacent wall with the shopkeeper standing behind it, clearly eager for some trade to enter his shop.'
+
+	if photography_job >= 1 and week >= 6:
+		act 'Ask about work':
+			*clr & cla
+			minut += 10
+			gs 'stat'
+			'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+			if photography_job = 1:
+				dynamic $photojob[1]
+				'You walk up to Branko. "Excuse me Branko but you said before you might have some work for me. Would you happen to have anything?"'
+				'He smiles wide to you. "Yes yes, I remember. Let me check." He opens a laptop sitting on the counter next to him. He taps on the keys for a bit before he finally looks up at you. "Yes I do have a job, the Tank and <<$photojob_description>>. I will pay you two thousand rubles, with a bonus if you do very good work. It has to be done today, if you are interested."'
+				act 'Decline the assignment':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+					'You shake your head. "Sorry I can''t, I have other things already planned this weekend. Maybe next weekend?"'
+					'He nods in understanding. "I understand, but I am afraid that won''t be happening next week, but check with me next weekend and I might have something else."'
+					'You smile to him. "Ok thanks I will check back with you next week." With that you leave the store.'
+					act 'Leave':
+						cla
+						minut += 3
+						gt 'torgcentr'
+					end
+				end
+				act 'Take the assignment':
+					*clr & cla
+					gs 'stat'
+					'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+					'You can''t help smiling and feeling excited. You first paying gig as a photographer. "Yes I would love to, just tell me where I have to go."'
+					'He smiles even more. "Excellent!" He prints out a page and hands it to you. "Ok here is where it is and a list of the photo''s I need. When you finish up come give the representative the SD card. I will transfer your pay to your account."'
+					'You smile to him. "Thank you, I will go there now." With that you leave the store.'
+					act 'Go to work': gt 'shop_photography' , 'photojob'
+				end
+			else
+				'You walk up to Branko. "Excuse me Branko but do you have more work for me?"'
+				if photography_job < ARRSIZE('$photojob'):
+					'He smiles wide to you. "Let me check." He opens a laptop sitting on the counter next to him. He taps on the keys for a bit before he finally looks up at you. "Yes I do have a job, the pay will be the same as before. It has to be done today, if you are interested."'
+					act 'Whats the assignment': gt 'shop_photography' , 'work'
+				else
+					'He smiles wide to you. "Let me check." He opens a laptop sitting on the counter next to him. He taps on the keys for a bit before he finally looks up at you, frowning. "Sorry, I don''t have any work for you right now. Try again next weekend, maybe?"'
+					act 'Leave':
+						cla
+						minut += 3
+						gt 'torgcentr'
+					end
+				end
+			end
+		end
+	end
+	if photographyEv = 2 and photography_job = 0:
+		act 'Show Portfolio': gt 'shop_photography' , 'showportfolio'
+	end
+	act 'Talk to Shopowner':
+		*clr & cla
+		minut += 10
+		gs 'stat'
+		if photographyEv = 0:
+			!!first time in shop:
+			photographyEv = 1
+			'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+			'"Hello there Shop Patron! Whats your name?" The friendly man behind the counter says.'
+			'"<<$pcs_firstname>>" You tell him.'
+			'"Well nice to meet you, <<$pcs_firstname>>. You look like the sort of person who would be interested in a quality camera. In fact, judging by the sort of person I see before me, I have just the camera right here; that would be perfect for you, only 20,000₽!"'
+			*nl
+			'"Well I have been thinking of getting into photography, it might be worth it..." You tell him and then he launches into a long conversation about what all you can do and the joys you can have with a camera. He talks about what all the camera in question he is trying to sell you can do, along with all it''s features. It does sound like the perfect camera for someone that is serious about getting into photography, but is that you?'
+			gs 'shop_photography', 'camera_options', 'first'
+		elseif photographyEv = 1:
+			!!returning to shop without buying camera:
+			'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+			'The owner smiles when he sees you. "Aha! I remember you! <<$pcs_firstname>>! How fantastic it is that you should return to my shop! Have you changed your mind about buying a camera?"'
+			gs 'shop_photography', 'camera_options', 'repeat'
+		else
+			'The owner smiles when he sees you. "Aha! I remember you! <<$pcs_firstname>>! How fantastic it is that you should return to my shop! How are you getting on with your recent purchase? Brilliantly I hope! I know what I see and I see brilliance before me so it can only be that you would get on brilliantly!"'
+			act 'Walk away': gt 'shop_photography' , 'start'
+		end
+	end
+	act 'Leave':
+		*clr & cla
+		minut += 3
+		gt 'torgcentr'
+	end
+end
+
+if $ARGS[0] = 'camera_options':
+	if money >= 20000:
+		act 'Purchase DSLR Camera for 20000₽ (with Cash)' : gt 'shop_photography' , 'buycamera' , 'cash'
+	elseif karta >= 20000:
+		act 'Purchase DSLR Camera for 20000₽ (with Card)' : gt 'shop_photography' , 'buycamera' , 'card'
+	else 
+		act 'Can''t afford camera':
+			*clr & cla
+			minut += rand(1,2)
+			gs 'stat'
+			'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+			if $ARGS[1] = 'first':
+				'You consider it a moment. You would love to buy it but you know you don''t have enough money for it right now. "Maybe some other time, I can''t really afford it. Thank you for taking your time to explain things to me, I think I will be back when I can afford it." You tell him.'
+				'He smiles. "It was my pleasure young lady and I hope to see you soon."'
+			else
+				'You consider it a moment. You would love to buy it but you know you don''t have enough money for it right now. "I would love to, I still can''t afford it though. I am saving up to buy it. Hopefully soon." You tell him.'
+				'He smiles. "Well best of luck, feel free to look around if you like." You spend a little time looking at all the camera''s and accessories you can''t really afford.'
+			end
+			act 'Leave':
+				cla
+				minut += 3
+				gt 'torgcentr'
+			end
+		end
+	end
+	act 'Don''t buy camera':
+		*clr & cla
+		minut += rand(1,2)
+		gs 'stat'
+		'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+		if $ARGS[1] = 'first':
+			'You consider it a moment. But decided you are not positive you want to get into photography. "Maybe some other time, but thank you for taking your time to explain things to me." You tell him.'
+			'He smiles. "It was my pleasure young lady if you change your mind you know where to find me."'
+		else
+			'You still don''t know if you want to get into photography. "Maybe some other time, I just wanted to look around a bit." You tell him.'
+			'He smiles. "Of course of course, look around all you like young lady, but if you change your mind you know where to find me."'
+		end
+		
+		act 'Leave':
+			cla
+			minut += 3
+			gt 'torgcentr'
+		end
+	end
+end
+
+if $ARGS[0] = 'buycamera':
+	*clr & cla
+	minut += rand(1,2)
+	if $ARGS[1] = 'cash':
+		money -= 20000
+	elseif $ARGS[1] = 'card':
+		karta -= 20000
+	end
+	photographyEv = 2
+	gs 'stat'
+	'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+	'"You have made a momentous decision with this purchase! Here is your very own DSLR Camera to do anything from professional commissioned photography to personal snaps of small events. And now that I have launched your photographic crusade to enlightenment, what are you indeed planning to use this opportunity for in this world of possibility?"'
+	*nl
+	'"I am thinking of just building a portfolio of pictures for now; something to test how I can build up my ability to frame a scene. Maybe by going all around the area with my Photographers Eye Mode set and looking for pictures to take and build a catalog of photographs which I will keep in my Journal."'
+	*nl
+	'"Fantastic!  Brilliant! Tell you what; when you have completed your portfolio then bring it in as I would love to see it! Now go! I release you into this new world of possibility."'
+	act 'Walk away': gt 'shop_photography' , 'start'
+end
+
+if $ARGS[0] = 'showportfolio':
+	*clr & cla
+	minut += 15
+	gs 'stat'
+	'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+	if pcs_photoskl <= 35:
+		'"Ah, your portfolio, by all means I would love to peruse through it!"'
+		'"Mmmm.... not bad. You have some natural talent but you still need to learn how to use lighting better and your angles. Yes yes you have some good raw talent but you still need more experience. Come back to me when you can, I would love to see you grow into the amazing photographer I know you can be."'
+		*nl
+		'"Yes yes, when you get more experience I might have a fantastic business opportunity for you! You see, in addition to the Camera shop you see before you I also do a side business in Commissioned Photography and from what I have seen in you, you might just be the person I am looking for; you will be paid of course! But first practice, practice practice."'
+		*nl
+		'You frown a little, at least he likes your work some. Maybe he is right, all you need to do is work a bit more at it. "Alright I will. I will keep practicing and when I feel I have improved I will return."'
+	elseif pcs_photoskl <= 50:
+		photography_job = 1
+		'"Ah, your portfolio, by all means I would love to peruse through it!"'
+		'"Mmmm.... these photographs are good. You have a real eye, with a little more practice you will become a very skilled photographer."'
+		*nl
+		'"You shall call me Branko, for I have a fantastic business opportunity for you! You see, in addition to the Camera shop you see before you I also do a side business in Commissioned Photography and from what I have seen in you you are the perfect person to help me with some additional work. There will be no pressure, just visit my beautiful shop on the weekends and I will let you know if there is any photography jobs you can do for me; you will be paid of course!"'
+		*nl
+		'"Wow, that sounds interesting, sure I will visit whenever I can!"'
+	elseif pcs_photoskl <= 75:
+		photography_job = 1
+		'"Ah, your portfolio, by all means I would love to peruse through it!"'
+		'"Mmmm.... these photographs are terrific. Sensational, absolutely sensational."'
+		*nl
+		'"You shall call me Branko, for I have a fantastic business opportunity for you! You see, in addition to the Camera shop you see before you I also do a side business in Commissioned Photography and from what I have seen in you you are the perfect person to help me with some additional work. There will be no pressure, just visit my beautiful shop and I will let you know if there is any photography jobs you can do for me; cash in hand of course!"'
+		*nl
+		'"Wow, that sounds interesting, sure I will visit whenever I can!"'
+	else
+		photography_job = 1
+		'"Ah, your portfolio, by all means I would love to peruse through it!"'
+		'"Mmmm.... My god... these are simply breath taking my dear, just breath taking. I don''t think I have ever meet anyone with as much potential as you in my life, with a little more seasoning you could become one of the all time great photographers of our time."'
+		*nl
+		'"You shall call me Branko, for I have a fantastic business opportunity for you! You see, in addition to the Camera shop you see before you I also do a side business in Commissioned Photography and from what I have seen in you you are the perfect person to help me with some additional work. There will be no pressure, just visit my beautiful shop and I will let you know if there is any photography jobs you can do for me; you will be paid of course!"'
+		*nl
+		'"Wow, that sounds interesting, sure I will visit whenever I can!"'
+	end
+	act 'Walk away': gt 'shop_photography' , 'start'
+end
+
+if $ARGS[0] = 'work':
+	*clr & cla
+	minut += 10
+	gs 'stat'
+	'<center><img src="images/locations/city/citycenter/mall/photoshop/owner.jpg"></center>'
+	dynamic $photojob[photography_job]
+	'You can''t help smiling and feeling excited. Yet another paying job as a photographer. "Yes I would love to, just tell me what you have."'
+	'He smiles even more. "Excellent! I need photos of <<$photojob_description>>" He prints out a page and hands it to you. "Ok here is where it is and a list of the photo''s I need. When you finish up come back here to give me the photo''s and of course to get paid."'
+	'You smile to him. "Thank you, I will go there now." With that you leave the store.'
+	act 'Go to work': gt 'shop_photography' , 'photojob'
+end
+
+if $ARGS[0] = 'photojob':
+	*clr & cla
+	photography_job += 1
+	photojob_daystart = daystart
+	! Prevent taking a new job on the sunday following today
+	if week = 6: photojob_daystart += 1
+	minut += rand(1,2)
+	gs 'stat'
+	$loc = $photojob_loc
+	$loc_arg = $photojob_loc_arg
+	gt 'shop_photography', $photojob_ev
+end
+
+! Call at the end of each photo job event to tidy up
+if $ARGS[0] = 'photojob_cleanup':
+	KILLVAR '$photojob_shortname'
+	KILLVAR '$photojob_description'
+	KILLVAR '$photojob_loc'
+	KILLVAR '$photojob_loc_arg'
+	KILLVAR '$photojob_ev'
+end
+
+if $ARGS[0] = 'photojob_pay':
+	photoskl_exp += rand(1,50)
+	gs 'stat'
+	photopay = 2000
+	if pcs_photoskl > 125:
+		photopay += 4000
+	elseif pcs_photoskl > 100:
+		photopay += 2500
+	elseif pcs_photoskl > 75:
+		photopay += 1500
+	elseif pcs_photoskl > 50:
+		photopay += 1000
+	end
+	money += photopay
+	gs 'stat'
+end
+
+! Array of photography jobs - additional events should be easy to wire up
+$photojob[1] = {
+	$photojob_shortname = 'Tank'
+	$photojob_description = 'Tank and Bazooka Experience Day in Levingrad Oblast'
+	$photojob_loc = 'city_industrial'
+	$photojob_loc_arg = ''
+	$photojob_ev = 'phototank'
+}
+
+$photojob[2] = {
+	$photojob_shortname = 'Model'
+	$photojob_description = 'Newspaper Commision at Petrovskaya Akvatoria'
+	$photojob_loc = 'shop_photography'
+	$photojob_loc_arg = 'start'
+	$photojob_ev = 'photomodel'
+}
+
+$photojob[3] = {
+	$photojob_shortname = 'Wedding'
+	$photojob_description = 'Wedding at Yelagin Palace'
+	$photojob_loc = 'city_residential'
+	$photojob_loc_arg = ''
+	$photojob_ev = 'photowedding'
+}
+
+$photojob[4] = {
+	$photojob_shortname = 'Motorsport'
+	$photojob_description = 'Russian Touring Car Championship Event at St. Petersburg Autodrome'
+	$photojob_loc = 'city_industrial'
+	$photojob_loc_arg = ''
+	$photojob_ev = 'photomotorsport'
+}
+
+$photojob[5] = {
+	$photojob_shortname = 'Court'
+	$photojob_description = 'Press Event at City Courthouse'
+	$photojob_loc = 'shop_photography'
+	$photojob_loc_arg = 'start'
+	$photojob_ev = 'photocourt'
+}
+
+if $ARGS[0] = 'phototank':
+	*clr & cla
+	minut += 20
+	gs 'stat'
+	'<center><img src="images/characters/shared/37.jpg"></center>'
+	'You head over to the Industrial Region where you quickly meet up with your contact at the Experience Center.'
+	'"Hi there; you must be <<$pcs_firstname>>. The group is already on their way to the site so I''ll take you up there in my car. I am sure you know everything you will need to do but feel free to ask if you have any queries"'
+	'You get in the car and ride for nearly half a hour until you reach the location of the Experience Center. Once there the representative parks the car, you get out and head inside.'
+	act 'Go to the Experience Center':
+		*clr & cla
+		minut += rand(120,150)
+		photoskl_exp += rand(6,10)
+		gs 'stat'
+		gs 'shop_photography', 'photojob_pay'
+		'<center><img src="images/pc/activities/photography/job/tank.jpg"></center>'
+		'You arrive at the Experience Center and spend the next two hours taking as many pictures of the experience as you can. The group is clearing enjoying the event; some getting rides in Military Vehicles across rough terrain and some getting to fire off rocket launchers at the firing range!'
+		*nl
+		'Once the day is over you remove your SD card and hand it to the contact you met at the beginning who shows the photo''s to the quests that was part of your group, once they have sorted out whether any of the customers want additional copies. Your contact then takes you back to St. Petersburg and drops you off at the Industrial Region. When you check your account you see you were paid <<photopay>>.'
+		gs 'shop_photography', 'photojob_cleanup'
+		act 'Return': gt $loc, $loc_arg
+	end
+end
+
+if $ARGS[0] = 'photomodel':
+	*clr & cla
+	minut += rand(60,90)
+	photoskl_exp += rand(3,5)
+	gs 'stat'
+	gs 'shop_photography', 'photojob_pay'
+	'<center><img src="images/pc/activities/photography/job/model.jpg"></center>'
+	'You go to the Petrovskaya Akvatoria Model Museum to take pictures of the various exhibits on behalf of an international newspaper.'
+	'After a brief introduction to a member of staff to confirm your activities here you walk around the exhibit, taking a large number of photographs so that the article has a wealth to choose from.'
+	'Once completed you return to the photoshop and hand the full SD card to Branko who provides your fee of <<photopay>>₽.'
+	gs 'shop_photography', 'photojob_cleanup'
+	act 'Return' : gt $loc, $loc_arg
+end
+
+if $ARGS[0] = 'photowedding':
+	*clr & cla
+	minut += rand(10,18)
+	gs 'stat'
+	'<center><img src="images/characters/shared/18.jpg"></center>'
+	'You head over to the Residential District where you meet one of the family members of the betrothed.'
+	'"Hello, you must be the photographer! If you follow me then I will take you to the happy couple to take the pictures of them."'
+	act 'Follow them':
+		*clr & cla
+		minut += rand(90,120)
+		photoskl_exp += rand(6,10)
+		gs 'stat'
+		gs 'shop_photography', 'photojob_pay'
+		'<center><img src="images/pc/activities/photography/job/wedding.jpg"></center>'
+		'You meet the couple who are getting married and help direct them into a number of framed situations for you to take some beautiful photo''s of them together.'
+		'Once you have enough you spend the rest of the event in the background taking a number of photo''s of the entire event. Once it is all over you meet back up with the relative who takes the SD card from you.'
+		'Leaving them to close up the venue you walk out back into the Residential District. When you check your account you see you were paid <<photopay>>.'
+		gs 'shop_photography', 'photojob_cleanup'
+		act 'Return' : gt $loc, $loc_arg
+	end
+end
+
+if $ARGS[0] = 'photomotorsport':
+	*clr & cla
+	minut += rand(15,20)
+	gs 'stat'
+	'<center><img src="images/characters/shared/11.jpg"></center>'
+	'You head over to the Industrial Region and meet a representative of the Autodrome who will take you to racetrack and give you a VIP pass; there you will be expected to take pictures of the event and deliver them back to your contact at the track.'
+	'"Why hello there, you must be the person Branko said they would be sending. As I''m sure you know everything you have to do at the track I will give you this Press Pass and take you to the Autodrome!"'
+	'You look at the pass they gave you and confirm it is all legitimate then get into their car to be taken to the track.'
+	act 'Go to the Autodrome':
+		*clr & cla
+		minut += rand(180,240)
+		photoskl_exp += rand(9,15)
+		gs 'stat'
+		gs 'shop_photography', 'photojob_pay'
+		'<center><img src="images/pc/activities/photography/job/motorsport.jpg"></center>'
+		'You are dropped off at the Employee Entrance and directed to the Pit Area as the teams are getting their vehicles prepared.'
+		'You start off by getting lots of shots of the teams in the build-up to the race; showcasing the tension and focus as the countdown approaches zero.'
+		'When the race itself starts you roam the track, taking pictures of any event as it happens on the track; getting high intensity shots of fast paced action as well as the smooth professionalism of the leading drivers. All in all it is a fantastic experience.'
+		*nl
+		'With your job done you find your contact again and hand them a full SD card for which they gratified.'
+		'Your contact then takes you back to St. Petersburg and drops you off at the Industrial Region. When you check your account you see you were paid <<photopay>>.'
+		gs 'shop_photography', 'photojob_cleanup'
+		act 'Return' : gt $loc, $loc_arg
+	end
+end
+
+if $ARGS[0] = 'photocourt':
+	*clr & cla
+	minut += 60
+	photoskl_exp += rand(3,5)
+	gs 'stat'
+	gs 'shop_photography', 'photojob_pay'
+	'<center><img src="images/pc/activities/photography/job/court.jpg"></center>'
+	'head to the courthouse to take publicity photographs of the completed court session as they leave the building.  Then you can deliver them back to me to give you your commission.'
+	'You head into the City Center and straight to the Courthouse which has already seen a number of people turn up.'
+	'Once you have ingratiated yourself into the crowd you position yourself to take some good shots of the plaintiff accompanied by their lawyers and representatives.'
+	'With the verdict read you quickly make your way outside in front of the courthouse to take photos of him leaving the courthouse.'
+	'Once completed you return to the photo shot and hand the SD card to Branko who provides your fee of <<photopay>>₽.'
+	gs 'shop_photography', 'photojob_cleanup'
+	act 'Return' : gt $loc, $loc_arg
+end
+
+
+
+
+--- shop_photography ---------------------------------
+
