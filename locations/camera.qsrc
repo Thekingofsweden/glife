@@ -31,8 +31,8 @@ $camera_locations['gadforest'] = {
 $camera_locations['pav_complex'] = {
 	$camera_description = 'Pavlovsk Five Estates'
 	$camera_event = 'pav_complex'
-	$camera_return_loc = 'city_center'
-	$camera_return_loc_arg = ''
+	$camera_return_loc = 'pav_complex'
+	$camera_return_loc_arg = 'start'
 }
 
 $camera_locations['pav_train'] = {
@@ -74,11 +74,11 @@ $camera_locations['pav_church'] = {
 ! considering who to photograph. Also used by events that attempt to
 ! inject camera opportunities into existing locations
 $camera_people['mother'] = {
-	$camera_description = '<<$npc_nickname[''A29'']>>'
+	$camera_description = $npc_nickname['A29']
 	$camera_event = ''
 	$camera_return_loc = ''
 	$camera_return_loc_arg = ''
-	$camera_requirement = '$npc_rel[''A29''] >= 50'
+	$camera_requirement = (npc_rel['A29'] >= 50)
 }
 
 $camera_people['sister'] = {
@@ -86,7 +86,7 @@ $camera_people['sister'] = {
 	$camera_event = ''
 	$camera_return_loc = ''
 	$camera_return_loc_arg = ''
-	$camera_requirement = '($npc_rel[''A33''] >= 50)'
+	$camera_requirement = ($npc_rel['A33'] >= 50)
 }
 
 $camera_people['anushka'] = {
@@ -94,7 +94,7 @@ $camera_people['anushka'] = {
 	$camera_event = ''
 	$camera_return_loc = ''
 	$camera_return_loc_arg = ''
-	$camera_requirement = '($npc_rel[''A144''] >= 50)'
+	$camera_requirement = ($npc_rel['A144'] >= 50)
 }
 
 $camera_people['lazar'] = {
@@ -102,7 +102,7 @@ $camera_people['lazar'] = {
 	$camera_event = ''
 	$camera_return_loc = ''
 	$camera_return_loc_arg = ''
-	$camera_requirement = '($npc_rel[''A149''] >= 50)'
+	$camera_requirement = ($npc_rel['A149'] >= 50)
 }
 
 $camera_people['eugene'] = {
@@ -110,8 +110,9 @@ $camera_people['eugene'] = {
 	$camera_event = ''
 	$camera_return_loc = ''
 	$camera_return_loc_arg = ''
-	$camera_requirement = '(LCEugenefirst >= 1)'
+	$camera_requirement = (LCEugenefirst >= 1)
 }
+
 
 if $ARGS[0] = 'start':
 	*clr & cla
@@ -124,7 +125,7 @@ if $ARGS[0] = 'start':
 	if location_count > 0:
 		:location_loop
 		dynamic $camera_locations[iterator]
-		if $camera_found[$camera_event] = 0: '<<$camera_description>>'
+		if $camera_found[$camera_event] <> 1: '<<$camera_description>>'
 		iterator += 1
 		if iterator < location_count: jump 'location_loop'
 	end
@@ -134,16 +135,21 @@ if $ARGS[0] = 'start':
 	if people_count > 0:
 		:people_loop
 		dynamic $camera_people[iterator]
-		temp = DYNEVAL("result = <<$camera_requirement>>")
-		'DEBUG raw_req <<$camera_requirement>>'
-		'DEBUG req <<temp>>'
-		'DEBUG result <<result>>'
-		if $camera_found[$camera_event] = 0 and $temp = -1: '<<$camera_description>>'
+		if $camera_found[$camera_event] <> 1 and $camera_requirement = -1: '<<$camera_description>>'
 		iterator += 1
 		if iterator < people_count: jump 'people_loop'
 	end
 
 	act 'Put Camera away': gt $loc, $loc_arg
+end
+
+if $ARGS[0] = 'check_location':
+	if $camera_locations[$loc] <> 0:
+		dynamic $camera_locations[$loc]
+		if $camera_found[$camera_event] <> 1:
+			act 'Photograph the <<$camera_description>>': gt 'camera', $camera_event
+		end
+	end
 end
 
 if $ARGS[0] = 'city_library':
