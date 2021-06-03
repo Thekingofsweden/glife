@@ -1,5 +1,12 @@
 # camera
 
+! $camera_locations is an array of dynamics that describe various camera event locations that a player can photograph.
+! The named index in $camera_locations should match the $loc name where a player may want to take a picture
+! Other variables:
+!	$camera_description = the text rendered in photo actions
+!	$camera_event = a named event in the camera location that has special handling for the location
+!	$camera_return_loc = the location the player should be returned to after the event
+!	$camera_return_loc_arg = argument for the location
 $camera_locations['city_library'] = {
 	$camera_description = 'City Library'
 	$camera_event = 'city_library'
@@ -7,7 +14,7 @@ $camera_locations['city_library'] = {
 	$camera_return_loc_arg = ''
 }
 
-$camera_locations['city_uni'] = {
+$camera_locations['city_island'] = {
 	$camera_description = 'University'
 	$camera_event = 'city_uni'
 	$camera_return_loc = 'city_island'
@@ -38,36 +45,36 @@ $camera_locations['pav_complex'] = {
 $camera_locations['pav_train'] = {
 	$camera_description = 'Pavlovsk Train Station'
 	$camera_event = 'pav_train'
-	$camera_return_loc = 'city_center'
-	$camera_return_loc_arg = ''
+	$camera_return_loc = 'pav_train'
+	$camera_return_loc_arg = 'start'
 }
 
-$camera_locations['pav_school'] = {
+$camera_locations['gschool_grounds'] = {
 	$camera_description = 'Pavlovsk School'
 	$camera_event = 'pav_school'
-	$camera_return_loc = 'city_center'
-	$camera_return_loc_arg = ''
+	$camera_return_loc = 'gschool_grounds'
+	$camera_return_loc_arg = 'main'
 }
 
 $camera_locations['pav_park'] = {
 	$camera_description = 'Pavlovsk Park'
 	$camera_event = 'pav_park'
-	$camera_return_loc = 'city_center'
-	$camera_return_loc_arg = ''
+	$camera_return_loc = 'pav_park'
+	$camera_return_loc_arg = 'start'
 }
 
-$camera_locations['pav_lake'] = {
+$camera_locations['glake'] = {
 	$camera_description = 'Pavlovsk Lake'
 	$camera_event = 'pav_lake'
-	$camera_return_loc = 'city_center'
+	$camera_return_loc = 'glake'
 	$camera_return_loc_arg = ''
 }
 
-$camera_locations['pav_church'] = {
+$camera_locations['ParChurch'] = {
 	$camera_description = 'Pavlovsk Church'
 	$camera_event = 'pav_church'
-	$camera_return_loc = 'city_center'
-	$camera_return_loc_arg = ''
+	$camera_return_loc = 'ParChurch'
+	$camera_return_loc_arg = 'start'
 }
 
 ! People that should show up when the player is looking at her camera
@@ -120,11 +127,15 @@ if $ARGS[0] = 'start':
 	'You can''t help but smile as you check your camera. You love capturing life as it happens, but sometimes it is hard to decided exactly what you want to take photo''s of.'
 	'You spend a few moments thinking about places and people that might make for interesting photographs. Perhaps...'
 	*nl
+	! Get the number of locations in the array
 	location_count = ARRSIZE('$camera_locations')
 	iterator = 0
+	! For every location
 	if location_count > 0:
 		:location_loop
+		! Assign the variables
 		dynamic $camera_locations[iterator]
+		! Show the player unphotographed locations
 		if $camera_found[$camera_event] <> 1: '<<$camera_description>>'
 		iterator += 1
 		if iterator < location_count: jump 'location_loop'
@@ -132,9 +143,12 @@ if $ARGS[0] = 'start':
 	*nl
 	people_count = ARRSIZE('$camera_people')
 	iterator = 0
+	! For every person in the array
 	if people_count > 0:
 		:people_loop
+		! Assign the variables
 		dynamic $camera_people[iterator]
+		! If the subject has not been photographed and requirements are met (-1), show the name
 		if $camera_found[$camera_event] <> 1 and $camera_requirement = -1: '<<$camera_description>>'
 		iterator += 1
 		if iterator < people_count: jump 'people_loop'
@@ -144,10 +158,22 @@ if $ARGS[0] = 'start':
 end
 
 if $ARGS[0] = 'check_location':
-	if $camera_locations[$loc] <> 0:
+	! If the player has a camera and this location exists in the array
+	if photographyEv >= 2 and $camera_locations[$loc] <> 0:
+		! Assign the variables
 		dynamic $camera_locations[$loc]
+		! If they have not already photographed the location
 		if $camera_found[$camera_event] <> 1:
-			act 'Photograph the <<$camera_description>>': gt 'camera', $camera_event
+			! Offer the action
+			act 'Photograph the <<$camera_description>>':
+				$camera_found[$camera_event] = 1
+				$loc = $camera_return_loc
+				$loc_arg = $camera_return_loc_arg
+				gt 'camera', $camera_event
+			end
+		! If they photographed the lake but did not trigger the sonia conditions, offer her
+		elseif $camera_event = 'pav_lake' and $camera_found['sonia'] <> 1 and sunWeather = 1 and soniaPS > 0:
+			gs 'camera', 'pav_lake_sonia', 'describe'
 		end
 	end
 end
@@ -267,67 +293,71 @@ if $ARGS[0] = 'pav_lake':
 	gs 'stat'
 	'<center><img src="images/pc/activities/photography/sveta_camera.jpg"></center>'
 	'As you look out over the lake you realize what a wonderful photo this place would make. You walk around the shore looking through the camera several times until you find just the perfect spot. You take several photos, then you pause and check them. Happy with your results you know you have something to add to your portfolio.'
-	if soniaPS > 0
-	!!and if weather is nice enough
+	if soniaPS > 0 and sunWeather = 1:
 		'Just as you are about ready to put your camera away, you notice a girl sunbathing topless. It takes you a moment to realize it is Sonia, she appears to be alone. You wonder if she would make a good subject to photograph, a take on how innocents can get lost in a cruel world.'
-	act 'Put Camera away': gt $loc, $loc_arg
-	!!this will take the player to pav lake
-	if soniaPS > 0
-		act 'Take Sonia''s photograph':
+		gs 'camera', 'pav_lake_sonia'
+	else
+		act 'Put Camera away': gt $loc, $loc_arg
+	end
+end
+!!this will put the pav_lake image in the portfolio
+
+if $ARGS[0] = 'pav_lake_sonia':
+	if $ARGS[1] = 'describe': 'You notice a girl sunbathing topless. It takes you a moment to realize it is Sonia, she appears to be alone. You wonder if she would make a good subject to photograph, a take on how innocents can get lost in a cruel world.'
+	act 'Take Sonia''s photograph':
+		*clr & cla
+		minut += 5
+		$camera_found['sonia'] = 1
+		photoskl_exp += rand(3,5)
+		gs 'stat'
+		'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo1.jpg"></center>'
+		'You get a little closer to her and then start taking her photograph, you move around and take a couple of photo''s from different places and angles. It seems you made to much noise as she suddenly sits up partial and looks your direction.'
+		act 'Caught':
 			*clr & cla
-			minut += 5
+			minut += 2
 			photoskl_exp += rand(3,5)
 			gs 'stat'
-			'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo1.jpg"></center>'
-			'You get a little closer to her and then start taking her photograph, you move around and take a couple of photo''s from different places and angles. It seems you made to much noise as she suddenly sits up partial and looks your direction.'
-			act 'Caught':
+			'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo2.jpg"></center>'
+			'She covers herself up and looks at you in surprise. "What the fuck <<$pcs_nickname>>! What are you doing?"'
+			'You smile and take another photo of her. "Sorry I was just taking your photo, you was just so beautiful I couldn''t help myself."'
+			'She smiles a bit at the compliment. "Really?"'
+			'You nod as you take another photo of her. "Yes, now won''t don''t you get up and stop covering up." You tell her.'
+			'She smiles even more. "Ok but just a few." Then she gets up to her knee''s and removes her hands from covering herself up. Now giving you a nice shot of her topless body.'
+			act 'Take more photo''s':
 				*clr & cla
-				minut += 2
+				minut += 5
 				photoskl_exp += rand(3,5)
 				gs 'stat'
-				'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo2.jpg"></center>'
-				'She covers herself up and looks at you in surprise. "What the fuck <<$pcs_nickname>>! What are you doing?"'
-				'You smile and take another photo of her. "Sorry I was just taking your photo, you was just so beautiful I couldn''t help myself."'
-				'She smiles a bit at the compliment. "Really?"'
-				'You nod as you take another photo of her. "Yes, now won''t don''t you get up and stop covering up." You tell her.'
-				'She smiles even more. "Ok but just a few." Then she gets up to her knee''s and removes her hands from covering herself up. Now giving you a nice shot of her topless body.'
+				'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo3.jpg"></center>'
+				'At first she is a bit awkward, seeming not knowing what to do. But as you take more photo''s she starts to relax and become more natural in her poses for you. Eventually she even starts to get into herself and enjoy it.'
 				act 'Take more photo''s':
 					*clr & cla
 					minut += 5
 					photoskl_exp += rand(3,5)
 					gs 'stat'
-					'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo3.jpg"></center>'
-					'At first she is a bit awkward, seeming not knowing what to do. But as you take more photo''s she starts to relax and become more natural in her poses for you. Eventually she even starts to get into herself and enjoy it.'
-					act 'Take more photo''s':
+					'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo4.jpg"></center>'
+					'As you take even more photo''s she starts teasing you by pulling on her bottoms, not enough to show off her pussy but almost. While her hands run along her body or play with her breasts as you take more photo''s of her.'
+					'You can''t help but smile and see how far she wants to go you tell her. "Come on loose the bottoms, you know you want too."'
+					act 'No bottoms':
 						*clr & cla
 						minut += 5
 						photoskl_exp += rand(3,5)
 						gs 'stat'
-						'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo4.jpg"></center>'
-						'As you take even more photo''s she starts teasing you by pulling on her bottoms, not enough to show off her pussy but almost. While her hands run along her body or play with her breasts as you take more photo''s of her.'
-						'You can''t help but smile and see how far she wants to go you tell her. "Come on loose the bottoms, you know you want too."'
-						act 'No bottoms':
+						'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo5.jpg"></center>'
+						'She grins and then unties her bottoms from one hip, which lets the bottoms partially fall off her, exposing her pussy. You take more photo''s as she pulls the other tie loose and her bottoms fall completely away.'
+						act 'Naked':
 							*clr & cla
 							minut += 5
 							photoskl_exp += rand(3,5)
 							gs 'stat'
-							'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo5.jpg"></center>'
-							'She grins and then unties her bottoms from one hip, which lets the bottoms partially fall off her, exposing her pussy. You take more photo''s as she pulls the other tie loose and her bottoms fall completely away.'
-							act 'Naked':
-								*clr & cla
-								minut += 5
-								photoskl_exp += rand(3,5)
-								gs 'stat'
-								'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo6.jpg"></center>'
-								'With her now completely naked you keep taking photo''s of her and start getting a lot closer to her as you. The longer it goes on the more turned on she seems to get, eventually she starts playing with her pussy as you take her photographs. Finally haven taken several dozen photo''s you feel you have taken enough and stop taking her photographs. "Thanks Sonia, I got what I needed."'
-								'For a moment she frowns then bobs her head slightly and smiles. "It was my pleasure, I really liked it." Then she hesitantly adds. "Maybe we can do it again sometime?" For a moment sounding more like her shy sweet former self before she feel into becoming the school slut.'
-								'You feel bad for her, you know almost no one just talks to her anymore. "Yeah sure, I would like that."'
-								'She breaks into a huge smile and looks happier than you have seen her in some time. "Ok just let me know or maybe just stop by my house and we can do more photo''s."'
-								'You nod to her. "I will, but for now I got all I need. So I will let you get back to sunbathing. Thanks again." With that you put your camera away and start to walk off, as you do you she starts to get dressed and you hear her say. "Bye."'
-								!!this will put sonia image in portfolio
-								act 'Leave': gt $loc, $loc_arg
-								!!go to pav lake
-							end
+							'<center><img src="images/characters/pavlovsk/school/girls/sonia/lake/photography/photo6.jpg"></center>'
+							'With her now completely naked you keep taking photo''s of her and start getting a lot closer to her as you. The longer it goes on the more turned on she seems to get, eventually she starts playing with her pussy as you take her photographs. Finally haven taken several dozen photo''s you feel you have taken enough and stop taking her photographs. "Thanks Sonia, I got what I needed."'
+							'For a moment she frowns then bobs her head slightly and smiles. "It was my pleasure, I really liked it." Then she hesitantly adds. "Maybe we can do it again sometime?" For a moment sounding more like her shy sweet former self before she feel into becoming the school slut.'
+							'You feel bad for her, you know almost no one just talks to her anymore. "Yeah sure, I would like that."'
+							'She breaks into a huge smile and looks happier than you have seen her in some time. "Ok just let me know or maybe just stop by my house and we can do more photo''s."'
+							'You nod to her. "I will, but for now I got all I need. So I will let you get back to sunbathing. Thanks again." With that you put your camera away and start to walk off, as you do you she starts to get dressed and you hear her say. "Bye."'
+							!!this will put sonia image in portfolio
+							act 'Leave': gt $loc, $loc_arg
 						end
 					end
 				end
@@ -335,7 +365,7 @@ if $ARGS[0] = 'pav_lake':
 		end
 	end
 end
-!!this will put the pav_lake image in the portfolio
+
 
 --- camera ---------------------------------
 
