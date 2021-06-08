@@ -1,0 +1,284 @@
+# rasputin_host
+
+if $ARGS[0] = 'start':
+	music_loop = 0
+	CLOSE ALL
+	$menu_loc = 'rasputin_host'
+	$menu_arg = 'start'
+	menu_off = 0
+	$loc_arg = 'start'
+	$loc = 'rasputin_host'
+	$location_type = 'public_indoors'
+	gs 'stat'
+
+	if $ARGS[1] = 1:
+		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_1.jpg"></center>'
+
+		'Nadia waits with a warm smile.'
+		'"Is there anything else I can help you with <<$pcs_firstname>>?"'
+	elseif rasputin['hostEv'] = 0:
+		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_1.jpg"></center>'
+
+		'There is a woman sits on a chair with a glass of wine in hand and lost in her thoughts.'
+		'She returns to alertness when she realizes she isn''t alone and gives you a welcoming smile.'
+	else
+		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_1.jpg"></center>'
+
+		'Nadia notices as you walk into the club. She smiles and greets you with a warm smile.'
+		'"Hello, <<$pcs_firstname>>, how can I help you today?"'
+	end
+
+	act	'Applogize for the intrusion and return to the entrance':
+		minute += 1
+		gt 'rasputin_entrance'
+	end
+
+	if rasputin['hostEv'] = 0:
+		act	'Ask her about this place':
+
+			rasputin['hostEv'] = 1
+			*clr & cla
+			'<center>Unknown Woman</center>'
+			'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_2.jpg"></center>'
+			'You ask the woman after you introduce yourself. "Excuse me, would you mind tell me a little bit about this place?"'
+			'The woman''s eyes light up and she takes few steps closer to you.'
+			'She smiles then answers your question.'
+			'Of course, "PC_name". I am Nadia Titova but you can call me Nadia. What would you like to know?'
+
+			act 'Nothing':
+				*clr & cla
+				'<center>Nadia Titova</center>'
+				'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_2.jpg"></center>'
+				'You tell Nadia that you couldn''t actually think anything to ask.'
+				'She chuckles and patiently waits for you to decide what to do next.'
+
+				act	'Return to entrance':
+					minute += 1
+					gt 'rasputin_entrance'
+				end
+			end
+			gs 'rasputin_host', 'options'
+		end
+	else
+		gs 'rasputin_host', 'options'
+	end
+end
+
+if $ARGS[0] = 'options':
+
+	act 'About the shows':
+		minute += 1
+		*clr & cla
+		gs 'stat'
+		'<center>Nadia Titova</center>'
+		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_2.jpg"></center>'
+		'You ask Nadia about the shows Rasputin offers.'
+		'"We have the burlesque shows that starts at 6:30 and runs about 2 hours with an intermission."'
+		'"Then from 10:00 to midnight we have the exotic variety shows, you need to be at least 16 to see these shows."'
+		'She finishes with a wink. You found yourself blushing pink for a moment.'
+
+		act	'Okay':
+			minute += 1
+			gt 'rasputin_host', 'start', 1
+		end
+	end
+
+
+!!	act 'About employment':
+!!		'<center>Nadia Titova</center>'
+!!		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_2.jpg"></center>'
+!!		'You ask Nadia about any job openings.'
+!!		'Nadia gives out a heartily laugh before she answers you.'
+!!		'"We''re always looking for more help. Are you interested?"'
+
+!!		act	'No'
+!!			'You shake your head and Nadia simply shrugs and waiting to see if yo have any other question.'
+!!			minute	+= 1
+!!			gt 'rasputin_host', 'start', 1
+!!		end
+
+!!		act	'Yes'
+!!			'You tell her that you are interested and want to learn more.'
+!!			'Nadia smiles and tell you to follow her'
+
+!!			act	'Okay'
+!!				minute 	+= 1
+!!				gt rasputin_employment
+!!				rasputin_hostEv = 1
+!!			end
+!!		end
+!!	end
+
+	act 'About buying a ticket':
+		menu_off = 1
+		gs 'stat'
+		*clr & cla
+		'<center>Nadia Titova</center>'
+		'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_3.jpg"></center>'
+		'You tell Nadia that you want to purchase ticket for a show.'
+		'"Oh really? Of course, what shows would you be interested to see?"'
+		'"3000 rubles for the burlesque show and 4000 rubles for the exotic variety show"'
+
+		act	'I changed my mind':
+			*clr & cla
+			'<center>Nadia Titova</center>'
+			'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_3.jpg"></center>'
+			'You tell Nadia you will think on it more, she shrugs off and waits for your response.'
+			minute	+= 1
+			gt 'rasputin_host', 'start', 1
+		end
+
+		if rasputin['burlesque_ticket'] = 0:
+			act	'For the burlesque show, please':
+				*clr & cla
+				'<center>Nadia Titova</center>'
+				'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_3.jpg"></center>'
+				'You tell Nadia that you would like to buy a ticket for a burlesque show.'
+
+				if pc_money < 3000 and pc_bank < 3000:
+					cla
+					*nl
+					gs 'stat'
+					'You realize that you don''t have enough money to buy any ticket.'
+					'Nadia nods and tell you that Rasputin isn''t going any where before flash you another smile.'
+					minute += 1
+					act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+				else
+					if pc_money >= 3000:
+						act 'Pay in cash':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her the cash for the burlesque show.'
+							'"Sure, the shows starts at 6:30 but we start to admit customers at 5:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_cash - 3000
+							rasputin['burlesque_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+
+					if pc_bank >= 3000:
+						act 'Pay with card':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her your credit card to be charged for the show.'
+							'"Sure, the shows starts at 6:30 but we start to admit customers at 5:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_bank - 3000
+							rasputin['burlesque_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+				end
+			end
+		end
+
+		if rasputin['variety_ticket'] = 0:
+			act	'For the variety show, please':
+				*clr & cla
+				'<center>Nadia Titova</center>'
+				'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_3.jpg"></center>'
+				'You tell Nadia that you would like to buy a ticket for an exotic variety show.'
+
+				if pc_money < 4000 and pc_bank < 4000:
+					cla
+					*nl
+					minute += 1
+					gs 'stat'
+					'You realize that you don''t have enough money to buy any ticket.'
+					'Nadia nods and tell you that Rasputin isn''t going any where before flash you another smile.'
+					act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+				else
+
+					if pc_money >= 4000:
+						act 'Pay in cash':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her the cash to buy the ticket.'
+							'"Sure, the shows starts at 10:30 but we start to admit customers at 9:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_cash - 4000
+							rasputin['variety_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+
+					if pc_bank >= 4000:
+						act 'Pay with card':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her your credit card to be charged for the ticket.'
+							'"Sure, the shows starts at 10:30 but we start to admit customers at 9:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_bank - 4000
+							rasputin['variety_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+				end
+			end
+		end
+
+		if rasputin['burlesque_ticket'] = 0 and rasputin['variety_ticket'] = 0:
+			act	'For both shows, please':
+				*clr & cla
+				'<center>Nadia Titova</center>'
+				'<center><img <<$set_imgh>> src="images/locations/pushkin/rasputin/nadia_3.jpg"></center>'
+				'You tell Nadia that you would like to buy tickets for both shows.'
+
+				if pc_money < 7000 and pc_bank < 7000:
+					cla
+					*nl
+					gs 'stat'
+					'You realize that you don''t have enough money to buy any ticket.
+					Nadia nods and tell you that Rasputin isn''t going any where before flash you another smile.'
+					minute += 1
+					act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+				else
+					if pc_money >= 7000:
+						act 'Pay in cash':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her the cash to buy the ticket.'
+							'"Sure, the first show starts at 6:30 but we start to admit customers at 5:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_cash - 7000
+							rasputin['burlesque_ticket'] = 1
+							rasputin['variety_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+
+					if pc_bank >= 7000:
+						act 'Pay with card':
+							cla
+							*nl
+							gs 'stat'
+							'You hand her your credit card to be charged for the tickets.'
+							'"Sure, the shows starts at 6:30 but we start to admit customers at 5:30."'
+							'"Thank you!" Nadia smiles back as she hands you the ticket.'
+							minute += 1
+							pc_bank - 7000
+							rasputin['burlesque_ticket'] = 1
+							rasputin['variety_ticket'] = 1
+							act	'Smile back and walk back to the entrance': gt 'rasputin_entrance'
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+--- rasputin_host ---------------------------------
+
