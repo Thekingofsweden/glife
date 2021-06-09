@@ -8,6 +8,306 @@ elseif moodTypeRand >= 4:
 	$moodType = 'good'
 end
 
+!! saunawork start ---------------------------------------------------------------------------------
+
+if $ARGS[0] = 'saunawork':
+	$loc = 'city_saunawhore'
+	$loc_arg = 'saunawork'
+	$locBroom = 'city_saunawhore'
+	$metkaBroom = 'saunawork'
+	$locM = 'city_saunawhore'
+	$locM_arg = 'saunawork'
+	$location_type = 'public_indoors'
+	menu_off = 0
+	saunaYouRoom = 1
+
+	if paymamka = 0:paymamka = 300
+	if workDolg > 0:paymamka = 300
+	if workDolg <= 0:paymamka = 500
+
+	gs 'stat'
+	'<center><b><font color="maroon">Sauna</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/sauna1.jpg"></center>'
+	''
+	'The sauna is open between 08:00 and 24:00. Only in that time customers can arrive.'
+	'All the walls are covered in <a href="exec:gt ''mirror'', ''start''">mirrors</a>.'
+
+	if saunaWorkNow = 1:
+		saunaWorkNow = 0
+		money -= paymamka
+		'Nurse cames to you and takes from you <<paymamka>> per customer.'
+	end
+
+	gs 'city_saunawhore','debtPay'
+	if workDolg > 0:'Your debt is <<workDolg>> <b>₽</b>'
+
+	gs 'stat'
+
+	if workDolg <= 0:act 'Leave':gt 'city_sauna'
+
+	act 'Go to your room':gt 'city_sauna', 'saunaroom'
+
+	act 'Use the staff bathroom': minut += 1 & gt 'city_saunawhore', 'bathroom'
+
+	if workDolg > 0 and (pcs_mood <= 10 or SLomka > 0):
+		cls
+		workDolg += 420
+		gs 'stat'
+		'You are beckoned by the nurse. "Hey, come here."'
+		'You go up to her and she demands your bared arm. You present your arm as required and she takes out a syringe filled with drugs. "Sit still, I''ll give you a shot now and it will make you feel like normal again."'
+
+		act 'Leave':
+			gs 'drugs', 'heroin'
+			minut += 10
+			gs 'stat'
+			gt 'city_saunawhore', 'saunawork'
+		end
+		exit
+	end
+	if workDolg <= 0 and pcs_mood <= 50 and SaunaWhore > 0 and money >= 420:
+		act 'Ask for some drugs (420 <b>₽</b>)':
+			cls
+			menu_off = 1
+			gs 'stat'
+			'You are beckoned by the nurse. "OK, come here."'
+			'You go up to her and she asks for your bared arm. You present your arm and she takes out a syringe filled with drugs. "Sit still, I''ll give you a shot now and it will make you feel like normal again."'
+
+			act 'Leave':
+				gs 'drugs', 'heroin'
+				minut += 10
+				money -= 420
+				gt 'city_saunawhore', 'saunawork'
+			end
+		end
+	end
+
+	if cumcondslip > 0 and cumcondslip_aware > 0:
+		act 'Ask to see a doctor':
+			cla
+			*clr
+			minut += 25
+			menu_off = 1
+			gs 'stat'
+			'You explain how you feel nauseous and have pain in your pubic area.'
+			'The nurse checks you over and eventually comes to a conclusion.'
+			'"I think it might be toxic shock, we''ll have to get you sorted out. Wait here I''ll call the doctor."'
+			act 'Some time later':
+				cla
+				minut += 15
+				gs 'cum_cleanup', 'cleanloc', 17
+				cumcondslip = 0
+				gs 'stat'
+				'When he arrives the doctor quickly examines you, and establishes that you are suffering from toxic shock from a spent condom in your body.'
+				'"I removed it as soon as I found it. If you were feeling sick, it should slowly subside."'
+				'You reflexively thank the Doctor even though he''s visiting you in this place.'
+
+				act 'Return':gt 'city_saunawhore', 'saunawork'
+			end
+		end
+	end
+
+	if hour >= 8:
+		act 'Sit on the couch (1:00)':
+			if pcs_makeup > 1 and pcs_hairbsh = 1 and pcs_sweat < 26 and pcs_leghair <= 3 and pcs_pubes <= 3:
+				cls
+				minut += 60
+				menu_off = 1
+				gs 'stat'
+				'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/saunawork.jpg"></center>'
+				'You spend an hour sitting on the couch waiting for customers.'
+
+				saunaWorkKlient = 0
+
+				if hour >= 21:
+					if rand(0, 100) >= 10:saunaWorkKlient = 1
+				elseif hour >= 16:
+					if rand(0, 100) >= 20:saunaWorkKlient = 1
+				elseif hour >= 12:
+					if rand(0, 100) >= 40:saunaWorkKlient = 1
+				elseif hour >= 8:
+					if rand(0, 100) >= 80:saunaWorkKlient = 1
+				else
+					if rand(0, 100) >= 40:saunaWorkKlient = 1
+				end
+
+				if saunaWorkKlient = 1:
+					cls
+					gs 'stat'
+					'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/saunawhore.jpg"></center>'
+					'A client has arrived at the sauna, and the girls line up so that the customer can choose his favorite.'
+
+					if rand(0, 120) < pcs_apprnc:
+						'Client jabs a finger at you, "This one."'
+						act 'Go to the sauna with client':
+							saunaWorkKlient = 1
+							guy += 1
+							slutty += 1
+							SaunaWhore += 1
+							menu_off = 1
+							gt 'city_saunawhore', 'clientGate'
+						end
+					else
+						'The client examines you closely but turns away to chose another girl.'
+
+						act 'Continue':gt 'city_saunawhore', 'saunawork'
+					end
+				else
+					'The client chooses another girl and she leads him to one of the back rooms.'
+
+					act 'Continue':gt 'city_saunawhore', 'saunawork'
+				end
+			else
+				cla
+				'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and with your hair looking nice. Go and sort yourself out, now!"'
+				act 'Leave':gt 'city_saunawhore', 'saunawork'
+			end
+		end
+	end
+
+	if clenerSauna ! daystart:
+		act 'Clean toilets (1:00)':
+			cla
+			*clr
+			minut += 60
+			clenerSauna = daystart
+			pcs_mood -= 25
+			menu_off = 1
+			gs 'sweat', 'add', 30
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/office/clener2.jpg"></center>'
+			if workDolg > 0:
+				'You scrub the sauna toilets for an hour until they shine and reducing your debt by 100 <b>₽</b>.'
+				workDolg -= 100
+			else
+				'You scrub the sauna toilets for an hour until they shine. You get payed 100 <b>₽</b> for your hard work.'
+				money += 100
+			end
+
+			act 'Leave':gt 'city_saunawhore', 'saunawork'
+		end
+	end
+
+	if clenerSauna2 ! daystart:
+		act 'Scrub floors (1:00)':
+			cla
+			*clr
+			menu_off = 1
+			minut += 60
+			clenerSauna2 = daystart
+			pcs_mood -= 25
+			gs 'stat'
+			'<center><img <<$set_imgh>> src="images/locations/city/residential/office/clener1.jpg"></center>'
+			if workDolg > 0:
+				'You spend an hour mopping and scrubbing all the floors and reducing your debt by 100 <b>₽</b>.'
+				workDolg -= 100
+			else
+				'You spend an hour mopping and scrubbing all the floors. You get payed 100 <b>₽</b> for your hard work.'
+				money += 100
+			end
+
+			gs 'sweat', 'add', 30
+
+
+			act 'Leave':gt 'city_saunawhore', 'saunawork'
+		end
+	end
+
+	if npc_QW['A113'] = 1 and workDolg <= 0 and belgangPay <= 0:
+		cla & *clr
+		menu_off = 0
+		gs'stat'
+		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+		'As you enter the sauna you see a familiar face. It''s Vadim Bely standing there with his brother. "Good news little whore, you''ve finally paid off your debt. You''re free to do whatever you want now."'
+		'You look at him with hate-filled eyes, "Do you know what you put me through here? You''re the most despicable man I''ve ever met in my life."'
+		'Vadim starts laughing loudly, "Choose you words carefully girl. I''m still in control of your future, maybe you haven''t payed off your debt yet?"'
+		'Not wanting to escalate the situation, you look down on the floor, "I''m sorry. I should know my place."'
+		'"Good girl, now that you''re free wanna go party with us to celebrate your freedom?"'
+		act 'No, thanks':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
+			'"No, I''m sorry but I just want to go home... Maybe some other time."'
+			'Vadim looks at you with a serious look, "You''re lucky I''m in a good mood today. I''ll let it slide this time." he says laughing.'
+			'You quickly gather your stuff before he has a change of heart and step outside the sauna.'
+			npc_QW['A113'] = 2
+
+			act 'Leave':gt 'city_residential'
+		end
+	end
+end
+
+if $ARGS[0] = 'bathroom':
+	$loc = 'city_saunawhore'
+	$loc_arg = 'bathroom'
+	$locM = 'city_saunawhore'
+	$locM_arg = 'bathroom'
+	$location_type = 'bathroom'
+	menu_off = 0
+
+	*clr & cla
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/shared/brothel/brothelshower.jpg"></center>'
+	''
+	'You enter the staff bathroom, which is usually cleaned by the girls that have only just started work here, voluntary or otherwise.'
+	'There is a <a href="exec:gt ''mirror'', ''start''">mirror</a>, where you can ' + iif(pcs_hairbsh = 0,'<a href="exec:gt ''mirror'',''brush''">brush</a>','brush') + ' your hair, a shower, toilet, and basin.'
+
+	act 'Return to foyer': minut += 1 & gt 'city_saunawhore', 'saunawork'
+
+	act 'Take a shower (0:15)':
+		cls
+		minut += 15
+		menu_off = 1
+		gs 'stat'
+		dynamic $showerdin
+		'<center><h3>Staff Bathroom</h3></center>'
+		'<center><img <<$set_imgh>> src="images/locations/shared/brothel/brothelshower.jpg"></center>'
+		''
+		'After taking off all of your clothes, you gather up your towel, washcloth and soap, then head to the shower. You wash yourself thoroughly to be as clean as possible for potential customers.'
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+		if workDolg > 0:
+			if stanok <= 0: stanok = 5
+			dynamic $brit
+		elseif workDolg = 0 and stanok > 0:
+			dynamic $brit
+		end
+		dynamic $dryOff
+	end
+
+	if workDolg > 0 and stanok > 0:
+		*nl
+		'You have a handful of cheap razors you can use, enough for <<stanok>> shaves. <a href="exec:gs ''din_van'', ''shave_options''">Shave Options</a>'
+		dynamic $brit
+	elseif workDolg > 0 and stanok = 0:
+		*nl
+		'You have <<stanok>> razors left. You should go to your room and ask for more razors.'
+	elseif workDolg <= 0 and stanok > 0:
+		*nl
+		'Your current pack of razors will last for <b><<stanok>></b> more shaves. <a href="exec:gs ''din_van'', ''shave_options''">Shave Options</a>'
+		dynamic $brit
+	elseif workDolg = 0 and stanok = 0:
+		*nl
+		'You have <<stanok>> razors left. You should to go to the store and buy more razors.'
+	end
+	gs 'din_van', 'prvt_pee'
+	dynamic $enema
+	dynamic $tampon
+	dynamic $quickwash
+	dynamic $bteeth
+	dynamic $basin
+	if breastpump > 0 and bp_unbox >= 1:
+		act 'Use breast pump' :gt 'lact_bp', 'bp_milking'
+	end
+end
+
+if $ARGS[0] = 'debtPay':
+	if money > workDolg:
+		money -= workDolg
+		workDolg = 0
+	elseif workDolg > money:
+		workDolg -= money
+		money = 0
+	end
+end
+
 if $ARGS[0] = 'clientGate':
 
 	if rand(0,19) = 0:gt 'city_saunawhore', 'bdsmclient'
@@ -131,6 +431,7 @@ if $ARGS[0] = 'clientGate':
 	end
 
 	minut += 5
+	gs 'stat'
 
 	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/room.jpg"></center>'
 	'You lead the client into your room, closing the door behind him.'
@@ -139,7 +440,6 @@ if $ARGS[0] = 'clientGate':
 	if dick >= 16:'From the bulge in his pants, you can tell he probably has <<$dick_girth>> dick.'
 	'He seems to be in a <<$moodType>> mood.'
 
-	gs 'stat'
 	if $clothingworntype = 'nude':
 		if pcs_inhib < 40:
 			inhib_exp += rand(2,4)
@@ -808,292 +1108,6 @@ if $ARGS[0] = 'clientLeave':
 	end
 end
 
-!! saunawork start ---------------------------------------------------------------------------------
-
-if $ARGS[0] = 'saunawork':
-	$loc = 'city_saunawhore'
-	$loc_arg = 'saunawork'
-	$locBroom = 'city_saunawhore'
-	$metkaBroom = 'saunawork'
-	$locM = 'city_saunawhore'
-	$locM_arg = 'saunawork'
-	$location_type = 'public_indoors'
-	saunaYouRoom = 1
-
-	if paymamka = 0:paymamka = 300
-	if workDolg > 0:paymamka = 300
-	if workDolg <= 0:paymamka = 500
-
-	gs 'stat'
-	'<center><b><font color="maroon">Sauna</font></b></center>'
-	'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/sauna1.jpg"></center>'
-	''
-	'The sauna is open between 08:00 and 24:00. Only in that time customers can arrive.'
-	'All the walls are covered in <a href="exec:gt ''mirror'', ''start''">mirrors</a>.'
-
-	if saunaWorkNow = 1:
-		saunaWorkNow = 0
-		money -= paymamka
-		'Nurse cames to you and takes from you <<paymamka>> per customer.'
-	end
-
-	gs 'city_saunawhore','debtPay'
-	if workDolg > 0:'Your debt is <<workDolg>> <b>₽</b>'
-
-	gs 'stat'
-
-	if workDolg <= 0:act 'Leave':gt 'city_sauna'
-
-	act 'Go to your room':gt 'city_sauna', 'saunaroom'
-
-	act 'Use the staff bathroom': minut += 1 & gt 'city_saunawhore', 'bathroom'
-
-	if workDolg > 0 and (pcs_mood <= 10 or SLomka > 0):
-		cls
-		workDolg += 420
-		gs 'stat'
-		'You are beckoned by the nurse. "Hey, come here."'
-		'You go up to her and she demands your bared arm. You present your arm as required and she takes out a syringe filled with drugs. "Sit still, I''ll give you a shot now and it will make you feel like normal again."'
-
-		act 'Leave':
-			gs 'drugs', 'heroin'
-			minut += 10
-			gs 'stat'
-			gt 'city_saunawhore', 'saunawork'
-		end
-		exit
-	end
-	if workDolg <= 0 and pcs_mood <= 50 and SaunaWhore > 0 and money >= 420:
-		act 'Ask for some drugs (420 <b>₽</b>)':
-			cls
-			gs 'stat'
-			'You are beckoned by the nurse. "OK, come here."'
-			'You go up to her and she asks for your bared arm. You present your arm and she takes out a syringe filled with drugs. "Sit still, I''ll give you a shot now and it will make you feel like normal again."'
-
-			act 'Leave':
-				gs 'drugs', 'heroin'
-				minut += 10
-				money -= 420
-				gt 'city_saunawhore', 'saunawork'
-			end
-			exit
-		end
-	end
-
-	if cumcondslip > 0 and cumcondslip_aware > 0:
-		act 'Ask to see a doctor':
-			cla
-			*clr
-			minut += 25
-			'You explain how you feel nauseous and have pain in your pubic area.'
-			'The nurse checks you over and eventually comes to a conclusion.'
-			'"I think it might be toxic shock, we''ll have to get you sorted out. Wait here I''ll call the doctor."'
-			act 'Some time later':
-				cla
-				minut += 15
-				gs 'cum_cleanup', 'cleanloc', 17
-				cumcondslip = 0
-				gs 'stat'
-				'When he arrives the doctor quickly examines you, and establishes that you are suffering from toxic shock from a spent condom in your body.'
-				'"I removed it as soon as I found it. If you were feeling sick, it should slowly subside."'
-				'You reflexively thank the Doctor even though he''s visiting you in this place.'
-
-				act 'Return':gt 'city_saunawhore', 'saunawork'
-			end
-		end
-	end
-
-	if hour >= 8:
-		act 'Sit on the couch (1:00)':
-			if pcs_makeup > 1 and pcs_hairbsh = 1 and pcs_sweat < 26 and pcs_leghair <= 3 and pcs_pubes <= 3:
-				cls
-				minut += 60
-				gs 'stat'
-				'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/saunawork.jpg"></center>'
-				'You spend an hour sitting on the couch waiting for customers.'
-
-				saunaWorkKlient = 0
-
-				if hour >= 21:
-					if rand(0, 100) >= 10:saunaWorkKlient = 1
-				elseif hour >= 16:
-					if rand(0, 100) >= 20:saunaWorkKlient = 1
-				elseif hour >= 12:
-					if rand(0, 100) >= 40:saunaWorkKlient = 1
-				elseif hour >= 8:
-					if rand(0, 100) >= 80:saunaWorkKlient = 1
-				else
-					if rand(0, 100) >= 40:saunaWorkKlient = 1
-				end
-
-				if saunaWorkKlient = 1:
-					cls
-					gs 'stat'
-					'<center><img <<$set_imgh>> src="images/locations/city/residential/sauna/saunawhore.jpg"></center>'
-					'A client has arrived at the sauna, and the girls line up so that the customer can choose his favorite.'
-
-					if rand(0, 120) < pcs_apprnc:
-						'Client jabs a finger at you, "This one."'
-						act 'Go to the sauna with client':
-							saunaWorkKlient = 1
-							guy += 1
-							slutty += 1
-							SaunaWhore += 1
-							gt 'city_saunawhore', 'clientGate'
-						end
-					else
-						'The client examines you closely but turns away to chose another girl.'
-
-						act 'Continue':gt 'city_saunawhore', 'saunawork'
-					end
-				else
-					'The client chooses another girl and she leads him to one of the back rooms.'
-
-					act 'Continue':gt 'city_saunawhore', 'saunawork'
-				end
-			else
-				cla
-				'The brothel madam comes over to you and says, "Our customers expect you to be clean, shaven, made-up and with your hair looking nice. Go and sort yourself out, now!"'
-				act 'Leave':gt 'city_saunawhore', 'saunawork'
-			end
-		end
-	end
-
-	if clenerSauna ! daystart:
-		act 'Clean toilets (1:00)':
-			cla
-			*clr
-			minut += 60
-			clenerSauna = daystart
-			pcs_mood -= 25
-			gs 'sweat', 'add', 30
-			'<center><img <<$set_imgh>> src="images/locations/city/residential/office/clener2.jpg"></center>'
-			if workDolg > 0:
-				'You scrub the sauna toilets for an hour until they shine and reducing your debt by 100 <b>₽</b>.'
-				workDolg -= 100
-			else
-				'You scrub the sauna toilets for an hour until they shine. You get payed 100 <b>₽</b> for your hard work.'
-				money += 100
-			end
-
-			act 'Leave':gt 'city_saunawhore', 'saunawork'
-		end
-	end
-
-	if clenerSauna2 ! daystart:
-		act 'Scrub floors (1:00)':
-			cla
-			*clr
-			minut += 60
-			clenerSauna2 = daystart
-			pcs_mood -= 25
-			'<center><img <<$set_imgh>> src="images/locations/city/residential/office/clener1.jpg"></center>'
-			if workDolg > 0:
-				'You spend an hour mopping and scrubbing all the floors and reducing your debt by 100 <b>₽</b>.'
-				workDolg -= 100
-			else
-				'You spend an hour mopping and scrubbing all the floors. You get payed 100 <b>₽</b> for your hard work.'
-				money += 100
-			end
-
-			gs 'sweat', 'add', 30
-
-
-			act 'Leave':gt 'city_saunawhore', 'saunawork'
-		end
-	end
-
-	if npc_QW['A113'] = 1 and workDolg <= 0 and belgangPay <= 0:
-		cla & *clr
-		'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
-		'As you enter the sauna you see a familiar face. It''s Vadim Bely standing there with his brother. "Good news little whore, you''ve finally paid off your debt. You''re free to do whatever you want now."'
-		'You look at him with hate-filled eyes, "Do you know what you put me through here? You''re the most despicable man I''ve ever met in my life."'
-		'Vadim starts laughing loudly, "Choose you words carefully girl. I''m still in control of your future, maybe you haven''t payed off your debt yet?"'
-		'Not wanting to escalate the situation, you look down on the floor, "I''m sorry. I should know my place."'
-		'"Good girl, now that you''re free wanna go party with us to celebrate your freedom?"'
-		act 'No, thanks':
-			cla & *clr
-			'<center><img <<$set_imgh>> src="images/characters/pavlovsk/school/boy/fedor/fedorev/strela/vadimbely.jpg"></center>'
-			'"No, I''m sorry but I just want to go home... Maybe some other time."'
-			'Vadim looks at you with a serious look, "You''re lucky I''m in a good mood today. I''ll let it slide this time." he says laughing.'
-			'You quickly gather your stuff before he has a change of heart and step outside the sauna.'
-			npc_QW['A113'] = 2
-
-			act 'Leave':gt 'city_residential'
-		end
-	end
-end
-
-if $ARGS[0] = 'bathroom':
-	$loc = 'city_saunawhore'
-	$loc_arg = 'bathroom'
-	$locM = 'city_saunawhore'
-	$locM_arg = 'bathroom'
-	$location_type = 'bathroom'
-
-	*clr & cla
-	gs 'stat'
-	'<center><img <<$set_imgh>> src="images/locations/shared/brothel/brothelshower.jpg"></center>'
-	''
-	'You enter the staff bathroom, which is usually cleaned by the girls that have only just started work here, voluntary or otherwise.'
-	'There is a <a href="exec:gt ''mirror'', ''start''">mirror</a>, where you can ' + iif(pcs_hairbsh = 0,'<a href="exec:gt ''mirror'',''brush''">brush</a>','brush') + ' your hair, a shower, toilet, and basin.'
-
-	act 'Return to foyer': minut += 1 & gt 'city_saunawhore', 'saunawork'
-
-	act 'Take a shower (0:15)':
-		cls
-		minut += 15
-		gs 'stat'
-		dynamic $showerdin
-		'<center><h3>Staff Bathroom</h3></center>'
-		'<center><img <<$set_imgh>> src="images/locations/shared/brothel/brothelshower.jpg"></center>'
-		''
-		'After taking off all of your clothes, you gather up your towel, washcloth and soap, then head to the shower. You wash yourself thoroughly to be as clean as possible for potential customers.'
-		if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
-		if workDolg > 0:
-			if stanok <= 0: stanok = 5
-			dynamic $brit
-		elseif workDolg = 0 and stanok > 0:
-			dynamic $brit
-		end
-		dynamic $dryOff
-	end
-
-	if workDolg > 0 and stanok > 0:
-		*nl
-		'You have a handful of cheap razors you can use, enough for <<stanok>> shaves. <a href="exec:gs ''din_van'', ''shave_options''">Shave Options</a>'
-		dynamic $brit
-	elseif workDolg > 0 and stanok = 0:
-		*nl
-		'You have <<stanok>> razors left. You should go to your room and ask for more razors.'
-	elseif workDolg <= 0 and stanok > 0:
-		*nl
-		'Your current pack of razors will last for <b><<stanok>></b> more shaves. <a href="exec:gs ''din_van'', ''shave_options''">Shave Options</a>'
-		dynamic $brit
-	elseif workDolg = 0 and stanok = 0:
-		*nl
-		'You have <<stanok>> razors left. You should to go to the store and buy more razors.'
-	end
-	gs 'din_van', 'prvt_pee'
-	dynamic $enema
-	dynamic $tampon
-	dynamic $quickwash
-	dynamic $bteeth
-	dynamic $basin
-	if breastpump > 0 and bp_unbox >= 1:
-		act 'Use breast pump' :gt 'lact_bp', 'bp_milking'
-	end
-end
-
-if $ARGS[0] = 'debtPay':
-	if money > workDolg:
-		money -= workDolg
-		workDolg = 0
-	elseif workDolg > money:
-		workDolg -= money
-		money = 0
-	end
-end
 
 --- city_saunawhore ---------------------------------
 
