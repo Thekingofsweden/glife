@@ -145,32 +145,18 @@ end
 
 !!----------------------------------------end reaction block---------------------------------------------
 
-if week < 6:
-    if (hour = 8 and minut > 30 or hour >= 9) and hour < 17:
-        '"Alright <<$pcs_nickname>>. I need to leave for work now or i''ll be late. See you later."'
-        cla
-        act '<B>Continue</B>':gt $loc, $loc_arg
-        exit
-    end
+if week < 6 and ((hour = 8 and minut > 30) or hour >= 9) and hour < 17:
+	'"Alright <<$pcs_nickname>>. I need to leave for work now or i''ll be late. See you later."'
+	cla
+	act '<B>Continue</B>':gt $loc, $loc_arg
+	exit
+end
 
-    if hour >= 21:
-        '"Alright <<$pcs_nickname>>. It''s getting late, I need to get to bed. See you tomorrow."'
-        cla
-        act '<B>Continue</B>':gt $loc, $loc_arg
-        exit
-    end
-else
-	if hour >= 22:
-        '"Alright <<$pcs_nickname>>. It''s getting late, I need to get to bed. See you tomorrow."'
-        cla
-        act '<B>Continue</B>':gt $loc, $loc_arg
-        exit
-    elseif hour >= 16:
-        'Sorry <<$pcs_nickname>>, I have to go to the garage, got to get some more work done on the truck.'
-        cla
-        act '<B>Continue</B>':gt $loc, $loc_arg
-        exit
-    end
+if hour >= 22:
+    '"Alright <<$pcs_nickname>>. It''s getting late, I need to get to bed. See you tomorrow."'
+    cla
+    act '<B>Continue</B>':gt $loc, $loc_arg
+    exit
 end
 
 act 'Chat':
@@ -473,38 +459,40 @@ if (hour > 10 and week < 6) or week >= 6:
         end
     end
 
-    act 'Watch TV together':
-        *clr & cla
-		menu_off = 1
-        minut += 60
-        pcs_mood += rand(10,50)
-        gs 'stat'
-        '<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
-        '<center><img <<$set_imgh>> src="images/shared/home/telek.jpg"></center>'
+	if sdadloc = 10:
+		act 'Watch TV together':
+			*clr & cla
+			menu_off = 1
+			minut += 60
+			pcs_mood += rand(10,50)
+			gs 'stat'
+			'<center><B><font color=maroon>Your stepfather, Vladimir Mikhailovich Scriabin</font></B></center>'
+			'<center><img <<$set_imgh>> src="images/shared/home/telek.jpg"></center>'
 
-        dynamic $fatherRep
-        act 'Move away':gt $loc, $loc_arg
+			dynamic $fatherRep
+			act 'Move away':gt $loc, $loc_arg
 
-        if npc_rel['A28'] < 20:
-            gs 'dinfather', 'watchtv1'
-            exit
-        elseif npc_rel['A28'] >= 20 and npc_rel['A28'] < 40:
-            gs 'dinfather', 'watchtv2'
-            exit
-        elseif npc_rel['A28'] >= 40:
-            if pcs_apprnc + (npc_rel['A28']/10) <= 0:
-                gs 'dinfather', 'watchtv4'
-                exit
-            end
-            if pcs_apprnc + (npc_rel['A28']/10) > 60:
-                gs 'dinfather', 'watchtv4'
-                exit
-            end
-        end
-    end
+			if npc_rel['A28'] < 20:
+				gs 'dinfather', 'watchtv1'
+				exit
+			elseif npc_rel['A28'] >= 20 and npc_rel['A28'] < 40:
+				gs 'dinfather', 'watchtv2'
+				exit
+			elseif npc_rel['A28'] >= 40:
+				if pcs_apprnc + (npc_rel['A28']/10) <= 0:
+					gs 'dinfather', 'watchtv4'
+					exit
+				end
+				if pcs_apprnc + (npc_rel['A28']/10) > 60:
+					gs 'dinfather', 'watchtv4'
+					exit
+				end
+			end
+		end
+	end
 end
 
-if mother_go = 1 and hour = 16 and TouchedByFather = 1 and pcs_horny >= 50 or npc_sex['A28']!0 and mother_go = 1 and hour = 16:
+if sdadloc = 10 and momloc['athome'] = 0 and kolloc['athome'] = 0 and TouchedByFather = 1 and pcs_horny >= 50 or npc_sex['A28'] ! 0:
     act 'Seduce him':
 		menu_off = 1
         if npc_rel['A28'] < 20:
@@ -604,9 +592,9 @@ if $clothingworntype = 'nude':
             exit
         end
     else
-        if mother_go = 0:$mother_go_text = '"You really should go put some clothes on though, your mother is home."'
+        if momloc['athome'] = 1:$mother_go_text = '"You really should go put some clothes on though, your mother is home."'
             'His eyes never stop looking at your naked body, you can tell he''s very much impressed by your beauty as you walk around the room.<<$mother_go_text>>"'
-        if mother_go = 0:
+        if momloc['athome'] = 1:
             act 'Move away':gt 'bedrPar'
             exit
         end
@@ -630,7 +618,7 @@ end
 if npc_sex['A28']!0:fatherwantssex = rand(1,2)
 
 if $clothingworntype = 'nude': fatherwantssex = 1
-if npc_sex['A28']!0 and fatherwantssex = 1 and mother_go = 1 and hour = 16 and npc_rel['A28'] > 60:
+if npc_sex['A28']!0 and fatherwantssex = 1 and momloc['athome'] = 0 and kolloc['athome'] = 0 and npc_rel['A28'] > 60:
     *clr & cla
 	menu_off = 1
     gs 'stat'

@@ -1,12 +1,49 @@
 # fame
 
-!!For adding to the PC fame, the call will look a bit like so:
-!!gs 'fame', 'pav', 'dance', 5
-!!$ARGS [0] is for the location: pav, city or village
-!!$ARGS [1] is for the act that is adding to fame, listed below:
+!!For adding to the PC fame; using the following type of gosub call fame will be added,
+!!and the spread of fame over the regions will be taken care of:
+
+!!gs 'fame', 'location', 'act', 'value', 'local'
+
+!!$ARGS[0] is for the main location for the activity that gives the fame,
+!!remember that the algorithm below will take care of the spread of fame to the other locations, 
+!!so for a given event you need to decide which is the main location and call the gosub using this location.
+!!IMPORTANT do not call this gosub for different location for the same event, the algorithm will take care of the fame being added the other locations.
+!!The following locations are possible: pav, city, pushkin or village
+!!If it is something that is supposed to make the PC famous in all the locations use the location city.
+
+!!$ARGS[1] is for the act that is adding to fame, listed below:
 !!acting, dance, painting, music, ballet, modelling, porn, stripping, prostitute, sex, kickboxing, running, volleyball, chess, teaching
-!!ARGS[2] is the value of the increase and should be an integer, its hard to put a value on fame but lets go with:
-!! 1-5 for small regular stuff and 10-50 for things with big impact like modelling
+
+!!ARGS[2] is the value of the increase this can be an integer or one on the following keywords:
+!!Tiny (Adding a small amount of fame which even at low level of fame only will make the fame grow if the are performed daily)
+!!Small (Adding a small amount of fame, that at low level of fame will make the fame grow if done a couble times a week, but for medium levels of fame need to be done daily)
+!!Medium (Adding a medium amount of fame, that at low level of fame can make the fame grow if done once a week, and even at high levels can make the fame grow if done daily.)
+!!Large (Adding a large amount of fame which will make the fame grow fast at low level of fame, and even at high level of fame it will make the fame grow if performed a couple of times a week.)
+!!Huge (Adding a large amount of fame will increase the fame drastically at low levels of fame, make it grow if done weekly at high levels of fame and even keep the fame steady at extreme levels of fame.) 
+!!GoldMedal (Adding an extraordinary amount of fame, to be used for one time events or things that can be repeated very really, for example the PC winning the St. Burg championship in running or a talent competition in Pavlovsk.)
+!!SilverMedal (Adding an extraordinary amount of fame, used in the same way as GoldMedal above, but with the PC being the runner up instead of the winner.)
+!!BronzeMedal (Adding an extraordinary amount of fame, used in the same way as GoldMedal and SilverMedal above, but with the PC begin number 3.)
+
+!!ARGS[3] is an optional argument, which will make it so that the fame given do not spread to other locations. If ARGS[3] is not 'local' then the fame will be added so that is can spread to other regions.
+
+!!The different values of fame have the following interpretations:
+!! 0-100 not famous - no one knows you
+!! 100-200 some people know of you - if a porn star you are new and only hard core porn viewers of that niche is likely to know you
+!! 200-300 some people notice you - if a porn star you are new and only hard core porn viewers or those who are into the niche you are in would know you.
+!! 300-400 often recognised - most people who watch a lot of porn would recognize you.
+!! 400-500 Moderately famous - think Sasha Gray even a lot of people that do not watch porn know who she is.
+!! 500-700 Famous - actress in movies/tv but supporting roles in main stream tv and movies
+!! 700-1000 Very famous - has been a lead actress in main stream tv and movies
+!! Above 1000 A star - A list actress that gets top billing in their movies.
+
+!!To use the fame the call is fame['pav_dance']. Since 1000 is a soft cap on fame, DO NOT compare fame['pav_dance'] to a number higher than 1000.
+!!That is fame['pav_dance']> 1000 is fine but fame['pav_dance'] > 1050 should not be used.
+
+!!Sex and Prostitution fame is always local and will not spread to other locations. These are more of describing the PC reputation for these acts locally than actually being famous. 
+!!In particular they are the component the slut fame, which is used to determine how many npc will react to the pc base on rumours. 
+!!The sex in slut fame is for sexual encounters of a slutty nature, so things like public sex or being used for sex by the Gopniks.
+!!It is not for regular sex in a normal relationship and anything secret that can be subject to rumours.
 
 !!guide to values for slut fame
 !!talking about having sex/flirting in public = 1
@@ -18,8 +55,15 @@
 !!Sveta having cum on her face in public a = 4
 !!Sveta seen having sex = 5
 
-!!the sex in slut fame is for sexual encounters of a slutty nature, so things like public sex or being used for sex by the Gopniks.
-!!It is not for regular sex in a normal relationship and anything secret cannot be subject to rumours.
+
+!!Technical note: When gs 'fame', 'dance', 'pav' 5 is called it do not directly add 5 to fame['pav_dance'], but adds 5 to fame['pav_dance_core'] (or fame['pav_dance_local'] if the optional parameter 'local' is uesd)
+!!It then calculates fame['pav_dance'] using the variables fame['pav_dance_core'], fame['pav_dance_local'], fame['city_dance_core'], fame['pushkin_dance_core'] and fame['village_dance_core'].
+!!In particular, using the command fame['pav_dance'] += 5 will only add 5 to fame['pav_dance'] until the next time gs 'fame' is called, and then it will be forgotten. So don''t do this.
+!!Always use the gs 'fame', 'pav', 'dance' to add pav dance fame.
+
+!!Notice that fame['pav_dance'] and fame['pav_dance_core'] can never be a negative number, but fame['pav_dance_local'] can.
+!!This can be used to make fame in a location lower than it would be from spread of fame from other regions.
+!!For example if one would make a spell such that everybody in the village cannot remember Sveta is a model, then one could include a gs 'fame' 'village' 'modelling' -5000 'local', and then fame['village_modeling'] should always be 0.
 
 if $ARGS[0] = 'deg':
 !!degradation calculation applied overnight 
@@ -27,27 +71,48 @@ if $ARGS[0] = 'deg':
 
 	:famedegloop
 
-	if dyneval('RESULT = <<$fametown>>_acting') > 2: dynamic '<<$fametown>>_acting -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_dance') > 2: dynamic '<<$fametown>>_dance -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_painting') > 2: dynamic '<<$fametown>>_painting -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_music') > 2: dynamic '<<$fametown>>_music -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_ballet') > 2: dynamic '<<$fametown>>_ballet -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_modelling') > 2: dynamic '<<$fametown>>_modelling -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_acting_core'']') > 2: dynamic 'fame[''<<$fametown>>_acting_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_dance_core'']') > 2: dynamic 'fame[''<<$fametown>>_dance_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_painting_core'']') > 2: dynamic 'fame[''<<$fametown>>_painting_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_music_core'']') > 2: dynamic 'fame[''<<$fametown>>_music_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_ballet_core'']') > 2: dynamic 'fame[''<<$fametown>>_ballet_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_modelling_core'']') > 2: dynamic 'fame[''<<$fametown>>_modelling_core''] -= rand(-1,3)'
 
-	if dyneval('RESULT = <<$fametown>>_porn') > 2: dynamic '<<$fametown>>_porn -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_stripping') > 2: dynamic '<<$fametown>>_stripping -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_porn_core'']') > 2: dynamic 'fame[''<<$fametown>>_porn_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_stripping_core'']') > 2: dynamic 'fame[''<<$fametown>>_stripping_core''] -= rand(-1,3)'
 
-	if dyneval('RESULT = <<$fametown>>_sex') > 2: dynamic '<<$fametown>>_sex -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_prostitute') > 2: dynamic '<<$fametown>>_prostitute -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_sex'']') > 2: dynamic 'fame[''<<$fametown>>_sex''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_prostitute'']') > 2: dynamic 'fame[''<<$fametown>>_prostitute''] -= rand(-1,3)'
 
-	if dyneval('RESULT = <<$fametown>>_kickboxing') > 2: dynamic '<<$fametown>>_kickboxing -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_running') > 2: dynamic '<<$fametown>>_running -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_volleyball') > 2: dynamic '<<$fametown>>_volleyball -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_kickboxing_core'']') > 2: dynamic 'fame[''<<$fametown>>_kickboxing_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_running_core'']') > 2: dynamic 'fame[''<<$fametown>>_running_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_volleyball_core'']') > 2: dynamic 'fame[''<<$fametown>>_volleyball_core''] -= rand(-1,3)'
 
-	if dyneval('RESULT = <<$fametown>>_chess') > 2: dynamic '<<$fametown>>_chess -= rand(-1,3)'
-	if dyneval('RESULT = <<$fametown>>_teaching') > 2: dynamic '<<$fametown>>_teaching -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_chess_core'']') > 2: dynamic 'fame[''<<$fametown>>_chess_core''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_teaching_core'']') > 2: dynamic 'fame[''<<$fametown>>_teaching_core''] -= rand(-1,3)'
 
-	if dyneval('RESULT = <<$fametown>>_media') > 2: dynamic '<<$fametown>>_media -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_media_core'']') > 2: dynamic 'fame[''<<$fametown>>_media_core''] -= rand(-1,3)'
+
+
+
+	if dyneval('RESULT = fame[''<<$fametown>>_acting_local'']') > 2: dynamic 'fame[''<<$fametown>>_acting_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_dance_local'']') > 2: dynamic 'fame[''<<$fametown>>_dance_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_painting_local'']') > 2: dynamic 'fame[''<<$fametown>>_painting_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_music_local'']') > 2: dynamic 'fame[''<<$fametown>>_music_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_ballet_local'']') > 2: dynamic 'fame[''<<$fametown>>_ballet_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_modelling_local'']') > 2: dynamic 'fame[''<<$fametown>>_modelling_local''] -= rand(-1,3)'
+
+	if dyneval('RESULT = fame[''<<$fametown>>_porn_local'']') > 2: dynamic 'fame[''<<$fametown>>_porn_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_stripping_local'']') > 2: dynamic 'fame[''<<$fametown>>_stripping_local''] -= rand(-1,3)'
+
+	if dyneval('RESULT = fame[''<<$fametown>>_kickboxing_local'']') > 2: dynamic 'fame[''<<$fametown>>_kickboxing_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_running_local'']') > 2: dynamic 'fame[''<<$fametown>>_running_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_volleyball_local'']') > 2: dynamic 'fame[''<<$fametown>>_volleyball_local''] -= rand(-1,3)'
+
+	if dyneval('RESULT = fame[''<<$fametown>>_chess_local'']') > 2: dynamic 'fame[''<<$fametown>>_chess_local''] -= rand(-1,3)'
+	if dyneval('RESULT = fame[''<<$fametown>>_teaching_local'']') > 2: dynamic 'fame[''<<$fametown>>_teaching_local''] -= rand(-1,3)'
+
+	if dyneval('RESULT = fame[''<<$fametown>>_media_local'']') > 2: dynamic 'fame[''<<$fametown>>_media_local''] -= rand(-1,3)'
 
 
 	if $fametown = 'pav':
@@ -56,148 +121,596 @@ if $ARGS[0] = 'deg':
 	elseif $fametown = 'city':
 		$fametown = 'village'
 		jump 'famedegloop'
-	end
-else
-!!main fame calculation
-	dynamic '<<$ARGS[0]>>_<<$ARGS[1]>> += <<ARGS[2]>>'
-
-	fame_performer = 0
-	fame_sexind = 0
-	fame_slut = 0
-	fame_sport = 0
-	fame_int = 0
-	fame_social = 0
-	global_performer = 0
-	global_sexind = 0
-	global_slut = 0
-	global_sport = 0
-	global_int = 0
-	global_social = 0
-
-	$fametown = 'pav'
-
-	:fametownloop
-	dynamic '<<$fametown>>_performer = 0'
-	if dyneval('RESULT = <<$fametown>>_acting') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_acting)/3'
-	if dyneval('RESULT = <<$fametown>>_dance') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_dance)/3'
-	if dyneval('RESULT = <<$fametown>>_painting') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_painting)/3'
-	if dyneval('RESULT = <<$fametown>>_music') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_music)/3'
-	if dyneval('RESULT = <<$fametown>>_ballet') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_ballet)/3'
-	if dyneval('RESULT = <<$fametown>>_modelling') > 30: dynamic '<<$fametown>>_performer += (<<$fametown>>_modelling)/3'
-
-	dynamic '<<$fametown>>_sexind = 0'
-	if dyneval('RESULT = <<$fametown>>_porn') > 30: dynamic '<<$fametown>>_sexind += (<<$fametown>>_porn)/2'
-	if dyneval('RESULT = <<$fametown>>_stripping') > 30: dynamic '<<$fametown>>_sexind += (<<$fametown>>_stripping)/2'
-
-	dynamic '<<$fametown>>_slut = 0'
-	if dyneval('RESULT = <<$fametown>>_sex') > 30: dynamic '<<$fametown>>_slut += (<<$fametown>>_sex)/2'
-	if dyneval('RESULT = <<$fametown>>_prostitute') > 30: dynamic '<<$fametown>>_slut += (<<$fametown>>_prostitute)/2'
-
-	dynamic '<<$fametown>>_sport = 0'
-	if dyneval('RESULT = <<$fametown>>_kickboxing') > 30: dynamic '<<$fametown>>_sport += (<<$fametown>>_kickboxing)/3'
-	if dyneval('RESULT = <<$fametown>>_running') > 30: dynamic '<<$fametown>>_sport += (<<$fametown>>_running)/3'
-	if dyneval('RESULT = <<$fametown>>_volleyball') > 30: dynamic '<<$fametown>>_sport += (<<$fametown>>_volleyball)/3'
-
-	dynamic '<<$fametown>>_int = 0'
-	if dyneval('RESULT = <<$fametown>>_chess') > 30: dynamic '<<$fametown>>_int += (<<$fametown>>_chess)/2'
-	if dyneval('RESULT = <<$fametown>>_teaching') > 30: dynamic '<<$fametown>>_int += (<<$fametown>>_teaching)/3'
-
-	dynamic '<<$fametown>>_social = 0'
-	if dyneval('RESULT = <<$fametown>>_media') > 30: dynamic '<<$fametown>>_social += (<<$fametown>>_media)/2'
-
-	dynamic '<<$fametown>>_fame = 0'
-
-	if dyneval('RESULT = <<$fametown>>_performer') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_performer - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_performer') > 30:
-			dynamic 'global_performer += <<$fametown>>_performer - 30'
-		end
-	end
-	if dyneval('RESULT = <<$fametown>>_sexind') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_sexind - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_sexind') > 80:
-			dynamic 'global_sexind += <<$fametown>>_sexind - 80'
-		end
-	end
-	if dyneval('RESULT = <<$fametown>>_slut') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_slut - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_slut') > 80:
-			dynamic 'global_slut += <<$fametown>>_slut - 80'
-		end
-	end
-	if dyneval('RESULT = <<$fametown>>_sport') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_sport - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_sport') > 50:
-			dynamic 'global_sport += <<$fametown>>_sport - 50'
-		end
-	end
-	if dyneval('RESULT = <<$fametown>>_int') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_int - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_int') > 80:
-			dynamic 'global_int += <<$fametown>>_int - 80'
-		end
-	end
-	if dyneval('RESULT = <<$fametown>>_social') > 30:
-		dynamic '<<$fametown>>_fame += (<<$fametown>>_social - 30)/2'
-		if dyneval('RESULT = <<$fametown>>_social') > 20:
-			dynamic 'global_social += <<$fametown>>_social - 20'
-		end
-	end
-
-	if $fametown = 'pav':
-		$fametown = 'city'
-		jump 'fametownloop'
-	elseif $fametown = 'city':
-		$fametown = 'village'
-		jump 'fametownloop'
-	end
-
-	$fametown = 'pav'
-
-	:fametownloop2
-	if dyneval('RESULT = <<$fametown>>_performer') < global_performer/2: dynamic '<<$fametown>>_performer += global_performer/2'
-	if dyneval('RESULT = <<$fametown>>_sexind') < global_sexind/2: dynamic '<<$fametown>>_sexind += global_sexind/4'
-	if dyneval('RESULT = <<$fametown>>_slut') < global_slut/2: dynamic '<<$fametown>>_slut += global_slut/5'
-	if dyneval('RESULT = <<$fametown>>_sport') < global_sport/2: dynamic '<<$fametown>>_sport += global_sport/4'
-	if dyneval('RESULT = <<$fametown>>_int') < global_int/2: dynamic '<<$fametown>>_int += global_int/4'
-	if dyneval('RESULT = <<$fametown>>_social') < global_social/2: dynamic '<<$fametown>>_social += global_social/2'
-
-	if $fametown = 'pav':
-		$fametown = 'city'
-		jump 'fametownloop2'
-	elseif $fametown = 'city':
-		$fametown = 'village'
-		jump 'fametownloop2'
-	end
-	
-	if pav_slut < 25 :
-		$gnikname = ''
-	elseif pav_slut < 50 :
-        $gnikname = 'flirt'
-    elseif pav_slut < 75 :
-        $gnikname = 'tease'
-    elseif pav_slut < 100 :
-        $gnikname = 'minx'
-    elseif pav_slut < 125 :
-        $gnikname = 'vixen'
-    elseif pav_slut < 150 :
-        $gnikname = 'tempress'
-    elseif pav_slut < 175 :
-        $gnikname = 'cocklover'
-    elseif pav_slut < 200 :
-        $gnikname = 'boytoy'
-    elseif pav_slut < 225 :
-        $gnikname = 'slut'
-    elseif pav_slut < 250 :
-        $gnikname = 'nympho'
-    elseif pav_slut < 275 :
-        $gnikname = 'whore'
-    elseif pav_slut < 300 :
-        $gnikname = 'town bicycle'
-    else
-        $gnikname = 'cum dumpster'
+	elseif $fametown = 'village':
+		$fametown = 'pushkin'
+		jump 'famedegloop'
+	else
+		gs 'fame', 'calculate', 'acting'
+		gs 'fame', 'calculate', 'dance'
+		gs 'fame', 'calculate', 'painting'
+		gs 'fame', 'calculate', 'music'
+		gs 'fame', 'calculate', 'ballet'
+		gs 'fame', 'calculate', 'modelling'
+		gs 'fame', 'calculate', 'porn'
+		gs 'fame', 'calculate', 'stripping'
+		gs 'fame', 'calculate', 'kickboxing'
+		gs 'fame', 'calculate', 'running'
+		gs 'fame', 'calculate', 'volleyball'
+		gs 'fame', 'calculate', 'chess'
+		gs 'fame', 'calculate', 'teaching'
+		gs 'fame', 'calculate', 'media'
+		gs 'fame', 'calculateSlut'
 	end
 end
 
---- fame ---------------------------------
+if $ARGS[0] = 'city' or $ARGS[0] = 'pav' or $ARGS[0] = 'pushkin' or $ARGS[0] = 'village':
+!!addition of fame
 
+	if $ARGS[1] = 'sex' or $ARGS[1] = 'prostitute':
+	!!addition of sex and prostitution fame
+		if dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>'']') > 1000:
+			if $ARGS[2] = 'tiny':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += 0'			
+			elseif $ARGS[2] = 'small':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += 0'			
+			elseif $ARGS[2] = 'medium':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(0,1)'			
+			elseif $ARGS[2] = 'large':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,2)'			
+			elseif $ARGS[2] = 'huge':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,4)'			
+			elseif $ARGS[2] = 'goldmedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(35,45)'			
+			elseif $ARGS[2] = 'silvermedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(25,35)'			
+			elseif $ARGS[2] = 'bronzemedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(15,25)'			
+			else
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += (<<ARGS[2]>>)/10'
+			end
+		elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>'']') > 700:
+			if $ARGS[2] = 'tiny':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(0,1)'			
+			elseif $ARGS[2] = 'small':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,2)'			
+			elseif $ARGS[2] = 'medium':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,4)'			
+			elseif $ARGS[2] = 'large':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(6,12)'			
+			elseif $ARGS[2] = 'huge':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(10,24)'			
+			elseif $ARGS[2] = 'goldmedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(100,150)'			
+			elseif $ARGS[2] = 'silvermedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(60,100)'			
+			elseif $ARGS[2] = 'bronzemedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(25,60)'			
+			else
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += (<<ARGS[2]>>)/6'
+			end
+		elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>'']') > 400:
+			if $ARGS[2] = 'tiny':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,2)'			
+			elseif $ARGS[2] = 'small':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,4)'			
+			elseif $ARGS[2] = 'medium':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(6,12)'			
+			elseif $ARGS[2] = 'large':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(10,24)'			
+			elseif $ARGS[2] = 'huge':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(20,50)'			
+			elseif $ARGS[2] = 'goldmedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(150,200)'			
+			elseif $ARGS[2] = 'silvermedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(100,150)'			
+			elseif $ARGS[2] = 'bronzemedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(50,100)'			
+			else
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += (<<ARGS[2]>>)/3'
+			end
+		else
+			if $ARGS[2] = 'tiny':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(1,4)'			
+			elseif $ARGS[2] = 'small':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(6,12)'			
+			elseif $ARGS[2] = 'medium':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(10,24)'			
+			elseif $ARGS[2] = 'large':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(20,50)'			
+			elseif $ARGS[2] = 'huge':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(40,70)'			
+			elseif $ARGS[2] = 'goldmedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(350,450)'			
+			elseif $ARGS[2] = 'silvermedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(250,350)'			
+			elseif $ARGS[2] = 'bronzemedal':
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += rand(150,250)'			
+			else
+				dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] += <<ARGS[2]>>'
+			end
+		end
+		if dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>'']') < 0: dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>''] = 0'
+	
+		gs 'fame', 'calculateSlut'
+	!!main fame addition
+
+	else
+		if $ARGS[3] = 'local':
+			if dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local'']') > 1000:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += 0'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += 0'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(0,1)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,2)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,4)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(35,45)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(25,35)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(15,25)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += (<<ARGS[2]>>)/10'
+				end
+			elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local'']') > 700:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(0,1)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,2)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,4)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(6,12)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(10,24)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(100,150)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(60,100)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(25,60)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += (<<ARGS[2]>>)/6'
+				end
+			elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local'']') > 400:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,2)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,4)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(6,12)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(10,24)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(20,50)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(150,200)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(100,150)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(50,100)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += (<<ARGS[2]>>)/3'
+				end
+			else
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(1,4)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(6,12)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(10,24)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(20,50)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(40,70)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(350,450)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(250,350)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += rand(150,250)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_local''] += <<ARGS[2]>>'
+				end
+			end
+		else
+			if dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core'']') > 1000:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += 0'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += 0'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(0,1)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,2)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,4)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(35,45)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(25,35)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(15,25)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += (<<ARGS[2]>>)/10'
+				end
+			elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core'']') > 700:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(0,1)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,2)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,4)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(6,12)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(10,24)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(100,150)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(60,100)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(25,60)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += (<<ARGS[2]>>)/6'
+				end
+			elseif dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core'']') > 400:
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,2)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,4)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(6,12)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(10,24)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(20,50)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(150,200)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(100,150)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(50,100)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += (<<ARGS[2]>>)/3'
+				end
+			else
+				if $ARGS[2] = 'tiny':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(1,4)'			
+				elseif $ARGS[2] = 'small':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(6,12)'			
+				elseif $ARGS[2] = 'medium':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(10,24)'			
+				elseif $ARGS[2] = 'large':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(20,50)'			
+				elseif $ARGS[2] = 'huge':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(40,70)'			
+				elseif $ARGS[2] = 'goldmedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(350,450)'			
+				elseif $ARGS[2] = 'silvermedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(250,350)'			
+				elseif $ARGS[2] = 'bronzemedal':
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += rand(150,250)'			
+				else
+					dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] += <<ARGS[2]>>'
+				end
+			end
+		end
+		if dyneval('RESULT = fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core'']') < 0: dynamic 'fame[''<<$ARGS[0]>>_<<$ARGS[1]>>_core''] = 0'
+	
+		gs 'fame', 'calculate', '<<$ARGS[1]>>'	
+	end
+end
+	
+if $ARGS[0] = 'calculate':
+!! Calculates the fame after it has been modified.
+
+	!!First we calculate the value of fame taking the spread of fame from the different localtions into account.
+	!!The formulas generally works such that a little fame in one location do not effect the fame in other locations much, on the other hands if you start to become fameous in on location it will be noticed in the others.
+	!!Especially fame in the city will be dominating if it is high. If you are a star in the city you are a star everywhere. Fame in the village on the other hand is not noticed anywhere outside Gadukino.
+
+	!!First we calculate the contributions the fame in one plave will have in an other region. 
+
+	!!Fame from pav will spread slowly to the city, and since St. Petersburg is a very big city even being a star in pav will not get you very noticed in city.
+	if dyneval('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 2000: 
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_low''] = 525'
+	else 
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_low''] = 1050 - (42000000/((fame[''pav_<<$ARGS[1]>>_core'']/10)*(fame[''pav_<<$ARGS[1]>>_core'']/10) + 40000))' 
+	end
+
+	!! Fame in the pav will spread by the same level as fame from pav spread to old town. (The formula is +(fame_pushkin*(1050-525000000/(500000+(fame_pushkin/10)^4)))/1050
+	if dyneval('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 1005: 
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_high''] = 1005'
+	else 
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_high''] = (fame[''pav_<<$ARGS[1]>>_core'']*(1050 - 525000000/(500000 + (fame[''pav_<<$ARGS[1]>>_core'']/10)*(fame[''pav_<<$ARGS[1]>>_core'']/10)*(fame[''pav_<<$ARGS[1]>>_core'']/10)*(fame[''pav_<<$ARGS[1]>>_core'']/10))))/1050'
+	end
+	
+	!!The fame from pav takes even longer before it starts being noticed in the village, but after that it spread just as fast as from the city.
+	if dyneval('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 2000: 
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_medium''] = 1050'
+	elseif dyneval('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 400:
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_medium''] = 1050 - (672000000/((fame[''pav_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 - 40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 -40) +640000))' 
+	else
+		dynamic 'fame[''pav_<<$ARGS[1]>>_contribution_medium''] = 0'
+	end	
+	
+
+	!! Fame in the city will take alittle while before it start being noticed in other places. But the it will start spreading much faster than in the city. (The formula is +1050-52500000/(50000+(fame_city/10)^3 if the palyer si Sveta, but will spread a little slower for non Sveta starts using the formula +fame_city^2/1000)
+	if StoryLine = 1:
+		if dyneval('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 2000: 
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_high''] = 1050'
+		else 
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_high''] = 1050 - (52500000/((fame[''city_<<$ARGS[1]>>_core'']/10)*(fame[''city_<<$ARGS[1]>>_core'']/10)*(fame[''city_<<$ARGS[1]>>_core'']/10) +50000))' 
+		end
+	else
+		if dyneval('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 1000: 
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_high''] = 1000'
+		else
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_high''] = ((fame[''city_<<$ARGS[1]>>_core''])*(fame[''city_<<$ARGS[1]>>_core'']))/1000' 
+		end
+	end
+
+	!! Fame in the in city will spread spread to old town wit a little delay, but cath up as you rach star status. (The formula is +fame_city^2/1000)
+	if dyneval('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 1000: 
+		dynamic 'fame[''city_<<$ARGS[1]>>_contribution_medium''] = 1000'
+	else
+		dynamic 'fame[''city_<<$ARGS[1]>>_contribution_medium''] = ((fame[''city_<<$ARGS[1]>>_core''])*(fame[''city_<<$ARGS[1]>>_core'']))/1000' 
+	end
+	
+	!!The fame from city takes sometime before it starts being noticed in the village, but after that it spread very fast (the formula is +1050 -672000000/(640000+(fame_city/10-20)^4) is player is Svata and +1050 -672000000/(640000+(fame_city/10-40)^4) in other starts).
+	if StoryLine = 1:
+		if dyneval('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 2000: 
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_low''] = 1050'
+		elseif dyneval('RESULT = fame[''city_<<$ARGS[1]>>'']') >= 200:
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_low''] = 1050 - (672000000/((fame[''city_<<$ARGS[1]>>_core'']/10 -20)*(fame[''city_<<$ARGS[1]>>_core'']/10 - 20)*(fame[''city_<<$ARGS[1]>>_core'']/10 -20)*(fame[''city_<<$ARGS[1]>>_core'']/10 -20) +640000))' 
+		end
+	else
+		if dyneval('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 2000: 
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_low''] = 1050'
+		elseif dyneval('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 400:
+			dynamic 'fame[''city_<<$ARGS[1]>>_contribution_low''] = 1050 - (672000000/((fame[''pav_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 - 40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pav_<<$ARGS[1]>>_core'']/10 -40) +640000))' 
+		end	
+	end
+	
+
+	!! Fame in the old town will spread fast to pav, at almost the same level. (The formula is +(fame_pushkin*(1050-525000000/(500000+(fame_pushkin/10)^4)))/1050)
+	if dyneval('RESULT = fame[''pushkin_<<$ARGS[1]>>_core'']') >= 1005: 
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_contribution_high''] = 1050'
+	else 
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_contribution_high''] = (fame[''pushkin_<<$ARGS[1]>>_core'']*(1050 - 525000000/(500000 + (fame[''pushkin_<<$ARGS[1]>>_core'']/10)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10))))/1050'
+	end
+	
+	!!Fame fram old town spread to city witht same rate as the spread form pav.
+	if dyneval('RESULT = fame[''pushkin_<<$ARGS[1]>>_core'']') >= 2000: 
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_low''] = 525'
+	else 
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_low''] = 1050 - (42000000/((fame[''pushkin_<<$ARGS[1]>>_core'']/10)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10) + 40000))' 
+	end
+
+	!!The fame from old town spreads as the fame from pav.
+	if dyneval('RESULT = fame[''pushkin_<<$ARGS[1]>>_core'']') >= 2000: 
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_contribution_medium''] = 1050'
+	elseif dyneval('RESULT = fame[''pushkin_<<$ARGS[1]>>_core'']') >= 400:
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_contribution_medium''] = 1050 - (672000000/((fame[''pushkin_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10 - 40)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10 -40)*(fame[''pushkin_<<$ARGS[1]>>_core'']/10 -40) +640000))' 	
+	else
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>_contribution_medium''] = 0'
+	end	
+	
+	
+	!!Village fame do not matter much anywhere outside the viallage.
+	dynamic 'fame[''village_<<$ARGS[1]>>_contribution''] = fame[''village_<<$ARGS[1]>>_core'']/100'
+
+
+
+	!!This calculates fame in Pavlovks. Adding the core and local and the the contributions trom other places. Each time we add two numbers we do it weigthed by the formula (1000*pav_fame+(1000-pav_fame)*contribution) with a chech such that pav_fame never decrease in a step. Excepte in the first if pav_fame_local is negative). 
+	if dyneval ('RESULT = fame[''pav_<<$ARGS[1]>>_core'']') >= 1000:
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = fame[''pav_<<$ARGS[1]>>_core'']+ fame[''pav_<<$ARGS[1]>>_local'']/1000'
+	else
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = (1000*fame[''pav_<<$ARGS[1]>>_core'']+ (1000-fame[''pav_<<$ARGS[1]>>_core''])*fame[''pav_<<$ARGS[1]>>_local''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pav_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] += fame[''city_<<$ARGS[1]>>_contribution_high'']/1000'
+	else
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = (1000*fame[''pav_<<$ARGS[1]>>'']+ (1000-fame[''pav_<<$ARGS[1]>>''])*fame[''city_<<$ARGS[1]>>_contribution_high''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pav_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] += fame[''pushkin_<<$ARGS[1]>>_contribution_high'']/1000'
+	else
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = (1000*fame[''pav_<<$ARGS[1]>>'']+ (1000-fame[''pav_<<$ARGS[1]>>''])*fame[''pushkin_<<$ARGS[1]>>_contribution_high''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pav_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = fame[''pav_<<$ARGS[1]>>''] + fame[''village_<<$ARGS[1]>>_contribution'']/1000'
+	else
+		dynamic 'fame[''pav_<<$ARGS[1]>>''] = (1000*fame[''pav_<<$ARGS[1]>>'']+ (1000-fame[''pav_<<$ARGS[1]>>''])*fame[''village_<<$ARGS[1]>>_contribution''])/1000'
+	end
+
+	if dyneval('RESULT = fame[''pav_<<$ARGS[1]>>'']') < 0: dynamic 'fame[''pav_<<$ARGS[1]>>''] = 0'
+
+
+	!!This calculates fame city.
+		if dyneval ('RESULT = fame[''city_<<$ARGS[1]>>_core'']') >= 1000:
+		dynamic 'fame[''city_<<$ARGS[1]>>''] = fame[''city_<<$ARGS[1]>>_core'']+ fame[''city_<<$ARGS[1]>>_local'']/1000'
+	else
+		dynamic 'fame[''city_<<$ARGS[1]>>''] = (1000*fame[''city_<<$ARGS[1]>>_core'']+ (1000-fame[''city_<<$ARGS[1]>>_core''])*fame[''city_<<$ARGS[1]>>_local''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''city_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''city_<<$ARGS[1]>>''] += fame[''pav_<<$ARGS[1]>>_contribution_low'']/1000'
+	else
+		dynamic 'fame[''city_<<$ARGS[1]>>''] = (1000*fame[''city_<<$ARGS[1]>>'']+ (1000-fame[''city_<<$ARGS[1]>>''])*fame[''pav_<<$ARGS[1]>>_contribution_low''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''city_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''city_<<$ARGS[1]>>''] += fame[''pushkin_<<$ARGS[1]>>_contribution_low'']/1000'
+	else
+		dynamic 'fame[''city_<<$ARGS[1]>>''] = (1000*fame[''city_<<$ARGS[1]>>'']+ (1000-fame[''city_<<$ARGS[1]>>''])*fame[''pushkin_<<$ARGS[1]>>_contribution_low''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''city_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''city_<<$ARGS[1]>>''] += fame[''village_<<$ARGS[1]>>_contribution'']/1000'
+	else
+		dynamic 'fame[''city_<<$ARGS[1]>>''] = (1000*fame[''city_<<$ARGS[1]>>'']+ (1000-fame[''city_<<$ARGS[1]>>''])*fame[''village_<<$ARGS[1]>>_contribution''])/1000'
+	end
+	
+	if dyneval('RESULT = fame[''city_<<$ARGS[1]>>'']') < 0: dynamic 'fame[''city_<<$ARGS[1]>>''] = 0'
+
+
+	!!This calculates fame in Old Town.
+	if dyneval ('RESULT = fame[''pushkin_<<$ARGS[1]>>_core'']') >= 1000:
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = fame[''pushkin_<<$ARGS[1]>>_core'']+ fame[''pushkin_<<$ARGS[1]>>_local'']/1000'
+	else
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = (1000*fame[''pushkin_<<$ARGS[1]>>_core'']+ (1000-fame[''pushkin_<<$ARGS[1]>>_core''])*fame[''pushkin_<<$ARGS[1]>>_local''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pushkin_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] += fame[''pav_<<$ARGS[1]>>_contribution_high'']/1000'
+	else
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = (1000*fame[''pushkin_<<$ARGS[1]>>'']+ (1000-fame[''pushkin_<<$ARGS[1]>>''])*fame[''pav_<<$ARGS[1]>>_contribution_high''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pushkin_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] += fame[''city_<<$ARGS[1]>>_contribution_high'']/1000'
+	else
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = (1000*fame[''pushkin_<<$ARGS[1]>>'']+ (1000-fame[''pushkin_<<$ARGS[1]>>''])*fame[''pushkin_<<$ARGS[1]>>_contribution_high''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''pushkin_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] += fame[''village_<<$ARGS[1]>>_contribution'']/1000'
+	else
+		dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = (1000*fame[''pushkin_<<$ARGS[1]>>'']+ (1000-fame[''pushkin_<<$ARGS[1]>>''])*fame[''village_<<$ARGS[1]>>_contribution''])/1000'
+	end
+	
+	if dyneval('RESULT = fame[''pushkin_<<$ARGS[1]>>'']') < 0: dynamic 'fame[''pushkin_<<$ARGS[1]>>''] = 0'
+
+
+
+
+	!!This calculates fame in Gadukino.
+	if dyneval ('RESULT = fame[''village_<<$ARGS[1]>>_core'']') >= 1000:
+		dynamic 'fame[''village_<<$ARGS[1]>>''] = fame[''village_<<$ARGS[1]>>_core'']+ fame[''village_<<$ARGS[1]>>_local'']/1000'
+	else
+		dynamic 'fame[''village_<<$ARGS[1]>>''] = (1000*fame[''village_<<$ARGS[1]>>_core'']+ (1000-fame[''village_<<$ARGS[1]>>_core''])*fame[''village_<<$ARGS[1]>>_local''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''village_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''village_<<$ARGS[1]>>''] += fame[''pav_<<$ARGS[1]>>_contribution_medium'']/1000'
+	else
+		dynamic 'fame[''village_<<$ARGS[1]>>''] = (1000*fame[''village_<<$ARGS[1]>>'']+ (1000-fame[''village_<<$ARGS[1]>>''])*fame[''pav_<<$ARGS[1]>>_contribution_medium''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''village_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''village_<<$ARGS[1]>>''] += fame[''city_<<$ARGS[1]>>_contribution_low'']/1000'
+	else
+		dynamic 'fame[''village_<<$ARGS[1]>>''] = (1000*fame[''village_<<$ARGS[1]>>'']+ (1000-fame[''village_<<$ARGS[1]>>''])*fame[''city_<<$ARGS[1]>>_contribution_low''])/1000'
+	end
+
+	if dyneval ('RESULT = fame[''village_<<$ARGS[1]>>'']') >= 1000:
+		dynamic 'fame[''village_<<$ARGS[1]>>''] += fame[''pushkin_<<$ARGS[1]>>_contribution_medium'']/1000'
+	else
+		dynamic 'fame[''village_<<$ARGS[1]>>''] = (1000*fame[''village_<<$ARGS[1]>>'']+ (1000-fame[''village_<<$ARGS[1]>>''])*fame[''pushkin_<<$ARGS[1]>>_contribution_medium''])/1000'
+	end
+
+	if dyneval('RESULT = fame[''village_<<$ARGS[1]>>'']') < 0: dynamic 'fame[''village_<<$ARGS[1]>>''] = 0'
+
+
+
+	!!Next we calculate the fame in the large fame groups.
+	$fametown = 'pav'
+
+	:fametownloop
+	dynamic 'fame[''<<$fametown>>_performer''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_acting'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_acting'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_dance'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_dance'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_painting'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_painting'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_music'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_music'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_ballet'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_ballet'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_modelling'']') > 30: dynamic 'fame[''<<$fametown>>_performer''] += fame[''<<$fametown>>_modelling'']/3'
+
+	dynamic 'fame[''<<$fametown>>_sexind''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_porn'']') > 30: dynamic 'fame[''<<$fametown>>_sexind''] += fame[''<<$fametown>>_porn'']/2'
+	if dyneval('RESULT = fame[''<<$fametown>>_stripping'']') > 30: dynamic 'fame[''<<$fametown>>_sexind''] += fame[''<<$fametown>>_stripping'']/2'
+
+	dynamic 'fame[''<<$fametown>>_sport''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_kickboxing'']') > 30: dynamic 'fame[''<<$fametown>>_sport''] += fame[''<<$fametown>>_kickboxing'']/3'
+	if dyneval('RESULT = fame[''<<$fametown>>_running'']') > 30: dynamic 'fame[''<<$fametown>>_sport''] += fame[''<<$fametown>>_running'']/3'
+	if dyneval('RESULT = fame[''<$fametown>>_volleyball'']') > 30: dynamic 'fame[''<<$fametown>>_sport''] += fame[''<<$fametown>>_volleyball'']/3'
+
+	dynamic 'fame[''<<$fametown>>_int''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_chess'']') > 30: dynamic 'fame[''<<$fametown>>_int''] += fame[''<<$fametown>>_chess'']/2'
+	if dyneval('RESULT = fame[''<<$fametown>>_teaching'']') > 30: dynamic 'fame[''<<$fametown>>_int''] += fame[''<<$fametown>>_teaching'']/3'
+
+	dynamic 'fame[''<<$fametown>>_social''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_media'']') > 30: dynamic 'fame[''<<$fametown>>_social''] += fame[''<<$fametown>>_media'']/2'
+
+	if $fametown = 'pav':
+		$fametown = 'city'
+		jump 'fametownloop'
+	elseif $fametown = 'city':
+		$fametown = 'village'
+		jump 'fametownloop'
+	elseif $fametown = 'village':
+		$fametown = 'pushkin'
+		jump 'fametownloop'
+	end
+end
+
+if $ARGS[0] = 'calculateSlut':
+!! Calculates the slut fame after sex or prostitution has been modified.
+
+	$fametown = 'pav'
+
+	:fametownloopSlut
+
+	dynamic 'fame[''<<$fametown>>_slut''] = 0'
+	if dyneval('RESULT = fame[''<<$fametown>>_sex'']') > 30: dynamic 'fame[''<<$fametown>>_slut''] += fame[''<<$fametown>>_sex'']/2'
+	if dyneval('RESULT = fame[''<<$fametown>>_prostitute'']') > 30: dynamic 'fame[''<<$fametown>>_slut''] += fame[''<<$fametown>>_prostitute'']/2'
+
+
+	if $fametown = 'pav':
+		$fametown = 'city'
+		jump 'fametownloopSlut'
+	elseif $fametown = 'city':
+		$fametown = 'village'
+		jump 'fametownloopSlut'
+	elseif $fametown = 'village':
+		$fametown = 'pushkin'
+		jump 'fametownloopSlut'
+	end
+
+	if fame['pav_slut'] < 25:
+		$gnikname = ''
+	elseif fame['pav_slut'] < 50:
+        $gnikname = 'flirt'
+    elseif fame['pav_slut'] < 75:
+        $gnikname = 'tease'
+    elseif fame['pav_slut'] < 100:
+        $gnikname = 'minx'
+    elseif fame['pav_slut'] < 125:
+        $gnikname = 'vixen'
+    elseif fame['pav_slut'] < 150:
+        $gnikname = 'tempress'
+    elseif fame['pav_slut'] < 175:
+        $gnikname = 'cocklover'
+    elseif fame['pav_slut'] < 200:
+        $gnikname = 'boytoy'
+    elseif fame['pav_slut'] < 225:
+        $gnikname = 'slut'
+    elseif fame['pav_slut'] < 250:
+        $gnikname = 'nympho'
+    elseif fame['pav_slut'] < 275:
+        $gnikname = 'whore'
+    elseif fame['pav_slut'] < 300:
+        $gnikname = 'town bicycle'
+    else
+        $gnikname = 'cum dumpster'
+	end	
+end
+
+--- fame ---------------------------------
