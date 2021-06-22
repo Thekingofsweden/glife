@@ -418,6 +418,7 @@ if $ARGS[0] = 'kissing':
 					gs 'willpower', 'mast', 'resist'
 					if will_cost <= pcs_willpwr:
 						act 'Go back to the disco (<<will_cost>> Willpower)':
+							killvar 'gdk'
 							gs 'willpower', 'mast', 'resist'
 							gs 'willpower', 'pay', 'resist'
 							gs 'stat'
@@ -749,8 +750,8 @@ if $ARGS[0] = 'blowjob':
 	'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/bj1.mp4"></video></center>'
 	if gdk['fuck'] = 2:
 		'You squat down in front of <<$npc_firstname[$npclastsaved]>> for the second time tonight and get back to work on his cock.'
-		'You squat down on your heels in front of <<$npc_firstname[$npclastsaved]>> and begin working his cock with your hand and mouth. He groans under your touch and you can feel him tilting his head back in pleasure above you.'
 	end
+	'You squat down on your heels in front of <<$npc_firstname[$npclastsaved]>> and begin working his cock with your hand and mouth. He groans under your touch and you can feel him tilting his head back in pleasure above you.'
 	*nl
 	if rand(0,1) = 0 or gdk['fuck'] = 2:
 		gdk['cum'] = rand(1,3)
@@ -791,14 +792,18 @@ if $ARGS[0] = 'blowjob':
 					cla & *clr
 					'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/facial_after.mp4"></video></center>'
 					'"Well that was fun." You smile up at <<$npc_firstname[$npclastsaved]>> while he tucks his cock back inside his pants.'
-					'"Yeah, you''ve got a great pussy."'
+					if gdk['fuck'] = 1:
+						'"Yeah, you''ve got a great pussy."'
+					else
+						'"Yeah, you''ve got a great mouth."'
+					end
 					act'Continue':gt'gdksex','disco_sex_end'
 				end
 				
 				act'Clean him with your mouth':
 					cla & *clr
 					'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/cum_clean.mp4"></video></center>'
-					'"Here, let  me get that for you," you say, leaning forward and running your mouth up and down his cock, making sure he''s well and truly sucked dry before standing up again.'
+					'"Here, let me get that for you," you say, leaning forward and running your mouth up and down his cock, making sure he''s well and truly sucked dry before standing up again.'
 					act'Continue':gt'gdksex','disco_sex_end'
 				end
 			end
@@ -984,6 +989,7 @@ if $ARGS[0] = 'insert':
 end
 
 if $ARGS[0] = 'virgin_fuck':
+	gdk['virgin'] = 1
 	gs'arousal','vaginal', rand(3,7), 'no_orgasm_msg'
 	'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/fuck.mp4"></video></center>'
 	'<<$npc_firstname[$npclastsaved]>> thrusts into your pussy and you gasp in pain as his cock pierces your hymen. You''re not sure exactly what you expected sex to feel like, but you did hope it would feel better than this.'
@@ -991,7 +997,7 @@ if $ARGS[0] = 'virgin_fuck':
 		cla & *nl
 		$orgasm_or = 'no'
 		if pcs_horny > 50:pcs_horny -= 50
-		'You grunt your way through the discomfort of the next few minutes. You try to focus on the sensations, hope that it will start to feel good, but it never does. It just feels like being stabbed repeatedly. In your pussy. It''s awful. The only other sensation you can feel is the blood of your virginity, running down your leg.'
+		'You grunt your way through the discomfort of the next few minutes. You try to focus on the sensations, hoping that it will start to feel good, but it never does. It just feels like being stabbed repeatedly. <i>In your pussy.</i> It''s awful and painful and you can''t wait for it to stop. The only other sensation you can feel is the blood of your virginity, running down your leg.'
 		*nl
 		gs'gdksex','disco_cum'
 	end
@@ -1017,10 +1023,15 @@ end
 
 
 if $ARGS[0] = 'fuck1':
+	gdk['fuck'] = 1
 	if pcs_vag = 0:gt'gdksex','virgin_fuck'
 	gs'arousal','vaginal', rand(3,7), 'no_orgasm_msg'
 	'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/fuck.mp4"></video></center>'
-	'You moan in pleasure as <<$npc_firstname[$npclastsaved]>> pounds you from behind, pumping his cock in and out of your pussy.'
+	if mesec > 0:
+		'<<$npc_firstname[$npclastsaved]>> slips inside you easily, your pussy already slick from your period, and quickly builds up to a steady pace, pummelling your pussy. The rhythmic fucking pounds your insides in just the right way and you soon find yourself moaning in pleasure.'
+	else
+		'<<$npc_firstname[$npclastsaved]>> quickly builds up to a steady pace, pummelling your pussy from behind, pumping his cock in and out of you. The rhythmic fucking pounds your insides in just the right way and you soon find yourself moaning in pleasure.'
+	end
 	*nl
 	gs'gdksex','disco_cum'
 end
@@ -1037,12 +1048,16 @@ if $ARGS[0] = 'disco_cum':
 		if gdk['condom'] ! 2: act'Speed up':gt'gdksex','disco_creampie'
 		
 	elseif gdk['cum'] = 2:
-		'"Let me cum in your mouth."'
+		'"Hey," <<$npc_firstname[$npclastsaved]>> grunts from behind you. "Let me cum in your mouth."'
 		act'Squat down':gt'gdksex','disco_cum_facial'
 		
 		act'Suck him off':gt'gdksex','disco_cum_mouth'
 	elseif gdk['cum'] = 3:
-		'Pulls you down and starts jerking off in front of your face.'
+		if gdk['condom'] = 1:
+			'Suddenly, <<$npc_firstname[$npclastsaved]>> pulls out of you and pushes you down to your knees, tearing off the condom and rapidly jerks himself off in front of your face.'
+		else
+			'Suddenly, <<$npc_firstname[$npclastsaved]>> pulls out of you and pushes you down to your knees, rapidly jerking himself off in front of your face.'
+		end
 		
 		act'Squat down':gt'gdksex','disco_cum_facial'
 		
@@ -1105,7 +1120,11 @@ if $ARGS[0] = 'disco_cum_facial':
 		cla & *clr
 		'<center><video autoplay loop src="images/locations/pavlovsk/community/disco/sex/facial_after.mp4"></video></center>'
 		'"Well that was fun." You smile up at <<$npc_firstname[$npclastsaved]>> while he tucks his cock back inside his pants.'
-		'"Yeah, you''ve got a great pussy."'
+		if gdk['fuck'] = 1:
+			'"Yeah, you''ve got a great pussy."'
+		else
+			'"Yeah, you''ve got a great mouth."'
+		end
 		act'Continue':gt'gdksex','disco_sex_end'
 	end
 	
@@ -1331,11 +1350,16 @@ if $ARGS[0] = 'creampie_surprise1':
 		
 		act'What the fuck!':
 			gs'arousal','end'
-			killvar 'gdk'
+			
 			cla & *clr
 			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/dk_night.jpg"></center>'
 			'"What the fuck!" you shout, causing <<$npc_firstname[$npclastsaved]>> to recoil backwards. "What made you think that was fucking okay?!"'
-			'You stare down at your snatch, horrified by the white liquid oozing from inside it. Before you can do anything else <<$npc_firstname[$npclastsaved]>> hurries away from you, pulling up his pants and escaping back into the disco, leaving you alone in the dark with his cum still dripping from your pussy.'
+			if gdk['virgin'] = 1 or mesec > 0:
+				'You stare down at your snatch, horrified by the white liquid oozing from inside it. Before you can do anything else <<$npc_firstname[$npclastsaved]>> hurries away from you, pulling up his pants and escaping back into the disco, leaving you alone in the dark with cum and blood dripping from your pussy.'
+			else
+				'You stare down at your snatch, horrified by the white liquid oozing from inside it. Before you can do anything else <<$npc_firstname[$npclastsaved]>> hurries away from you, pulling up his pants and escaping back into the disco, leaving you alone in the dark with his cum still dripping from your pussy.'
+			end
+			killvar 'gdk'
 			act'Continue':gt'pav_commcenter'
 		end
 		
@@ -1393,13 +1417,13 @@ if $ARGS[0] = 'creampie_surprise1':
 				'"Premature ejaculation?" you say, your smile growing wider. "It''s hot."'
 				if npc_insecure[$npclastsaved] = 1:
 					gs'arousal','end'
-					killvar 'gdk'
 					'"What the fuck did you just say?!" he growls.'
 					'"What??" you protest in turn. "I don''t see what the problem is! I''m saying I think it''s sexy that you can''t help but nut inside me! It''s not your fault, but I liked it!"'
 					'"I didn''t prematurely ejaculate! I don''t do that!"'
 					'"Well, there wasn''t any warning. Seemed like you didn''t mean to cum when-"'
 					'"I SAID I DON''T DO THAT!"'
 					'<<$npc_firstname[$npclastsaved]>> shouts at you one last time before stalking away back towards the disco, grumbling the whole time and suddenly you''re alone in the dark with the load of a stranger inside your pussy.'
+					killvar 'gdk'
 					act'Continue':gt'pav_commcenter'
 				else
 					'A blush spreads across his face and he mutters a but doesn''t say anything else.'
@@ -1412,22 +1436,28 @@ end
 
 if $ARGS[0] = 'creampie_surprise2':
 	gs'arousal','end'
-	killvar 'gdk'
 	'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/disco/sex/creampie.jpg"></center>'
 	'"WHAT THE FUCK!" you shout, causing <<$npc_firstname[$npclastsaved]>> to recoil backwards. "I fucking <i>told you</i> not to cum inside me!"'
-	'<<$npc_firstname[$npclastsaved]>> hurries away from you, and escaping back into the disco while you stare down at your snatch, horrified by the white liquid oozing from inside it. Before you know it, you''re alone in the dark, a stranger''s cum inside your pussy.'
+	if gdk['virgin'] = 1 or mesec > 0:
+		'<<$npc_firstname[$npclastsaved]>> hurries away from you, and escaping back into the disco while you stare down at your snatch, horrified by the white liquid oozing from inside it. Before you know it, you''re alone in the dark, a stranger''s cum and blood dripping from your pussy.'
+	else
+		'<<$npc_firstname[$npclastsaved]>> hurries away from you, and escaping back into the disco while you stare down at your snatch, horrified by the white liquid oozing from inside it. Before you know it, you''re alone in the dark, a stranger''s cum inside your pussy.'
+	end
+	killvar 'gdk'
 	act'Continue':gt'pav_commcenter'
 end
 
 if $ARGS[0] = 'disco_sex_end':
 	gs'arousal','end'
 	if PCloSkirt > 0:
-		if pantyworntype = 'none':
+		if pantyworntype = 'none' or gdk['fuck'] ! 1:
 			if $gdk['cum'] = 'facial':
 				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/dk_night.jpg"></center>'
 				'Zipping his pants back up, <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark with cum on your face.'
 			elseif $gdk['cum'] = 'mouth':
 				'Zipping his pants back up, <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, the taste of his cum still on your lips.'
+			elseif $gdk['cum'] = 'creampie' and (mesec > 0 or gdk['virgin'] = 1):
+				'You pull up your panties while <<$npc_firstname[$npclastsaved]>> zips up his pants before heading back inside, leaving you alone in the dark, cum and blood soaking into your underwear.'
 			elseif $gdk['cum'] = 'creampie':
 				'Zipping his pants back up, <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum running down your leg.'
 			elseif $gdk['cum'] = 'condom':
@@ -1439,6 +1469,8 @@ if $ARGS[0] = 'disco_sex_end':
 				'You pull up your panties while <<$npc_firstname[$npclastsaved]>> zips up his pants before heading back inside, leaving you alone in the dark with cum on your face.'
 			elseif $gdk['cum'] = 'mouth':
 				'You pull up your panties while <<$npc_firstname[$npclastsaved]>> zips up his pants before heading back inside, leaving you alone in the dark, the taste of his cum still on your lips.'
+			elseif $gdk['cum'] = 'creampie' and (mesec > 0 or gdk['virgin'] = 1):
+				'You pull up your panties while <<$npc_firstname[$npclastsaved]>> zips up his pants before heading back inside, leaving you alone in the dark, cum and blood soaking into your underwear.'
 			elseif $gdk['cum'] = 'creampie':
 				*nl
 				'You pull up your panties while <<$npc_firstname[$npclastsaved]>> zips up his pants before heading back inside, leaving you alone in the dark, cum soaking into your underwear.'
@@ -1449,20 +1481,37 @@ if $ARGS[0] = 'disco_sex_end':
 			end
 		end
 	else
-		if $gdk['cum'] = 'facial':
-			'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/dk_night.jpg"></center>'
-			'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark with cum on your face.'
-		elseif $gdk['cum'] = 'mouth':
-			'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, the taste of his cum still on your lips.'
-		elseif $gdk['cum'] = 'creampie':
-			*nl
-			if pantyworntype = 'none':
-				'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum soaking into the crotch of your pants.'
-			else
-				'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum soaking into your panties.'
+		if gdk['fuck'] ! 1:
+			if $gdk['cum'] = 'facial':
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/dk_night.jpg"></center>'
+				'Zipping his pants back up, <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark with cum on your face.'
+			elseif $gdk['cum'] = 'mouth':
+				'Zipping his pants back up, <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, the taste of his cum still on your lips.'
 			end
-		elseif $gdk['cum'] = 'condom':
-			'<<$npc_firstname[$npclastsaved]>> pulls off the condom and tosses it aside while you pull up your pants. Afterwards, he zips his own pants back up and heads inside, leaving you alone in the dark.'
+		else
+			if $gdk['cum'] = 'facial':
+				'<center><img <<$set_imgh>> src="images/locations/pavlovsk/community/dk_night.jpg"></center>'
+				'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark with cum on your face.'
+			elseif $gdk['cum'] = 'mouth':
+				'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, the taste of his cum still on your lips.'
+			elseif $gdk['cum'] = 'creampie' and (mesec > 0 or gdk['virgin'] = 1):
+				*nl
+				if pantyworntype = 'none':
+					'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum and blood seeping into the crotch of your pants.'
+				else
+					'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum and blood seeping into your panties.'
+				end
+			elseif $gdk['cum'] = 'creampie':
+				*nl
+				if pantyworntype = 'none':
+					'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum seeping into the crotch of your pants.'
+				else
+					'The two of you pull your pants back up and <<$npc_firstname[$npclastsaved]>> heads back inside, leaving you alone in the dark, cum seeping into your panties.'
+				end
+			
+			elseif $gdk['cum'] = 'condom':
+				'<<$npc_firstname[$npclastsaved]>> pulls off the condom and tosses it aside while you pull up your pants. Afterwards, he zips his own pants back up and heads inside, leaving you alone in the dark.'
+			end
 		end
 	end
 	killvar 'gdk'
