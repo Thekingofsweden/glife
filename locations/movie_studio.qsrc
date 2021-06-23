@@ -1,0 +1,229 @@
+# movie_studio
+
+!! Job Categories:
+!! $audition['roletype'] == 1 - Just a background extra
+!! $audition['roletype'] == 2 - An extra that appears in skimpy clothing or underwear
+!! $audition['roletype'] == 3 - An extra with one or more nude scenes
+!! $audition['roletype'] == 4 - A minor speaking part
+!! $audition['roletype'] == 5 - A minor speaking part with a nude scene
+!! $audition['roletype'] == 6 - A secondary or recurring character
+!! $audition['roletype'] == 7 - A secondary or recurring character with nude scenes
+!! $audition['roletype'] == 8 - A main character
+!! $audition['roletype'] == 9 - A main character with nude scenes
+
+!! Payment status
+!! acting['jobdone'] = 1 - You have acted in the role you were supposed to and can collect payment
+!! acting['jobdone'] = 2 - You have acted in the role you were supposed to and are being given a bonus for sexual favors
+ 
+if $ARGS[0] = 'start':
+	cls
+	minut += 5
+	$metka = 'start'
+	$menu_loc = 'movie_studio'
+	$menu_arg = 'start'
+	menu_off = 0
+	gs 'stat'
+	gs 'themes', 'indoors'
+	'<center><b><font color="maroon">St. Petersburg Filming Studio</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/start.jpg"></center>'
+	'You step into the entrance of the studio with different actors and crew bustling in every different direction.'
+!!	if hour >= 22 or hour < 3:'<br> Despite the late hour, it seems no different than the times you''ve been here during the day. The film industry never seems to rest huh?'
+
+	act 'Leave':
+		if costuming['check'] = 1:
+			if $clothingworntype = 'nude' and $pantyworntype ! 'none':
+				msg'You''re still only wearing panties under your robe! Put your clothes back on before you go outside!'
+			elseif $clothingworntype = 'nude':
+				msg'You''re still only wearing a robe! Put your clothes back on before you go outside!'
+			else
+				msg'You''re still in costume, you should really put on your own clothes before you leave.'
+			end
+		elseif acting['pay'] > 0 and acting['jobdone'] = 1:
+			msg'You should collect your pay from the office before you leave.'
+		else
+			gt'city_industrial'
+		end
+	end
+	act 'Go to the sets':gt'movie_studio','sets'
+!!	act 'Go to the rehearsal stages':gt'movie_studio','rehearsal_stage'
+	act 'Go to the payment center':gt'movie_studio','paycenter'
+!!	act 'Go to the bathroom':gt'movie_studio','bathroom' 
+	act 'Go to makeup and costuming':gt'costuming','start'
+!!	if $audition['roletype'] => 0:
+		
+!!		if $filmtype = 'movie' or $filmtype = 'tv':
+!!			act'See the director':gt'movie_studio','director'
+!!		end
+!!	end
+end
+
+if $ARGS[0] = 'sets':
+	$metka = 'sets'
+	cla & *clr
+	'<center><b><font color="maroon">Filming Studio Main Sets</font></b></center>'
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/sets.jpg"></center>'
+	'You head over to where the main filming gets done, an enormous maze of wood and metal to be able to film all kinds of scenes within the controlled environment of a studio.'
+	act'Back to the entrance':gt'movie_studio','start'
+	act 'Go to makeup':gt'costuming','start'
+	act 'Go to the payment center':gt'movie_studio','paycenter'
+	!!act 'Go to the bathroom':gt'movie_studio','bathroom' 
+	if acting['cast'] = 1 and acting['jobdone'] ! 1 and acting['shoot_day'] = daystart:
+		act'Go to set <<acting[''setnumber'']>>':
+			if costuming['check'] < 1:
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/sets.jpg"></center>'
+				*nl
+				'You go to the corresponding set and when you get there and tell an assistant what you''re there for they take one look at you and start shouting.'
+				'"What the fuck are you doing here without even having gone to makeup?! Go and get your fucking makeup and costuming done! We don''t have all day for this shit!"'
+				act 'Go to makeup and costuming':gt'costuming','start'
+			elseif acting['roletype'] > 7:
+				gt'act_main1','setup'
+			elseif acting['roletype'] > 5:
+				gt'act_secondary1','setup'
+			elseif acting['roletype'] > 3:
+				gt'act_minor1','setup'
+			elseif acting['roletype'] > 0:
+				gt'act_extras1','setup'
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'paycenter':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/paycenter.jpg"></center>'
+	'You walk over to the payment center and see a girl about your age sitting behind the glass.'
+	'"Hi! Are you here to collect payment for something?"'
+	act'Leave':gt'movie_studio','start'
+	act'Go to the sets':gt'movie_studio','sets'
+	act'Collect your pay':gt'movie_studio','payment'
+end
+
+if $ARGS[0] = 'payment':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/paycenter.jpg"></center>'
+	'"I''m here to collect my money for my jobs."'
+	'"Okay! What''s you''re name?"'
+	'"<<$pcs_firstname>> <<$pcs_lastname>>."'
+	'"Alrighty, just let me look you up!"'
+	act'Continue':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/paycenter.jpg"></center>'
+		if acting['cast'] < 1:
+			act'Leave':gt'movie_studio','start'
+			'She clacks loudly on her keyboard, humming to herself as she scans the screen. A frown crosses her face. "I''m sorry, it looks like you haven''t been contracted to do any work yet and so no payment is authorized. In fact there isn''t even anything to authorize in the first place. Maybe try actually doing some work before coming to collect money?"'
+		elseif acting['jobdone'] < 1:
+			act'Leave':gt'movie_studio','start'
+			'She clacks loudly on her keyboard, humming to herself as she scans the screen. A frown crosses her face. "I''m sorry, it looks like you haven''t actually done your scene yet so so no payment is authorized. Maybe try actually doing your job before coming to collect unearned money?"'
+		else
+			'She clacks loudly on her keyboard, humming to herself as she scans the screen.'
+			'"Hmmm let''s see here... Aha! There you are! <<$pcs_firstname>> <<$pcs_lastname>>. For the role of <<$role>> yes?"'
+			'"Yes, that''s correct."'
+			'"Okay!" she says as she prints something out and then slides it under the glass towards you. "Please sign here and I''ll get your money." You lean down to scribble your signature while she rummages through a cabinet next to her and pulls out a small envelope. You slide the paper back to her and she checks it before nodding and sliding the envelope to you.'
+			'Opening it, you count out <<acting[''pay'']>> <b>₽</b> inside.'
+			'"There you go! Have a nice day!"'
+			money += acting['pay']
+			actress_money += acting['pay']
+			killvar 'acting'
+			killvar 'role'
+			act'Leave':gt'movie_studio','start'
+			act'Go to the sets':gt'movie_studio','sets'
+			!!act 'Go to the bathroom':gt'movie_studio','bathroom' 
+		end
+	end
+end
+
+if $ARGS[0] = 'showers':
+	gs'stat'
+	cla & *clr
+	menu_off = 1
+	shower_sex = rand(1,7)
+	'<center><img <<$set_imgh>> src="images/locations/city/industrial/studio/shower.jpg"></center>'
+	'You walk over to the shower room. Every shower here has its own individual stall with a frosted glass door to offer a great deal of privacy. There is also shampoo, soap, and towels to be taken and used by anyone who needs them.'
+	if model = 1:'It''s much nicer and more considerate than the showers at the modelling studio.'
+	*nl
+	'A little bit aways are bathroom stalls with a line of sinks and mirrors on the wall opposite as well as several tampon dispensers.'
+
+	act 'Go to the studio entrance':gt'movie_studio','start'
+	act'Go to makeup':gt'costuming','start'
+	act 'Take a shower (0:15)':
+		cla
+		*clr
+		minut += 15
+		pcs_horny += 1
+		pcs_hairbsh = 0
+		pcs_makeup = 1
+		inhib_exp += 1
+		dynamic $showerdin
+		'<center><video autoplay loop src="images/shared/home/bathroom/dush.mp4"></video></center>'
+		'You go into a stall and turn on the shower. You lather your body and wash.'
+		if deodorant_on = 1: gs 'sweat', 'remove_deo' & '<br>Your deodorant gets washed away in the shower.'
+		if pcs_horny >= 40:
+			act 'Use the shower head on your pussy':
+				cla
+				*clr
+				'<center><video autoplay loop src="images/shared/home/bathroom/wash2.mp4"></video></center>'
+				*nl
+				'You''re feeling so horny right now and with the privacy of the stall, you decide to give yourself a little relief.'
+
+				if hypnoAddict > 0:
+					minut += 10
+					'You unconsciously avoid spraying water into your vagina.'
+					act 'Dry off':gt 'movie_studio', 'showers'
+				else
+					if pcs_horny >= 70:
+						if exhibitionist_lvl > 0:
+							gs 'exhibitionism', 2
+							gs 'arousal','masturbate', 10
+							gs 'arousal', 'end'
+							pcs_mood += 15
+							$orgasm_or = 'yes'
+							$orgasm_txt = 'You loudly groan as you shudder in orgasm, uncaring if anybody hears you or notices what you''re up to. In fact, it kind of turns you on and makes you want to keep going...'
+							act 'Dry off':gt 'movie_studio', 'showers'
+						else
+							pcs_mood += 15
+							gs 'arousal','masturbate', 10
+							gs 'arousal', 'end'
+							$orgasm_or = 'yes'
+							$orgasm_txt = 'Soon you feel a warm wave spreading over your entire body and you shudder as an orgasm overtakes you, biting hard on your lip to keep from crying out. As your orgasm winds down, you rinse off one more time and turn off the water.'
+							act 'Dry off':gt 'movie_studio', 'showers'
+						end
+					else
+						pcs_horny += 5
+						pcs_mood += 10
+						'At first it feels very nice, but after a while you become self conscious of how long you''ve been masturbating in the studio''s showers. Though even more frustrated now, you think maybe it''s time to stop.'
+						gs 'arousal','masturbate', 10
+						gs 'arousal', 'end'
+						act 'Dry off':gt 'movie_studio', 'showers'
+					end
+				end
+				cumspclnt = 8
+				gs 'cum_cleanup'
+			end
+		end
+		act 'Get out of the shower':gt 'movie_studio', 'showers'
+	end
+	dynamic $brit
+	if mesec > 0 and isprok = 0:
+		act'Use a tampon':
+			menu_off = 1
+			modeltampon = rand(1,2)
+			cla
+			isprok = 1
+			minut += 5
+			if modeltampon = 1:
+				'Going to one of the dispensers, you take a tampon from it and tear open the packaging and inserting it into your pussy, carefully tucking the string inside so it won''t be visible from the outside and photographers won''t yell at you.'
+				'Your woman''s issue taken care of, you throw the trash away and finish up.'
+			else
+				'You go over to one of the dispensers, cursing when you find it empty. Trying another one, you get your tampon and tear open the packaging and inserting it into your pussy, carefully tucking the string inside so it won''t be visible from the outside and photographers won''t yell at you.'
+				'Your woman''s issue taken care of, you throw the trash away and finish up.'
+			end
+			act'Finish up':gt'movie_studio','showers'
+		end
+	end
+	!!act'Go to the bathroom':gt'movie_studio','bathroom'
+end
+
+
+--- movie_studio ---------------------------------

@@ -1,0 +1,1093 @@
+# auditions
+
+!! Job Categories
+!! audition['roletype'] = 1 - Just a background extra
+!! audition['roletype'] = 2 - An extra that appears in skimpy clothing or underwear
+!! audition['roletype'] = 3 - An extra with one or more nude scenes
+!! audition['roletype'] = 4 - A minor speaking part
+!! audition['roletype'] = 5 - A minor speaking part with a nude scene
+!! audition['roletype'] = 6 - A secondary or recurring character
+!! audition['roletype'] = 7 - A secondary or recurring character with nude scenes
+!! audition['roletype'] = 8 - A main character
+!! audition['roletype'] = 9 - A main character with nude scenes
+
+!! Audition Types
+!! 
+!! $audition['type'] = 'general' - general audition no special events usually for a minor speaking role
+!! $audition['type'] = 'extra' - an audition basically just to confirm scheduling and check that the PC isn''t grossly ugly
+!! $audition['type'] = 'titty' - an audition based solely on appearance and size of breasts, usually for a role as an extra
+!! $audition['type'] = 'general_titty' - an audition for a minor speaking role that will include breast nudity, will usually swing towards acting talent than appearance but appearance can make up for lack of it
+
+!! Stat variables
+!! pcs_perform - player''s total skill in their ability to act
+!! audition['scene_prep'] - represents work done at home to prepare for the audition and the actual filming of the scene
+!! audition['day'] - the day of your audition
+!! actress_cast = 1 - the player is currently cast in a role
+!! actress['audition_pressure'] - how many times someone in the business pressures the player for sexual favors in an audition
+!! actress['cast_couch'] - number of times you''ve used sex (willingly or unwillingly) to try and land a role
+!! actress['cast_couch_bj'] - number of times you''ve given blowjobs to try get a role
+!! actress['cast_couch_vag'] - number of times you''ve fucked someone to try get a role
+!! actress['cast_couch_anal'] - number of times you''ve assfucked someone to try get a role
+!! actress['cast_couch_virginity'] = 1 - gave up virginity for a minor role
+!! actress['cast_couch_virginity'] = 2 - gave up virginity for a secondary role
+!! actress['cast_couch_virginity'] = 3 - gave up virginity for a major main character role
+
+!! audition['cum_choice'] = 0 - chooses to cum in pussy
+!! audition['cum_choice'] = 1 - cums down throat without warning
+!! audition['cum_choice'] = 2 - warns they''re going to cum in mouth
+!! audition['cum_choice'] = 3 - pulls out and cums on face
+
+!! audition['cast_couch'] = 1 - gave a blowjob and swallowed
+!! audition['cast_couch'] = 2 - gave a blowjob and spit
+!! audition['cast_couch'] = 3 - gave a blowjob and took a facial
+!! audition['cast_couch'] = 4 - fucked and came in condom
+!! audition['cast_couch'] = 5 - fucked and swallowed
+!! audition['cast_couch'] = 6 - fucked and spit
+!! audition['cast_couch'] = 7 - fucked and took a cumshot
+!! audition['cast_couch'] = 8 - fucked and took a creampie
+!! audition['cast_couch'] = 9 - assfucked and swallowed
+!! audition['cast_couch'] = 10 - assfucked and spit
+!! audition['cast_couch'] = 11 - assfucked and took a cumshot
+!! audition['cast_couch'] = 12 - assfucked and anal creampie
+
+if $ARGS[0] = 'setup':
+	if audition['number'] > 0 and audition['roletype'] > 3 and audition['roletype'] =< 5:
+		if audition['number'] ! '':
+			gt'auditions_minor1','minor<<audition[''number'']>>'
+		else
+			gt'auditions_minor1','general_dialogue'
+		end
+	elseif audition['number'] > 0 and (audition['roletype'] = 6 or audition['roletype'] = 7):
+		gt'auditions_secondary','secondary<<audition[''number'']>>'
+	elseif audition['number'] > 0 and audition['roletype'] >= 8:
+		gt'auditions_main','main<<audition[''number'']>>'
+	else
+		if $audition['type'] = 'general':gt'auditions','general_dialogue'
+		if $audition['type'] = 'extra':gt'auditions','extra'
+		if $audition['type'] = 'titty':gt'auditions','tit_audition'
+		if $audition['type'] = 'general_titty':gt'auditions','general_tit_audition'
+	end
+end
+
+if $ARGS[0] = 'audition_end':
+	
+end
+
+if $ARGS[0] = 'role_denied':
+	$casting_call = 'none'
+	room = 0
+	audition_fail += 1
+	killvar 'audition'
+	killvar 'acting'
+	gs'stat'
+end
+
+
+if $ARGS[0] = 'role_success':
+	$casting_call = 'none'
+	acting['roletype'] = audition['roletype']
+	$acting['role'] = $audition['role']
+	room = 0
+	audition_success += 1
+	acting['cast'] = 1
+	acting['setnumber'] = rand(1,100)
+	killvar 'audition'
+	gs'stat'
+end
+
+if $ARGS[0] = 'audition_result':
+	audition['result'] = ((audition['scene_prep'] * 5) + pcs_perform + audition['bonus'] - audition['penalty'])
+	if audition['cast_couch'] > 0:	
+		if audition['cast_couch'] > 5 and audition['cast_couch'] < 13:
+			actress['cast_couch_vag'] += 1
+			if audition['cast_couch_virgin'] = 1:
+				if audition['roletype'] < 6:
+					actress['cast_couch_virginity'] = 1
+				elseif audition['roletype'] < 8:
+					actress['cast_couch_virginity'] = 2
+				else
+					actress['cast_couch_virginity'] = 3
+				end
+			end
+		else
+			actress['cast_couch_anal'] += 1
+		end
+	end
+end
+
+
+if $ARGS[0] = 'extra_audition':
+
+
+
+end
+	
+if $ARGS[0] = 'tit_audition':
+	cla & *clr
+	if pcs_inhib > 45:
+		gs 'willpower', 'skill', 'pcs_inhib', 'force', 'easy'
+	else
+		gs 'willpower', 'skill', 'pcs_inhib', 'force', 'hard'
+	end
+	!!if first_tit_audition = 0:first_tit_audition = 1
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	'You enter the room and see a woman sitting at a desk with papers in front of her.'
+	'"Hi, I''m <<$pcs_firstname>>, I''m here to audition for the part of <<$audition[''role'']>> in <<$movie>>?"'
+	'"Ahh, yes. Thank you for coming. Just stand there for now please." She looks at you with a critical eye, making notes on a paper in front of her.'
+	if pcs_skin < 40:
+		'"Your skin is awful, you have acne everywhere. You need a better facial care routine. Actually, I''m sorry I have to stop right here. You simply don''t have the face for this role. Next please!" She calls out to the hall while unsympathetically shooing you out with her hand.'
+		act'Leave':gt'auditions','reflection'
+	else
+		if pcs_skin >= 40 and pcs_skin < 60:
+			'"Your skin could be a little better but nothing the makeup department can''t cover up. Now show me your breasts please."'
+		else
+			'"You have wonderful skin, very smooth and soft looking, even from here. That will be great for the camera. Now show me your breasts please."'
+		end
+		act'"Excuse me??"':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'"Excuse me??" you ask, stunned. "What did you just ask me?"'
+			'The woman sighs in exasperation. "Ugh, this is why I hate dealing with amateurs. Did you even read what you''re auditioning for? You''re here for a bit role where you won''t be on screen for more than 10 seconds. This role <i>only</i> exists to show some tits on screen to excite the audience. And my job is to pick pretty girls with big pretty tits to make that a reality. Now either show me your tits and stop wasting my time or get out."'
+			act'Refuse':
+				cla & *clr
+				'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/hallway.jpg"></center>'
+				'Blushing, you can''t do it and leave the room red faced while you hear the casting director sneer in disgust again.'
+				'"Next!"'
+				act'Leave':gt'auditions','reflection'
+			end
+			if pcs_inhib < 50:
+				if will_cost <= pcs_willpwr:
+					*nl
+					act 'Show her your tits (<<will_cost>> Willpower)':
+						cla & *clr
+						'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/showtits.jpg"></center>'
+						'Your face heats with embarassment, both at her beratement and because of how uncomfotable you are with doing this but you pull your clothes aside to reveal your breasts to the woman. She immediately consults her papers and makes notations before looking back up as you continue to stand in the middle of the room with your breasts out.'
+						'"How big are those? <<$titsize>>s?"'
+						'"Uhh, yeah," you respond nervously.'
+						'"Uhuh..."'
+						if pcs_bustdisparity > 0:
+							'"Did you get a boobjob?"'
+							'"Ahh, uhh, yeah I did..."'
+							'"Hrmph. Maybe I should think about getting one of those myself some time..." she mutters.'
+						end
+						act'Continue':gt'auditions','tit_audition_result'
+					end
+				
+				end
+			else
+				act 'Show her your tits':
+					cla & *clr
+					'<center><video autoplay loop src="images/locations/city/citycenter/aurora/auditions/showtits.mp4"></video></center>'
+					'Your face heats with embarassment from her beratement but you otherwise brazenly pull out your breasts to show them to her. She immediately consults her papers and makes notations before looking back up as you continue to stand in the middle of the room with your breasts out.'
+					'"How big are those? <<$titsize>>s?"'
+					'"Yeah, I''m a <<$titsize>>." you respond flatly.'
+					'"Uhuh..."'
+					if pcs_bustdisparity > 0:
+						'"Did you get a boobjob?"'
+						'"Ahh, uhh, yeah I did..."'
+						'"Hrmph. Maybe I should think about getting one of those myself some time..." she mutters.'
+					end
+					act'Continue':gt'auditions','tit_audition_result'
+				end
+			end
+		end
+		
+		if pcs_inhib < 50:
+			if will_cost <= pcs_willpwr:
+				*nl
+				act 'Show her your tits (<<will_cost>> Willpower)':
+					cla & *clr
+					'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/hallway.jpg"></center>'
+					'You blush with embarassment at the request but do as she says anyways seeing how you signed up for this in the first place. She immediately consults her papers and makes notations before looking back up as you continue to stand in the middle of the room with your breasts out.'
+					'"How big are those? <<$titsize>>s?"'
+					'"Uhh... yeah..." you respond nervously.'
+					'"Uhuh..."'
+					if pcs_bustdisparity > 0:
+						'"Did you get a boobjob?"'
+						'"Ahh, uhh, yeah I did..."'
+						'"Hrmph. Maybe I should think about getting one of those myself some time..." she mutters.'
+					end
+					act'Continue':gt'auditions','tit_audition_result'
+				end
+			end
+		else
+			act 'Show her your tits':
+				cla & *clr
+				'<center><video autoplay loop src="images/locations/city/citycenter/aurora/auditions/showtits.mp4"></video></center>'
+				'Not even slightly shy, you brazenly pull out your tits to show them to her in all their glory. She immediately consults her papers and makes notations before looking back up as you continue to stand in the middle of the room with your breasts out.'
+				'"How big are those? <<$titsize>>s?"'
+				'"Yup! That''s correct," you respond cheerfully.'
+				'"Uhuh..."'
+				if pcs_bustdisparity > 0:
+					'"Did you get a boobjob?"'
+					'"Yes! They used to be a lot smaller but I thought I''d upgrade."'
+					'"Hrmph. Maybe I should about get one of those myself some time..." she mutters.'
+				end
+				act'Continue':gt'auditions','tit_audition_result'
+			end
+		end
+	end
+end
+
+
+if $ARGS[0] = 'tit_audition_result':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if audition['roletits'] > tits:
+		'"Well, if it were up to me, I''d hire you. You''ve got a great complexion and nice perky boobs, but the director specifically asked for, in his own words, ''big fat titties,'' and unfortunately you''re just too small. Thanks for coming anyways, maybe another time. Next!"'
+		'You''re a bit stunned at how quickly you were dismissed based on something as discriminatory as the size of your breasts, but you don''t know what else to do so you simply prepare to leave.'
+		'"Can somebody please be intelligent enough to only send in busty girls? Thank you!"'
+		act'Leave':gt'auditions','reflection'
+	elseif first_tit_audition = 0:
+		first_tit_audition = 1
+		'"Well, you''ve got great tits! You''re hired."'
+		'You blink in surprise.'
+		'"Wait really? That''s it?"'
+		'"Yeah, of course. We''re not looking for the next Olga Kuzubov or an already established star. You''re only in this role to show your tits on camera. Oh, also you can put those away now. Thank you for coming, you have officially secured the role of <<$audition[''role'']>>. Now if you''ll excuse me, I still need other titty extras for this movie and have to keep auditioning. Next please!"'
+		if audition['scene_prep'] < 30:
+			'You start as you suddenly realize you were so surprised you never pulled your top back into place when she said you were hired. As you put everything back in place, you''re not sure what to make of all this, but you guess that''s that and gather your things to leave.'
+		else
+			'You start as you suddenly realize you were so surprised you never pulled your top back into place when she said you were hired. As you put everything back in place, you think about all that time you spent preparing for this audition and wonder why you even bothered...'
+		end
+		act'Leave':gt'auditions','reflection'
+	else
+		'"Welp, you''ve got great tits! You''re hired."'
+		'"Really? Great! Thank you!"'
+		'"Mhmm, yeah. Sure thing. Congratulations on landing the role of <<$audition[''role'']>>. Now clear out please, I need to keep auditioning other roles."'
+		'You knew this audition was never going to test your acting skills, you''ve done these before, but it still feels nice to be hired, even if it''s just for your breasts.'
+		!!insert variable to say the audition was successful
+		act'Leave':gt'auditions','reflection'
+	end
+
+end
+
+if $ARGS[0] = 'general_tit_audition':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	
+end
+
+!! ----------------------------------- Reluctant Results -----------------------------------------
+
+if $ARGS[0] = 'reluctant_swallow_end':
+	actress['cast_couch'] += 1
+	cla & *clr
+	gs 'auditions','audition_result'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if actress['cast_couch'] = 1:
+		if audition['cast_couch'] = 1:
+			'"Okay, I sucked you off. I even swallowed. Do I get the role now?"'
+		else
+			'"So I get the role now, right?" you ask.'
+		end
+	else
+		if audition['cast_couch'] = 1:
+			'"So... I swallowed... do I get the role then?"'
+		else
+			'"So... do I get the role then?"'
+		end
+	end
+	if audition['result'] >= audition['requirement']:
+		if audition['cast_couch'] = 1:
+			'"Yeah, watching you swallow my load was pretty hot," he says as if musing to himself. "I think your second performance might have just been enough to make up for the first one."'
+		elseif audition['cast_couch'] = 2:
+			'"Well, you should''ve swallowed," he says. "But... it was pretty good head. Good enough to make up for your awful acting I suppose."'
+		end
+		'<<$boydesc>> reaches over to a stack of papers and looks through it for a bit before pulling one out and sliding it across the table towards you with a pen.'
+		'"Here''s the contract. Just sign here and it''s all official."'
+		act'Sign the contract':
+			if $clothingworntype = 'none':
+				gt'auditions','naked_signature'
+			else
+				gt'auditions','signature'
+			end
+		end
+	else
+		if audition['cast_couch'] = 1:
+			'"Meh," he shrugs noncommittally, sitting down behind the desk. "I''ve had better. Wasn''t bad, but certainly wasn''t good enough to make up for your performance earlier. Now get out. I have real applicants to audition."'
+		elseif audition['cast_couch'] = 2:
+			'"Meh," he shrugs noncommittally, sitting down behind the desk. "You should''ve swallowed. Maybe then I''d have considered it. Really impolite to spit out a man''s cum like that. Now get out. I have real applicants to audition."'
+		end
+		act'Leave the room':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, finding yourself taken aback by the moment. That''s it? After everything? <<$boydesc>>''s already stopped paying attention to you and is sifting through papers on his desk.'
+			if $clothingworntype ! 'nude':
+				'Completely stunned, you pick up your things and leave the room, stepping out into the hallway.'
+			else
+				'Completely stunned, you quickly get dressed and leave the room, stepping out into the hallway.'
+			end
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if audition['cast_couch'] = 1:
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into sucking your dick, tricked me into thinking that it would help me land this role! I even swallowed your fucking cum! And now you''re just going to toss me out like some kind of gutter whore?"'
+			elseif audition['cast_couch'] = 2:
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into sucking your dick, tricked me into thinking that it would help me land this role! You even came in my fucking mouth! And now you''re just going to toss me out like some kind of gutter whore?"'
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+
+if $ARGS[0] = 'reluctant_facial_end':
+	actress['cast_couch'] += 1
+	cla & *clr
+	gs 'auditions','audition_result'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if cumloc[11] > 0:'You ignore his remarks like you ignore the cum on your face.'
+	if actress['cast_couch'] = 1:
+		'"So I get the role now, right?" you ask.'
+	else
+		'"So... do I get the role then?"'
+	end
+	if audition['result'] >= audition['requirement']:
+		'"Yeah I suppose so," he says as if musing to himself. "I think you''re a fine choice for the job. Shame you can''t wear your audition makeup for it though." He continues to smirk at you.'
+		'<<$boydesc>> reaches over to a stack of papers and looks through it for a bit before pulling one out and sliding it across the table towards you with a pen.'
+		'"Here''s the contract. Just sign here and it''s all official."'
+		act'Sign the contract':gt'auditions','facial_signature_upset'
+	else
+		'"Pfff," he huffs. "As if. I''ve had better before. Either get better at acting or practice giving head cause neither one is a good enough justification to get you the job. Now get out. I have real applicants to audition."'
+		act'Leave the room':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, finding yourself not exactly surprised, but also unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if cumloc[11] > 0:
+				'"What the fuck?!" Something suddenly snaps inside you and you''re filled with a harder emotion than before. "You just pressured me into sucking your dick, tricked me into thinking that it would help me land this role, <i>came on my fucking face</i>," you say, waving your cum covered hand at him, "and now you''re just going to toss me out like some kind of gutter whore?"'
+			else
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into sucking your dick, tricked me into thinking that it would help me land this role, <i>came on my fucking face</i>, and now you''re just going to toss me out like some kind of gutter whore?"'
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+if $ARGS[0] = 'reluctant_results':
+	actress['cast_couch'] += 1
+	cla & *clr
+	gs 'auditions','audition_result'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if audition['cast_couch'] > 0 and audition['cast_couch'] < 6:
+		'"Okay, I... I sucked your dick... You''ll give me the role now right?"'
+	elseif audition['cast_couch'] >= 6 and audition['cast_couch'] < 13:
+		'"Okay, I... I let you fuck me... You''ll give me the role now right?"'
+	else
+		'"Okay, I... I let you fuck my ass... You''ll give me the role now right?"'
+	end
+	if audition['result'] >= audition['requirement']:
+		if audition['cast_couch'] < 6:
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "Your lips sure knew what they were doing," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"Not much of an actress, but you give great head. Ever considered working a gloryhole? I''d come visit."'
+			'With his last comment, he slides the paper over to you with a pen. "Just sign this and it''s all offical."'
+		elseif audition['cast_couch'] < 13:
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "And not a bad deal it was," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"Don''t know you''re trying to be an actress with a pussy like that. Ought to just cut out the middle man and work as a whore," he says, sliding the paper over to you with a pen. "Just sign this and it''s all offical."'
+		else
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "Anyone ever tell you what a great ass you have? Real tight and very slappable," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"If you''re free on Fridays I''d be happy to toss you a few rubles to fuck it again," he says, sliding the paper over to you with a pen. "Just sign this and it''s all offical."'
+		end
+		if $clothingworntype ! 'nude':
+			act'Sign the contract':gt'auditions','signature'
+		else
+			act'Sign the contract':gt'auditions','naked_signature'
+		end
+	else
+		'"Well a deal''s is a deal... but I don''t think you really held up your end."'
+		if cumloc[0] > 0:
+			'The blood drain from your face as you hear his words and feel cum trickle down your leg.'
+		elseif cumloc[11] > 0:
+			'You feel the blood drain from your face as cum slides from it and softly thuds on the floor.'
+		else
+			'You feel the blood drain from your face.'
+		end
+		'"What?"'
+		if audition['cast_couch'] < 6:
+			'"A dog could give blowjobs that aren''t as sloppy as what you gave me today. Seriously, almost as bad as your acting. And certainly nowhere good enough to justify giving you the part. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		else
+			'"You''re almost as lousy a fuck as you are you an actress. Nowhere good enough to justify giving you the part. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		end
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'Clench your jaw in anger and leave':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			
+			if actress['cast_couch_deny'] > 0:'<i>Great, another stingy fucker,</i> you think to yourself. <i>And another wasted audition spent on the casting couch.</i>'
+			
+			'As pissed off as you are, there isn''t anything you can do about this. You grab your things and stomp to the door, slamming it shut on the way out.'
+			act'Leave':gt'auditions','reflection'
+		end
+		
+!!{		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if audition['cast_couch'] < 6:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[12] > 0:
+					if audition['cast_couch'] = 1:
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> I even swallowed! And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				else
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			elseif audition['cast_couch'] < 13:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I fuck you and you give me the part! Well I <i>fucked</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[0] > 0:
+					if birth_control['think_safe'] = 1:
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				end
+			else
+				if cumloc[11] > 0:
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And then you even came on my face!" you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end}
+	end
+end
+
+if $ARGS[0] = 'reluctant_virgin_results':
+	actress['cast_couch'] += 1
+	gs 'auditions','audition_result'
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	'"Okay. I... I gave... I gave you my virginity... I get the role now right? You promised me right?"'
+	if audition['result'] >= audition['requirement']:
+		'"Well, a promise is a promise," he says, reaching into a stack of papers. "Damn, what a tight pussy," he continues to speak as he scribbles a few marks on the sheet he pulls out.'
+		'"Not much of an actress, but a great fuck. Maybe you should be doing porn instead. Though if you were, I might never get to fuck you again, ha!"'
+		'With his last comment, he slides the paper over to you with a pen. "Just sign this and it''s all offical."'
+		act'Sign the contract':gt'auditions','naked_signature'
+	else
+		'"Well a promise is a promise... but you weren''t <i>that</i> good a fuck."'
+		'You feel the blood drain from your face.'
+		'"What?"'
+		'"I''m saying that you''ve got a tight pussy and all but holy fuck are you a bad actress. I can''t justify hiring you just because of this performance, particularly when your last performance was so bad. You should try porn instead, maybe they''d hire you based on just a tight pussy. Now get out. I have real applicants to audition and maybe one of them will have good acting ability while also putting out.'
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if cumloc[11] > 0:
+				'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You <i>came on my fucking face</i>," you say, waving your cum covered hand at him, "and now you''re just going to toss me out like some kind of gutter whore?"'
+			elseif cumloc[0] > 0:
+				if birth_control['think_safe'] = 1:
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			else
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! And now you''re just going to toss me out like some kind of gutter whore?"'
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+!! ----------------------------------- Neutral Results -----------------------------------------
+
+if $ARGS[0] = 'neutral_results':
+	actress['cast_couch'] += 1
+	cla & *clr
+	gs 'auditions','audition_result'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if audition['cast_couch'] = 4:
+		'"Okay. I sucked you off, I even swallowed. I get the role now right? That was the deal."'
+	elseif audition['cast_couch'] > 0 and audition['cast_couch'] < 6:
+		'"Okay. I sucked you off. I get the role now right? That was the deal."'
+		
+	elseif audition['cast_couch'] = 12:
+		'"Okay, I fucked you. Even let you cum inside me. So now I get the part right? That was the deal."'
+	elseif audition['cast_couch'] >= 6 and audition['cast_couch'] < 13:
+		'"Okay, I fucked you. So now I get the part right? That was the deal."'
+	else
+		'"Okay, I let you fuck my ass. So now I get the part right? That was the deal."'
+	end
+	if audition['result'] >= audition['requirement']:
+		if audition['cast_couch'] < 6:
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "Your lips sure knew what they were doing," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"Not much of an actress, but you give great head. Ever considered working a gloryhole? I''d come visit."'
+			'With his last comment, he slides the paper over to you with a pen. "Just sign this and it''s all offical."'
+		elseif audition['cast_couch'] < 13:
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "And not a bad deal it was," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"Don''t know you''re trying to be an actress with a pussy like that. Ought to just cut out the middle man and work as a whore," he says, sliding the paper over to you with a pen. "Just sign this and it''s all offical."'
+		else
+			'"Well, a deal''s a deal," he says, pulling a sheet from a stack of papers. "Anyone ever tell you what a great ass you have? Real tight and very slappable," he continues to say as he scribbles a few marks on the sheet he pulled.'
+			'"If you''re free on Fridays I''d be happy to toss you a few rubles to fuck it again," he says, sliding the paper over to you with a pen. "Just sign this and it''s all offical."'
+		end
+		if $clothingworntype ! 'nude':
+			act'Sign the contract':gt'auditions','signature'
+		else
+			act'Sign the contract':gt'auditions','naked_signature'
+		end
+	else
+		'"Well a deal''s is a deal... but I don''t think you really held up your end."'
+		if cumloc[0] > 0:
+			'The blood drain from your face as you hear his words and feel cum trickle down your leg.'
+		elseif cumloc[11] > 0:
+			'You feel the blood drain from your face as cum slides from it and softly thuds on the floor.'
+		else
+			'You feel the blood drain from your face.'
+		end
+		'"What?"'
+		if audition['cast_couch'] < 6:
+			'"A dog could give blowjobs that aren''t as sloppy as what you gave me today. Seriously, almost as bad as your acting. And certainly nowhere good enough to justify giving you the part. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		else
+			'"You''re almost as lousy a fuck as you are you an actress. Nowhere good enough to justify giving you the part. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		end
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'Clench your jaw in anger and leave':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			
+			if actress['cast_couch_deny'] > 0:'<i>Great, another stingy fucker,</i> you think to yourself. <i>And another wasted audition spent on the casting couch.</i>'
+			
+			'As pissed off as you are, there isn''t anything you can do about this. You grab your things and stomp to the door, slamming it shut on the way out.'
+			act'Leave':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if audition['cast_couch'] < 6:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[12] > 0:
+					if audition['cast_couch'] = 1:
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> I even swallowed! And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				else
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			elseif audition['cast_couch'] < 13:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I fuck you and you give me the part! Well I <i>fucked</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[0] > 0:
+					if birth_control['think_safe'] = 1:
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				end
+			else
+				if cumloc[11] > 0:
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And then you even came on my face!" you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+if $ARGS[0] = 'neutral_virgin_results':
+	actress['cast_couch'] += 1
+	gs 'auditions','audition_result'
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	'"Okay. I fucked you and gave you my virginity. I get the role now right? You promised me."'
+	if audition['result'] >= audition['requirement']:
+		'"Well, a promise is a promise," he says, reaching into a stack of papers. "Damn, what a tight pussy," he continues to speak as he scribbles a few marks on the sheet he pulls out.'
+		'"Not much of an actress, but a great fuck. Maybe you should be doing porn instead. Though if you were, I might never get to fuck you again, ha!"'
+		'With his last comment, he slides the paper over to you with a pen. "Just sign this and it''s all offical."'
+		act'Sign the contract':gt'auditions','naked_signature'
+	else
+		'"Well a promise is a promise... but you weren''t <i>that</i> good a fuck."'
+		if cumloc[0] > 0:
+			'The blood drain from your face as you hear his words and feel cum trickle down your leg.'
+		elseif cumloc[11] > 0:
+			'You feel the blood drain from your face as cum slides from it and softly thuds on the floor.'
+		else
+			'You feel the blood drain from your face.'
+		end
+		'"What?"'
+		'"I''m saying that it''s nice to bang virgins and all but holy fuck are you a bad actress. I can''t justify hiring you just because of this performance, particularly when your last performance was so bad. You should try porn instead, maybe they''d hire you based on just a tight pussy. Now get out. I have real applicants to audition and maybe one of them will have good acting ability while also putting out.'
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if cumloc[11] > 0:
+				'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You <i>came on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+			elseif cumloc[0] > 0:
+				if birth_control['think_safe'] = 1:
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			else
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! And now you''re just going to toss me out like some kind of gutter whore?"'
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+!! ----------------------------------- Slutty Results -----------------------------------------
+
+if $ARGS[0] = 'slutty_results':
+	actress['cast_couch'] += 1
+	cla & *clr
+	gs 'auditions','audition_result'
+	gs 'stat'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	if audition['cast_couch'] < 6:
+		'"Soooo..." you say with a sultry smile. "I showed you my, uhh, ''true talent,'' right?" you wink and lick your lips. "You think I''m right for the part?"'
+	elseif audition['cast_couch'] = 12:
+		'"Okay, I fucked you. Even let you cum inside me. So now I get the part right? That was the deal."'
+	elseif audition['cast_couch'] >= 6 and audition['cast_couch'] < 13:
+		'"Soooo..." you say with a sultry smile. "I showed you my, uhh, ''true talent,'' right?" you wink, rolling your hips. "You think I''m right for the part?"'
+	else
+		'"Soooo..." you say with a sultry smile. "I showed you my, uhh, ''true talent,'' right?" you wink, patting your ass at the same time. "You think I''m right for the part?"'
+	end
+	if audition['result'] >= audition['requirement']:
+		if audition['cast_couch'] < 6:
+			'"You''re my favorite kind of actress you know that?" he says, pulling a sheet from a stack of papers. "Fuck if you could act your way out of a paper bag but you sure know how to blow one open," he continues to say as he scribbles a few marks on the sheet he pulled. He slides it over to you with a pen. "Just sign this and it''s all offical."'
+		elseif audition['cast_couch'] < 13:
+			'"You''re my favorite kind of actress you know that?" he says, pulling a sheet from a stack of papers. "The ones that know it''s not how well the lips on your mouth can perform but how well the ones between your legs can," he continues to say as he scribbles a few marks on the sheet he pulled. He slides it over to you with a pen. "Just sign this and it''s all offical."'
+		else
+			'"You''re my favorite kind of actress you know that?" he says, pulling a sheet from a stack of papers. "Anyone ever tell you what a great ass you have? Real tight and very slappable," he continues to say as he scribbles a few marks on the sheet he pulled. He slides it over to you with a pen. "Just sign this and it''s all offical."'
+		end
+		if $clothingworntype ! 'nude':
+			act'Sign the contract':gt'auditions','signature'
+		else
+			act'Sign the contract':gt'auditions','naked_signature'
+		end
+	else
+		'"True talent my ass, I''ve met street whores with more ''talent'' than you."'
+		if cumloc[0] > 0:
+			'The smile freezes on your face as you hear his words and feel cum trickle down your leg.'
+		elseif cumloc[11] > 0:
+			'The smile freezes on your face as cum slides from it and softly thuds on the floor.'
+		else
+			'The smile freezes on your face.'
+		end
+		'"What?"'
+		if audition['cast_couch'] < 6:
+			'"A dog could give blowjobs that aren''t as sloppy as what you gave me today. Seriously, almost as bad as your acting. You couldn''t even convince me that you really wanted to blow me, and even then all you had to do was act like a porn star. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		else
+			'"You''re almost as lousy a fuck as you are you an actress. Nowhere good enough to justify giving you the part. Now get out. I have real applicants to audition. Maybe I''ll get lucky and one of them will have good acting ability while also being willing to put out."'
+		end
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'Clench your jaw in anger and leave':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			
+			if actress['cast_couch_deny'] > 0:'<i>Great, another stingy fucker,</i> you think to yourself. <i>And another wasted audition spent on the casting couch.</i>'
+			
+			'As pissed off as you are, there isn''t anything you can do about this. You grab your things and stomp to the door, slamming it shut on the way out.'
+			act'Leave':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if audition['cast_couch'] < 6:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[12] > 0:
+					if audition['cast_couch'] = 1:
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> I even swallowed! And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And then I let you <i>cum in my fucking mouth!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				else
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I blow you and you give me the part! Well I fucking <i>blew</i> you! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			elseif audition['cast_couch'] < 13:
+				if cumloc[11] > 0:
+					'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "We had a deal! I fuck you and you give me the part! Well I <i>fucked</i> you! And then I let you <i>cum on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				elseif cumloc[0] > 0:
+					if birth_control['think_safe'] = 1:
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+					else
+						'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I fuck you and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! And you fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+					end
+				end
+			else
+				if cumloc[11] > 0:
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And then you even came on my face!" you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'""What the fuck?!" You flush with anger and glare at <<$boydesc>>. "We had a deal! I let you fuck my ass and you give me the part! You tricked me into thinking that it would help me land this role! Well I <i>fucked</i> you! <i>With my ass.</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			end
+			'"Yeah, pretty much. If you want to try and slut your way into this business, maybe work on being a better slut first. Or at least not such a lousy fuck." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+if $ARGS[0] = 'slutty_virgin_results':
+	actress['cast_couch'] += 1
+	
+	gs 'auditions','audition_result'
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	'"Soooo..." you say with a sultry smile. "Pretty good, fucking a virgin right? Good enough to make her an actress, am I right?"'
+	if audition['result'] >= audition['requirement']:
+		'"You''re my favorite kind of actress, you know that?" he says, reaching into a stack of papers. "So many of them are all, <i>''Noo-ooo! I want to save my first time for someone special!''</i>," he continues to speak as he scribbles a few marks on the sheet he pulls out.'
+		'"You knew what to do to get what you wanted. Besides, no one stays cherry for long in this business."'
+		'With his last comment, he slides the paper over to you with a pen. "Just sign this and it''s all offical."'
+		act'Sign the contract':gt'auditions','naked_signature'
+	else
+		'"Please, I''ve had loose old whores who were better than you."'
+		if cumloc[0] > 0:
+			'The smile freezes on your face as you hear his words and feel cum trickle down your leg.'
+		elseif cumloc[11] > 0:
+			'The smile freezes on your face as cum slides from it and softly thuds on the floor.'
+		else
+			'The smile freezes on your face.'
+		end
+		'"What?"'
+		'"I''m saying that it''s nice to bang virgins and all but ho-ly, you are as bad a fuck as you are an actress. Even the hooker on the corner knows how to work it better than you. You should try porn instead, maybe they''d hire you based on just a tight pussy. Now get out. I have real applicants to audition and maybe one of them will have good acting ability while also putting out.'
+		act'Speechless':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			'You blink, unable to conjure a response.'
+			'Without another word, you pick up your things and leave the room, stepping out into the hallway.'
+			act'Close the door':gt'auditions','reflection'
+		end
+		
+		act'What the fuck?!':
+			cla & *clr
+			'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+			if cumloc[11] > 0:
+				'"What the fuck?!" Something suddenly snaps inside you and you''re practically blind with rage. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You <i>came on my fucking face</i>," you say, pointing at your spunk covered visage, "and now you''re just going to toss me out like some kind of gutter whore?"'
+			elseif cumloc[0] > 0:
+				if birth_control['think_safe'] = 1:
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> And now you''re just going to toss me out like some kind of gutter whore?"'
+				else
+					'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! You fucking came <i>inside me!</i> You might have just knocked me up! And now you''re just going to toss me out like some kind of gutter whore?"'
+				end
+			else
+				'"What the fuck?!" You flush with anger and glare at <<$boydesc>>. "You just pressured me into fucking you for this! You tricked me into thinking that it would help me land this role! I gave you my virginity! And now you''re just going to toss me out like some kind of gutter whore?"'
+			end
+			'"Yeah, pretty much." He looks at you flatly and you take a step towards him. "Hey," he warns, causing you to stop. "You chose to do this. In the end it was always your choice. And it just didn''t work out. So now it''s your choice again. You can either leave on your own, or I call security and I guarantee you''ll be <i>done</i> in this business."'
+			if $clothingworntype ! 'nude':
+				'You''re still fuming, but you can see that you really don''t have any real options here. Stomping your way to the door, you fling it open and slam it shut behind you.'
+			else
+				if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+					gs 'cum_call', 'clothes', $boydesc
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on, smearing leftover cum across them in the process, and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				else
+					'You''re still fuming, but you can see that you really don''t have any real options here. You yank your clothes back on and stomp your way to the door, flinging it open and slaming it shut behind you.'
+				end
+			end
+			act'Leave':gt'auditions','reflection'
+		end
+	end
+end
+
+
+
+!! ----------------------------------- Signatures -----------------------------------------
+
+
+if $ARGS[0] = 'signature':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/shared/misc/signature.jpg"></center>'
+	'You reach over to pick up the pen and sign your name at the bottom of the page.'
+	if cumloc[0] > 0 and $pantyworntype ! 'none':
+		'As the pen scribbles on paper you feel a random glob of cum dribble from your pussy and soak into your panties.'
+	elseif cumloc[0] > 0:
+		'As the pen scribbles on paper you feel a random glob of cum drip from your pussy and faintly splat onto the carpet.'
+	elseif cumloc[3] > 0:
+		'As the pen scribbles on paper you feel yet another glob of cum dribble from your anus, lingering uncomfortably between your asscheeks.'		
+	end
+	*nl
+	'<i>	<<$pcs_firstname>> <<$pcs_lastname>>.</i>'
+	*nl
+	'"Congratulations <<$pcs_firstname>>. You are officially cast as <<$audition[''role'']>>. Thank you for coming."'
+	'"Thank you for casting me," you nod back and then take your copy of the contract and step out into the hallway.'
+	act'Shut the door':gt'auditions','reflection'
+end
+
+if $ARGS[0] = 'naked_signature':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/shared/misc/signature.jpg"></center>'
+	'You reach over to pick up the pen and sign your name at the bottom of the page.'
+	if cumloc[0] > 0:
+		'As the pen scribbles on paper you feel yet another glob of cum drip from your pussy and dribble down your leg.'
+	elseif cumloc[3] > 0:
+		'As the pen scribbles on paper you feel yet another glob of cum squeeze out of your asshole and dribble down your left cheek.'
+	elseif cumloc[11] > 0:
+		'As the pen scribbles on paper, a drop of cum falls from your face and spatters on the page next to your name.'		
+	end
+	'"Love the view by the way," <<$boydesc>> says, shamelessly ogling your naked body while you sign.'
+	*nl
+	'<i>	<<$pcs_firstname>> <<$pcs_lastname>>.</i>'
+	*nl
+	'"Congratulations <<$pcs_firstname>>. You are officially cast as <<$audition[''role'']>>. Thank you for coming."'
+	if cumloc[11] > 0 or cumloc[13] > 0 or cumloc[15] > 0 or cumloc[16] > 0:
+		gs 'cum_call', 'clothes', $boydesc
+		'"Thank you for casting me," you nod back and start pulling your clothes back on, unavoidably smearing the cum from your body onto them. Once everything is more or less back in place, you take your copy of the contract and step out into the hallway.'
+	else
+		'"Thank you for casting me," you nod back and get dressed to leave. Once everything is more or less back in place, you take your copy of the contract and step out into the hallway.'
+	end
+	gs 'clothing','wear_last_worn'
+	gs 'underwear','wear'
+	act'Shut the door':gt'auditions','reflection'
+end
+
+
+if $ARGS[0] = 'facial_signature_upset':
+	cla & *clr
+	'<center><img <<$set_imgh>> src="images/shared/misc/signature.jpg"></center>'
+	'You pick up the pen he hands you and sign it.'
+	*nl
+	'<i><<$pcs_firstname>> <<$pcs_lastname>></i>'
+	*nl
+	'As the pen scribbles on paper, a drop of cum falls from your face and spatters on the page next to your name, as if dotting it with finality.'
+	'"Congratulations! You officially cast as <<$audition[''role'']>>. Thank you for auditioning," he says, his smile breaking into a grin.'
+	'"Thank you for casting me," you say flatly, taking your copy of the contract and step out into the hallway.'
+	act'Leave':gt'auditions','reflection'
+end
+
+if $ARGS[0] = 'facial_signature_slutty':
+
+end
+
+!! ----------------------------------- Sexual Favors -----------------------------------------
+if $ARGS[0] = 'audition_escape':
+	gs 'willpower','pay','resist'
+	gs'auditions','role_denied'
+	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/room.jpg"></center>'
+	'"I have to go!" you yelp and rush out of the room.'
+	act'Rush out the door':
+		cla & *clr
+		'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/hallway.jpg"></center>'
+		if actress['audition_pressure'] = 1 and actress['cast_couch'] < 1 and actress['cast_seduce'] < 1:
+			'You slam the door behind you and clutch your hand to your breast, heart pounding.'
+			'<i>What was that?? Was he... was he trying to have sex with you? What would have happened if-</i>'
+			'With a vigorous shake, you clear your head and walk down the hall thinking about the things you might have to do or the willpower you''ll need to have if you want to make it in this industry. One way or another...'
+		else
+			'You slam the door behind you and breathe out slowly.'
+			'<i>Well, that''s another horny casting director escaped.</i>'
+			'Shaking your head, you continue on down the hall, the audition definitely over.'
+		end
+		act'Leave':gt'talent_agency','start'
+	end
+
+end
+
+
+!! ----------------------------------- Player Thoughts -----------------------------------------
+if $ARGS[0] = 'bj_thoughts_reluctant':
+	if actress['audition_bj'] = 1:
+		'You can''t believe you''re doing this right now! Are you really giving someone a blowjob just to get a job in acting?'
+	elseif actress['audition_bj'] = 2:
+		'You can''t believe you''re doing this again. Giving another blowjob to someone just to get a bit part in a production.'
+	elseif actress['audition_bj'] = 3:
+		'You can''t believe you''re doing this. Again. This is the third time already! How many blowjobs are you going to give strangers in back rooms just to "enhance" your audiitions??'
+	elseif actress['audition_bj'] < 10:
+		'It''s not the first time. It''s not the second time either. It''s not even the third time. But you still can''t believe you''re blowing someone just to get a job in acting.'
+	else
+		'Here you are. On your knees. With another cock in your mouth because you''re blowing somebody trying to make it as an actress. Again.'
+		'You sigh inwardly, realizing you''re starting to lose count of how many times you''ve done this now.'
+	end
+end
+
+if $ARGS[0] = 'bj_thoughts_neutral':
+	if actress['audition_bj'] = 1:
+		'<i>Is this really going to get me the part?</i> you think to yourself as you continue to suck him off. <i>Well, if a blowjob is what it takes...</i>'
+	elseif actress['audition_bj'] = 2:
+		'<i>Another blowjob?</i> you think to yourself as you continue to suck him off. <i>I guess if it worked once...</i>'
+	elseif actress['audition_bj'] = 3:
+		'<i>Wow, another blowjob,</i> you think to yourself. <i>This is what, the third time now? Third time''s the charm I guess...</i>'
+	elseif actress['audition_bj'] < 10:
+		'<i>This is really becoming a regular thing isn''t it?</i> you think to yourself. <i>At this point, I wonder if I''m even auditioning with my acting skills or my other "skills."</i>'
+	else
+		'<i>Another audition, another blowjob,</i> you think to yourself. <i>How many times have I done this again?</i>'
+		'More than a little distracted at the moment, you can''t quite remember. Enough that you''ve lost count at this point.'
+	end
+end
+
+if $ARGS[0] = 'bj_thoughts_slutty':
+	if actress['audition_bj'] = 1:
+		'You can''t believe you''re doing this right now! Are you really giving someone a blowjob just to get a job in acting?'
+	elseif actress['audition_bj'] = 2:
+		'You can''t believe you''re doing this again. Giving another blowjob to someone just to get a bit part in a production.'
+	elseif actress['audition_bj'] = 3:
+		'You can''t believe you''re doing this. Again. This is the third time already! How many blowjobs are you going to give strangers in back rooms just to "enhance" your audiitions??'
+	elseif actress['audition_bj'] < 10:
+		'It''s not the first time. It''s not the second time either. It''s not even the third time. But you still can''t believe you''re blowing someone just to get a job in acting.'
+	else
+		'Here you are. On your knees. With another cock in your mouth because you''re blowing somebody trying to make it as an actress. Again.'
+		'You sigh inwardly, realizing you''re starting to lose count of how many times you''ve done this now.'
+	end
+end
+
+!! ----------------------------------- Post Casting Couch Reflection -----------------------------------------
+
+	
+if $ARGS[0] = 'reflection':
+	gs'arousal','end'
+	if $clothingworntype = 'nude':
+		gs 'clothing','wear_last_worn'
+		gs 'underwear','wear'
+	end
+	gs'stat'
+	if audition['cast_couch'] > 0:
+		if actress['cast_couch_vag'] = 1 and audition['cast_couch_virgin'] = 1:
+			gt'auditions','virgin_reflect'
+	!!	elseif actress['cast_couch'] = 1:
+	!!		gt'auditions','reflect_first_time'
+		else
+			gt'audition_reflections','reflection_thoughts'
+	!!	else
+	!!		gt'auditions','reflection_refused'
+		end
+	else
+		gt'auditions','reflection_end'
+	end
+end
+
+if $ARGS[0] = 'reflection_end':
+	gs 'arousal', 'end'
+	if audition['result'] >= audition['requirement']:
+		gs 'auditions','role_success'
+	else
+		gs 'auditions','role_fail'
+	end
+	gt'talent_agency','hallway'
+end
+
+!!if $ARGS[0] = 'reflect_first_time':
+!!	cla & *clr
+!!	'<center><img <<$set_imgh>> src="images/locations/city/citycenter/aurora/auditions/hallway.jpg"></center>'
+!!	'The door shuts behind you and you lean against it, thinking about what just happened.'
+!!	''
+!! if actress['cast_couch_refuse'] > 0:
+!!end
+
+
+--- auditions ---------------------------------
